@@ -1,0 +1,12 @@
+﻿.jqx-widget-content{border-color: #a4bed4;}
+.jqx-fill-state-normal, .jqx-widget-header{border-color:#a4bed4; background-color:#e0e9f5}
+.jqx-fill-state-hover{border-color:#a4bed4;  background-color:#cfdde9}
+.jqx-fill-state-pressed{border-color:#5e8cb3; background-color:#cfdde9}
+.jqx-fill-state-focus { border-color: #477396; }
+.jqx-scrollbar-state-normal, .jqx-grid-bottomright, .jqx-panel-bottomright, .jqx-listbox-bottomright{background-color:#e0e9f5}
+.jqx-widget .jqx-grid-column-header, .jqx-grid-cell, .jqx-widget .jqx-grid-cell, .jqx-widget .jqx-grid-group-cell, .jqx-grid-group-cell{border-color:#a4bed4}
+.jqx-tabs-title-selected-bottom, .jqx-tabs-selection-tracker-bottom, .jqx-tabs-title-selected-top, .jqx-tabs-selection-tracker-top{border-color:#a4bed4; border-bottom:1px solid #fff; background:#fff}
+.jqx-grid-cell-sort-alt, .jqx-grid-cell-filter-alt, .jqx-grid-cell-pinned, .jqx-grid-cell-alt, .jqx-grid-cell-sort{ background-color:#e7eef8}
+.jqx-grid-cell-selected{ background-color:#cfdde9 !important;  color:#2b465e !important;}
+.jqx-grid-cell-hover{ background-color:#cfdde9 !important;}
+.jqx-menu-vertical{background: #e0e9f5;}

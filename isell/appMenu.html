@@ -1,0 +1,10 @@
+<div id='appMenu_tree' style="visibility: hidden;">
+    <ul>
+	<li><a href="javascript:App.loadWindow('catalog_companies')">Контрагенты</a></li>
+    </ul>
+</div>
+<script type="text/javascript" src="../js/jqwidgets/jqxmenu.js"></script>
+<script type="text/javascript">
+    $("#appMenu_tree").jqxMenu({width: '120', mode: 'vertical'});
+    $("#appMenu_tree").css('visibility', 'visible');
+</script>
