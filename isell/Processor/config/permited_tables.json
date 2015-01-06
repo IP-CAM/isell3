@@ -1,0 +1,19 @@
+[
+    ["prod_list",1],
+    ["price_list",2],
+    ["document_view_registry",1],
+    ["stat_annual_sold",4],
+    ["stat_annual_sellbuy",4],
+    ["stat_brand_sold",4],
+    ["stat_district_sold",4],
+    ["event_list",1,"hidden"],
+    ["user_list",1,"hidden"],
+    ["stock_entry_view",1,"hidden"],
+    ["stock_trans_view",2,"hidden"],
+    ["expired_list",1,"hidden"],
+    ["document_registry",3,"hidden"],
+    ["manager_payments",1,"hidden"],
+    ["account_ledger",1,"hidden"],
+    ["acc_article_list"],
+    ["stat_sell_analyse"]
+]

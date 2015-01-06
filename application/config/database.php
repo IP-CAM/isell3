@@ -48,10 +48,10 @@
 $active_group = 'default';
 $active_record = TRUE;
 
-$db['default']['hostname'] = 'localhost';
-$db['default']['username'] = 'root';
-$db['default']['password'] = '';
-$db['default']['database'] = 'isell';
+$db['default']['hostname'] = BAY_DB_HOST;
+$db['default']['username'] = BAY_DB_USER;
+$db['default']['password'] = BAY_DB_PASS;
+$db['default']['database'] = BAY_DB_NAME;
 $db['default']['dbdriver'] = 'mysql';
 $db['default']['dbprefix'] = '';
 $db['default']['pconnect'] = TRUE;

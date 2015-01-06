@@ -18,9 +18,7 @@ App.flash = function (msg, type) {
 	},300);
 	App.msg=(App.msg||'')+'<br>'+msg;
     }
-
 };
-
 App.uri = function () {
     var args = Array.prototype.slice.call(arguments);
     return args.join('/');
@@ -28,7 +26,7 @@ App.uri = function () {
 App.loadModule = function (path, data) {
     var id = path.replace('/', '_');
     var handler = $.Deferred();
-    App[id] = data || {};
+    App[id] = {};
     $("#" + id).load(App.module_path+path + '.html', function () {
 	$.parser.parse("#" + id);//for easy ui
 	App[id].init ? App[id].init(data,handler) : '';
@@ -39,10 +37,13 @@ App.loadWindow = function (path, data) {
     var id = path.replace('/', '_');
     if (!$('#' + id).length) {
 	$('#appWindowContainer').append('<div id="' + id + '" class="app_window"><div>Loading...</div></div>');
-	return App.loadModule(path, data);
     }
+    return App.loadModule(path, data);
 };
 App.setupForm=function(id,fvalue,handler){
+    if( !id || !fvalue || !handler ){
+	return false;
+    }
     $("#"+id+" input,#"+id+" textarea,#"+id+" select").each(function( i,element ){
 	$(element).attr('value',fvalue[element.name]||'');
 	$(element).wrap( '<div class="inp_group"><label></label></div>' );
@@ -55,6 +56,7 @@ App.setupForm=function(id,fvalue,handler){
 App.init = function () {
     //App.loadModule('appMenu');
     App.loadWindow('catalog/company_list');
+    App.loadWindow('catalog/company_form');
 };
 $(App.init);
 

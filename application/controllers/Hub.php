@@ -4,27 +4,30 @@ class Hub extends CI_Controller{
     
     public function index(){
 	include $this->app_folder."index.html";
-	
     }
     
     public function on(){
 	$arguments = func_get_args();
-	if( $arguments[0] ){
+	if( isset($arguments[0]) ){
 	    $fn=explode('-',array_shift($arguments));
 	    $model_name=$fn[0];
-	    $this->load->model("../../{$this->app_folder}$model_name/$model_name",NULL,true);//file_exists("{$this->app_folder}$model_name/$model_name.php") 
-	    if( method_exists($this->{$model_name},$fn[1]) ){
-		$response=call_user_func_array(array($this->{$model_name}, $fn[1]),$arguments);
+	    $method_name=  isset($fn[1])?$fn[1]:null;
+	    
+	    //echo "../../{$this->app_folder}$model_name/$model_name";//file_exists("{$this->app_folder}$model_name/$model_name.php") 
+	    $this->load->model($model_name,NULL,true);
+	    if( method_exists($this->{$model_name},$method_name) ){
+		$response=call_user_func_array(array($this->{$model_name}, $method_name),$arguments);
 		$this->response($response);
 	    }
 	    else{
-		show_error("iSell: Such module function '$model_name->$fn[1]' not found!", 500);
+		show_error("iSell3: Such module function '$model_name->$method_name' not found!", 500);
 	    }
 	}
 	else {
-	    echo 2222;
+	    show_error('iSell3: No further command is set!', 500);
 	}
     }
+    
     private function response( $response ){
 	if( empty($_SERVER['HTTP_X_REQUESTED_WITH']) ){
 	    $this->output->set_header("Content-type:text/plain;charset=utf8"); 

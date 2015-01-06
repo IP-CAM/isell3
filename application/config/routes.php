@@ -37,8 +37,10 @@
 | in the URL cannot be matched to a valid route.
 |
 */
+//$route['processor-on'] = "hub/mod/$1";
 $route['default_controller'] = "Hub";
-$route['(:any)'] = "hub/on/$1";
+//$route['(:any)'] = "hub/on/$1";
+
 $route['404_override'] = '';
 
 

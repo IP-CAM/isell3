@@ -1,6 +1,26 @@
 <?php
 
 /*
+ * -----------------------------------------------
+ * ISELL3 CONFIG LOADER
+ * -----------------------------------------------
+ */
+$uri_explode=explode('/',$_SERVER['REQUEST_URI']);
+include "../$uri_explode[1]/config.php";
+$uri_explode[1]='isell3';
+if( isset($_REQUEST['mod']) ){
+    $uri_explode[2]=$_REQUEST['mod'].'Proc';
+    $uri_explode[3]=isset($_REQUEST['rq'])?'on'.$_REQUEST['rq']:null;
+}
+elseif( isset($_REQUEST['tpl']) ){
+    include "application/views/".$_REQUEST['tpl'];
+    exit;
+}
+$_SERVER['REQUEST_URI']= implode('/',$uri_explode);
+
+header("URI: ".$_SERVER['REQUEST_URI']);
+
+/*
  * ---------------------------------------------------------------
  * APPLICATION ENVIRONMENT
  * ---------------------------------------------------------------

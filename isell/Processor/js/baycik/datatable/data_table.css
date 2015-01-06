@@ -1,0 +1,76 @@
+@charset "utf-8";
+/* CSS Document */
+.data_table{
+	border-left:#E6F5FF 1px solid;
+	border-top:#E6F5FF 1px solid;
+}
+.data_table td, th{
+	font-family:Trebuchet MS,Verdana;
+	font-size:12px;
+	border-right:#E6F5FF 1px solid;
+	border-bottom:#E6F5FF 1px solid;
+	padding:2px 6px 2px 6px;
+	white-space:nowrap;
+	-width:10px;
+	cursor:default;
+	-moz-user-select:-moz-none;
+	height:20px;
+}
+.inline_editor{/*deprecated delete this*/
+	font-family:Trebuchet MS;
+	font-size:12px;
+	width:100%;
+	min-width:30px;
+	padding:0px;
+	margin:0px;
+	margin-left:-1px;
+	border:none;
+	background:#FF9;
+	-moz-user-select:all;
+}
+.data_table th{
+	padding:3px;
+	background-color:#DAE5F0;
+	background-image:url(img/thbg.jpg);
+	text-align:center;
+	font-weight:bold;
+}
+.data_table_selected td{
+	-background-color:#aAc5e0;
+	background-color:#bAd5f0;
+}
+.data_table_hover td{
+	border-right:#E6F5FF 1px solid;
+	border-bottom:#E6F5FF 1px solid;
+	background-color:#cAdfff;
+}
+.data_table tr{
+	background-color:#DAE5F0
+}
+.data_table_status{
+	font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
+	font-size:12px;
+}
+th.data_table_key{
+	background-image:url(img/thkeybg.jpg);
+}
+th.data_table_del{
+	background-image:url(img/thdelbg.jpg);
+}
+td.data_table_del{
+	background-color:#F0DEEA;
+}
+td.data_table_hidden{
+	display:none;
+}
+.data_table_check{
+	margin:0px;
+	padding:0px;
+}
+.data_table_number{
+	text-align:right;
+}
+.data_table_string{
+	text-align:left;
+}
+

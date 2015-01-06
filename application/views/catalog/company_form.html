@@ -1,0 +1,72 @@
+<form id="catalog_company_form_frm" onsubmit="return false;" style="-moz-user-select:none;">
+    <fieldset>
+	<legend>Обязательные реквизиты:</legend>
+	<input type="text" name="name" title="Полное название"/>	
+	<input type="text" name="phone" title="Телефон"/>
+	<input type="text" name="jaddress" title="Юр. Адрес"/>
+	<input type="text" name="tax_id" title="ИНН"/>
+	<input type="text" name="tax_code" title="КОД"/>	
+	<input type="text" name="director" title="Директор"/>	
+    </fieldset>
+    <fieldset>
+	<legend>Контактные данные:</legend>
+	<input type="text" name="label" title="Короткое название"/>
+	<input type="text" name="person" title="Контактное лицо"/>
+	<input type="text" name="mobile" title="Мобильный"/>
+	<input type="text" name="address" title="Адрес"/>    
+	<input type="text" name="web" title="Сайт"/>
+	<input type="text" name="email" title="Емаил"/>
+    </fieldset>
+    <fieldset>
+	<legend>Банковские реквизиты:</legend>
+	<input type="text" name="bank_id" title="Код Банка"/>
+	<input type="text" name="bank_account" title="Поточный счет"/>
+	<input type="text" name="bank_name" title="Название банка"/>
+    </fieldset>
+    <fieldset>
+	<legend>Настройки:</legend>
+	<input type="text" name="deferment" title="Отсрочка дней"/>
+	<select name="curr_code" title="Валюта">
+	    <option value="UAH">Гривна</option>
+	    <option value="USD">Доллар</option>
+	    <option value="RUB">Рубль</option>
+	</select>
+	<select name="language" title="Язык">
+	    <option value="en">English</option>
+	    <option value="uk">Українська</option>
+	    <option value="ru">Русский</option>
+	</select>
+    </fieldset>
+    <div class="inp_rule"></div>
+    <textarea name="comment" title="Дополнительно"></textarea>
+</form>
+<script>
+    App.catalog_company_form.init = function (data,handler) {
+	App.catalog_company_form.data= data || {};
+	$('#catalog_company_form').window({
+	    title: App.catalog_company_form.data.name || 'Контрагент',
+	    width: 880,
+	    height: 500,
+	    onClose: function(){
+		handler.notify('close',App.catalog_company_form.data);
+		App.catalog_company_form.destroy();
+	    }
+	});
+	App.setupForm("catalog_company_form_frm", data, function (node, event) {
+	    $('#catalog_company_form').css('cursor', 'wait');
+	    $.ajax({
+		url: 'catalog-companyUpdate/'+App.uri(data.company_id*1,node.name,node.value),
+		complete: function () {
+		    App.catalog_company_form.data[node.name]=node.value;
+		    App.flash("Сохранено: " + node.title);
+		    $('#catalog_company_form').css('cursor', '');
+		}
+	    });
+	});
+    };
+    App.catalog_company_form.destroy = function () {
+	$('#catalog_company_form').window('destroy');
+	$('#catalog_company_form').remove();
+	delete this;
+    };
+</script>

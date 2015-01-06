@@ -1,0 +1,49 @@
+{
+	"grid_name":"Список событий",
+	"selectionMode":"extended",
+	"extratools":{
+		"addevent":{"img":"add.png","command":"addEvent()","tip":"Добавить событие"}
+	},
+	"toolnames":[
+	  "addevent",
+	  "delete",
+	  "print"
+	],
+	"identifier":"event_id",
+	"columns":[
+	  {
+		"field":"event_date",
+		"name":"Дата"
+	  },
+	  {
+		"field":"event_name",
+		"name":"Событие",
+		"width":"150px"
+	  },
+	  {
+		"field":"event_target",
+		"name":"Клиент",
+		"width":"200px"
+	  },
+	  {
+		"field":"event_place",
+		"name":"Адрес",
+		"width":"200px"
+	  },
+	  {
+		"field":"event_note",
+		"name":"Телефон"
+	  },
+	  {
+		"field":"event_descr",
+		"name":"Доп-но",
+		"width":"100px",
+		"align":"center"
+	  },
+	  {
+		"field":"is_private",
+		"name":"!",
+		"type":"tooltip"
+	  }
+	]
+}
