@@ -1,0 +1,295 @@
+<script language="javascript">
+require(["dojo/dom","dijit/registry","dojo/ready","dojo/on","baycik/datatable/DataTable","baycik/tree/TreeWidget","dojo/domReady!"],
+function(dom,registry,ready,on){
+	AccountsJs.transold.init=function(){
+		this.initList();
+		this.initTree();
+	};
+	AccountsJs.transold.initTree=function(){
+		Connector.addCss('js/dhtmlx/tree/dhtmlxtree.css');
+		AccountsJs.transold.tree=new baycik.tree.TreeWidget( {},'acc_tree' );
+		with(AccountsJs.transold.tree){
+			imgPath="js/dhtmlx/tree/imgs/csh_vista/";
+			request.mod='Accounts';
+			request.id=0;
+			onRequest=function( request ){
+				request.rq='AccountsTree';
+				Connector.addRequest(request,this,'setData');
+			}
+			onInsert=function( request ){
+				request.rq='TreeItemInsert';
+				Connector.addRequest(request,this,'onInsertReturn');
+			}
+			onUpdate=function( request ){
+				request.rq='TreeItemUpdate';
+				Connector.addRequest(request,this,'onUpdateReturn');
+			}
+			onDelete=function( request ){
+				request.rq='TreeItemDelete';
+				Connector.addRequest(request,this,'onDeleteReturn');
+			}
+			onSelect=function( branch_data ){
+				if( !AccountsJs.transold || !AccountsJs.transold.acc_trans_list ){
+					alert('trans list not ready')
+					return;
+				}
+				AccountsJs.transold.onBranchSelect(branch_data.branch_id,AccountsJs.transold.tree.tree.getItemText(branch_data.branch_id));
+			}
+			AccountsJs.transold.tree.startup();
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	AccountsJs.transold.selectedAccounts="";
+	AccountsJs.transold.initList=function(){
+		AccountsJs.transold.acc_trans_list=new baycik.datatable.DataTable( {}, 'acc_trans_list' );
+		AccountsJs.transold.acc_trans_list.request.mod='Accounts';
+		with( AccountsJs.transold.acc_trans_list ){
+			onStructure=function( request ){
+				request.rq='AccountTransListStructure';
+				Connector.addRequest(request,this,'setStructure');
+			}
+			onRequest=function( request ){
+				request.rq='AccountLedger';
+				request.fileType='';
+				Connector.addRequest(request,function(ledger){
+					if(!ledger)return;
+					AccountsJs.transold.ledgerCurrId=ledger.curr_id;
+					var curr_name=AccountsJs.transold.ledgerCurrId==1?"грн":"$";
+					dojo.byId('incoming_balance').innerHTML=ledger.incoming_balance+' '+curr_name;
+					dojo.byId('closing_balance').innerHTML=ledger.closing_balance+' '+curr_name;
+					AccountsJs.transold.acc_trans_list.acc_type=ledger['acc_type'];
+					setData(ledger.entries);
+				});
+			}
+			onXlsDownload=function( r ){
+                var request=dojo.clone(r);
+				request.rq='TransViewOut';
+				request.out_type='.xls';
+                request.limit=0;
+				Connector.addRedirection(request);
+			}
+			onDblClick=function( row, ele ){
+				if( row[3]=='user' ){ //Trans can be edited
+					var handler=function(resp){
+						var dt=resp.cstamp.match(/(\d{4})-(\d{2})-(\d{2})/);
+						resp.date=new Date(dt[1],dt[2]-1,dt[3]);
+						resp.amount_uah=parseFloat(resp.amount_uah);
+						resp.selected_acc=AccountsJs.transold.selectedAccounts;
+						Acc.showPopup(resp,AccountsJs.transold.transEditCallback,{tpl:'accounts/trans_edit.tpl'});
+					}
+					Connector.addRequest({mod:'Accounts',rq:'FetchTransData',trans_id:row[0]},handler);
+				}
+			}
+			onPrint=function( request ){
+				request.rq='TransViewOut';
+				Acc.printOut( request );
+			}
+			onSelect=function( data, node ){
+				if( data.toolcmd=='unpayed' || data.toolcmd=='partly' ){
+					AccountsJs.transold.addPayTransaction( data.trans_id );
+				}
+			}
+			calculateRow=function( table_dom_row ){
+				var ccell=table_dom_row.cells[9];
+				var dcell=table_dom_row.cells[8];
+				if( this.acc_type=='A' ){
+					dcell.style.color='green';
+					ccell.style.color='red';
+				}
+				else{
+					dcell.style.color='red';
+					ccell.style.color='green';
+				}
+				dcell.style.fontWeight='bold';
+				ccell.style.fontWeight='bold';
+				if(table_dom_row.cells[1].innerHTML=='0'){//IF this row is balance row
+					table_dom_row.cells[7].style.fontWeight='bold';
+					table_dom_row.style.backgroundColor='#d2d5ff';
+				}
+			}
+			startup();
+		}
+		AccountsJs.transold.acc_trans_list.addTrans=function(){
+			AccountsJs.transold.addTrans();
+		}
+		AccountsJs.transold.acc_trans_list.onDelete=function( request ){
+			if(this.selected_rows[0].data.editable=='gear')return;;
+			request.rq='CancelTransaction';
+			request.trans_id=request.delete_ids.match(/\d+/);
+			Connector.addRequest(request,this,'loadTableData');
+		}
+		var now=new Date();
+		dijit.byId('acc_idate').attr('value',new Date(now.getFullYear(),now.getMonth()-3,1));
+		dijit.byId('acc_fdate').attr('value',new Date(now.getFullYear(),now.getMonth(),now.getDate())); 
+	};
+	AccountsJs.transold.onHeadChanged=function(){
+		if( dijit.byId('acc_idate').attr('value') <= dijit.byId('acc_fdate').attr('value') ){ 
+			this.acc_trans_list.request.idate=dojo.date.stamp.toISOString(dijit.byId('acc_idate').attr('value')).match(/\d{4}-\d{2}-\d{2}/)[0];
+			this.acc_trans_list.request.fdate=dojo.date.stamp.toISOString(dijit.byId('acc_fdate').attr('value')).match(/\d{4}-\d{2}-\d{2}/)[0];
+			this.acc_trans_list.loadTableData();
+		}
+		else{
+			alert('Конечная дата должна быть больше!');
+		}
+	}
+	AccountsJs.transold.onBranchSelect=function(branch_id,branch_name){
+		dojo.byId('trans_td').style.display='';
+		if(matches=branch_name.match(/(\d+)(\W+)/)) {
+			Acc.renderTpl('acc_trans_head',{acc_name:matches[2],acc_code:matches[1]});
+			AccountsJs.transold.selectedAccounts=matches[1];
+		}
+		this.acc_trans_list.request.acc_branch_id=branch_id;
+		this.acc_trans_list.loadTableData();
+	}
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	AccountsJs.transold.transEditCallback=function( fvalue ){
+		var request=fvalue;
+		request.mod="Accounts";
+		
+		if( request.cancel==1 ){
+			request.rq='CancelTransaction';
+		}
+		else{
+			var date_format=function( date ){
+				var dt=new Date();
+				return dojo.date.stamp.toISOString(date, {selector: 'date'})+" "+dt.getHours()+":"+dt.getMinutes()+":"+dt.getSeconds();//YYYY-MM-DD HH:mm:ss
+			}
+			request.rq='UpdateTransaction';
+			request.date=date_format(fvalue.date);
+		}
+		var handler=function(){
+			AccountsJs.transold.acc_trans_list.loadTableData();
+		}
+		Connector.addRequest(request,handler);
+	}
+	AccountsJs.transold.addPayTransaction=function( pay_trans_id ){
+		var request={};
+		request.mod='Accounts';
+		request.rq='addPayTransaction';
+		request.pay_trans_id=pay_trans_id;
+		
+		Connector.addRequest(request,function(fvalue){
+			fvalue.disable=['amount'];
+			fvalue.date_stamp=fvalue.cstamp;
+			fvalue.selected_acc=AccountsJs.transold.selectedAccounts;
+			Acc.showPopup(fvalue,AccountsJs.transold.transEditCallback,{tpl:'accounts/trans_edit.tpl'});
+		});
+	}
+	AccountsJs.transold.addTrans=function(){
+		var fvalue={trans_id:0};
+		fvalue.date=new Date();
+		fvalue.selected_acc=AccountsJs.transold.selectedAccounts;
+		//Acc.showPopup(fvalue,AccountsJs.transold.transEditCallback,{tpl:'accounts/trans_edit.tpl'});
+		
+		if( AccountsJs.transold.ledgerCurrId==2 /*IF currency is dollar*/ ){
+			Connector.addRequest({mod:'Pref',rq:'Details'},function(resp){
+				fvalue.dollar_ratio=resp.dollar_ratio;
+				Acc.showPopup(fvalue,AccountsJs.transold.transEditCallback,{tpl:'accounts/trans_edit.tpl'});
+			});
+		}
+		else
+			Acc.showPopup(fvalue,AccountsJs.transold.transEditCallback,{tpl:'accounts/trans_edit.tpl'});
+
+	}
+});
+</script>
+<table border="0" cellspacing="0" style="height: 500px;">
+    <tr>
+        <td width="200" valign="top" style="border-right:#acf 1px dashed; padding-right:2px;">
+            <div id="acc_tree"></div>
+            <div align="right">
+                <hr size="1" />
+                <a href="javascript:AccountsJs.transold.tree.insertNew( {is_leaf:1,text:'Новый счет'} )" title="Добавить Счет"><img src="js/baycik/tree/img/add_account.png"></a>
+                <a href="javascript:AccountsJs.transold.tree.insertNew( {text:'Новая категория'} )" title="Добавить Категорию"><img src="js/baycik/tree/img/add_folder.png"></a>
+                <a href="javascript:AccountsJs.transold.tree.deleteSelected()" title="Удалить ветку"><img src="js/baycik/tree/img/edit_delete_small.gif"></a>
+                <a href="javascript:AccountsJs.transold.tree.clearSelection()" title="Отменить выбранное"><img src="js/baycik/tree/img/clear_selection.gif"></a>
+                <a href="javascript:AccountsJs.transold.tree.reload()" title="Обновить дерево"><img src="js/baycik/tree/img/reload_small.gif"></a>
+                <div id="acc_tree_status" align="left"></div>
+            </div>
+        </td>
+        <td valign="top" id="trans_td" style="padding-left:10px;display:none">
+        
+        <table width="500" border="0">
+          <tr>
+            <td align="left">
+            
+            <table border="0" width="100%">
+              <tr>
+                <td>
+                <div id="acc_trans_head" style="margin:2px">
+                    <span style="color:#09d;font-size:18px;font-weight:bold;"><!--{{acc_code}}-->&nbsp;</span><span style="color:#039;font-size:18px;font-weight:bold;">&nbsp;<!--{{acc_name}}--></span>
+                </div>
+                </td>
+                <td width="10">
+                <div class="button grn_grad" title="Входящее сальдо">
+                	<input data-dojo-type="dijit/form/DateTextBox" type="text" name="acc_idate" id="acc_idate" onchange="AccountsJs.transold.onHeadChanged()" style="width:7em;font:12px normal;">
+                    <div id="incoming_balance" style="color: #ffffff;white-space: nowrap"></div>
+                </div>
+                </td>
+				<td width="10"><img src="img/big_rightarrow.png" /></td>
+                <td width="10">
+                <div class="button blue_grad" title="Исходящее сальдо">
+                	<input data-dojo-type="dijit/form/DateTextBox" type="text" name="acc_fdate" id="acc_fdate" onchange="AccountsJs.transold.onHeadChanged()" style="width:7em;font:12px normal;">
+                    <div id="closing_balance" style="color: #ffffff;white-space: nowrap"></div>
+                </div>
+                </td>
+              </tr>
+            </table>
+            
+            
+            </td>
+          </tr>
+          <tr>
+            <td><div id="acc_trans_list"></div></td>
+          </tr>
+        </table>
+
+        </td>
+  </tr>
+</table>

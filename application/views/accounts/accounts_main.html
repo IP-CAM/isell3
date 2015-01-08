@@ -1,0 +1,22 @@
+<script>
+    AccountsJs = {};
+    AccountsJs.init = function () {
+        Acc.initModTabs(AccountsJs, 'acc_tabs');
+    };
+    AccountsJs.transold = {};
+    AccountsJs.transold.tpl = 'accounts/transold.html';
+
+    AccountsJs.trans = {};
+    AccountsJs.trans.tpl = 'accounts/trans.html';
+
+    AccountsJs.bank = {};
+    AccountsJs.bank.tpl = 'accounts/bank.html';
+
+    AccountsJs.reports = {};
+    AccountsJs.reports.tpl = 'accounts/reports.html';
+</script>
+<div data-dojo-type="dijit/layout/TabContainer" data-dojo-props="doLayout:false,controllerWidget:'dijit.layout.TabController'" style="margin-left: 0.5%;width: 99%" id="acc_tabs">
+    <div data-dojo-type="dijit/layout/ContentPane" title="Проводки">trans</div>
+    <div data-dojo-type="dijit/layout/ContentPane" title="Клиент-Банк">bank</div>
+    <div data-dojo-type="dijit/layout/ContentPane" title="Отчеты">reports</div>
+</div>

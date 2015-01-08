@@ -1,0 +1,100 @@
+<script type="text/javascript" src="js/baycik/SeqConnector.js"></script>
+<script type="text/javascript">
+dojo.require('dijit/form/Form');
+dojo.require('dijit/form/DateTextBox');
+dojo.require("dijit/form/SimpleTextarea");
+dojo.require("dijit/form/CheckBox");
+document.title='Редактор Событий';
+
+var Connector=new SeqConnector('./');
+function beforeInit(){
+	var loc=location.href;
+	var query_obj = dojo.queryToObject(loc.substring(loc.indexOf("?")+1));
+	dojo.mixin(fvalue, query_obj);
+	if( fvalue.event_date ){
+		var dt=fvalue.event_date.match(/(\d{2}).(\d{2}).(\d{4})/);
+		fvalue.event_date=new Date(dt[3],dt[2]-1,dt[1]);
+	}
+	else{
+		fvalue.event_date=new Date();
+	}
+}
+function beforeSubmit(){
+	if( fvalue.event_date ){
+		fvalue.event_date=dojo.date.locale.format(fvalue.event_date, {datePattern: "yyyy-MM-dd", selector: "date"});
+	}
+	var request=fvalue;
+	request.mod='Dialogs';
+	request.rq='SaveEvent';
+	Connector.addRequest(request,function(cont){
+		if( window.callback )
+			window.callback( fvalue );
+		window.close();
+	});
+	return false;
+}
+function deleteEvent(){
+	var request={mod:'Data',rq:'deleterows'};
+	request.table_name='event_list';
+	request.delete_ids='[['+fvalue.event_id+']]';
+	Connector.addRequest(request,function(cont){
+		if( window.callback )window.callback({});
+		window.close();
+	});
+}
+function setLabel( label ){
+	dijit.byId('event_label').attr('value',label);
+}
+</script>
+<form id="EditorForm" name="EditorForm" data-dojo-type="dijit/form/Form" action="#">
+<table border="0">
+  <tr>
+    <td rowspan="2" valign="top"><img src="img/event.png" /></td>
+    <td height="20"><big><big>Редактор Событий</big></big></td>
+  </tr>
+  <tr>
+    <td>
+    <input data-dojo-type="dijit/form/TextBox" type="hidden" name="event_id" />
+    <table border="0">
+      <tr>
+        <td>&nbsp;</td>
+        <td><input type="checkbox" data-dojo-type="dijit/form/CheckBox" value="1" name="event_is_private" /> Приватное событие</td>
+        <td><a href="javascript:setLabel('Украина');">Украина</a> <a href="javascript:setLabel('Крым');">Крым</a> <a href="javascript:setLabel('Симферополь');">Симферополь</a></td>
+      </tr>
+      <tr>
+        <td>Дата</td>
+        <td><input type="date" data-dojo-type="dijit/form/DateTextBox" name="event_date" /></td>
+        <td>
+          <input type="text" data-dojo-type="dijit/form/TextBox" name="event_label" id="event_label" placeholder="Группа" style="width:99%;background-color:#FFFFCC" />
+          </td>
+      </tr>
+      <tr>
+        <td>Событие</td>
+        <td><input type="text" data-dojo-type="dijit/form/TextBox" name="event_name" /></td>
+        <td valign="top">Дополнительно</td>
+      </tr>
+      <tr>
+        <td>Клиент</td>
+        <td><input type="text" data-dojo-type="dijit/form/TextBox" name="event_target" /></td>
+        <td rowspan="3" valign="top"><textarea  data-dojo-type="dijit/form/SimpleTextarea" cols="25" rows="3" name="event_descr" style="width:auto;height:auto"></textarea></td>
+        </tr>
+      <tr>
+        <td>Адрес</td>
+        <td><input type="text" data-dojo-type="dijit/form/TextBox" name="event_place" /></td>
+        </tr>
+      <tr>
+        <td>Телефон</td>
+        <td><input type="text" data-dojo-type="dijit/form/TextBox" name="event_note" /></td>
+        </tr>
+      <tr>
+        <td colspan="3" align="center">
+          <button data-dojo-type="dijit/form/Button" type="submit"><img src="img/apply24.png" /> Сохранить</button>
+          <button data-dojo-type="dijit/form/Button" onclick="deleteEvent()"><img src="img/delete.png" /> Удалить</button>
+          <button data-dojo-type="dijit/form/Button" onclick="window.close()"><img src="img/close24.png" /> Закрыть</button>
+		</td>
+        </tr>
+    </table>
+    </td>
+  </tr>
+</table>
+</form>

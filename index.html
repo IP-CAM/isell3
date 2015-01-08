@@ -1,0 +1,135 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>iSell 3.0 BETA</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="css/main.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="js/dijit/themes/claro/claro.css" />
+    <script type="text/javascript" src="js/dojo/dojo.js" data-dojo-config="parseOnLoad: true,locale: 'ru'"></script>
+    <script type="text/javascript" src="js/dojo/custom_layer.js"></script>
+    <script type="text/javascript" src="js/baycik/SeqConnector.js"></script>
+    <script type="text/javascript" src="js/baycik/Utils.js"></script>
+    <script type="text/javascript" src="js/dhtmlx/tree/dhtmlxcommon.js"></script>
+    <script type="text/javascript" src="js/dhtmlx/tree/dhtmlxtree.js"></script>
+    <script type="text/javascript" src="js/dhtmlx/tree/ext/dhtmlxtree_json.js"></script>
+
+
+    <script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="js/jquery-easyui-1.4/jquery.easyui.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="js/jquery-easyui-1.4/themes/default/easyui.css"/>
+    <link rel="stylesheet" type="text/css" href="js/jquery-easyui-1.4/themes/icon.css"/>
+    <link rel="stylesheet" type="text/css" href="js/jquery-easyui-1.4/themes/color.css"/>
+    <script type="text/javascript" src="js/app.js"></script>
+
+    <script type="text/javascript">
+	Connector = new SeqConnector('./');
+	Acc = new Utils();
+	Acc.appReady = function () {
+	    //this.appSetState({mod:'Site',rq:'GetTableData',tableName:'prod_list'});
+	    this.topic.subscribe('/app/statechange', function (hash) {
+		Acc.loadModule(hash.mod);
+	    });
+	    Acc.user_check();
+	};
+	Acc.user_check = function () {
+	    var request = {
+		mod: 'Login',
+		rq: 'UserCheck'
+	    };
+	    Connector.addRequest(request, function (resp) {
+		if (resp['user_id']) {
+		    Acc.userData = resp;
+		    Acc.app_title = resp.active_company_name;
+		    Acc.init();
+		} else {
+		    Acc.userData = {};
+		    //Acc.dom.byId('ApplicationBar').style.display = 'none';
+		    Acc.dom.byId('div_user_panel').style.display = 'none';
+		    Connector.addRequest({
+			mod: 'Login',
+			rq: 'Autorize'
+		    });
+		}
+	    });
+	};
+	Acc.init = function () {
+	    //Acc.dom.byId('ApplicationBar').style.display = '';
+	    Acc.dom.byId('div_user_panel').style.display = 'block';
+	    Acc.renderTpl('div_user_panel', Acc.userData);
+	    Connector.addRequest({
+		mod: 'ModuleList'
+	    }, function (response) {
+		Acc.buildModuleDOM(response);
+		var hash = Acc.appGetState();
+		hash.mod = hash.mod ? hash.mod : response[0].name;
+		Acc.appSetState(hash);
+		Acc.loadModule(hash.mod);
+	    });
+	};
+	function onlogin() {
+	    if (Connector.freezed)
+		Connector.goon();
+	    Acc.user_check();
+	}
+	function onlogincancel() {
+	    if (Connector.freezed)
+		Connector.unfreeze();
+	}
+	function logout() {
+	    var request = {
+		mod: 'Login',
+		rq: 'Logout'
+	    };
+	    Connector.addRequest(request, Acc.user_check);
+	}
+	Acc.sendEmail = function (to, subject, text, fgenerator, doc_view_id, fext) {
+	    var fvalue = {
+		to: to,
+		subject: subject,
+		body: text,
+		file_name: subject + fext,
+		send_file: 1,
+		copy: 1
+	    };
+	    Acc.showPopup(fvalue, function (request) {
+		request.mod = 'Utils';
+		request.rq = 'SendEmail';
+		request.fgenerator = fgenerator;
+		request.doc_view_id = doc_view_id;
+		Connector.addRequest(request);
+	    }, {
+		tpl: 'etc/sendemail.html'
+	    });
+	};
+    </script>
+</head>
+
+<body class=" claro ">
+    <div id="ApplicationBar" class="transparent">
+	<img src="img/plusLogo.png" style="vertical-align:top" />
+	<div style="color:#009;padding:4px;display: inline-block;font-size: 24px;" id="module_title">&nbsp;</div>
+	<div style="display: inline-block;float: right;">
+	    <div id="div_user_panel" style="display:none;background:#bAc5ff;margin:3px;" class="rounded hidden" align="center">
+		<div style="background:#DAE5F0;color:#FF0000;overflow: hidden;" class="rounded" align="center">{{user_level_name|default:''}} <span style="font-weight:bold;color:#000">{{user_login}}</span> <a href="javascript:logout()">[выход]</a></div> 
+	    </div>
+	</div>
+    </div>
+    <table style="margin: 0px;width:100%;border-collapse: collapse;" cellpadding="0">
+	<tr>
+	    <td style="width:60px;vertical-align: top;">
+		<div id="module_menu" class="hidden transparent" style="text-align: center;">
+		    <!--
+		    {% for item in menuitems %}
+		    <div class="ModuleButton" id="{{item.name}}Button" title="{{item.label}}"><a href="#mod={{item.name}}"><img src="img/Mods/{{item.icon}}" width="45" height="45" /></a></div>
+		    {% endfor %}
+		    -->
+		</div>
+	    </td>
+	    <td style="vertical-align: top;">
+		<div id="ModuleContainer"></div>
+	    </td>
+	</tr>
+    </table>
+</body>
+</html>

@@ -1,0 +1,18 @@
+<script>
+    StockJs={};
+    StockJs.init=function(){
+	    Acc.initModTabs( StockJs, 'stock_tabs' );
+    }
+    StockJs.list={};
+    StockJs.list.tpl='stock/list.html';
+
+    StockJs.trans={};
+    StockJs.trans.tpl='stock/trans.html';
+
+    StockJs.checkout={};
+    StockJs.checkout.tpl={plugin:'Checkout',fn:'html'};
+</script>
+<div data-dojo-type="dijit/layout/TabContainer" data-dojo-props="doLayout:false,controllerWidget:'dijit.layout.TabController'" id="stock_tabs">
+    <div data-dojo-type="dijit/layout/ContentPane" title="Товары" align="center">list</div>
+    <div data-dojo-type="dijit/layout/ContentPane" title="Движения товара" align="center">trans</div>
+</div>

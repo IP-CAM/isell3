@@ -1,6 +1,6 @@
 <?php
 
-class Data  extends CI_Model {
+class Data {
 
     ///////////////////////////////
     //GRID FUCNCTIONS 

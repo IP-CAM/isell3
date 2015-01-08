@@ -9,11 +9,14 @@ $uri_explode=explode('/',$_SERVER['REQUEST_URI']);
 include "../$uri_explode[1]/config.php";
 $uri_explode[1]='isell3';
 if( isset($_REQUEST['mod']) ){
-    $uri_explode[2]=$_REQUEST['mod'].'Proc';
+    $uri_explode[2]='Proc'.$_REQUEST['mod'];
     $uri_explode[3]=isset($_REQUEST['rq'])?'on'.$_REQUEST['rq']:null;
 }
 elseif( isset($_REQUEST['tpl']) ){
-    include "application/views/".$_REQUEST['tpl'];
+    echo json_encode(array(
+	'content' => file_get_contents("application/views/".$_REQUEST['tpl']
+	)
+    ));
     exit;
 }
 $_SERVER['REQUEST_URI']= implode('/',$uri_explode);

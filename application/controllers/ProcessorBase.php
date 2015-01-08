@@ -273,12 +273,12 @@ class Session extends DataBase {
 
     private function kick_out() {
 	if (isset($_POST['mod'])) {
-	    $this->response_kick('./isell/Processor/loginDialog.html');
+	    $this->response_kick('./Login/dialog');
 	}
 	$currUrl = str_replace('&', '--', "http://" . $_SERVER["SERVER_NAME"] . ':' . $_SERVER['SERVER_PORT'] . $_SERVER["REQUEST_URI"]);
-	header("Location: login.php?msg=" . urlencode($this->msg) . "&ref=$currUrl");
+	header("Location: ./Login/?msg=" . urlencode($this->msg) . "&ref=$currUrl");
 	header("Content-Type: text/html; charset=utf-8");
-	echo "Не хватает прав для просмотра страницы. <a href='./login.php?ref=$currUrl'>Авторизация</a>";
+	echo "Не хватает прав для просмотра страницы. <a href='./Login/?ref=$currUrl'>Авторизация</a>";
 	exit;
     }
 
