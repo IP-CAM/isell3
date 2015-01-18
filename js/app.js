@@ -1,14 +1,16 @@
-var App = {
-    module_path:'./isell/'
-};
+var App = {};
 App.flash = function (msg, type) {
     if (type === 'error') {
 	$("#appStatus").html(msg);
-	$("#appStatus").window('open');
+	$("#appStatus").window({
+	    title: 'Ошибка',
+	    width: 800,
+	    height: 300
+	});
 	$("#appStatus").window('move',{top:0});
     }
     else if( type === 'alert' ){
-	$.messager.alert('Warning!',msg,'error');
+	$.messager.alert('Внимание!',msg,'error');
     }
     else {
 	clearTimeout(App.flashClock);
@@ -19,60 +21,53 @@ App.flash = function (msg, type) {
 	App.msg=(App.msg||'')+'<br>'+msg;
     }
 };
-App.uri = function () {
-    var args = Array.prototype.slice.call(arguments);
-    return args.join('/');
-};
 App.loadModule = function (path, data) {
-    var id = path.replace('/', '_');
+    var id = path.replace(/\//g, '_');
     var handler = $.Deferred();
     App[id] = {};
-    $("#" + id).load(App.module_path+path + '.html', function () {
-	$.parser.parse("#" + id);//for easy ui
+    $("#" + id).load( path + '.html', function () {
+	App[id].data=data;
+	App[id].handler=handler;
 	App[id].init ? App[id].init(data,handler) : '';
+ 	$.parser.parse("#" + id);//for easy ui
     });
     return handler.promise();
 };
 App.loadWindow = function (path, data) {
-    var id = path.replace('/', '_');
+    var id = path.replace(/\//g, '_');
     if (!$('#' + id).length) {
-	$('#appWindowContainer').append('<div id="' + id + '" class="app_window"><div>Loading...</div></div>');
+	$('#appWindowContainer').append('<div id="' + id + '" class="app_window"></div>');
     }
     return App.loadModule(path, data);
 };
-App.setupForm=function(id,fvalue,handler){
-    if( !id || !fvalue || !handler ){
-	return false;
-    }
-    $("#"+id+" input,#"+id+" textarea,#"+id+" select").each(function( i,element ){
-	$(element).attr('value',fvalue[element.name]||'');
-	$(element).wrap( '<div class="inp_group"><label></label></div>' );
-	$(element).before( "<b>"+element.title+": </b>" );
-    });
-    $("#"+id+" input,#"+id+" textarea,#"+id+" select").change(function(e){
-	handler(e.currentTarget,e);
-    });
-};
 App.init = function () {
     //App.loadModule('appMenu');
-    App.loadWindow('catalog/company_list');
-    App.loadWindow('catalog/company_form');
+    //App.loadWindow('catalog/company_list');
+    //App.loadWindow('catalog/company_form');
+    //App.loadWindow('page/dialog/move_doc');
 };
 $(App.init);
 
 
-
+//////////////////////////////////////////////////
+//AJAX SETUP
+//////////////////////////////////////////////////
 $.ajaxSetup({
     cache: true
 });
-
 $(document).ajaxComplete(function (event, xhr, settings) {
     $(document).css('cursor','');
     if (xhr.responseText.indexOf('<h4>A PHP Error was encountered</h4>') > -1 || xhr.responseText.indexOf('xdebug-error') > -1) {
 	App.flash("<h3>url: "+settings.url+"</h3>"+xhr.responseText, 'error');
     }
-    if(xhr.getResponseHeader('iSell-Message')){
-	App.flash( decodeURIComponent(xhr.getResponseHeader('iSell-Message').replace(/\+/g,  " ")), 'error' );
+    if( xhr.getResponseHeader('X-isell-msg') ){
+	var msg=decodeURIComponent(xhr.getResponseHeader('X-isell-msg').replace(/\+/g,  " "));
+	if( xhr.getResponseHeader('X-isell-type')=='error' ){
+	    App.flash( msg, 'error' );
+	}
+	else{
+	    App.flash( msg );
+	}
     }
 });
 $(document).ajaxError(function (event, xhr, settings) {
@@ -80,8 +75,69 @@ $(document).ajaxError(function (event, xhr, settings) {
 });
 $(document).ajaxSend(function () {
     $(document).css('cursor','wait');
-    //App.flash("Triggered ajaxSend handler.");
 });
-$(document).ajaxSuccess(function () {
-    //App.flash("Triggered ajaxSuccess handler.");
-});
+//////////////////////////////////////////////////
+//UTILS
+//////////////////////////////////////////////////
+App.uri = function () {
+    var args = Array.prototype.slice.call(arguments);
+    return args.join('/');
+};
+App.toIso=function(dmY){
+    if(dmY instanceof Date){
+	return dmY.getFullYear() + '-' + String("0"+dmY.getMonth() + 1).slice(-2) +'-' + String("0"+dmY.getDate()).slice(-2);
+    }
+    return dmY.replace(/[^\d]/g,'').replace(/^[\d]{4}(\d\d)$/,"20$1").replace(/^(\d\d)(\d\d)(\d\d\d\d)$/,"$3-$2-$1");
+};
+App.toDmy=function(iso){
+    if(iso instanceof Date){
+	iso=App.toIso(iso);
+    }
+    return iso.replace(/^(\d\d\d\d)-(\d\d)-(\d\d)$/,"$3.$2.$1");
+};
+App.today=function(){
+    return App.toDmy( new Date() );
+};
+App.setupForm=function(fquery,fvalue){
+    if( !fquery || !fvalue ){
+	return false;
+    }
+    $(fquery+" input,"+fquery+" textarea,"+fquery+" select").each(function( i,element ){
+	$(element).val( fvalue[element.name] );
+	if( $(element).attr('type')==='hidden' ){
+	    return true;
+	}
+	if( $(element).attr('title') ){
+	    $(element).wrap( '<div class="inp_group"><label></label></div>' );
+	    $(element).before( "<b>"+element.title+": </b>" );
+	}
+	if( $(element).attr('type')==='checkbox' && fvalue[element.name]*1 ){
+	    $(element).attr('checked','checked');
+	}
+    });
+    return $(fquery+" input,"+fquery+" textarea,"+fquery+" select");
+};
+App.collectForm=function(fquery){
+    var fvalue = {};
+    $(fquery+" input,"+fquery+" textarea,"+fquery+" select").each(function( i,element ){
+	if( element.name ){
+	    fvalue[element.name]=$(element).val();
+	    if( $(element).attr('type')==='checkbox' ){
+		fvalue[element.name]=$(element).is(':checked');
+	    }
+	}
+    });
+    return fvalue;
+};
+$.fn.datebox.defaults.formatter = function (date) {
+    return App.toDmy(date);
+}
+$.fn.datebox.defaults.parser = function (s) {
+    var date=s.replace(/[^\d]/g,'').replace(/^[\d]{4}(\d\d)$/,"20$1").replace(/^(\d\d)(\d\d)(\d\d\d\d)$/,"$2/$1/$3");
+    var t = Date.parse(date);
+    if (!isNaN(t)) {
+	return new Date(t);
+    } else {
+	return new Date();
+    }
+}

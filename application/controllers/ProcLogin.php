@@ -4,31 +4,26 @@ class ProcLogin extends iSellBase{
     public function ProcLogin(){
         $this->ProcessorBase();
     }
-    public function onLogin(){
+    public function onUserLogin(){
         $user_login=$this->request('user_login');
         $user_pass=$this->request('user_pass');
-
-        if( !$this->login($user_login,$user_pass) ){
-            $this->response_wrn( "Неверый пароль или логин!" );	
+        if( $this->login($user_login,$user_pass) ){
+            $this->response( 'login_successfull' );
         }
+	$this->response_wrn( "Неверый пароль или логин!" );
     }
-    public function onLogout(){ 
-        $kick=$this->request('kick',1);
-        $this->logout($kick);
+    public function onUserLogout(){
+        $this->logout();
     }
-    public function onUserCheck(){ 
+    public function onUserData(){
+	$this->set_level(1);
         $resp=array();
         $resp['user_id']=$this->svar('user_id');
         $resp['user_login']=$this->svar('user_login');
         $resp['user_level']=$this->svar('user_level');
         $resp['user_level_name']=$this->svar('user_level_name');
-        if( $resp['user_id'] )/*Only if logged in*/
-            $resp['active_company_name']=$this->acomp('company_name');
-        $this->response( $resp );
-    }
-    public function onAutorize(){ 
-        if( !$this->svar('user_id') )
-            $this->set_level(1);
+	$resp['active_company_name']=$this->acomp('company_name');
+	$this->response( $resp );
     }
 }
 ?>

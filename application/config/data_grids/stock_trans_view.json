@@ -1,27 +1,28 @@
 {
     "grid_name": "Движения товара",
-    "selectionMode":"extended",
-    "table_style":"min-width:1000px",
+    "selectionMode": "extended",
+    "table_style": "min-width:1000px",
     "toolnames": ["download", "print"],
-   "readonly": 1,
+    "readonly": 1,
+    "distinct":["oper_date","doc","company_name"],
     "columns": [
 	{
 	    "field": "oper_date",
 	    "name": "Дата",
-	    "distinct":1,
+	    "distinct": 1,
 	    "type": "string"
 	},
 	{
 	    "field": "doc",
 	    "name": "Документ",
-	    "distinct":1,
+	    "distinct": 1,
 	    "type": "string"
 	},
 	{
 	    "field": "company_name",
 	    "name": "Контрагент",
-	    "distinct":1,
-	    "width":"500px"
+	    "distinct": 1,
+	    "width": "500px"
 	},
 	{
 	    "field": "product_code",

@@ -8,20 +8,23 @@
 $uri_explode=explode('/',$_SERVER['REQUEST_URI']);
 include "../$uri_explode[1]/config.php";
 $uri_explode[1]='isell3';
-if( isset($_REQUEST['mod']) ){
-    $uri_explode[2]='Proc'.$_REQUEST['mod'];
-    $uri_explode[3]=isset($_REQUEST['rq'])?'on'.$_REQUEST['rq']:null;
-}
-elseif( isset($_REQUEST['tpl']) ){
-    echo json_encode(array(
-	'content' => file_get_contents("application/views/".$_REQUEST['tpl']
-	)
-    ));
+if(substr($uri_explode[2],0,5)=='popup' ){
+    include "application/views/dialog/popup.php";
     exit;
 }
+elseif( isset($_REQUEST['mod']) ){
+    $uri_explode[2]='Proc'.$_REQUEST['mod'];
+    if( isset($_REQUEST['rq']) ){
+	$uri_explode[3]='on'.$_REQUEST['rq'];
+    }
+    $uri_explode[4]="?".$_SERVER['QUERY_STRING'];
+}
+elseif( isset($_REQUEST['tpl']) ){
+    $uri_explode[2]='page';
+    $uri_explode[3]=$_REQUEST['tpl'];
+}
 $_SERVER['REQUEST_URI']= implode('/',$uri_explode);
-
-header("URI: ".$_SERVER['REQUEST_URI']);
+header("X-isell-URI: ".$_SERVER['REQUEST_URI']);
 
 /*
  * ---------------------------------------------------------------

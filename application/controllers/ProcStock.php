@@ -24,7 +24,7 @@ class ProcStock extends iSellBase {
         $tree_obj['id'] = $parent_id;
         $tree_obj['item'] = $this->Stock->getTreeChildren('stock_tree', $parent_id, 'id', 'parent_id', 'text', $loadbranches);
         if ($direct){
-            $this->direct_response($tree_obj, 1);
+            $this->response($tree_obj, 1);
         }
         else{
             $this->response($tree_obj, 1);

@@ -4,6 +4,7 @@
     <title>iSell 3.0 BETA</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <link rel="icon" type="image/png" href="favicon.png" />
+    <link href="css/app.css" rel="stylesheet" type="text/css" />
     <link href="css/main.css" rel="stylesheet" type="text/css" />
     <link rel="stylesheet" type="text/css" href="js/dijit/themes/claro/claro.css" />
     <script type="text/javascript" src="js/dojo/dojo.js" data-dojo-config="parseOnLoad: true,locale: 'ru'"></script>
@@ -25,38 +26,9 @@
     <script type="text/javascript">
 	Connector = new SeqConnector('./');
 	Acc = new Utils();
-	Acc.appReady = function () {
-	    //this.appSetState({mod:'Site',rq:'GetTableData',tableName:'prod_list'});
-	    this.topic.subscribe('/app/statechange', function (hash) {
-		Acc.loadModule(hash.mod);
-	    });
-	    Acc.user_check();
-	};
-	Acc.user_check = function () {
-	    var request = {
-		mod: 'Login',
-		rq: 'UserCheck'
-	    };
-	    Connector.addRequest(request, function (resp) {
-		if (resp['user_id']) {
-		    Acc.userData = resp;
-		    Acc.app_title = resp.active_company_name;
-		    Acc.init();
-		} else {
-		    Acc.userData = {};
-		    //Acc.dom.byId('ApplicationBar').style.display = 'none';
-		    Acc.dom.byId('div_user_panel').style.display = 'none';
-		    Connector.addRequest({
-			mod: 'Login',
-			rq: 'Autorize'
-		    });
-		}
-	    });
-	};
 	Acc.init = function () {
-	    //Acc.dom.byId('ApplicationBar').style.display = '';
-	    Acc.dom.byId('div_user_panel').style.display = 'block';
-	    Acc.renderTpl('div_user_panel', Acc.userData);
+	    $('#div_user_panel').show();
+	    Acc.renderTpl('div_user_panel', Acc.userData||'');
 	    Connector.addRequest({
 		mod: 'ModuleList'
 	    }, function (response) {
@@ -67,21 +39,21 @@
 		Acc.loadModule(hash.mod);
 	    });
 	};
-	function onlogin() {
-	    if (Connector.freezed)
-		Connector.goon();
-	    Acc.user_check();
-	}
-	function onlogincancel() {
-	    if (Connector.freezed)
-		Connector.unfreeze();
-	}
+	Acc.appReady = function () {
+	    this.topic.subscribe('/app/statechange', function (hash) {
+		Acc.loadModule(hash.mod);
+	    });
+	    Acc.get_user_data();
+	};
+	Acc.get_user_data = function () {
+	    Connector.addRequest({mod: 'Login',rq: 'UserData'}, function (resp) {
+		App.userData=Acc.userData = resp;
+		Acc.app_title = resp.active_company_name||'Not logged in!';
+		Acc.init();
+	    });
+	};
 	function logout() {
-	    var request = {
-		mod: 'Login',
-		rq: 'Logout'
-	    };
-	    Connector.addRequest(request, Acc.user_check);
+	    Connector.addRequest({mod: 'Login',rq: 'UserLogout'}, Acc.get_user_data);
 	}
 	Acc.sendEmail = function (to, subject, text, fgenerator, doc_view_id, fext) {
 	    var fvalue = {
@@ -99,7 +71,7 @@
 		request.doc_view_id = doc_view_id;
 		Connector.addRequest(request);
 	    }, {
-		tpl: 'etc/sendemail.html'
+		tpl: 'sendemail.html'
 	    });
 	};
     </script>
@@ -131,5 +103,7 @@
 	    </td>
 	</tr>
     </table>
+    <div id="appWindowContainer"></div>
+    <div id="appStatus"></div>
 </body>
 </html>

@@ -24,7 +24,7 @@ class Utils extends Data{
                 $recep[]=$sender_mail=BAY_SMTP_PRIVATE_MAIL;
         }
         try{
-            require_once 'lib/swift/swift_required.php';
+            require_once 'application/libraries/swift/swift_required.php';
             $message = Swift_Message::newInstance()
               ->setFrom(array($sender_mail => iconv('windows-1251', 'utf-8',  BAY_SMTP_SENDER_NAME) ))
               ->setSubject($subject)
@@ -46,7 +46,7 @@ class Utils extends Data{
             $mailer = Swift_Mailer::newInstance($transport);
 
             if ( !$mailer->send($message,$failures) ){
-                $this->Base->msg("Сообщение небыло отправленно на:\n".implode("\n",$failures));
+                $this->Base->msg("Сообщение не было отправленно на:\n".implode("\n",$failures));
                 return false;
             }
         }

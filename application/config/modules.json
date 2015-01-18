@@ -5,5 +5,5 @@
     {"level":"1","name":"Lists","icon":"lists.png","label":"Планировщик"},
     {"level":"2","name":"Data","icon":"data.png","label":"Данные"},
     {"level":"2","name":"Pref","icon":"pref.png","label":"Настройки"},
-    {"level":"1","name":"Home","icon":"home.png","label":"Главная"}
+    {"level":"1","name":"Home","icon":"home.png","label":"Отчеты"}
 ]

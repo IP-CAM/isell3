@@ -2,7 +2,7 @@
 //date_default_timezone_set('Europe/Kiev');
 set_include_path('.'.PATH_SEPARATOR.'application/');
 error_reporting(E_ERROR | E_PARSE);
-ini_set('html_errors','off');
+//ini_set('html_errors','off');
 
 
 include_once 'ProcessorBase.php';

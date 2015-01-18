@@ -39,6 +39,7 @@ class ProcUtils extends iSellBase {
         } else {
             $this->msg("Отправка не удалась!");
         }
+	$this->response();
     }
 
     public function onSendEmail() {
@@ -71,6 +72,7 @@ class ProcUtils extends iSellBase {
         } else {
             $this->msg("Отправка не удалась!");
         }
+	$this->response();
     }
 
     function onSpellNumber() {

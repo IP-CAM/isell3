@@ -31,29 +31,23 @@ class InputOutput extends CI_Controller{
 	}
     }
 
-    public function direct_response($data, $pretty = false) {
-	$json = is_array($data) ? json_encode($data) : $data;
-	$json = $pretty ? $this->indent($json) : $json;
-	header('Content-type: text/plain; charset=utf-8;');
-	echo $json;
-	exit;
-    }
-
     public function response($data = '', $pretty = false) {
-	if ((empty($_SERVER['HTTP_X_REQUESTED_WITH']) || strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) != 'xmlhttprequest') && $this->rmethod != 'alert' || $this->rmethod == 'direct') {
-	    header("X-info: SENT WITHOUT WRAPPER!");
-	    $this->direct_response($data, true);
-	}
 	if ($this->rmethod == 'alert') {
 	    header('Content-type: text/html; charset=utf-8;');
 	    $data = json_encode($data);
 	    echo "<script>text=" . $data . ";parent?parent.msg(text):msg(text);</script>";
-	} else {
-	    $response_object = array('type' => $this->rtype, 'msg' => $this->msg, 'content' => $data);
-	    $json = json_encode($response_object);
-	    $json = $pretty ? $this->indent($json) : $json;
+	}
+	else {
 	    header('Content-type: text/plain; charset=utf-8;');
-	    echo $json;
+	    header('X-isell-type: '.$this->rtype);
+	    header('X-isell-msg: '.rawurlencode($this->msg));
+	    if( is_array($data) ){
+		header('X-isell-format: json');
+		echo json_encode( $data, $pretty?(JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE):0 );
+	    }
+	    else{
+		echo $data;
+	    }
 	}
 	exit();
     }
@@ -63,9 +57,9 @@ class InputOutput extends CI_Controller{
 	$this->response("$msg");
     }
 
-    public function response_kick($msg) {
-	$this->rtype = 'kick';
-	$this->response("$msg");
+    public function response_dialog($msg) {
+	$this->rtype = 'dialog';
+	$this->response($msg);
     }
 
     public function response_error($msg) {
@@ -97,61 +91,37 @@ class InputOutput extends CI_Controller{
 	$this->msg(json_encode($obj));
 	$this->response();
     }
-
-    private static function indent($json) {
-	$result = '';
-	$pos = 0;
-	$strLen = strlen($json);
-	$indentStr = '  ';
-	$newLine = "\n";
-
-	for ($i = 0; $i <= $strLen; $i++) {
-	    $char = substr($json, $i, 1);
-	    if ($char == '}' || $char == ']') {
-		$result .= $newLine;
-		$pos --;
-		for ($j = 0; $j < $pos; $j++) {
-		    $result .= $indentStr;
-		}
-	    }
-	    $result .= $char;
-	    if ($char == ',' || $char == '{' || $char == '[') {
-		$result .= $newLine;
-		if ($char == '{' || $char == '[') {
-		    $pos ++;
-		}
-		for ($j = 0; $j < $pos; $j++) {
-		    $result .= $indentStr;
-		}
-	    }
-	}
-	return $result;
-    }
-
 }
 
 class DataBase extends InputOutput {
 
     public $field_list = array();
+    private $db_link;
 
     public function DataBase() {
+	$this->InputOutput();
+    }
+    
+    private function db_connect(){
 	$this->db_link = mysql_connect(BAY_DB_HOST, BAY_DB_USER, BAY_DB_PASS) OR $this->response_error('COULD NOT CONNECT TO MYSQL');
 	if ($this->db_link) {
 	    mysql_select_db(BAY_DB_NAME, $this->db_link) OR $this->response_error('COULD NOT SELECT DATABASE');
 	    mysql_query('SET NAMES utf8');
-	}
-	$this->InputOutput();
+	}	
     }
     
-    public function free_result( $res ){
-	mysql_free_result($res);
-    }
-    
-    public function db_errno(){
-	return mysql_errno();
-    }
+//    public function db_free_result( $res ){
+//	mysql_free_result($res);
+//    }
+//    
+//    public function db_errno(){
+//	return mysql_errno();
+//    }
 
     public function query($sql, $throw_error = true) {
+	if( !$this->db_link ){
+	    $this->db_connect();
+	}
 	$res = mysql_query($sql, $this->db_link);
 	if ($throw_error && mysql_errno()) {
 	    if ($this->svar('user_level') > 2 || BAY_SQL_SHOW_ERRORS)
@@ -237,7 +207,7 @@ class Session extends DataBase {
 		$this->msg("Необходим уровень доступа <b>" . $this->level_names[$allowed_level] . "</b>");
 		$this->kick_out();
 	    } else {
-		$this->response_wrn("Текущий уровень '" . $this->level_names[$this->svar('user_level') * 1] . "'\nНеобходим уровень доступа '" . $this->level_names[$allowed_level] . "'");
+		$this->response_wrn("Текущий уровень '" . $this->level_names[$this->svar('user_level') * 1] . "'\nНеобходим мин. уровень доступа '" . $this->level_names[$allowed_level] . "'");
 	    }
 	}
     }
@@ -253,33 +223,28 @@ class Session extends DataBase {
 	    $this->svar('user_level', $user_data['user_level']);
 	    $this->svar('user_level_name', $this->level_names[$user_data['user_level']]);
 	    $this->svar('user_login', $user_data['user_login']);
-	    if (method_exists($this, 'initLoggedUser')) {
+	    if ( method_exists($this, 'initLoggedUser') ) {
 		$this->initLoggedUser($user_data);
+	    }
+	    if( $_SERVER["HTTP_REFERER"] ){
+		//header( "Location: " . $_SERVER["HTTP_REFERER"] );
 	    }
 	    return true;
 	}
 	return false;
     }
 
-    public function logout($kick) {
+    public function logout() {
 	$this->svar('user_id', 0);
 	$this->svar('user_level', 0);
 	$this->svar('user_login', '');
 	$this->svar('user_sign', '');
 	$this->svar('user_position', '');
-	$this->selectActiveCompany(0);
-	//$this->selectPassiveCompany( 0 );
     }
 
     private function kick_out() {
-	if (isset($_POST['mod'])) {
-	    $this->response_kick('./Login/dialog');
-	}
-	$currUrl = str_replace('&', '--', "http://" . $_SERVER["SERVER_NAME"] . ':' . $_SERVER['SERVER_PORT'] . $_SERVER["REQUEST_URI"]);
-	header("Location: ./Login/?msg=" . urlencode($this->msg) . "&ref=$currUrl");
-	header("Content-Type: text/html; charset=utf-8");
-	echo "Не хватает прав для просмотра страницы. <a href='./Login/?ref=$currUrl'>Авторизация</a>";
-	exit;
+	include 'views/dialog/loginform.html';
+	$this->response_dialog();
     }
 
 }
@@ -335,26 +300,26 @@ class ProcessorBase extends Session {
 //	return $this->$plugin_name;
 //    }
 
-    public function execClassFn($Class, $fn_name = 'html') {
-	if (array_key_exists($fn_name, $Class->fns) && method_exists($Class, $fn_name)) {
-	    $args = explode(',', $Class->fns[$fn_name]);
-	    foreach ($args as &$arg) {
-		$arg_parts = explode(" ", trim($arg));
-		$arg_type = str_replace(array('(string)', '(int)', '(float)', '(json)', '(raw)'), array(0, 1, 2, 3, 4), $arg_parts[0]);
-		$arg_name = $arg_parts[1];
-		$arg_default = $arg_parts[2];
-		if (is_numeric($arg_type))
-		    $arg_type = (int) $arg_type;
-		$arg = $this->request($arg_name, $arg_type, $arg_default);
-	    }
-	    $resp = call_user_func_array(array($Class, $fn_name), $args);
-	    if ($resp)
-		$this->response($resp);
-	}
-	else {
-	    $this->response_error("Class " . get_class($Class) . " don't have function $fn_name!");
-	}
-    }
+//    public function execClassFn($Class, $fn_name = 'html') {
+//	if (array_key_exists($fn_name, $Class->fns) && method_exists($Class, $fn_name)) {
+//	    $args = explode(',', $Class->fns[$fn_name]);
+//	    foreach ($args as &$arg) {
+//		$arg_parts = explode(" ", trim($arg));
+//		$arg_type = str_replace(array('(string)', '(int)', '(float)', '(json)', '(raw)'), array(0, 1, 2, 3, 4), $arg_parts[0]);
+//		$arg_name = $arg_parts[1];
+//		$arg_default = $arg_parts[2];
+//		if (is_numeric($arg_type))
+//		    $arg_type = (int) $arg_type;
+//		$arg = $this->request($arg_name, $arg_type, $arg_default);
+//	    }
+//	    $resp = call_user_func_array(array($Class, $fn_name), $args);
+//	    if ($resp)
+//		$this->response($resp);
+//	}
+//	else {
+//	    $this->response_error("Class " . get_class($Class) . " don't have function $fn_name!");
+//	}
+//    }
 
     protected function get_table_query() {//Deprecated
 	$table_query = array();

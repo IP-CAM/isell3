@@ -18,7 +18,7 @@ class ProcCompanies extends iSellBase {
         $this->LoadClass('Companies');
         $tree_obj = $this->Companies->getCompaniesTreeChildren($parent_id);
         if ($direct)
-            $this->direct_response($tree_obj, 1);
+            $this->response($tree_obj, 1);
         else
             $this->response($tree_obj, 1);
     }
@@ -319,7 +319,7 @@ class ProcCompanies extends iSellBase {
         $count = $this->request('count', 1, 999);
         $selected_comp_id = $this->request('selected_comp_id', 1);
         $this->LoadClass('Companies');
-        $this->direct_response($this->Companies->getCompaniesList($clue, $start, $count, $selected_comp_id));
+        $this->response($this->Companies->getCompaniesList($clue, $start, $count, $selected_comp_id));
     }
 
     public function onSelectPassiveCompany() {
@@ -343,6 +343,7 @@ class ProcCompanies extends iSellBase {
             $this->Document->duplicateDoc();
         }
         $this->Document->moveDoc($passive_company_id);
+	$this->response(1);
     }
 
     //////////////////////////////////////

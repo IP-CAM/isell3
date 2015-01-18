@@ -124,19 +124,19 @@ function (
 	    var label = '';
 	    var ident = this._structure['identifier'];
 	    for (var i in this._structure.columns) {
-		if (this._structure.columns[i].field == ident) {
+		if (this._structure.columns[i].field === ident) {
 		    label = this._structure.columns[i].name || ident;
 		}
 	    }
 	    value = prompt("Введите значение для ключа '" + label + "'");
-	    if (value == null)
+	    if (value === null)
 		return;
 	    var insert = "{\"" + ident + "\":\"" + value + "\"}";
 	    this.onInsert(lang.mixin(lang.clone(this.request), {
 		newrow: insert
 	    }));
 	    query('input', this.innerGrid).forEach(function (node) {
-		if (node.name == ident)
+		if (node.name === ident)
 		    node.value = value;
 	    });
 	    this._filterGrid();
@@ -146,7 +146,7 @@ function (
 		return;
 	    var field = cell.getAttribute('data-field');
 	    for (var i in this._structure.columns)
-		if (this._structure.columns[i].field == field && this._structure.columns[i].readonly)
+		if (this._structure.columns[i].field === field && this._structure.columns[i].readonly)
 		    return;
 	    var rowNode = cell.parentNode;
 	    var rowIndex = parseInt(rowNode.id);
@@ -154,7 +154,7 @@ function (
 	    cell.style.backgroundColor = 'red';
 	    var newval = prompt('Введите новое значение.', oldval);
 	    cell.style.backgroundColor = '';
-	    if (newval == null || newval == oldval)
+	    if (newval === null || newval === oldval)
 		return;
 	    var key = '{"' + this.identifier + '":"' + this._items[rowIndex][this.identifier] + '"}';
 	    var value = '{"' + field + '":"' + newval + '"}';
@@ -324,7 +324,7 @@ function (
 		    var cellData = items[i][column.field];
 		    var title = '';
 		    var style = [];
-		    if (cellData && column.type == 'tooltip') {
+		    if (cellData && column.type === 'tooltip') {
 			var tokens = cellData.match(/(\w+)(\s?)(.*)/);
 			if (tokens && tokens[1]) {
 			    cellData = '<img src="img/' + tokens[1] + '.png" data-function="' + tokens[1] + '" width="16" height="16">';
@@ -333,7 +333,7 @@ function (
 			}
 		    }
 		    if (column.width) {
-			style.push('max-width:' + column.width);
+			style.push('width:' + column.width);
 		    }
 		    if (column.minWidth) {
 			style.push('min-width:' + column.minWidth);
@@ -424,7 +424,7 @@ function (
 	},
 	_removeSelection: function (index) {
 	    for (var i in this._selection)
-		if (this._selection[i] == index)
+		if (this._selection[i] === index)
 		    this._selection.splice(i, 1);
 	    domClass.remove(index + '_' + this.id, 'baycikGridSelectedRow');
 	},
@@ -436,7 +436,7 @@ function (
 	},
 	_isSelected: function (index) {
 	    for (var i in this._selection)
-		if (this._selection[i] == index)
+		if (this._selection[i] === index)
 		    return true;
 	    return false;
 	},

@@ -516,50 +516,54 @@ class DocumentView extends DocumentCore {
 
 	$doc_views = array();
 	$sql = "SELECT DISTINCT
-                            view_type_id,
-                            doc_view_id,
-                            view_num,
-                            view_name,
-                            view_date,
-                            view_efield_values,
-                            view_efield_labels,
-                            view_file,
-                            freezed
-                    FROM
-                            ((SELECT 
-                                    doc_view_id,
-                                            view_num,
-                                            view_name,
-                                            DATE_FORMAT(tstamp, '%d.%m.%y') as view_date,
-                                            view_type_id,
-                                            view_efield_values,
-                                            view_efield_labels,
-                                            view_file,
-                                            freezed
-                            FROM
-                                    document_view_list
-                            JOIN document_view_types USING (view_type_id)
-                            WHERE
-                                    doc_id = '$doc_id') UNION (SELECT 
-                                    '' AS doc_view_id,
-                                            0 AS view_num,
-                                            view_name,
-                                            0 AS view_date,
-                                            view_type_id,
-                                            '' AS view_efield_values,
-                                            view_efield_labels,
-                                            view_file,
-                                            '' AS freezed
-                            FROM
-                                    document_view_types
-                            WHERE
-                                    doc_type = (SELECT 
-                                                    doc_type
-                                            FROM
-                                                    document_list
-                                            WHERE
-                                                    doc_id = '$doc_id'))) AS vl
-                    GROUP BY view_type_id";
+		view_type_id,
+		doc_view_id,
+		view_num,
+		view_name,
+		view_date,
+		view_efield_values,
+		view_efield_labels,
+		view_file,
+		freezed,
+		view_hidden
+	    FROM
+		((SELECT 
+		    doc_view_id,
+			view_num,
+			view_name,
+			DATE_FORMAT(tstamp, '%d.%m.%y') AS view_date,
+			view_type_id,
+			view_efield_values,
+			view_efield_labels,
+			view_file,
+			freezed,
+			view_hidden
+		FROM
+		    document_view_list
+		JOIN document_view_types USING (view_type_id)
+		WHERE
+		    doc_id = '$doc_id') UNION (SELECT 
+		    '' AS doc_view_id,
+			0 AS view_num,
+			view_name,
+			0 AS view_date,
+			view_type_id,
+			'' AS view_efield_values,
+			view_efield_labels,
+			view_file,
+			'' AS freezed,
+			view_hidden
+		FROM
+		    document_view_types
+		WHERE
+		    view_hidden IS NULL AND
+		    doc_type = (SELECT 
+			    doc_type
+			FROM
+			    document_list
+			WHERE
+			    doc_id = '$doc_id'))) AS vl
+	    GROUP BY view_type_id";
 	$res = $this->Base->query($sql);
 	while ($row = mysql_fetch_assoc($res)) {
 	    $row['extra_fields'] = getExtraFields($row['view_efield_labels'], $row['view_efield_values']);

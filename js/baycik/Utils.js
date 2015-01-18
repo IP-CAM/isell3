@@ -185,7 +185,7 @@ function (
     };
     Utils.prototype.showPopup = function (fvalue, callback, getvars, size) {
         if (!fvalue) return;
-        var href = './popup.php?' + ioQuery.objectToQuery(getvars); //Connector.serialize(getvars);
+        var href = './popup?' + ioQuery.objectToQuery(getvars); //Connector.serialize(getvars);
         if (window.popupDialog) {
             popupDialog.close();
         }

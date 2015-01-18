@@ -168,5 +168,6 @@
     <HKBOS>{$v.pref.director_tin}</HKBOS>
     <HBUH>{$v.pref.accountant_name}</HBUH>
     <HKBUH>{$v.pref.accountant_tin}</HKBUH>
+    <H10G1S>{$v.extra->sign}</H10G1S>
   </DECLARBODY>
 </DECLAR>

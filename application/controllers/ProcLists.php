@@ -5,7 +5,7 @@ class ProcLists extends iSellBase{
         $this->ProcessorBase(1);
     }
     public function onDefault(){
-        $this->response_tpl('lists/lists_main.tpl');
+        $this->response_tpl('lists/lists_main.html');
     }
     public function onEventList(){
         $selected_label=$this->request('label',0,'');

@@ -84,7 +84,7 @@ function(dom,registry,on,locale,query){
                                     resp.date=date;
                                     resp.amount=parseFloat(resp.amount);
                                     resp.selected_acc=CompaniesJs.payments.selectedAccount;
-                                    Acc.showPopup(resp,CompaniesJs.payments.transEditCallback,{tpl:'accounts/trans_edit.html'});
+                                    Acc.showPopup(resp,CompaniesJs.payments.transEditCallback,{tpl:'trans_edit.html'});
                                 });
                             }
 			}
@@ -155,11 +155,11 @@ function(dom,registry,on,locale,query){
 		if( CompaniesJs.payments.ledgerCurrId==2 /*IF currency is dollar*/ ){
 			Connector.addRequest({mod:'Pref',rq:'Details'},function(resp){
 				fvalue.dollar_ratio=resp.dollar_ratio;
-				Acc.showPopup(fvalue,CompaniesJs.payments.transEditCallback,{tpl:'accounts/trans_edit.html'});
+				Acc.showPopup(fvalue,CompaniesJs.payments.transEditCallback,{tpl:'trans_edit.html'});
 			});
 		}
 		else
-			Acc.showPopup(fvalue,CompaniesJs.payments.transEditCallback,{tpl:'accounts/trans_edit.html'});		
+			Acc.showPopup(fvalue,CompaniesJs.payments.transEditCallback,{tpl:'trans_edit.html'});		
 	}
 	CompaniesJs.payments.transEditCallback=function( request ){
             request.mod="Accounts";

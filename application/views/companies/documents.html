@@ -100,25 +100,15 @@
             Connector.addRequest(request, CompaniesJs.documents.entries, 'loadTableData');
         }
         this.entries.moveDoc = function () {
-            var handler = function (fvalue) {
-                var request = {
-                    mod: 'Companies',
-                    rq: 'MoveDoc',
-                    passive_company_id: fvalue.passive_company_id,
-                    copy: fvalue.copy
-                };
-                var handler = function () {
-                    CompaniesJs.documents.list.loadTableData();
-                }
-                Connector.addRequest(request, handler);
-            }
             var fvalue = CompaniesJs.documents.def_doc_head;
             if (fvalue.is_commited == '1') {
-                fvalue.disable = ["moveDocButton"];
+                fvalue.disabledMove = true;
             }
-            Acc.showPopup(fvalue, handler, {
-                tpl: 'companies/move_doc.tpl'
-            });
+	    App.loadWindow('page/dialog/move_doc',fvalue).progress(function (status,fvalue) {
+		if(status=='finish'){
+		    CompaniesJs.documents.list.loadTableData();
+		}
+	    });
         }
         this.entries.sendSms = function () {
             var handler = function (fvalue) {
@@ -138,30 +128,23 @@
             fvalue.body = 'Номер Декларації\n' + CompaniesJs.documents.def_doc_head.doc_data;
             fvalue.copy = 1;
             Acc.showPopup(fvalue, handler, {
-                tpl: 'etc/sendsms.html'
+                tpl: 'sendsms.html'
             });
         }
         this.entries.addEvent = function () {
             var head = CompaniesJs.documents.def_doc_head;
-            var handler = function (cont) {
-                var getvars = {
-                    tpl: 'dialogs/eventdialog.html'
-                };
-                getvars.event_name = 'Накладна №' + head.doc_num;
-                getvars.event_descr = head.doc_data;
-                getvars.event_target = cont.company_person + " (" + cont.company_tree_name + ")";
-                getvars.event_place = cont.company_address;
-                getvars.event_note = cont.company_mobile;
-                var callback = function () {};
-                Acc.showPopup({}, callback, getvars, {
-                    w: 700,
-                    h: 300
-                });
-            }
-            var request = {};
-            request.mod = 'Companies';
-            request.rq = 'Details';
-            Connector.addRequest(request, handler);
+            Connector.addRequest({mod:'Companies',rq:'Details'}, function (cont) {
+		var fvalue={
+		    event_id:0,
+		    event_user_id:Acc.userData.user_id,
+		    event_name: 'Накладна №' + head.doc_num,
+		    event_descr:head.doc_data,
+		    event_target:cont.company_person + " (" + cont.company_tree_name + ")",
+		    event_place:cont.company_address,
+		    event_note:cont.company_mobile
+		};
+		App.loadWindow('page/dialog/event',fvalue);
+            });
         }
         this.entries.calculateRow = function (rowNode) {
             var currentPrice = rowNode.cells[10].innerHTML * 1;

@@ -108,7 +108,7 @@ function(
                         resp.amount=parseFloat(resp.amount);
                         resp.selected_acc=AccountsJs.trans.selectedAccounts;
                         resp.use_articles=AccountsJs.trans.useArticles;
-                        Acc.showPopup(resp,AccountsJs.trans.transEditCallback,{tpl:'accounts/trans_edit.html'});
+                        Acc.showPopup(resp,AccountsJs.trans.transEditCallback,{tpl:'trans_edit.html'});
                     });
                 }
             }
@@ -181,11 +181,11 @@ function(
         if( AccountsJs.trans.ledgerCurrId==2 /*IF currency is dollar*/ ){
             Connector.addRequest({mod:'Pref',rq:'Details'},function(resp){
                     fvalue.dollar_ratio=resp.dollar_ratio;
-                    Acc.showPopup(fvalue,AccountsJs.trans.transEditCallback,{tpl:'accounts/trans_edit.html'});
+                    Acc.showPopup(fvalue,AccountsJs.trans.transEditCallback,{tpl:'trans_edit.html'});
             });
         }
         else
-            Acc.showPopup(fvalue,AccountsJs.trans.transEditCallback,{tpl:'accounts/trans_edit.html'});		
+            Acc.showPopup(fvalue,AccountsJs.trans.transEditCallback,{tpl:'trans_edit.html'});		
     }
     AccountsJs.trans.transEditCallback=function( request ){
         request.mod="Accounts";
@@ -273,7 +273,7 @@ function(
 	    Connector.addRequest(request,function(resp){
 		    AccountsJs.trans.loadTransNames(AccountsJs.trans.selectedAccounts);
 	    });
-	},{tpl:'accounts/trans_name_edit.html'}, {w:460,h:200});
+	},{tpl:'trans_name_edit.html'}, {w:460,h:200});
     }
     AccountsJs.trans.addTransName=function(){
         if( !AccountsJs.trans.selectedAccounts )

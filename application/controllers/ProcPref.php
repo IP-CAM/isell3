@@ -36,7 +36,7 @@ class ProcPref extends iSellBase {
         $this->LoadClass('Pref');
         $list = $this->Pref->getStaffList();
         if ($direct)
-            $this->direct_response($list);
+            $this->response($list);
         else
             $this->response($list);
     }

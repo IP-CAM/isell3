@@ -11,8 +11,8 @@ class ProcData extends iSellBase {
 	$this->ProcessorBase(1);
     }
 
-    public function onDefault() {
-	$this->response_tpl('data/data_main.tpl');
+    public function index() {
+	$this->response_tpl('data/data_main.html');
     }
 
     private function checkTable() {
@@ -186,7 +186,7 @@ class ProcData extends iSellBase {
 	    $this->response_error("Doc is already commited!!!");
 	$this->query("DELETE FROM document_entries WHERE doc_id=$doc_id");
 
-	require_once "lib/report/PHPExcel.php";
+	require_once "libraries/report/PHPExcel.php";
 	$this->PHPexcel = PHPExcel_IOFactory::load($file_name);
 	if ($this->PHPexcel) {
 	    $this->Worksheet = $this->PHPexcel->getActiveSheet();
@@ -258,8 +258,9 @@ class ProcData extends iSellBase {
 	$table_name = $this->checkTable();
 	$this->rmethod = 'alert';
 	$this->LoadClass('Data');
-	if ($_FILES['Filedata']['error'] == 0)
+	if ($_FILES['Filedata']['error'] == 0){
 	    $result = $this->Data->loadFromFile($table_name, $_FILES['Filedata']['tmp_name']);
+	}
 	else {
 	    $this->response('Ошибка загруки: ' . $_FILES['Filedata']['error']);
 	}

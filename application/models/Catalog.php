@@ -4,18 +4,18 @@ class Catalog extends CI_Model {
     ////////////////////////////////////////////////////
     // CORE LIST FUNCTIONS
     ////////////////////////////////////////////////////
-    public function get($table, $id) {
-	echo $company_id;
+    private function get( $table_name, $key ){
+	return $this->db->get_where( $table_name, $key )->row();
     }
-    public function create($table,$data) {
-	$msg=$this->db->insert($table, $data);
+    private function create($table,$data) {
+	$this->db->insert($table, $data);
 	return $this->db->insert_id();
     }
     private function update($table, $data, $key) {
 	return $this->db->update($table, $data, $key);
     }
-    public function delete($table, $id) {
-	
+    private function delete($table, $key) {
+	return $this->db->delete($table, $key);
     }
     ////////////////////////////////////////////////////
     // CORE TREE FUNCTIONS
@@ -46,7 +46,7 @@ class Catalog extends CI_Model {
 	$this->treeUpdate($table, $branch_id, 'label', $label);
 	return $branch_id;
     }
-     public function treeUpdate($table,$branch_id,$field,$value) {
+    public function treeUpdate($table,$branch_id,$field,$value) {
 	if( $field=='parent_id' && $this->treeisLeaf($table,$value) || $field=='label' && !$value ){
 	    /*parent must be not leaf and label should not be empty*/
 	    return false;
@@ -90,6 +90,52 @@ class Catalog extends CI_Model {
 	return false;
     }
     ////////////////////////////////////////////////////
+    // CORE TABLE ROW FUNCTIONS
+    ////////////////////////////////////////////////////    
+    public function rowGet( $table, $key_field, $id ){
+	$key=array($key_field=>$id);
+	return $this->get( $table, $key );
+    }
+    public function rowCreate( $table, $field, $value ){
+	$data=array($field=>$value);
+	return $this->create( $table, $data );
+    }
+    public function rowDelete( $table, $key_field, $id ){
+	$key=array($key_field=>$id);
+	$this->delete($table, $key);
+    }
+    public function rowUpdateField( $table, $key_field, $id, $field, $value ){
+	$key=array($key_field=>$id);
+	$data=array($field=>$value);
+	return $this->update($table,$data,$key);
+    }
+    public function rowCreateSet( $table ){
+	$json=$this->input->post('row_data');
+	$data=  json_decode($json);
+	return $this->create( $table, $data );
+    }
+    public function rowUpdateSet( $table, $key_field, $id ){
+	$key=array($key_field=>$id);
+	$json=$this->input->post('row_data');
+	$data=  json_decode($json);
+	return $this->update($table,$data,$key);
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    ////////////////////////////////////////////////////
     // COMPANY SPECIFIC FUNCTIONS
     ////////////////////////////////////////////////////
     public function companyTreeFetch() {
@@ -116,53 +162,6 @@ class Catalog extends CI_Model {
 	}
 	return false;
     }
-    ///////////////////////////////////////////////////
-    
-    
-    
-    
-    
-    
-    public function insertTreeBranch($table_name, $parent_id, $label, $is_leaf, $branch_data) {
-	$parent = $this->Base->get_row("SELECT is_leaf,level,top_id FROM $table_name WHERE branch_id='$parent_id'");
-	if ($parent['is_leaf'])
-	    return -1;
-	//$top_id=$this->getTopBranch()
-	$this->Base->query("INSERT INTO $table_name SET top_id='{$parent['top_id']}', level='{$parent['level']}', parent_id='$parent_id', label='$label', is_leaf='$is_leaf', branch_data='$branch_data'");
-	$new_branch_id = mysql_insert_id();
-	if ($parent_id == 0) {
-	    //New branch is root so top_id==branch_id;
-	    $this->Base->query("UPDATE $table_name SET top_id=branch_id WHERE branch_id=$new_branch_id");
-	} else {
-	    //$this->Base->updateTreeBranchPath($table_name,$new_branch_id);
-	}
-	return $new_branch_id;
-    }
-
-    public function updateTreeBranch($table_name, $branch_id, $parent_id, $label, $is_leaf = NULL, $branch_data = NULL) {
-	$parent = $this->Base->get_row("SELECT is_leaf,level,top_id FROM $table_name WHERE branch_id='$parent_id'");
-	$branch = $this->Base->get_row("SELECT top_id FROM $table_name WHERE branch_id='$branch_id'");
-	if (!$parent['is_leaf']) {
-	    $top_id = $parent_id == 0 ? $branch_id : $parent['top_id'];
-	    $set = '';
-	    $set.=$is_leaf !== NULL ? ",is_leaf='$is_leaf'" : '';
-	    $set.=$branch_data !== NULL ? ",branch_data='$branch_data'" : '';
-	    $this->Base->query("UPDATE $table_name SET top_id='$top_id', parent_id='$parent_id',label='$label' $set WHERE branch_id='$branch_id'");
-	    /*
-	     * UPDATING top_id of nested branches if changed
-	     */
-	    if ($branch['top_id'] != $top_id) {
-		$sub_parents_ids = $this->getSubBranchIds($table_name, $branch_id);
-		$sub_parents_where = "branch_id='" . implode("' OR branch_id='", $sub_parents_ids) . "'";
-		$this->Base->query("UPDATE $table_name SET top_id=$top_id WHERE $sub_parents_where");
-	    }
-	}
-	//$this->Base->updateTreeBranchPath($table_name,$branch_id);
-	return $this->Base->get_row("SELECT * FROM $table_name WHERE branch_id='$branch_id'");
-    }
-
-
-
 }
 
 class CatalogUtils {

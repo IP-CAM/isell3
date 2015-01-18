@@ -23,7 +23,7 @@ class ProcAccounts extends iSellBase {
         $tree_obj['id'] = $parent_id;
         $tree_obj['item'] = $this->Accounts->getTreeChildren('acc_tree', $parent_id, 'id', 'parent_id', 'text', 'toplevel');
         if ($direct)
-            $this->direct_response($tree_obj, 1);
+            $this->response($tree_obj, 1);
         else
             $this->response($tree_obj, 1);
     }
@@ -86,7 +86,7 @@ class ProcAccounts extends iSellBase {
         $use_clientbank = $this->request('useClientbank', 1, 0);
         $this->LoadClass('Accounts');
         $acc_list = $this->Accounts->fetchAccList($use_clientbank);
-        $this->direct_response($acc_list);
+        $this->response($acc_list);
     }
 
     public function onFetchTransData() {
@@ -174,7 +174,7 @@ class ProcAccounts extends iSellBase {
         $selected_acc = $this->request('selected_acc', 1);
         $this->LoadClass('Accounts');
         $acc_list = $this->Accounts->fetchTransNameList($selected_acc);
-        $this->direct_response($acc_list);
+        $this->response($acc_list);
     }
 
     public function onTransNameUpdate() {
@@ -198,7 +198,7 @@ class ProcAccounts extends iSellBase {
         $selected_acc = $this->request('selected_acc', 1);
         $this->LoadClass('Accounts');
         $acc_list = $this->Accounts->fetchArticlesList($selected_acc);
-        $this->direct_response($acc_list);
+        $this->response($acc_list);
     }
 
     public function onGetCompanyBalance() {

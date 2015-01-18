@@ -31,30 +31,30 @@ class FileEngine {
     private function loadFileTpl($file_name) {
         if ($this->tpl_ext == '.xlsx') {
             $this->compilator = 'PHPExcel';
-            include "lib/report/PHPExcel.php";
+            include "libraries/report/PHPExcel.php";
             try {
-                $this->PHPexcel = PHPExcel_IOFactory::load($file_name);
+                $this->PHPexcel = PHPExcel_IOFactory::load('application/'.$file_name);
             } catch (Exception $e) {
                 die("Can't load the template of view! $file_name");
             }
             $this->Worksheet = $this->PHPexcel->getActiveSheet();
         } else if ($this->tpl_ext == '.html' || $this->tpl_ext == '.xml') {
             $this->compilator = 'Rain';
-            include 'lib/rain/rain.tpl.class.php';
+            include 'libraries/report/RainTPL.php';
             $this->tpl_file = substr($file_name, strrpos($file_name, '/') + 1, strrpos($file_name, '.') - strrpos($file_name, '/') - 1);
-            $this->tpl_dir = substr($file_name, 0, strrpos($file_name, '/') + 1);
+            $this->tpl_dir = 'application/'.substr($file_name, 0, strrpos($file_name, '/') + 1);
             $this->rain = new RainTPL();
             $this->rain->configure('tpl_dir', $this->tpl_dir);
             $this->rain->configure('tpl_ext', substr($this->tpl_ext, 1));
-            $this->rain->configure('cache_dir', 'tpl/rpt/_tmp/');
+            $this->rain->configure('cache_dir', sys_get_temp_dir());
         }
     }
     
     private function compile($tpl_file) {
-        $this->loadFileTpl('tpl/rpt/' . $tpl_file);
-	if( file_exists('tpl/rpt/' . $tpl_file.'.php') ){
+        $this->loadFileTpl('views/rpt/' . $tpl_file);
+	if( file_exists('application/views/rpt/' . $tpl_file.'.php') ){
 	    /*Script for custom processing of templates*/
-	    include 'tpl/rpt/' . $tpl_file.'.php';
+	    include 'application/views/rpt/' . $tpl_file.'.php';
 	}
         if ($this->compilator == 'PHPExcel') {
             if (isset($this->tplModifier))
@@ -103,7 +103,7 @@ class FileEngine {
                 $export_types = $this->export_types;
                 $show_controls = $this->show_controls;
                 $user_data = $this->user_data;
-                include 'tpl/rpt/Wrapper.php';
+                include 'views/rpt/Wrapper.php';
             } else if ($ext == '.xls') {
                 header('Content-Type: application/vnd.ms-excel');
                 $this->Writer = PHPExcel_IOFactory::createWriter($this->PHPexcel, 'Excel5');
@@ -129,7 +129,7 @@ class FileEngine {
                 $export_types = $this->export_types;
                 $show_controls = $this->show_controls;
                 $user_data = $this->user_data;
-                include 'tpl/rpt/Wrapper.php';
+                include 'views/rpt/Wrapper.php';
             } else if ($ext == '.doc') {
                 header("Content-type: application/octet-stream");
                 if ($this->compiled_html) {
@@ -138,7 +138,7 @@ class FileEngine {
                     $html = $this->rain->draw($this->tpl_file, true);
                 }
                 $word_header = true;
-                include 'tpl/rpt/Wrapper.php';
+                include 'views/rpt/Wrapper.php';
             } else if ($ext == '.xml') {
                 header('Content-type: text/xml; charset=windows-1251;');
                 $xml = $this->rain->draw($this->tpl_file, true);

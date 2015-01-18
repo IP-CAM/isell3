@@ -46,7 +46,7 @@ function(dom,registry,on,query,ItemFileReadStore){
 	    }
 	    onUpload=function( request ){
 		request.rq='XMLUpload';
-		request.tpl='data/file_uploader.tpl';
+		request.tpl='file_uploader.html';
 		Acc.showPopup({},function(){AccountsJs.bank.acc_check_list.loadGrid()},request);
 	    }
 	    onDownload=function( request ){
@@ -138,7 +138,7 @@ function(dom,registry,on,query,ItemFileReadStore){
 	    resp.date=date;
 	    resp.amount_uah=parseFloat(resp.amount_uah);
 	    resp.selected_acc=311;
-	    Acc.showPopup(resp,AccountsJs.bank.transEditCallback,{tpl:'accounts/trans_edit.html'});
+	    Acc.showPopup(resp,AccountsJs.bank.transEditCallback,{tpl:'trans_edit.html'});
 	});
     }
     AccountsJs.bank.addTrans=function( acc_code ){
@@ -159,7 +159,7 @@ function(dom,registry,on,query,ItemFileReadStore){
 	    fvalue.acc_debit_code=AccountsJs.bank.main_acc_code;
 	    fvalue.amount=AccountsJs.bank.currentCheck.credit;
 	}
-	Acc.showPopup(fvalue,AccountsJs.bank.transEditCallback,{tpl:'accounts/trans_edit.html'});
+	Acc.showPopup(fvalue,AccountsJs.bank.transEditCallback,{tpl:'trans_edit.html'});
     }
     AccountsJs.bank.transEditCallback=function( fvalue ){
 	var request=fvalue;
@@ -211,7 +211,7 @@ function(dom,registry,on,query,ItemFileReadStore){
 		fvalue.disable=['amount'];
 		fvalue.date_stamp=fvalue.cstamp;
 		fvalue.selected_acc=AccountsJs.bank.main_acc_code;
-		Acc.showPopup(fvalue,AccountsJs.bank.transEditCallback,{tpl:'accounts/trans_edit.html'});
+		Acc.showPopup(fvalue,AccountsJs.bank.transEditCallback,{tpl:'trans_edit.html'});
 	}
 	Connector.addRequest(request,handler);
     }

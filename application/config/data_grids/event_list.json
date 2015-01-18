@@ -9,41 +9,41 @@
 	  "delete",
 	  "print"
 	],
+	"table_style":"min-width:750px",
 	"identifier":"event_id",
 	"columns":[
 	  {
 		"field":"event_date",
-		"name":"Дата"
+		"name":"Дата",
+		"width":"20px"
 	  },
 	  {
 		"field":"event_name",
-		"name":"Событие",
-		"width":"150px"
+		"name":"Задание"
 	  },
 	  {
 		"field":"event_target",
-		"name":"Клиент",
-		"width":"200px"
+		"name":"Цель"
 	  },
 	  {
 		"field":"event_place",
-		"name":"Адрес",
-		"width":"200px"
+		"name":"Место"
 	  },
 	  {
 		"field":"event_note",
-		"name":"Телефон"
+		"name":"Контакт",
+		"width":"70px"
 	  },
 	  {
 		"field":"event_descr",
 		"name":"Доп-но",
-		"width":"100px",
 		"align":"center"
 	  },
 	  {
 		"field":"is_private",
 		"name":"!",
-		"type":"tooltip"
+		"type":"tooltip",
+		"width":"20px"
 	  }
 	]
 }

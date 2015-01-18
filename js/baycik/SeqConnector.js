@@ -58,18 +58,6 @@ require([
             };
             this._postRequest(requestObject);
         };
-        SeqConnector.prototype.freeze = function () {
-            this.freezed = true;
-        };
-        SeqConnector.prototype.unfreeze = function () {
-            document.body.removeChild(document.getElementById('SeqDialog'));
-            this.freezed = false;
-        };
-        SeqConnector.prototype.goon = function () {
-            this.unfreeze();
-            this._addToSequence(this.currRequestObject);
-            this._postNextRequest();
-        };
 
 
         SeqConnector.prototype._addToSequence = function (requestObject) {
@@ -85,28 +73,50 @@ require([
         };
         SeqConnector.prototype._postRequest = function (requestObject, advance) {
             var _this = this;
+	    var url=this.processorUrl;
 	    
+	    var post_vars=$.extend({}, requestObject.post_vars);
+	    if( post_vars.mod ){
+		url+='Proc'+post_vars.mod;
+		delete post_vars.mod;
+		if( post_vars.rq ){
+		    url+='/on'+post_vars.rq;
+		    delete post_vars.rq;
+		}
+	    }
+	    else if( post_vars.tpl ){
+		url+='page/'+post_vars.tpl;
+		requestObject.method='GET';
+		delete post_vars.tpl;
+	    }
 	    
-	    
-	    
-            xhr(this.processorUrl, {
-                method: 'POST',
-                data: requestObject.post_vars
-            }).then(function (response) {
+            var promise=xhr(url, {
+                method: requestObject.method||'POST',
+                data: post_vars
+            })
+	    promise.response.then(function (response) {
                 if (advance) {
                     _this.pending = false;
                     _this._postNextRequest();
                 }
                 try {
-                    if (response !== '') { //Allow empty response
-                        response = JSON.parse(response);
-                    }
+		    var responseObject={};
+		    responseObject.type=response.getHeader('X-isell-type');
+		    if( response.getHeader('X-isell-msg') ){
+			responseObject.msg= decodeURIComponent(response.getHeader('X-isell-msg'));
+		    }
+		    if( response.getHeader('X-isell-format')=='json' ){
+			responseObject.content = JSON.parse(response.text);
+		    }
+		    else{
+			responseObject.content=response.text;
+		    }
                 } catch (e) {
                     console.log(e);
-                    alert("Direct response:\n" + response);
+                    alert("Unexpected server response:\n\n" + response.text);
                     return;
                 }
-                _this._onResponse(response, requestObject);
+                _this._onResponse(responseObject, requestObject);
             });
         };
         SeqConnector.prototype._onResponse = function (response, requestObject) {
@@ -119,11 +129,10 @@ require([
                 alert('Програмная ошибка сервера:\n\n' + response.content);
                 commit_handler = false;
                 break;
-            case 'kick':
+            case 'dialog':
                 this._loadDialog(response.content, response.msg);
-                this.freeze();
-                commit_handler = false;
-                response.msg = '';
+                this.freezeSequence();
+		return;
                 break;
             case 'confirm':
                 if (confirm(response.content)) {
@@ -134,28 +143,39 @@ require([
                 }
                 break;
             };
-            if (this.freezed === true)
-                return;
-            if (response.msg)
-                alert(response.msg);
-            if (commit_handler)
-                this._commitResponseHandler(requestObject, response.content == undefined ? response : response.content);
+            if ( response.msg ){
+                alert( response.msg );
+	    }
+            if (commit_handler){
+                this._commitResponseHandler(requestObject, response.content );
+	    }
             this._postNextRequest();
         };
         SeqConnector.prototype._commitResponseHandler = function (requestObject, response) {
-            if (typeof requestObject.listener === 'object')
-                eval('requestObject.listener.' + requestObject.handler_name + '(response)');
-            else if (typeof requestObject.listener === 'function')
-                requestObject.listener(response);
+	    if( requestObject.handler_name ){
+		requestObject.listener[requestObject.handler_name](response);
+	    }
+	    else{
+		requestObject.listener && requestObject.listener(response);
+	    }
         };
-        SeqConnector.prototype._loadDialog = function (url, msg) {
-            xhr(url).then(function (html) {
-                var dialog = document.createElement('div');
-                dialog.id = 'SeqDialog';
-                dialog.innerHTML = html;
-                document.body.appendChild(dialog);
-                document.getElementById('SeqDialogMsg').innerHTML = msg;
-            });
+        SeqConnector.prototype._loadDialog = function (html, msg) {
+	    var dialog = $("<div id='SeqDialog'></div>").html(html);
+	    $("#SeqDialog script").each(function() { eval(this.text);} );
+	    $('body').append(dialog);
+	    $("#SeqDialogMsg").html(msg);
         };
-    }
+        SeqConnector.prototype.freezeSequence = function () {
+	    this.freezedRequestObject=this.currRequestObject;
+            this.freezed = true;
+        };
+        SeqConnector.prototype.unfreezeSequence = function () {
+	    if(this.freezed){
+		this.freezed = false;
+		$("#SeqDialog").remove();
+		this._addToSequence(this.freezedRequestObject);
+		this._postNextRequest();
+	    }
+        };
+   }
 );

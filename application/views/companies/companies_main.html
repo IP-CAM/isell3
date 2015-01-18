@@ -1,4 +1,11 @@
 <script type="text/javascript">
+    require(["baycik/datatable/DataTable","baycik/tree/TreeWidget","dojo/domReady!"],function(){
+        //CompaniesJs.init();
+        Acc.pend(function(){
+            //CompaniesJs.selectPassiveCompany( 1557 );
+        });
+    });
+    
     CompaniesJs = {};
     CompaniesJs.init = function () {
         CompaniesJs.initTree();
@@ -88,18 +95,13 @@
     CompaniesJs.details.tpl = 'companies/details.html';
 
     CompaniesJs.adjustments = {};
-    CompaniesJs.adjustments.tpl = 'companies/adjustments.tpl';
+    CompaniesJs.adjustments.tpl = 'companies/adjustments.html';
 
     CompaniesJs.payments = {};
     CompaniesJs.payments.tpl = 'companies/payments.html';
 
     
-    require(["baycik/datatable/DataTable","baycik/tree/TreeWidget","dojo/domReady!"],function(){
-        //CompaniesJs.init();
-        Acc.pend(function(){
-            //CompaniesJs.selectPassiveCompany( 1557 );
-        });
-    });
+
 </script>
 <style type="text/css">
 #compmain_divid{
