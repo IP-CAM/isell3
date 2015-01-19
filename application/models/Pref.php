@@ -142,7 +142,6 @@ class Pref {
 
         $this->Base->query("REPLACE pref_list SET pref_value='$value', pref_name='$field'");
     }
-
 }
 
 ?>

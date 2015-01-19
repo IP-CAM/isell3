@@ -333,6 +333,18 @@ class ProcUtils extends iSellBase {
         ));
     }
 
+    
+    
+    public function onAppUpdateDownload(){
+	$this->LoadClass('Utils');
+	$this->Utils->appUpdate('download');
+	$this->response();
+    }
+    public function onAppUpdateInstall(){
+	$this->LoadClass('Utils');
+	$this->Utils->appUpdate('install');
+	$this->response();
+    }
 }
 
 ?>
