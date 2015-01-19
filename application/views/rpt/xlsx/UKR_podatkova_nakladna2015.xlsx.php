@@ -17,6 +17,9 @@ else{
 if( $this->view['inernn']==1 ){
    $this->view['inernn']="X";
 }
+else{
+    $this->view['inernn']="";
+}
 $this->view['footer']['vatless']=''.str_replace(',','.',$this->view['footer']['vatless']);
 $this->view['footer']['vat']=str_replace(',','.',$this->view['footer']['vat']);
 $this->view['footer']['total']=str_replace(',','.',$this->view['footer']['total']);
