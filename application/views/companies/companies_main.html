@@ -113,7 +113,7 @@
 </style>
 <table style="border-collapse: collapse;border:none;width: 100%">
     <tr>
-        <td style="vertical-align: top;width: 10px;padding: 2px;background-color: white;">
+        <td style="vertical-align: top;width: 10px;padding: 2px;">
           <div data-dojo-type="dojox/data/QueryReadStore" data-dojo-id="companyStore" data-dojo-props="url:'./?mod=Companies&amp;rq=companieslist'"></div>
           <input data-dojo-type="dijit/form/FilteringSelect" 
                                  onchange="CompaniesJs.CompanySearchChange( this )"
@@ -122,7 +122,7 @@
                                  data-dojo-props="store:companyStore,hasDownArrow:false,selectOnClick:true, searchAttr:'label', required:false,autoComplete: false,pageSize: 20" style="width:100%;">
           <div id="companies_tree_widget">
               <div id="companies_tree"></div>
-          <div id="compmain_divid">
+	      <div id="compmain_divid" style="background-color: #eee;padding:3px;">
               <a href="javascript:CompaniesJs.tree.insertNew( {is_leaf:1} )" title="Добавить Компанию">
                   <img src="js/baycik/tree/img/user_add.gif" alt="+">
               </a>
