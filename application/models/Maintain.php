@@ -11,6 +11,10 @@ class Maintain extends CI_Model{
     }
     
     public function appUpdate($action = 'download') {
+	echo realpath ( '../' );
+	exit;
+	
+	
 	if ($action == 'download') {
 	    return $this->updateDownload( BAY_UPDATE_URL, $this->zipPath );
 	}
@@ -27,25 +31,9 @@ class Maintain extends CI_Model{
 
     private function updateDownload($updateUrl, $updateFile) {
 	set_time_limit(240);
-	$update = @file_get_contents($updateUrl);
-	if ($update === false) {
-	    msg('Could not download update `' . $updateUrl . '`!');
-	    return false;
-	}
-	$handle = fopen($updateFile, 'w');
-	if (!$handle) {
-	    msg('Could not save update file `' . $updateFile . '`!');
-	    return false;
-	}
-	if (!fwrite($handle, $update)) {
-	    msg('Could not write to update file `' . $updateFile . '`!');
-	    return false;
-	}
-	fclose($handle);
-	return true;
+	return copy ( $updateUrl , $updateFile );
     }
 
-    
     private function updateUnpack() {
 	$zip = new ZipArchive;
 	if ($zip->open( $this->zipPath ) === TRUE) {
