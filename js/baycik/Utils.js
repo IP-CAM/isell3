@@ -160,10 +160,11 @@ function (
     };
     Utils.prototype.renderTpl = function (node_id, data) {
         var tplNode = dom.byId(node_id);
-        if (!tplNode) return;
-        if (!this.tpl_cache[node_id])
+        if (!tplNode || tplNode.innerHTML=="undefined" ) return;
+        if (!this.tpl_cache[node_id]){
             this.tpl_cache[node_id] = unescape(tplNode.innerHTML).replace(/<\!--|-->/img, "");
-        if (data) {
+	}
+        if (this.tpl_cache[node_id] && data) {
             var template = new dtl.Template(this.tpl_cache[node_id]);
             tplNode.innerHTML = template.render(new Context(data));
             tplNode.className = tplNode.className.replace('hidden', '');

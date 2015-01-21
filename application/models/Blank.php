@@ -57,7 +57,7 @@ class Blank extends Data {
         } elseif ($blank['html']) {
             $blank['html'] = stripslashes($blank['html']);
         } else {
-            $blank['html'] = file_get_contents('tpl/rpt/' . $blank['view_file'], true);
+            $blank['html'] = file_get_contents('views/rpt/' . $blank['view_file'], true);
             $blank['loaded_is_tpl'] = true;
         }
         $blank['doc_num'] = $this->Base->Document->doc('doc_num');

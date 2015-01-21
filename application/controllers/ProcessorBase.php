@@ -43,7 +43,7 @@ class InputOutput extends CI_Controller{
 	    header('X-isell-msg: '.rawurlencode($this->msg));
 	    if( is_array($data) ){
 		header('X-isell-format: json');
-		echo json_encode( $data, $pretty?(JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE):0 );
+		echo json_encode( $data, $pretty?(JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE):JSON_UNESCAPED_UNICODE );
 	    }
 	    else{
 		echo $data;
