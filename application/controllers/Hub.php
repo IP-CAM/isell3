@@ -34,7 +34,7 @@ class Hub extends CI_Controller{
 	    $this->output->set_output(json_encode($response,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE));	    
 	}
 	else{
-	    $this->output->set_header("Content-type:html/text;charset=utf8"); 
+	    $this->output->set_header("Content-type:text/html;charset=utf8"); 
 	    $this->output->set_output($response);	    
 	}
     }
