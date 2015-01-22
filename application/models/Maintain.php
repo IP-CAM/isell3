@@ -6,9 +6,9 @@ class Maintain extends CI_Model {
 	$this->dirParent=realpath('..');
 	$this->dirWork = realpath('.');
 	if( file_exists($this->dirWork.'/.git') ){
-	    exit("Work folder contains .git folder. Update may corrupt your work!");
+	    print("Work folder contains .git folder. Update may corrupt your work! Workdir is set to -isell3 ");
+	    $this->dirWork = $this->dirParent.'/-isell3';//realpath('.');
 	}	
-	$this->dirWork = $this->dirParent.'/newisell3';//realpath('.');
 	$this->dirUnpack=$this->dirParent.'/isell3_update';
 	$this->dirBackup=$this->dirParent.'/isell3_backup';
 	$this->zipPath = $this->dirUnpack.'/isell3_update.zip';
@@ -50,7 +50,7 @@ class Maintain extends CI_Model {
 	    return $this->updateSwap();
 	}
 	if ($action == 'init') {
-	    
+	    //copy config file;run db migrations
 	}
     }
 

@@ -29,8 +29,14 @@ class Hub extends CI_Controller{
     }
     
     private function response( $response ){
-	$this->output->set_header("Content-type:text/plain;charset=utf8"); 
-	$this->output->set_output(json_encode($response,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE));	
+	if(is_array($response) ){
+	    $this->output->set_header("Content-type:text/plain;charset=utf8"); 
+	    $this->output->set_output(json_encode($response,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE));	    
+	}
+	else{
+	    $this->output->set_header("Content-type:html/text;charset=utf8"); 
+	    $this->output->set_output($response);	    
+	}
     }
 }
 function msg($msg){
