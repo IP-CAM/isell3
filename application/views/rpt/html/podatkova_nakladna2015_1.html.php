@@ -5,7 +5,7 @@ if( empty($this->view['p']['company_vat_id']) ){
     if( empty($this->view['extra']->type_of_reason) ){
 	$this->view['extra']->type_of_reason="02";
     }
-    $this->view['p']['company_vat_id']="400000000000";
+    $this->view['p']['company_vat_id']="100000000000";
 }
 if( $this->view['extra']->type_of_reason ){
     $this->view['stay_at_seller']='X';
