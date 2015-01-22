@@ -56,7 +56,9 @@ class Maintain extends CI_Model {
 
     private function updateDownload($updateUrl, $updateFile) {
 	set_time_limit(240);
-	mkdir($this->dirUnpack);
+	if( !file_exists ($this->dirUnpack) ){
+	    mkdir($this->dirUnpack);
+	}
 	return copy($updateUrl, $updateFile);
     }
 
