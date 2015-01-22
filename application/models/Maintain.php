@@ -19,16 +19,16 @@ class Maintain extends CI_Model {
     public function autoUpdate( $step='' ){
 	if( !$step ){
 	    header("Refresh: 2; url= download");
-	    return  'start download';
+	    return  'start downloading...';
 	}
 	if( $this->appUpdate($step) ){
 	    if( $step=='download' ){
 		header("Refresh: 2; url= unpack");
-		return  'downloaded';
+		return  'unpacking...';
 	    }
 	    if( $step=='unpack' ){
 		header("Refresh: 2; url= swap");
-		return  'unpacked';
+		return  'installing...';
 	    }
 	    if( $step=='swap' ){
 		return  'update succeded!';
