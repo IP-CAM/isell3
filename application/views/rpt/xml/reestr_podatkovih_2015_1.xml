@@ -36,9 +36,6 @@
     <T1RXXXXG3S ROWNUM="{$counter+1}">{$value.doc_num}</T1RXXXXG3S>
 {/loop}
 {loop name="v.sell.entries.items"}
-    <T1RXXXXG31 ROWNUM="{$counter+1}" xsi:nil="true" />
-{/loop}
-{loop name="v.sell.entries.items"}
     <T1RXXXXG41S ROWNUM="{$counter+1}">{$v.document_type}</T1RXXXXG41S>
 {/loop}
 {loop name="v.sell.entries.items"}
@@ -67,10 +64,19 @@
     <T1RXXXXG9 ROWNUM="{$counter+1}">{$value.vat}</T1RXXXXG9>
 {/loop}
 {loop name="v.sell.entries.items"}
+    <T1RXXXXG110 ROWNUM="{$counter+1}" xsi:nil="true" />
+{/loop}
+{loop name="v.sell.entries.items"}
+    <T1RXXXXG111 ROWNUM="{$counter+1}" xsi:nil="true" />
+{/loop}
+{loop name="v.sell.entries.items"}
     <T1RXXXXG10 ROWNUM="{$counter+1}" xsi:nil="true" />
 {/loop}
 {loop name="v.sell.entries.items"}
-    <T1RXXXXG11 ROWNUM="{$counter+1}" xsi:nil="true" />
+    <T1RXXXXG113 ROWNUM="{$counter+1}" xsi:nil="true" />
+{/loop}
+{loop name="v.sell.entries.items"}
+    <T1RXXXXG114 ROWNUM="{$counter+1}" xsi:nil="true" />
 {/loop}
 {loop name="v.sell.entries.items"}
     <T1RXXXXG12 ROWNUM="{$counter+1}" xsi:nil="true" />
@@ -81,15 +87,21 @@
     <R011G7>{function="str_replace(' ','',$v.sell.gtotal)"}</R011G7>
     <R011G8>{function="str_replace(' ','',$v.sell.gvatless)"}</R011G8>
     <R011G9>{function="str_replace(' ','',$v.sell.gvat)"}</R011G9>
+    <R011G110 xsi:nil="true" />
+    <R011G111 xsi:nil="true" />
     <R011G10 xsi:nil="true" />
-    <R011G11 xsi:nil="true" />
+    <R011G113 xsi:nil="true" />
+    <R011G114 xsi:nil="true" />
     <R011G12 xsi:nil="true" />
     <R011G13 xsi:nil="true" />
     <R012G7 xsi:nil="true" />
-    <R012G8>0.00</R012G8>
+    <R012G8 xsi:nil="true" />
     <R012G9 xsi:nil="true" />
+    <R012G110 xsi:nil="true" />
+    <R012G111 xsi:nil="true" />
     <R012G10 xsi:nil="true" />
-    <R012G11 xsi:nil="true" />
+    <R012G113 xsi:nil="true" />
+    <R012G114 xsi:nil="true" />
     <R012G12 xsi:nil="true" />
     <R012G13 xsi:nil="true" />
 {loop name="v.buy.entries.items"}
@@ -105,10 +117,10 @@
     <T2RXXXXG4S ROWNUM="{$counter+1}">{$value.doc_num}</T2RXXXXG4S>
 {/loop}
 {loop name="v.buy.entries.items"}
-    <T2RXXXXG41 ROWNUM="{$counter+1}" xsi:nil="true" />
+    <T2RXXXXG51S ROWNUM="{$counter+1}">{$v.document_type}</T2RXXXXG51S>
 {/loop}
 {loop name="v.buy.entries.items"}
-    <T2RXXXXG51S ROWNUM="{$counter+1}">{$v.document_type}</T2RXXXXG51S>
+    <T2RXXXXG54S ROWNUM="{$counter+1}" xsi:nil="true" />
 {/loop}
 {loop name="v.buy.entries.items"}
     <T2RXXXXG52S ROWNUM="{$counter+1}" xsi:nil="true" />
@@ -126,10 +138,25 @@
     <T2RXXXXG8 ROWNUM="{$counter+1}">{$value.total}</T2RXXXXG8>
 {/loop}
 {loop name="v.buy.entries.items"}
-    <T2RXXXXG9 ROWNUM="{$counter+1}">{$value.vatless}</T2RXXXXG9>
+    <T2RXXXXG109 ROWNUM="{$counter+1}" xsi:nil="true" />
 {/loop}
 {loop name="v.buy.entries.items"}
-    <T2RXXXXG10 ROWNUM="{$counter+1}">{$value.vat}</T2RXXXXG10>
+    <T2RXXXXG110 ROWNUM="{$counter+1}">{$value.vatless}</T2RXXXXG110>
+{/loop}
+{loop name="v.buy.entries.items"}
+    <T2RXXXXG111 ROWNUM="{$counter+1}">{$value.vat}</T2RXXXXG111>
+{/loop}
+{loop name="v.buy.entries.items"}
+    <T2RXXXXG112 ROWNUM="{$counter+1}" xsi:nil="true" />
+{/loop}
+{loop name="v.buy.entries.items"}
+    <T2RXXXXG113 ROWNUM="{$counter+1}" xsi:nil="true" />
+{/loop}
+{loop name="v.buy.entries.items"}
+    <T2RXXXXG9 ROWNUM="{$counter+1}" xsi:nil="true" />
+{/loop}
+{loop name="v.buy.entries.items"}
+    <T2RXXXXG10 ROWNUM="{$counter+1}" xsi:nil="true" />
 {/loop}
 {loop name="v.buy.entries.items"}
     <T2RXXXXG11 ROWNUM="{$counter+1}" xsi:nil="true" />
@@ -152,6 +179,10 @@
     <R021G8>{function="str_replace(' ','',$v.buy.gtotal)"}</R021G8>
     <R021G9>{function="str_replace(' ','',$v.buy.gvatless)"}</R021G9>
     <R021G10>{function="str_replace(' ','',$v.buy.gvat)"}</R021G10>
+    <R021G112 xsi:nil="true" />
+    <R021G113 xsi:nil="true" />
+    <R021G9 xsi:nil="true" />
+    <R021G10 xsi:nil="true" />
     <R021G11 xsi:nil="true" />
     <R021G12 xsi:nil="true" />
     <R021G13 xsi:nil="true" />
@@ -159,6 +190,10 @@
     <R021G15 xsi:nil="true" />
     <R021G16 xsi:nil="true" />
     <R022G8 xsi:nil="true" />
+    <R022G110 xsi:nil="true" />
+    <R022G111 xsi:nil="true" />
+    <R022G112 xsi:nil="true" />
+    <R022G113 xsi:nil="true" />
     <R022G9 xsi:nil="true" />
     <R022G10 xsi:nil="true" />
     <R022G11 xsi:nil="true" />
