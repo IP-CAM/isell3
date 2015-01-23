@@ -121,7 +121,8 @@
             };
             PrefJs.ratioGet = function () {
                 Connector.sendRequest({
-                    fn: 'Pref:prefGet'
+                    mod:'Pref',
+                    rq: 'PrefGet'
                 }, function (resp) {
                     PrefJs.suppress_update = true;
                     registry.byId('pref_ratio_form').set('value', resp);
@@ -133,7 +134,8 @@
                     return;
                 }
                 Connector.sendRequest({
-                    fn: 'Pref:prefUpdate',
+                    mod:'Pref',
+                    rq:'PrefUpdate',
                     field: field.name,
                     value: field.value
                 });
@@ -344,7 +346,7 @@
                     <tr>
                         <td align="right">Поля в файле .csv клиент банка:</td>
                         <td>
-                            <input data-dojo-type="dijit/form/Textarea" onchange="PrefJs.prefUpdate(this);" name="clientbank_fields" style="width:300px" />
+                            <textarea data-dojo-type="dijit/form/SimpleTextarea" onchange="PrefJs.prefUpdate(this);" name="clientbank_fields" style="width:300px;" rows="1"></textarea>
                         </td>
                     </tr>
                 </table>

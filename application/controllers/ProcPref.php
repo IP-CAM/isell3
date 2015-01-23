@@ -78,6 +78,18 @@ class ProcPref extends iSellBase {
         $this->response($ok);
     }
 
+    public function onPrefGet(){
+        $this->LoadClass('Pref');
+        $this->response($this->Pref->prefGet());
+    }
+    
+    public function onPrefUpdate(){
+        $field=$this->request('field');
+        $value=$this->request('value');
+        $this->LoadClass('Pref');
+        $this->response($this->Pref->prefUpdate($field,$value));
+    }
+    
 }
 
 ?>

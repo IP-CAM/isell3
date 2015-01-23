@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="windows-1251"?>
-<DECLAR xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="{$v.c_doc}{$v.c_doc_sub}0{$v.c_doc_ver}.xsd">
+<?xml  version="1.0" encoding="windows-1251" ?>
+<DECLAR xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="J1201508.xsd">
   <DECLARHEAD>
     <TIN>{$v.a.company_code}</TIN>
     <C_DOC>{$v.c_doc}</C_DOC>
@@ -25,7 +25,6 @@
     <HZM>{$v.period_month}</HZM>
     <HNAME>{$v.a.company_name}</HNAME>
     <HNPDV>{$v.a.company_vat_id}</HNPDV>
-    <HNSPDV xsi:nil="true" />
 {loop name="v.sell.entries.items"}
     <T1RXXXXG1 ROWNUM="{$counter+1}">{$counter+1}</T1RXXXXG1>
 {/loop}
@@ -39,11 +38,11 @@
     <T1RXXXXG41S ROWNUM="{$counter+1}">{$v.document_type}</T1RXXXXG41S>
 {/loop}
 {loop name="v.sell.entries.items"}
-    {if="$value.tor"}
+{if="$value.tor"}
     <T1RXXXXG42S ROWNUM="{$counter+1}">{$value.tor}</T1RXXXXG42S>
-    {else}
+{else}
     <T1RXXXXG42S ROWNUM="{$counter+1}" xsi:nil="true" />
-    {/if}
+{/if}
 {/loop}
 {loop name="v.sell.entries.items"}
     <T1RXXXXG43S ROWNUM="{$counter+1}" xsi:nil="true" />
@@ -177,8 +176,8 @@
     <T2RXXXXG16 ROWNUM="{$counter+1}" xsi:nil="true" />
 {/loop}
     <R021G8>{function="str_replace(' ','',$v.buy.gtotal)"}</R021G8>
-    <R021G9>{function="str_replace(' ','',$v.buy.gvatless)"}</R021G9>
-    <R021G10>{function="str_replace(' ','',$v.buy.gvat)"}</R021G10>
+    <R021G110>{function="str_replace(' ','',$v.buy.gvatless)"}</R021G110>
+    <R021G111>{function="str_replace(' ','',$v.buy.gvat)"}</R021G111>
     <R021G112 xsi:nil="true" />
     <R021G113 xsi:nil="true" />
     <R021G9 xsi:nil="true" />

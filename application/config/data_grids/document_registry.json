@@ -9,6 +9,7 @@
   "toolnames":[
 	"addinvoice",
 	"delinvoice",
+        "download",
     "print"
   ],
   "identifier":"doc_id",
@@ -32,9 +33,9 @@
       "name":"Выдан"
     },
     {
-      "field":"inernn",
-	  "align":"center",
-      "name":"X"
+      "field":"tor",
+        "align":"center",
+      "name":"ТП"
     },
     {
       "field":"short_name",

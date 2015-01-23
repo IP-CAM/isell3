@@ -91,6 +91,12 @@ require(["dojo/dom", "dijit/registry", "dojo/on", "dojo/date/locale", "baycik/gr
                     request.out_type = '.print';
                     Acc.printOut(request);
                 };
+                onDownload = function (request) {
+                    request.mod = 'Accounts';
+                    request.rq = 'DocumentRegistry';
+                    request.out_type = '.xml';
+                    Connector.addRedirection(request);
+                };
                 startup();
             }
             AccountsJs.reports.registry_grid.addInvoice = function (request) {

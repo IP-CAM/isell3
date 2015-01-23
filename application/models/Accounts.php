@@ -632,7 +632,7 @@ class Accounts extends Data {
             company_id,
             CONCAT(icon_name,' ',doc_type_name) AS icon,
             IF(company_vat_id,company_name,'Неплатник податку'),
-            IF(company_vat_id,company_vat_id,'400000000000'),
+            IF(company_vat_id,company_vat_id,'100000000000'),
             doc_data,
             (SELECT 
                     CAST(ROUND(amount,2) AS CHAR(10))
