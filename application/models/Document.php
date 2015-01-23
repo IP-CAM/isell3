@@ -613,7 +613,8 @@ class DocumentView extends DocumentCore {
     }
 
     protected function getViewNextNum($view_type_id) {
-	return $this->Base->get_row("SELECT MAX(view_num)+1 FROM document_view_list WHERE view_type_id=$view_type_id AND tstamp>DATE_FORMAT(NOW(),'%Y')", 0);
+	$num=$this->Base->get_row("SELECT MAX(view_num)+1 FROM document_view_list WHERE view_type_id=$view_type_id AND tstamp>DATE_FORMAT(NOW(),'%Y')", 0);
+        return $num?$num:1;
     }
 
     public function insertView($view_type_id) {
@@ -637,7 +638,13 @@ class DocumentView extends DocumentCore {
 	    }
 	    //$this->checkInErnn();
 	    $view_num = $this->getViewNextNum($view_type_id);
-	    $efields = '{"sign":"' . $this->Base->svar('user_sign') . '"}';
+            if ($this->Base->pcomp('company_vat_id')){
+                $efields = '{"sign":"' . $this->Base->svar('user_sign') . '"}';
+            }
+	    else{
+                $efields = '{"sign":"' . $this->Base->svar('user_sign') . '","type_of_reason":"02"}';
+            }
+            
 	} else {
 	    $view_num = $this->doc('doc_num');
 	    $efields = '';
