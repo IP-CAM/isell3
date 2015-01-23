@@ -152,21 +152,7 @@ h6{
 	#13D713 40%,
 	#00A400 100%);
 }
-.gray_grad{
-    background: #cdf;
-    border: 1px solid #abd;
-    background: -moz-linear-gradient(top, 
-	#fff 0%,
-	#cdf 50%,
-	#abd 100%);
-}
-.gray_grad:hover{
-    border: 1px solid #66f;
-    background: -moz-linear-gradient(top, 
-	#fff 0%,
-	#ccf 50%,
-	#aaf 100%);
-}
+
 .lime_grad{
     background: #daf;
     border: 1px solid #b4c;
@@ -175,20 +161,7 @@ h6{
 	#daf 40%,
 	#b4c 100%);
 }
-.light_grad{
-    border: 1px solid #bbb;
-    background: -moz-linear-gradient(top, 
-	#fff 0%,
-	#eee 40%,
-	#ccc 100%);
-}
-.light_grad:hover{
-    border: 1px solid #69f;
-    background: -moz-linear-gradient(top, 
-	#fff 0%,
-	#def 40%,
-	#adf 100%);
-}
+
 
 .button{
     font-family: Helvetica, Arial, sans-serif;

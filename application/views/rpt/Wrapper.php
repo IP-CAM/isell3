@@ -88,6 +88,7 @@ if ($word_header) {
 
     <body>
 	<?php if ($show_controls && !$word_header) { ?>
+	<link rel="stylesheet" type="text/css" href="css/app.css" />
 	<link rel="stylesheet" type="text/css" href="css/main.css" />
 	<style type="text/css">
 	    @media all{

@@ -60,7 +60,7 @@ option{
     padding: 1px;
     border-bottom: 1px solid #ace;
 }
-button {
+button, .gray_grad, .light_grad{
     border: 1px solid #759dc0;
     padding: 2px 4px 4px 4px;
     color: #000000;
@@ -72,7 +72,7 @@ button {
     transition-property: background-color;
     transition-duration: 1s;
 }
-button:hover{ 
+button:hover, .gray_grad:hover, .light_grad:hover{ 
     background-color: #86bdf2;
     color: #000000;
     transition-duration: 0.5s;
