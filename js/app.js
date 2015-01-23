@@ -45,6 +45,7 @@ App.init = function () {
     //App.loadWindow('catalog/company_list');
     //App.loadWindow('catalog/company_form');
     //App.loadWindow('page/dialog/move_doc');
+    App.loadBg();
 };
 $(App.init);
 
@@ -129,6 +130,34 @@ App.collectForm=function(fquery){
     });
     return fvalue;
 };
+App.cookie=function(cname,cvalue){
+    if( cvalue===undefined ){
+        var name = cname + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0; i<ca.length; i++) {
+            var c = ca[i];
+            while (c.charAt(0)===' ') c = c.substring(1);
+            if (c.indexOf(name) === 0) return c.substring(name.length, c.length);
+        }
+        return "";        
+    }
+    else{
+        var d = new Date();
+        d.setTime(d.getTime() + (365*24*60*60*1000));
+        var expires = "expires="+d.toUTCString();
+        document.cookie = cname + "=" + cvalue + "; " + expires;     
+    }
+};
+App.loadBg=function(){
+    if( App.cookie('bg').length>10 ){
+        $("body").css('background', 'url("' + App.cookie('bg') + '") repeat scroll center top #ffffff');
+        $("body").css('background-size', '100%');
+    }
+};
+App.setBg=function(){
+    App.cookie('bg',prompt("Введите интернет адрес изображения заднего плана!\n\nНапример\n http://7-themes.com/data_images/out/68/7005391-sport-cars-wallpapers.jpg"));   
+    App.loadBg();
+}
 $.fn.datebox.defaults.formatter = function (date) {
     return App.toDmy(date);
 }
