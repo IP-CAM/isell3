@@ -144,6 +144,7 @@ function (
             parser.parse(ele);
             //},1000);
         }
+	$.parser.parse("#" + ele_id);//for easy ui
     };
     Utils.prototype.splitContent = function (raw_html) {
         if (!raw_html)
