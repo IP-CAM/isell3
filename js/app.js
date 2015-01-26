@@ -155,7 +155,7 @@ App.loadBg=function(){
     }
 };
 App.setBg=function(){
-    App.cookie('bg',prompt("Введите интернет адрес изображения заднего плана!\n\nНапример\n http://7-themes.com/data_images/out/68/7005391-sport-cars-wallpapers.jpg"));   
+    App.cookie('bg',prompt("Введите интернет адрес изображения заднего плана!\n\nНапример\n http://7-themes.com/data_images/out/68/7005391-sport-cars-wallpapers.jpg",App.cookie('bg')));   
     App.loadBg();
 }
 $.fn.datebox.defaults.formatter = function (date) {
