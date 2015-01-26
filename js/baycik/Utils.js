@@ -144,7 +144,9 @@ function (
             parser.parse(ele);
             //},1000);
         }
-	$.parser.parse("#" + ele_id);//for easy ui
+	setTimeout(function(){
+            $.parser.parse("#" + ele_id);//for easy ui          
+        },0);
     };
     Utils.prototype.splitContent = function (raw_html) {
         if (!raw_html)

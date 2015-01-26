@@ -101,6 +101,15 @@ button[diasbled="disabled"]{
     margin: 0 0 14px 0;
     padding: 14px 15px 10px 15px;
 }
+.tabs li a.tabs-inner{
+    border-radius: 0px;
+}
+.panel-body {
+    background-color: rgba(255,255,255,0.75);
+}
+.tabs-header, .tabs-tool {
+    background-color: rgba(224,236,255,0.85);
+}
 .transp60{
     background-color: rgba(255,255,255,.6);
 }
