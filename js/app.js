@@ -18,7 +18,7 @@ App.flash = function (msg, type) {
 	    $.messager.show({title: 'Сообщение', msg: App.msg, showType: 'show'});
 	    App.msg='';
 	},300);
-	App.msg=(App.msg||'')+'<br>'+msg;
+	App.msg=(App.msg||'')+msg+'<br>';
     }
 };
 App.loadModule = function (path, data) {
@@ -63,7 +63,7 @@ $(document).ajaxComplete(function (event, xhr, settings) {
     }
     if( xhr.getResponseHeader('X-isell-msg') ){
 	var msg=decodeURIComponent(xhr.getResponseHeader('X-isell-msg').replace(/\+/g,  " "));
-	if( xhr.getResponseHeader('X-isell-type')=='error' ){
+	if( xhr.getResponseHeader('X-isell-type')==='error' ){
 	    App.flash( msg, 'error' );
 	}
 	else{
@@ -86,18 +86,39 @@ App.uri = function () {
 };
 App.toIso=function(dmY){
     if(dmY instanceof Date){
-	return dmY.getFullYear() + '-' + String("0"+dmY.getMonth() + 1).slice(-2) +'-' + String("0"+dmY.getDate()).slice(-2);
+	return dmY.getFullYear() + '-' + String("0"+(dmY.getMonth()+1)).slice(-2) +'-' + String("0"+dmY.getDate()).slice(-2);
     }
     return dmY.replace(/[^\d]/g,'').replace(/^[\d]{4}(\d\d)$/,"20$1").replace(/^(\d\d)(\d\d)(\d\d\d\d)$/,"$3-$2-$1");
 };
 App.toDmy=function(iso){
     if(iso instanceof Date){
-	iso=App.toIso(iso);
+	return String("0"+iso.getDate()).slice(-2) +'.' + String("0"+(iso.getMonth()+1)).slice(-2) + '.' + iso.getFullYear();
     }
     return iso.replace(/^(\d\d\d\d)-(\d\d)-(\d\d)$/,"$3.$2.$1");
 };
 App.today=function(){
     return App.toDmy( new Date() );
+};
+$.fn.datebox.defaults.formatter = function (date) {
+    return App.toDmy(date);
+};
+$.fn.datebox.defaults.parser = function (s) {
+    if(s instanceof Date){
+	return s;
+    }
+    var date=s.replace(/[^\d]/g,'').replace(/^[\d]{4}(\d\d)$/,"20$1").replace(/^(\d\d)(\d\d)(\d\d\d\d)$/,"$2/$1/$3");
+    var t = Date.parse(date);
+    if (!isNaN(t)) {
+	return new Date(t);
+    } else {
+	return new Date();
+    }
+};
+App.formatNum=function(num,mode){
+    if( num===undefined || mode==='clear' && num*1===0 ){
+	return '';
+    }
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 };
 App.setupForm=function(fquery,fvalue){
     if( !fquery || !fvalue ){
@@ -122,13 +143,16 @@ App.collectForm=function(fquery){
     var fvalue = {};
     $(fquery+" input,"+fquery+" textarea,"+fquery+" select").each(function( i,element ){
 	if( element.name ){
-	    fvalue[element.name]=$(element).val();
-	    if( $(element).attr('type')==='checkbox' ){
-		fvalue[element.name]=$(element).is(':checked');
-	    }
+	    fvalue[element.name]=App.val(element);
 	}
     });
     return fvalue;
+};
+App.val=function(element){
+    if( $(element).attr('type')==='checkbox' ){
+	return $(element).is(':checked')?1:0;
+    }
+    return $(element).val();
 };
 App.cookie=function(cname,cvalue){
     if( cvalue===undefined ){
@@ -157,16 +181,4 @@ App.loadBg=function(){
 App.setBg=function(){
     App.cookie('bg',prompt("Введите интернет адрес изображения заднего плана!\n\nНапример\n http://7-themes.com/data_images/out/68/7005391-sport-cars-wallpapers.jpg",App.cookie('bg')));   
     App.loadBg();
-}
-$.fn.datebox.defaults.formatter = function (date) {
-    return App.toDmy(date);
-}
-$.fn.datebox.defaults.parser = function (s) {
-    var date=s.replace(/[^\d]/g,'').replace(/^[\d]{4}(\d\d)$/,"20$1").replace(/^(\d\d)(\d\d)(\d\d\d\d)$/,"$2/$1/$3");
-    var t = Date.parse(date);
-    if (!isNaN(t)) {
-	return new Date(t);
-    } else {
-	return new Date();
-    }
-}
+};
