@@ -137,9 +137,6 @@
     };
     ListsJs.events.initCal = function () {
 	$('#event_calendar').calendar({
-	    firstDay: 1,
-	    weeks: ['В', 'П', 'В', 'С', 'Ч', 'П', 'С'],
-	    months: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
 	    formatter: function (date) {
 		var iso = App.toIso(date);
 		for (var i in ListsJs.events.activeDates) {

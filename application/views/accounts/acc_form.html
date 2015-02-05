@@ -1,0 +1,46 @@
+<script>
+    App.page_accounts_acc_form.init = function (data,handler) {
+	$('#page_accounts_acc_form').window({
+	    title: 'Свойства счета - '+App.page_accounts_acc_form.data.label,
+	    width: 350,
+	    height: 230,
+	    onClose: function(){
+		App.page_accounts_acc_form.handler.notify('close',App.page_accounts_acc_form.data);
+		App.page_accounts_acc_form.destroy();
+	    }
+	});
+	App.setupForm("#page_accounts_acc_form_frm", App.page_accounts_acc_form.data).change(function () {
+	    var node=this;
+	    $('#page_accounts_acc_form').css('cursor', 'wait');
+	    $.ajax({
+		url: 'Catalog/treeUpdate/acc_tree/'+App.uri(data.branch_id,node.name,App.val(node)),
+		complete: function () {
+		    App.page_accounts_acc_form.data[node.name]=App.val(node);
+		    App.flash("Сохранено: " + node.title);
+		    $('#page_accounts_acc_form').css('cursor', '');
+		}
+	    });
+	});
+    };
+    App.page_accounts_acc_form.destroy = function () {
+	$('#page_accounts_acc_form').window('destroy');
+	$('#page_accounts_acc_form').remove();
+	delete this;
+    };
+</script>
+<form id="page_accounts_acc_form_frm" onsubmit="return false;" style="-moz-user-select:none;">
+    <input type="text" name="label" title="Название"/>	
+    <input type="text" name="acc_code" title="Код"/>
+    <select name="acc_type" title="Тип">
+	<option value="A">Активный</option>
+	<option value="P">Пассивный</option>
+	<option value="AP">Активно-пассивный</option>
+    </select>
+    <select name="curr_id" title="Валюта">
+	<option value="1">Гривна</option>
+	<option value="2">Доллар</option>
+	<option value="3">Рубль</option>
+    </select>
+    <input type="checkbox" name="is_favorite" value="1" title="Избранный" />
+    <input type="checkbox" name="use_clientbank" value="1" title="Клиент банк" />
+</form>

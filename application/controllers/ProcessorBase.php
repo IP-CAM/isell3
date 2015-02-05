@@ -226,9 +226,6 @@ class Session extends DataBase {
 	    if ( method_exists($this, 'initLoggedUser') ) {
 		$this->initLoggedUser($user_data);
 	    }
-	    if( $_SERVER["HTTP_REFERER"] ){
-		//header( "Location: " . $_SERVER["HTTP_REFERER"] );
-	    }
 	    return true;
 	}
 	return false;

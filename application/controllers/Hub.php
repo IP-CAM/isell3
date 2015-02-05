@@ -1,5 +1,6 @@
 <?php
-class Hub extends CI_Controller{
+include 'HubBase.php';
+class Hub extends HubBase{
 
     public function index(){
 	include "index.html";
@@ -10,6 +11,7 @@ class Hub extends CI_Controller{
 	if( $model ){
 	    $this->load->model($model,NULL,true);
 	    if( method_exists($this->{$model},$method) ){
+		$this->{$model}->Base=$this;
 		$response=call_user_func_array(array($this->{$model}, $method),$method_args);
 		$this->response($response);
 	    }
@@ -23,22 +25,28 @@ class Hub extends CI_Controller{
     }
     
     public function page(){
-	$file_name = implode('/',func_get_args());
-	include "application/views/$file_name";
+	$file_name = "application/views/".implode('/',func_get_args());
+	if( file_exists($file_name) ){
+	    include $file_name;
+	}
+	else{
+	    show_error('X-isell-error: File not found!', 404);
+	}
 	exit;
     }
     
-    private function response( $response ){
-	if(is_array($response) ){
-	    $this->output->set_header("Content-type:text/plain;charset=utf8"); 
-	    $this->output->set_output(json_encode($response,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE));	    
-	}
-	else{
-	    $this->output->set_header("Content-type:text/html;charset=utf8"); 
-	    $this->output->set_output($response);	    
+    
+    public function db_msg(){
+	switch( $this->db->_error_number() ){
+	    case 1451:
+		$this->msg('Элемент ипользуется, поэтому не может быть изменен или удален!');
+		break;
+	    
+	    
+	    default:
+		$this->msg($this->db->_error_message());
+		break;
 	}
     }
-}
-function msg($msg){
-    header("X-isell-msg: ".  urlencode($msg));
+    
 }

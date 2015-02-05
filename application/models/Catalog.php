@@ -9,13 +9,18 @@ class Catalog extends CI_Model {
     }
     private function create($table,$data) {
 	$this->db->insert($table, $data);
+	$this->db->_error_number()?$this->Base->db_msg():'';
 	return $this->db->insert_id();
     }
     private function update($table, $data, $key) {
-	return $this->db->update($table, $data, $key);
+	$ok=$this->db->update($table, $data, $key);
+	$this->db->_error_number()?$this->Base->db_msg():'';
+	return $ok;
     }
     private function delete($table, $key) {
-	return $this->db->delete($table, $key);
+	$ok=$this->db->delete($table, $key);
+	$this->db->_error_number()?$this->Base->db_msg():'';
+	return $ok;
     }
     ////////////////////////////////////////////////////
     // CORE TREE FUNCTIONS
@@ -24,6 +29,7 @@ class Catalog extends CI_Model {
 	$branches = array();
 	$res = $this->db->query("SELECT * FROM $table WHERE parent_id=$parent_id ORDER BY is_leaf,label");
 	foreach ($res->result() as $row) {
+	    //$this->treeUpdatePath($table, $row->branch_id);
 	    if ($depth == 'top') {
 		$row->state = $row->is_leaf ? '' : 'closed';
 	    } else {
@@ -47,6 +53,7 @@ class Catalog extends CI_Model {
 	return $branch_id;
     }
     public function treeUpdate($table,$branch_id,$field,$value) {
+	$value=  rawurldecode($value);
 	if( $field=='parent_id' && $this->treeisLeaf($table,$value) || $field=='label' && !$value ){
 	    /*parent must be not leaf and label should not be empty*/
 	    return false;
@@ -66,20 +73,21 @@ class Catalog extends CI_Model {
 	$this->db->query(
 		"UPDATE $table 
 		SET 
-		    path = REPLACE(path, @old_path, @new_path)
+		    path = IF(@old_path,REPLACE(path, @old_path, @new_path),@new_path)
 		WHERE
-		    path LIKE CONCAT(@old_path, '%')");
+		    IF(@old_path,path LIKE CONCAT(@old_path, '%'),branch_id=$branch_id)");
     }
     public function treeDelete($table,$branch_id){
 	$branch = $this->db->get_where($table, array('branch_id'=>$branch_id))->row();
 	if( $branch && $branch->path ){
 	    $this->db->query("START TRANSACTION");
 	    $this->db->query("DELETE FROM $table WHERE path LIKE '{$branch->path}%'");
+	    $this->db->_error_number()?$this->Base->db_msg():'';
 	    $deleted=$this->db->affected_rows();
 	    $this->db->query("COMMIT");
 	    return $deleted;
 	}
-	msg("iSell: Such branch is not found or path is not set!");
+	$this->Base->msg("iSell: Such branch is not found or path is not set!");
 	return false;
     }
    private function treeisLeaf($table,$branch_id){
@@ -126,11 +134,70 @@ class Catalog extends CI_Model {
     
     
     
-    
-    
-    
-    
-    
+    ////////////////////////////////////////////////////
+    // ACCOUNTS SPECIFIC FUNCTIONS
+    ////////////////////////////////////////////////////
+    public function accountBalanceTreeFetch( $parent_id=0, $idate='', $fdate='' ){
+	$this->Base->set_level(3);
+	$this->db->query("SET @idate='$idate 00:00:00', @fdate='$fdate 23:59:59', @parent_id='$parent_id';");
+	$sql=
+	"SELECT 
+	    d.branch_id,
+	    d.label,
+	    d.acc_code,
+	    d.acc_type,
+	    d.curr_id,
+	    d.is_favorite,
+	    d.use_clientbank,
+	    IF( is_leaf,'','closed') state,
+	    IF(d.acc_type='P',-1,1)*(COALESCE(open_d,0)-COALESCE(open_c,0)) open_bal,
+	    period_d,
+	    period_c,
+	    IF(d.acc_type='P',-1,1)*(COALESCE(close_d,0)-COALESCE(close_c,0)) close_bal
+	FROM
+	    (SELECT 
+		tree.*,
+		ROUND(SUM(IF(dtrans.cstamp < @idate, dtrans.amount, 0)), 2) open_d,
+		ROUND(SUM(IF(dtrans.cstamp > @idate AND dtrans.cstamp < @fdate,dtrans.amount,0)),2) period_d,
+		ROUND(SUM(IF(dtrans.cstamp < @fdate, dtrans.amount, 0)), 2) close_d
+	    FROM
+		acc_tree tree
+		    LEFT JOIN 
+		acc_tree subtree ON subtree.path LIKE CONCAT(tree.path,'%')
+		    LEFT JOIN
+		acc_trans dtrans ON dtrans.acc_debit_code = subtree.acc_code
+	    WHERE
+		tree.parent_id=@parent_id
+	    GROUP BY tree.acc_code) d
+	JOIN
+	    (SELECT 
+		tree.acc_code,
+		ROUND(SUM(IF(ctrans.cstamp < @idate, ctrans.amount, 0)), 2) open_c,
+		ROUND(SUM(IF(ctrans.cstamp > @idate AND ctrans.cstamp < @fdate,ctrans.amount,0)),2) period_c,
+		ROUND(SUM(IF(ctrans.cstamp < @fdate, ctrans.amount, 0)), 2) close_c
+	    FROM
+		acc_tree tree
+		    LEFT JOIN 
+		acc_tree subtree ON subtree.path LIKE CONCAT(tree.path,'%')
+		    LEFT JOIN
+		acc_trans ctrans ON ctrans.acc_credit_code = subtree.acc_code
+	    WHERE
+		tree.parent_id=@parent_id
+	    GROUP BY tree.acc_code) c 
+	ON (d.acc_code=c.acc_code)";
+	return $this->Base->get_list($sql);
+    }
+    public function accountBalanceTreeCreate( $parent_id, $label ){
+	$this->treeUpdate('acc_tree',$parent_id,'is_leaf',0);
+	$new_code=  $this->accountCodeAssign( $parent_id );
+	$branch_id= $this->treeCreate('acc_tree','leaf',$parent_id,$label);
+	$this->update('acc_tree',array('acc_code'=>$new_code),array('branch_id'=>$branch_id));
+	return "$branch_id,$new_code";
+    }
+    private function accountCodeAssign( $parent_id ){
+	$row=$this->db->query("SELECT MAX(acc_code)+1 acc_code FROM acc_tree WHERE parent_id=$parent_id")->row();
+	return $row->acc_code;
+    }
     
     
     
@@ -166,47 +233,47 @@ class Catalog extends CI_Model {
 
 class CatalogUtils {
 
-    public function CatalogUtils($db) {
-	$this->db = $db;
-    }
-
-    public function struct($table) {
-
-	function calc_props($type) {
-	    if (strstr($type, 'tinyint')) {
-		return array(
-		    'width' => 20,
-		    'cellalign' => 'center',
-		    'bool' => 1
-		);
-	    }
-	    if (strstr($type, 'int') || strstr($type, 'double')) {
-		return array(
-		    'width' => 50,
-		    'cellalign' => 'right'
-		);
-	    }
-	    if (strstr($type, 'text')) {
-		return array(
-		    'width' => 200
-		);
-	    }
-	    return array(
-		'width' => 100
-	    );
-	}
-
-	$struct = array();
-	$res = $this->db->query("SHOW FULL COLUMNS FROM $table");
-	foreach ($res->result() as $col) {
-	    $props = (object) calc_props($col->Type);
-	    $props->datafield = $col->Field;
-	    $props->text = $col->Comment;
-	    $props->key = $col->Key;
-	    $struct['cols'][] = $props;
-	}
-	$res->free_result();
-	return $struct;
-    }
+//    public function CatalogUtils($db) {
+//	$this->db = $db;
+//    }
+//
+//    public function struct($table) {
+//
+//	function calc_props($type) {
+//	    if (strstr($type, 'tinyint')) {
+//		return array(
+//		    'width' => 20,
+//		    'cellalign' => 'center',
+//		    'bool' => 1
+//		);
+//	    }
+//	    if (strstr($type, 'int') || strstr($type, 'double')) {
+//		return array(
+//		    'width' => 50,
+//		    'cellalign' => 'right'
+//		);
+//	    }
+//	    if (strstr($type, 'text')) {
+//		return array(
+//		    'width' => 200
+//		);
+//	    }
+//	    return array(
+//		'width' => 100
+//	    );
+//	}
+//
+//	$struct = array();
+//	$res = $this->db->query("SHOW FULL COLUMNS FROM $table");
+//	foreach ($res->result() as $col) {
+//	    $props = (object) calc_props($col->Type);
+//	    $props->datafield = $col->Field;
+//	    $props->text = $col->Comment;
+//	    $props->key = $col->Key;
+//	    $struct['cols'][] = $props;
+//	}
+//	$res->free_result();
+//	return $struct;
+//    }
 
 }

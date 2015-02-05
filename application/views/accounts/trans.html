@@ -1,12 +1,13 @@
-<script language="javascript">
+<script type="text/javascript">
+    AccountsJs.trans={};
 require([
     "dojo/dom",
     "dijit/registry",
     "dojo/on",
     "dojo/date/locale",
     "dojo/query",
+    "dojo/parser",
     "baycik/grid/DataGrid",
-    "baycik/tree/TreeWidget",
     "dojo/domReady!"
 ],
 function(
@@ -14,47 +15,16 @@ function(
     registry,
     on,
     locale,
-    query
+    query,
+    parser
 ){
+    parser.parse('accounts_trans_divv');
     AccountsJs.trans.init=function(){
-        this.initTree();
         this.initGrid();
         this.initCalendars();
         this.getAccFavorites();
+	//AccountsJs.trans.ledger_grid.loadByAccCode(App.cookie('last_acc_code'));
     };
-    AccountsJs.trans.initTree=function(){
-            Connector.addCss('js/dhtmlx/tree/dhtmlxtree.css');
-            AccountsJs.trans.tree=new baycik.tree.TreeWidget( {},'acc_tree_div' );
-            with(AccountsJs.trans.tree){
-                    imgPath="js/dhtmlx/tree/imgs/csh_vista/";
-                    request.mod='Accounts';
-                    request.id=0;
-                    onRequest=function( request ){
-                            request.rq='AccountsTree';
-                            Connector.addRequest(request,this,'setData');
-                    }
-                    onInsert=function( request ){
-                            request.rq='TreeItemInsert';
-                            Connector.addRequest(request,this,'onInsertReturn');
-                    }
-                    onUpdate=function( request ){
-                            request.rq='TreeItemUpdate';
-                            Connector.addRequest(request,this,'onUpdateReturn');
-                    }
-                    onDelete=function( request ){
-                            request.rq='TreeItemDelete';
-                            Connector.addRequest(request,this,'onDeleteReturn');
-                    }
-                    onSelect=function( branch_data ){
-                            if( !AccountsJs.trans || !AccountsJs.trans.ledger_grid ){
-                                    alert('Grid is not ready!')
-                                    return;
-                            }
-                            AccountsJs.trans.onBranchSelect(branch_data.branch_id,AccountsJs.trans.tree.tree.getItemText(branch_data.branch_id));
-                    }
-                    AccountsJs.trans.tree.startup();
-            }
-    }
     /////////////////
     //TRANS GRID
     ////////////////
@@ -86,13 +56,13 @@ function(
                 request.rq='AccountLedgerGrid';
                 request.out_type='.print';
                 Acc.printOut( request );
-            }
+            };
             onDownload=function( request ){
                 request.rq='AccountLedgerGrid';
                 request.out_type='.xls';
                 request.limit=0;
                 Connector.addRedirection(request);
-            }
+            };
             onDblClick=function( data ){
                 if( data.rowData['editable']=='user' ){ //Trans can be edited
                     Connector.addRequest({mod:'Accounts',rq:'FetchTransData',trans_id:data.rowData['trans_id']},function(resp){
@@ -111,7 +81,7 @@ function(
                         Acc.showPopup(resp,AccountsJs.trans.transEditCallback,{tpl:'trans_edit.html'});
                     });
                 }
-            }
+            };
             calculateCell=function(cell){
                 var is_active=AccountsJs.trans.accType=='A';
                 var is_plus=cell.cellData>0;
@@ -133,14 +103,14 @@ function(
                         cell.style.push('color:red;font-weight:bold');
                 }
                 return cell;
-            }
+            };
             onAction=function( data ){
                 if( data.action=='unpayed' || data.action=='partly' ){
                     var fvalue={payed_trans_id:data.rowData.trans_id};
                     fvalue.amount=data.rowData.debit||data.rowData.credit;
                     AccountsJs.trans.addTransaction(fvalue);
                 }
-            }
+            };
         }
         this.ledger_grid.onDelete=function(){
             var selectedRows=this.getSelected();
@@ -153,8 +123,9 @@ function(
             }
             else
                 alert("Выберите одну проводку для отмены!");
-        }
+        };
         this.ledger_grid.loadByAccCode=function( acc_code ){
+	    App.cookie('last_acc_code', acc_code );
             AccountsJs.trans.getAccProps(acc_code);
             AccountsJs.trans.ledger_grid.addToRequest({acc_code:acc_code});
             if( !AccountsJs.trans.ledger_grid.started ){
@@ -166,11 +137,12 @@ function(
             else
                 AccountsJs.trans.ledger_grid.loadGrid();
             AccountsJs.trans.loadTransNames( acc_code );
-        }
+        };
         this.ledger_grid.addTrans=function(){
             AccountsJs.trans.addTransaction();
-        }
-    }
+        };
+	this.ledger_grid.startup();
+    };
     AccountsJs.trans.addTransaction=function( fvalue ){
         var fvalue=fvalue||{};
         fvalue.trans_id=0;
@@ -186,7 +158,7 @@ function(
         }
         else
             Acc.showPopup(fvalue,AccountsJs.trans.transEditCallback,{tpl:'trans_edit.html'});		
-    }
+    };
     AccountsJs.trans.transEditCallback=function( request ){
         request.mod="Accounts";
         request.rq=request.cancel==1?'CancelTransaction':'UpdateTransaction';
@@ -195,16 +167,7 @@ function(
         Connector.addRequest(request,function(){
             AccountsJs.trans.ledger_grid.loadGrid();
         });
-    }
-    AccountsJs.trans.onBranchSelect=function(branch_id,branch_name){
-        var matches=branch_name.match(/(\d+)(\W+)/);
-        if( matches !== null ) {
-            AccountsJs.trans.ledger_grid.loadByAccCode(matches[1]);
-            //Acc.renderTpl('acc_trans_head_div',{acc_name:matches[2],acc_code:matches[1]});
-            //AccountsJs.trans.selectedAccounts=matches[1];
-
-        }
-    }
+    };
     /////////////////
     //CALENDAR SCALE
     ////////////////
@@ -219,12 +182,12 @@ function(
         var month_num=(new Date()).getMonth()+1;
         AccountsJs.trans.monthLastSelected=month_num-1;
         AccountsJs.trans.clickMonth(month_num);
-    }
+    };
     AccountsJs.trans.onPeriodChange=function(){
         try{
             var isoidate=locale.format(registry.byId('accounts_idate').get('value'),{selector:"date", datePattern:"yyyy-MM-dd" });		
             var isofdate=locale.format(registry.byId('accounts_fdate').get('value'),{selector:"date", datePattern:"yyyy-MM-dd" });
-            if( AccountsJs.trans.lastIsoIdate==isoidate && AccountsJs.trans.lastIsoFdate==isofdate )
+            if( AccountsJs.trans.lastIsoIdate===isoidate && AccountsJs.trans.lastIsoFdate==isofdate )
                     return;
             AccountsJs.trans.lastIsoIdate=isoidate;
             AccountsJs.trans.lastIsoFdate=isofdate;
@@ -235,13 +198,13 @@ function(
         AccountsJs.trans.ledger_grid.addToRequest({idate:isoidate,fdate:isofdate});
         AccountsJs.trans.ledger_grid.loadGrid();
         query("#acc_month_box>div").style("backgroundColor","");
-    }
+    };
     AccountsJs.trans.clickMonth=function( month_num ){
         var start_month= Math.min(month_num,AccountsJs.trans.monthLastSelected);
         var finish_month=Math.max(month_num,AccountsJs.trans.monthLastSelected);
         AccountsJs.trans.selectMonth( start_month, finish_month  );
         AccountsJs.trans.monthLastSelected=month_num;
-    }
+    };
     AccountsJs.trans.selectMonth=function( start_month, finish_month ){
         var now=new Date();
         registry.byId('accounts_idate').set('value',new Date(now.getFullYear(),start_month-1,1),false);
@@ -251,11 +214,11 @@ function(
                 var m=node.id.split('_')[2]*1;
                 if( start_month<=m && finish_month>=m )
                     node.style.backgroundColor='#f0f';
-                if( AccountsJs.trans.monthLastSelected==m )
+                if( AccountsJs.trans.monthLastSelected===m )
                     node.style.backgroundColor='#0f0';
             });
-        },0);
-    }
+        } , 0);
+    };
     /////////////////
     //TRANS NAMES
     ////////////////
@@ -263,27 +226,27 @@ function(
         Connector.addRequest({mod:'Accounts',rq:'TransNameList',selected_acc:acc_code},function(resp){
                 Acc.renderTpl('acc_sugg_trans_container',resp);
         });
-    }
+    };
     AccountsJs.trans.updateTransName=function( trans_type,trans_name,user_level ){
 	var fvalue={trans_type:trans_type,trans_name:trans_name,user_level:user_level};
 	Acc.showPopup(fvalue,function(fvalue){
 	    var request=fvalue;
 	    request.mod='Accounts';
 	    request.rq='TransNameUpdate';
-	    Connector.addRequest(request,function(resp){
+	    Connector.addRequest(request,function(){
 		    AccountsJs.trans.loadTransNames(AccountsJs.trans.selectedAccounts);
 	    });
-	},{tpl:'trans_name_edit.html'}, {w:460,h:200});
-    }
+	}, {tpl:'trans_name_edit.html'}, {w: 460, h: 200});
+    };
     AccountsJs.trans.addTransName=function(){
         if( !AccountsJs.trans.selectedAccounts )
                 return;
         var acc_code=AccountsJs.trans.selectedAccounts.split(',')[0];
         AccountsJs.trans.updateTransName( acc_code+'_'+acc_code,'',2 );
-    }
+    };
     AccountsJs.trans.showPencilTransName=function(){
         query("#acc_sugg_trans_container img").style("display","");
-    }
+    };
         
         
         
@@ -297,60 +260,31 @@ function(
         
     AccountsJs.trans.getAccFavorites=function(){
         Connector.addRequest({mod:'Accounts',rq:'FavoriteFetch'},function(resp){
-            Acc.renderTpl('acc_favorite_list',{items:resp})
+            Acc.renderTpl('acc_favorite_list',{items:resp});
+	    AccountsJs.trans.ledger_grid.loadByAccCode(App.cookie('last_acc_code'));
         });
-    }
+    };
     AccountsJs.trans.getAccProps=function( acc_code ){
         Connector.addRequest({mod:'Accounts',rq:'getAccountProperties',acc_code:acc_code},function(resp){
             AccountsJs.trans.accProps=resp;
-            AccountsJs.trans.supressUpdate=true;
-            registry.byId('acc_properties').set('value',resp);
-            setTimeout(function(){AccountsJs.trans.supressUpdate=false;},100);
         });
-    }
-    AccountsJs.trans.saveAccProps=function(){
-        if( AccountsJs.trans.supressUpdate )
-            return;
-        var fvalue=registry.byId('acc_properties').get('value');
-        Connector.sendRequest({mod:'Accounts',rq:'setAccountProperties',props:JSON.stringify(fvalue),acc_code:AccountsJs.trans.selectedAccounts},function(){
-            AccountsJs.trans.getAccFavorites();
-            AccountsJs.trans.ledger_grid.loadGrid();
-        });
-    }
+    };
+
+    AccountsJs.trans.init();
 });
 </script>
-<div style="vertical-align:top;">
-    <div style="padding-right:2px;min-width:150px;min-height:300px;display: table-cell;">
+<div style="margin: auto;padding: 10px" id="accounts_trans_divv">
+
         <div id="acc_favorite_list" class="hidden">
             <!--{%for item in items%}-->
-            <div class="light_grad" style="margin:3px;padding:3px;cursor:pointer;width:90%"
-                onclick="AccountsJs.trans.ledger_grid.loadByAccCode('{{item.acc_code}}');">
+            <div class="light_grad" style="margin:3px;padding:3px;cursor:pointer;width:150px;display: inline-block" onclick="AccountsJs.trans.ledger_grid.loadByAccCode(' {{item.acc_code}} ');">
             <img src="img/star.png" align="absmiddle"> {{item.acc_name}} 
             </div>
             <!--{%endfor%}-->
         </div>
-        <hr size="1"/>
-        <div data-dojo-type="dijit/TitlePane" data-dojo-props="open:false" title="Управление счетами">
-            <div id="acc_tree_div"></div>
-            <div align="right">
-                <hr size="1" />
-                <a href="javascript:AccountsJs.trans.tree.insertNew( {is_leaf:1,text:'Новый счет'} )" title="Добавить Счет"><img src="js/baycik/tree/img/add_account.png"></a>
-                <a href="javascript:AccountsJs.trans.tree.insertNew( {text:'Новая категория'} )" title="Добавить Категорию"><img src="js/baycik/tree/img/add_folder.png"></a>
-                <a href="javascript:AccountsJs.trans.tree.deleteSelected()" title="Удалить ветку"><img src="js/baycik/tree/img/edit_delete_small.gif"></a>
-                <a href="javascript:AccountsJs.trans.tree.clearSelection()" title="Отменить выбранное"><img src="js/baycik/tree/img/clear_selection.gif"></a>
-                <a href="javascript:AccountsJs.trans.tree.reload()" title="Обновить дерево"><img src="js/baycik/tree/img/reload_small.gif"></a>
-            </div>            
-        </div>
 
-        <div data-dojo-type="dijit/TitlePane" data-dojo-props="open:false" title="Статьи расходов">
-            <div id="acc_trans_articles">
-                
-            </div>
-        </div>
-
-    </div>
     <div id="acc_container">
-        <div id="accounts_content_pane" style="display:none;border-left:#acf 1px dashed;padding:0px 2px 0px 0px;">
+        <div id="accounts_content_pane" style="display:none;padding:0px 2px 0px 0px;">
             <div style="min-height:50px;">
                 <div style="display: inline-block;float:right;">
                     <div class="button grn_grad" style="min-width:100px;display: inline-block;" title="Входящее сальдо">
@@ -364,29 +298,6 @@ function(
                     </div>
                 </div>
                 <div id="acc_trans_selected_name" style="color:green;font-size: 2em;"></div>
-                <div data-dojo-type="dijit/TitlePane" data-dojo-props="open:false" title="Свойства счета" style="display:inline-block;z-index:1000;">
-                    <form data-dojo-type="dijit/form/Form" style="display: inline-block;" id="acc_properties" onchange="AccountsJs.trans.saveAccProps()">
-                        <input data-dojo-type="dijit/form/TextBox" name="acc_name">
-                        <table>
-                            <tr>
-                                <td>
-                                <input data-dojo-type="dijit/form/CheckBox" name="is_favorite" value="1" title="Избранный счет"/>Избранный<br>
-                                <input data-dojo-type="dijit/form/CheckBox" name="use_clientbank" value="1" title="Использует Клиент-Банк"/>Клиент-Банк<br>
-                                <input data-dojo-type="dijit/form/CheckBox" name="use_articles" value="1" title="Использует Статьи движения денежных средств"/>ДДС<br>                                   
-                                </td>
-                                <td style="vertical-align: top">
-                                    <select data-dojo-type="dijit/form/Select" name="curr_id" onchange="AccountsJs.trans.saveAccProps()">
-                                    <option value="1">UAH</option>
-                                    <option value="2">USD</option>
-                                    <option value="3">RUB</option>
-                                </select><br>
-                                <input data-dojo-type="dijit/form/RadioButton" name="acc_type" value="A">Активный<br>
-                                <input data-dojo-type="dijit/form/RadioButton" name="acc_type" value="P">Пассивный
-                                </td>
-                            </tr>
-                        </table>
-                   </form>                
-                </div>
           </div>
             <div id="account_ledger"></div>
         </div>
@@ -405,15 +316,14 @@ function(
         <div class="trigger month" id="acc_month_11">Ноябрь</div>
         <div class="trigger month" id="acc_month_12">Декабрь</div>
     </div>
-    <div id="acc_sugg_trans_container" class="hidden" style="display: table-cell;vertical-align:top;border-left:#acf 1px dashed;">
-	<b>Проводки по счету</b>
-	<div>
+    <div id="acc_sugg_trans_container" class="hidden" style="display: table-cell;vertical-align:top;">
+	<div title="Проводки по счету">
 	    <!--{%for item in items%}-->
 	    <div class="light_grad" style="margin:3px;padding:3px;cursor:pointer;width:90%"
-		onclick="AccountsJs.trans.addTransaction({trans_type:'{{item.trans_type}}',description:'{{item.trans_name}}',passive_company_id:1})">
+		onclick="AccountsJs.trans.addTransaction({trans_type:' {{item.trans_type}} ',description:' {{item.trans_name}} ',passive_company_id:1})">
 	    <img src="img/edit_add.png" align="absmiddle"> {{item.trans_name}} 
 	    <img src="img/Edit-24.png" style="display:none;" align="absmiddle" 
-		onclick="AccountsJs.trans.updateTransName('{{item.trans_type}}','{{item.trans_name}}','{{item.user_level}}');event.stopPropagation()">
+		onclick="AccountsJs.trans.updateTransName(' {{item.trans_type}} ',' {{item.trans_name}} ',' {{item.user_level}} ');event.stopPropagation()">
 	    </div>
 	    <!--{%endfor%}-->
 	</div>

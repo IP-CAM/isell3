@@ -1,22 +1,21 @@
 <script>
-    AccountsJs = {};
-    AccountsJs.init = function () {
-        Acc.initModTabs(AccountsJs, 'acc_tabs');
+    AccountsJs = {
+	init:function () {
+	    App.initTabs('accounts_main_tabs');
+	},
+	selectTransTab:function (acc_code) {
+	    App.cookie('last_acc_code', acc_code);
+	    $('#accounts_main_tabs').tabs('select','Проводки');
+	    try{
+		AccountsJs.trans.ledger_grid.loadByAccCode(App.cookie('last_acc_code'));
+	    }
+	    catch(e){}
+	}
     };
-    AccountsJs.transold = {};
-    AccountsJs.transold.tpl = 'accounts/transold.html';
-
-    AccountsJs.trans = {};
-    AccountsJs.trans.tpl = 'accounts/trans.html';
-
-    AccountsJs.bank = {};
-    AccountsJs.bank.tpl = 'accounts/bank.html';
-
-    AccountsJs.reports = {};
-    AccountsJs.reports.tpl = 'accounts/reports.html';
 </script>
-<div data-dojo-type="dijit/layout/TabContainer" data-dojo-props="doLayout:false,controllerWidget:'dijit.layout.TabController'" style="margin-left: 0.5%;width: 99%" id="acc_tabs">
-    <div data-dojo-type="dijit/layout/ContentPane" title="Проводки">trans</div>
-    <div data-dojo-type="dijit/layout/ContentPane" title="Клиент-Банк">bank</div>
-    <div data-dojo-type="dijit/layout/ContentPane" title="Отчеты">reports</div>
+<div id="accounts_main_tabs" class="easyui-tabs" style="width:1200px;min-height: 500px;margin: auto;">
+    <div title="План счетов" href="page/accounts/balance.html" style="min-height: 500px;padding:10px;"></div>
+    <div title="Проводки" href="page/accounts/trans.html" style="padding:10px;"></div>
+    <div title="Клиент-Банк" href="page/accounts/bank.html" style="padding:10px;"></div>
+    <div title="Отчеты" href="page/accounts/reports.html" style="padding:10px;"></div>
 </div>

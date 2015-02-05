@@ -1,6 +1,10 @@
 <script type="text/javascript">
-require(["dojo/dom","dijit/registry","dojo/on", "dojo/query","dojo/data/ItemFileReadStore","baycik/grid/DataGrid","dojo/domReady!"],
-function(dom,registry,on,query,ItemFileReadStore){
+    
+    
+    AccountsJs.bank={};
+require(["dojo/dom","dijit/registry","dojo/on", "dojo/query","dojo/data/ItemFileReadStore","dojo/parser","baycik/grid/DataGrid","dojo/domReady!"],
+function(dom,registry,on,query,ItemFileReadStore,parser){
+    parser.parse('accounts_bank_div');
     AccountsJs.bank.init=function(){
 	this.main_acc_code=0;
 	this.initCheckList();
@@ -214,7 +218,8 @@ function(dom,registry,on,query,ItemFileReadStore){
 		Acc.showPopup(fvalue,AccountsJs.bank.transEditCallback,{tpl:'trans_edit.html'});
 	}
 	Connector.addRequest(request,handler);
-    }
+    };
+    AccountsJs.bank.init();
 });
 </script>
 <style type="text/css">
@@ -250,7 +255,7 @@ function(dom,registry,on,query,ItemFileReadStore){
     }
 
 </style>
-<div>
+<div id="accounts_bank_div">
     <div style="display:table-cell;width:400px;vertical-align: top;padding-right: 2px;">
         <div id="bank_correspondent_details_pane" data-dojo-type="dijit/TitlePane" data-dojo-props="open:false" title="Контрагент">
             <div id="bank_correspondent_details" class="hidden">
@@ -271,7 +276,7 @@ function(dom,registry,on,query,ItemFileReadStore){
                             <b>{{acc.balance|default:'0'}}</b>
                             </big></big>
 					    <!--{%ifequal alreadyCommited '0'%}-->
-					    <div class="light_grad" style="float:right;padding:5px;cursor: pointer;" onclick="AccountsJs.bank.addTrans('{{acc.acc_code}}');">
+					    <div class="light_grad" style="float:right;padding:5px;cursor: pointer;" onclick="AccountsJs.bank.addTrans( ' {{acc.acc_code}} ' );">
 					    Провести по счету {{acc.acc_code}}
 					    </div>
 					    <!--{%endifequal%}-->

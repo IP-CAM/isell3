@@ -21,6 +21,18 @@ App.flash = function (msg, type) {
 	App.msg=(App.msg||'')+msg+'<br>';
     }
 };
+App.initTabs= function( tab_id ){
+    $('#'+tab_id).tabs({
+	selected:App.cookie(tab_id),
+	onSelect:function(title,index){
+	    var href=$('#'+tab_id).tabs('getTab',title).panel('options').href;
+	    var id=href.replace(/\//g,'_').replace('.html','');
+	    App[id] && App[id].init ? App[id].init() : '';
+	    App[id] && App[id].initAfter ? App[id].initAfter() : '';
+	    App.cookie(tab_id,title);
+	}
+    });
+};
 App.loadModule = function (path, data) {
     var id = path.replace(/\//g, '_');
     var handler = $.Deferred();
@@ -30,6 +42,7 @@ App.loadModule = function (path, data) {
 	App[id].handler=handler;
 	App[id].init ? App[id].init(data,handler) : '';
  	$.parser.parse("#" + id);//for easy ui
+	App[id].initAfter ? App[id].initAfter(data,handler) : '';
     });
     return handler.promise();
 };
@@ -88,7 +101,7 @@ App.toIso=function(dmY){
     if(dmY instanceof Date){
 	return dmY.getFullYear() + '-' + String("0"+(dmY.getMonth()+1)).slice(-2) +'-' + String("0"+dmY.getDate()).slice(-2);
     }
-    return dmY.replace(/[^\d]/g,'').replace(/^[\d]{4}(\d\d)$/,"20$1").replace(/^(\d\d)(\d\d)(\d\d\d\d)$/,"$3-$2-$1");
+    return dmY?dmY.replace(/[^\d]/g,'').replace(/^[\d]{4}(\d\d)$/,"20$1").replace(/^(\d\d)(\d\d)(\d\d\d\d)$/,"$3-$2-$1"):null;
 };
 App.toDmy=function(iso){
     if(iso instanceof Date){
@@ -98,21 +111,6 @@ App.toDmy=function(iso){
 };
 App.today=function(){
     return App.toDmy( new Date() );
-};
-$.fn.datebox.defaults.formatter = function (date) {
-    return App.toDmy(date);
-};
-$.fn.datebox.defaults.parser = function (s) {
-    if(s instanceof Date){
-	return s;
-    }
-    var date=s.replace(/[^\d]/g,'').replace(/^[\d]{4}(\d\d)$/,"20$1").replace(/^(\d\d)(\d\d)(\d\d\d\d)$/,"$2/$1/$3");
-    var t = Date.parse(date);
-    if (!isNaN(t)) {
-	return new Date(t);
-    } else {
-	return new Date();
-    }
 };
 App.formatNum=function(num,mode){
     if( num===undefined || mode==='clear' && num*1===0 ){
@@ -182,3 +180,22 @@ App.setBg=function(){
     App.cookie('bg',prompt("Введите интернет адрес изображения заднего плана!\n\nНапример\n http://7-themes.com/data_images/out/68/7005391-sport-cars-wallpapers.jpg",App.cookie('bg')));   
     App.loadBg();
 };
+
+$.fn.datebox.defaults.formatter = function (date) {
+    return App.toDmy(date);
+};
+$.fn.datebox.defaults.parser = function (s) {
+    if(s instanceof Date){
+	return s;
+    }
+    var date=s.replace(/[^\d]/g,'').replace(/^[\d]{4}(\d\d)$/,"20$1").replace(/^(\d\d)(\d\d)(\d\d\d\d)$/,"$2/$1/$3");
+    var t = Date.parse(date);
+    if (!isNaN(t)) {
+	return new Date(t);
+    } else {
+	return new Date();
+    }
+};
+$.fn.calendar.defaults.firstDay=1;
+$.fn.calendar.defaults.weeks=['В', 'П', 'В', 'С', 'Ч', 'П', 'С'];
+$.fn.calendar.defaults.months=['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];

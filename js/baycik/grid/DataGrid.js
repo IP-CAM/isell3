@@ -333,7 +333,7 @@ function (
 			}
 		    }
 		    if (column.width) {
-			style.push('width:' + column.width);
+			style.push('max-width:' + column.width);
 		    }
 		    if (column.minWidth) {
 			style.push('min-width:' + column.minWidth);

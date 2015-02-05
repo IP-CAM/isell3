@@ -1,6 +1,8 @@
 <script language="javascript">
-require(["dojo/dom", "dijit/registry", "dojo/on", "dojo/date/locale", "baycik/grid/DataGrid"],
-    function (dom, registry, on, locale) {
+    AccountsJs.reports={};
+require(["dojo/dom", "dijit/registry", "dojo/on", "dojo/date/locale","dojo/parser", "baycik/grid/DataGrid"],
+    function (dom, registry, on, locale,parser) {
+	    parser.parse('accounts_reports_div');
         AccountsJs.reports.init = function () {
             this.initDocRegistry();
             this.initRegForm();
@@ -141,6 +143,7 @@ require(["dojo/dom", "dijit/registry", "dojo/on", "dojo/date/locale", "baycik/gr
                 });
             }
         };
+	AccountsJs.reports.init();
     });
 </script>
 <style type="text/css">
@@ -175,7 +178,7 @@ require(["dojo/dom", "dijit/registry", "dojo/on", "dojo/date/locale", "baycik/gr
         background: -moz-linear-gradient(top, #fff, #eef);
     }
 </style>
-<div>
+<div id="accounts_reports_div">
     <div style="display:table-cell;width:300px;vertical-align: top">
         <div style="margin-top:50px;margin-bottom: 1px;" data-dojo-type="dijit/TitlePane" title="Итого по реестру" data-dojo-props="open:1">
             <div class="table_summary">
