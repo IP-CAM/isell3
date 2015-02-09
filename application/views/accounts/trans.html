@@ -45,7 +45,7 @@ function(
                 Connector.addRequest(request,function(ledger){
                     dom.byId('incoming_balance_div').innerHTML= (ledger.incoming_balance || '0.00')+AccountsJs.trans.accProps.curr_symbol;
                     dom.byId('closing_balance_div').innerHTML= (ledger.closing_balance || '0.00')+AccountsJs.trans.accProps.curr_symbol;
-                    dom.byId('acc_trans_selected_name').innerHTML=ledger.acc_name;
+                    dom.byId('acc_trans_selected_name').innerHTML=ledger.acc_code+' '+ledger.label;
                     AccountsJs.trans.ledgerCurrId=ledger.curr_id;
                     AccountsJs.trans.selectedAccounts=ledger.acc_code;
                     AccountsJs.trans.accType=ledger.acc_type;
@@ -277,8 +277,8 @@ function(
 
         <div id="acc_favorite_list" class="hidden">
             <!--{%for item in items%}-->
-            <div class="light_grad" style="margin:3px;padding:3px;cursor:pointer;width:150px;display: inline-block" onclick="AccountsJs.trans.ledger_grid.loadByAccCode(' {{item.acc_code}} ');">
-            <img src="img/star.png" align="absmiddle"> {{item.acc_name}} 
+            <div class="light_grad" style="margin:3px;padding:3px;cursor:pointer;width:200px;display: inline-block" onclick="AccountsJs.trans.ledger_grid.loadByAccCode({{item.acc_code}});">
+            <img src="img/star.png" align="absmiddle">{{item.acc_code}} {{item.label}} 
             </div>
             <!--{%endfor%}-->
         </div>

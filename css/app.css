@@ -105,10 +105,13 @@ button[diasbled="disabled"]{
 .tabs li a.tabs-inner{
     border-radius: 0px;
 }
+.panel-title{
+    overflow: hidden;
+}
 .panel-body{
     background-color: rgba(255,255,255,0.75);
 }
-.panel-body:not(.datagrid-wrap){
+.easyui-tabs .panel-body:not(.datagrid-wrap){
     background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.65), rgba(150, 200, 255, 0.75)) repeat scroll 0 0 rgba(0, 0, 0, 0) !important;
 }
 

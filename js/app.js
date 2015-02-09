@@ -95,7 +95,7 @@ $(document).ajaxSend(function () {
 //////////////////////////////////////////////////
 App.uri = function () {
     var args = Array.prototype.slice.call(arguments);
-    return args.join('/');
+    return args.map(encodeURIComponent).join('/');
 };
 App.toIso=function(dmY){
     if(dmY instanceof Date){
@@ -196,6 +196,3 @@ $.fn.datebox.defaults.parser = function (s) {
 	return new Date();
     }
 };
-$.fn.calendar.defaults.firstDay=1;
-$.fn.calendar.defaults.weeks=['В', 'П', 'В', 'С', 'Ч', 'П', 'С'];
-$.fn.calendar.defaults.months=['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];

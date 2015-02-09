@@ -13,63 +13,63 @@ class ProcAccounts extends iSellBase {
         $this->response_tpl('accounts/accounts_main.html');
     }
 
-    public function onAccountsTree() {
-        $this->set_level(3);
-        $parent_id = $this->request('id', 1, 0);
-        $direct = $this->request('direct', 1);
-
-        $this->LoadClass('Accounts');
-        $tree_obj = array();
-        $tree_obj['id'] = $parent_id;
-        $tree_obj['item'] = $this->Accounts->getTreeChildren('acc_tree', $parent_id, 'id', 'parent_id', 'text', 'toplevel');
-        if ($direct)
-            $this->response($tree_obj, 1);
-        else
-            $this->response($tree_obj, 1);
-    }
-
-    public function onTreeItemUpdate() {
-        $this->set_level(3);
-        $branch_id = $this->request('branch_id', 1);
-        $parent_id = $this->request('parent_id', 1);
-        $text = $this->request('text');
-
-        $this->LoadClass('Accounts');
-        $acc_id = $this->Accounts->getAccountIdFromBranch($branch_id);
-
-        $ok = $this->Accounts->updateTreeBranch('acc_tree', $branch_id, $parent_id, $text);
-        $this->Accounts->updateAccount($acc_id, array('acc_name' => $text));
-        $this->response($ok);
-    }
-
-    public function onTreeItemInsert() {
-        $this->set_level(3);
-        $parent_id = $this->request('parent_id', 1);
-        $is_leaf = $this->request('is_leaf', 1);
-        $text = $this->request('text');
-        if ($is_leaf)
-            $branch_data = '{"im0":"coins.png"}';
-        $this->LoadClass('Accounts');
-        $new_branch_id = $this->Accounts->insertTreeBranch('acc_tree', $parent_id, $text, $is_leaf, $branch_data);
-        if ($new_branch_id == -1)
-            $this->msg("Невозможно добавить ветку!");
-        else if ($is_leaf) {//Its a company leaf
-            $ok = $this->Accounts->insertNewAccount($new_branch_id, $text, intval($text)/* using first digits */);
-            if (!$ok) {
-                $this->msg(mysql_error());
-                $this->Accounts->deleteTreeBranch('acc_tree', $new_branch_id);
-            }
-        }
-        $this->response($new_branch_id);
-    }
-
-    public function onTreeItemDelete() {
-        $this->set_level(3);
-        $branch_id = $this->request('branch_id', 1);
-        $this->LoadClass('Accounts');
-        $ok = $this->Accounts->deleteAccountBranch($branch_id);
-        $this->response($ok);
-    }
+//    public function onAccountsTree() {
+//        $this->set_level(3);
+//        $parent_id = $this->request('id', 1, 0);
+//        $direct = $this->request('direct', 1);
+//
+//        $this->LoadClass('Accounts');
+//        $tree_obj = array();
+//        $tree_obj['id'] = $parent_id;
+//        $tree_obj['item'] = $this->Accounts->getTreeChildren('acc_tree', $parent_id, 'id', 'parent_id', 'text', 'toplevel');
+//        if ($direct)
+//            $this->response($tree_obj, 1);
+//        else
+//            $this->response($tree_obj, 1);
+//    }
+//
+//    public function onTreeItemUpdate() {
+//        $this->set_level(3);
+//        $branch_id = $this->request('branch_id', 1);
+//        $parent_id = $this->request('parent_id', 1);
+//        $text = $this->request('text');
+//
+//        $this->LoadClass('Accounts');
+//        $acc_id = $this->Accounts->getAccountIdFromBranch($branch_id);
+//
+//        $ok = $this->Accounts->updateTreeBranch('acc_tree', $branch_id, $parent_id, $text);
+//        $this->Accounts->updateAccount($acc_id, array('acc_name' => $text));
+//        $this->response($ok);
+//    }
+//
+//    public function onTreeItemInsert() {
+//        $this->set_level(3);
+//        $parent_id = $this->request('parent_id', 1);
+//        $is_leaf = $this->request('is_leaf', 1);
+//        $text = $this->request('text');
+//        if ($is_leaf)
+//            $branch_data = '{"im0":"coins.png"}';
+//        $this->LoadClass('Accounts');
+//        $new_branch_id = $this->Accounts->insertTreeBranch('acc_tree', $parent_id, $text, $is_leaf, $branch_data);
+//        if ($new_branch_id == -1)
+//            $this->msg("Невозможно добавить ветку!");
+//        else if ($is_leaf) {//Its a company leaf
+//            //$ok = $this->Accounts->insertNewAccount($new_branch_id, $text, intval($text)/* using first digits */);
+//            if (!$ok) {
+//                $this->msg(mysql_error());
+//                $this->Accounts->deleteTreeBranch('acc_tree', $new_branch_id);
+//            }
+//        }
+//        $this->response($new_branch_id);
+//    }
+//
+//    public function onTreeItemDelete() {
+//        $this->set_level(3);
+//        $branch_id = $this->request('branch_id', 1);
+//        $this->LoadClass('Accounts');
+//        $ok = $this->Accounts->deleteAccountBranch($branch_id);
+//        $this->response($ok);
+//    }
 
     ///////////////////////////
     //LEGACY TRANS LEDGER FUNCTIONS
@@ -156,7 +156,7 @@ class ProcAccounts extends iSellBase {
         $out_type = $this->request('out_type', 0, 'json');
         $this->LoadClass('Accounts');
         if (!$acc_code && $acc_branch_id) {
-            $acc_code = $this->Accounts->getAccountCodeFromBranch($acc_branch_id);
+            //$acc_code = $this->Accounts->getAccountCodeFromBranch($acc_branch_id);
         }
 
         if ($out_type == 'json') {

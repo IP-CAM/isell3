@@ -19,8 +19,8 @@ class HubBase extends CI_Controller{
     public function get_list( $sql ){
 	$list=array();
 	$query=$this->db->query($sql);
-	if( $query->num_rows()==0 ){
-	    return null;
+	if( !$query || $query->num_rows()==0 ){
+	    return 0;
 	}
 	foreach( $query->result() as $row ){
 	    $list[]=$row;

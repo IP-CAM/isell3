@@ -369,83 +369,83 @@ class Accounts extends Data {
         return $this->Base->FileEngine->fetch($file_name);
     }
 
-    public function getAccountIdFromBranch($branch_id) {
-        return $this->Base->get_row("SELECT acc_id FROM acc_list WHERE branch_id='$branch_id'", 0);
-    }
+//    public function getAccountIdFromBranch($branch_id) {
+//        return $this->Base->get_row("SELECT acc_id FROM acc_list WHERE branch_id='$branch_id'", 0);
+//    }
 
-    public function getAccountCodeFromBranch($branch_id) {
-        //$where=implode("' OR branch_id='",$this->getSubBranchIds( 'acc_tree', $branch_id ));
-        return $this->Base->get_row("SELECT acc_code FROM acc_list WHERE branch_id='$branch_id'", 0);
-    }
+//    public function getAccountCodeFromBranch($branch_id) {
+//        //$where=implode("' OR branch_id='",$this->getSubBranchIds( 'acc_tree', $branch_id ));
+//        return $this->Base->get_row("SELECT acc_code FROM acc_tree WHERE branch_id='$branch_id'", 0);
+//    }
 
-    public function insertNewAccount($branch_id, $acc_name, $acc_code) {
-        $default_curr_id = $this->Base->acomp('curr_id');
-        $ok=$this->Base->query("INSERT INTO acc_list SET
-                branch_id='$branch_id',
-                acc_code='$acc_code',
-                acc_type='A',
-                acc_name='$acc_name',
-                curr_id=$default_curr_id", 0);
-        $this->rewriteTreePaths(0);
-        return $ok;
-    }
+//    public function insertNewAccount($branch_id, $acc_name, $acc_code) {
+//        $default_curr_id = $this->Base->acomp('curr_id');
+//        $ok=$this->Base->query("INSERT INTO acc_list SET
+//                branch_id='$branch_id',
+//                acc_code='$acc_code',
+//                acc_type='A',
+//                acc_name='$acc_name',
+//                curr_id=$default_curr_id", 0);
+//        $this->rewriteTreePaths(0);
+//        return $ok;
+//    }
 
-    public function updateAccount($acc_id, $data) {//This may be vulnerable
-        $set = '';
-        foreach ($data as $key => $val)
-            $set.=",$key='$val'";
-        $set = substr($set, 1);
-        $this->Base->query("UPDATE acc_list SET $set WHERE acc_id='$acc_id'");
+//    public function updateAccount($acc_id, $data) {//This may be vulnerable
+//        $set = '';
+//        foreach ($data as $key => $val)
+//            $set.=",$key='$val'";
+//        $set = substr($set, 1);
+//        $this->Base->query("UPDATE acc_list SET $set WHERE acc_id='$acc_id'");
+//
+//        //FIXME Optimize for subbranches
+//        $this->rewriteTreePaths(0);
+//    }
 
-        //FIXME Optimize for subbranches
-        $this->rewriteTreePaths(0);
-    }
+//    public function deleteAccountBranch($branch_id) {
+//        $this->Base->set_level(4);
+//        if ($this->Base->request('_confirmed')) {
+//            $delIds = $this->getSubBranchIds('acc_tree', $branch_id);
+//            $sub_branches_where = "branch_id='" . implode("' OR branch_id='", $delIds) . "'";
+//            $this->Base->query("START TRANSACTION");
+//            $this->Base->query("DELETE FROM acc_list WHERE $sub_branches_where");
+//            $this->Base->query("COMMIT");
+//            $this->deleteTreeBranch('acc_tree', $branch_id);
+//            return true;
+//        } else {
+//            $this->Base->response_confirm("Удалить всю информацию данному счету?\nВсе проводки с корр счетами будут удалены!\n\nВнимание этот процесс необратим!\n\n");
+//        }
+//    }
 
-    public function deleteAccountBranch($branch_id) {
-        $this->Base->set_level(4);
-        if ($this->Base->request('_confirmed')) {
-            $delIds = $this->getSubBranchIds('acc_tree', $branch_id);
-            $sub_branches_where = "branch_id='" . implode("' OR branch_id='", $delIds) . "'";
-            $this->Base->query("START TRANSACTION");
-            $this->Base->query("DELETE FROM acc_list WHERE $sub_branches_where");
-            $this->Base->query("COMMIT");
-            $this->deleteTreeBranch('acc_tree', $branch_id);
-            return true;
-        } else {
-            $this->Base->response_confirm("Удалить всю информацию данному счету?\nВсе проводки с корр счетами будут удалены!\n\nВнимание этот процесс необратим!\n\n");
-        }
-    }
+//    private function rewriteTreePaths($branch_id) {
+//
+//        function findPath(&$_this, $prefix, $parent_id) {
+//            $res = $_this->Base->query("SELECT branch_id,label FROM acc_tree WHERE parent_id='$parent_id'");
+//            if (mysql_num_rows($res) > 0) {
+//                while ($row = mysql_fetch_assoc($res)) {
+//                    $new_prefix = $prefix . '>' . $row['label'];
+//                    findPath($_this, $new_prefix, $row['branch_id']);
+//                }
+//            } else
+//                $prefix = substr($prefix, 1);
+//            $_this->Base->query("UPDATE acc_list SET branch_path='$prefix' WHERE branch_id='$parent_id'");
+//            mysql_free_result($res);
+//        }
+//
+//        findPath($this, '', $branch_id);
+//    }
 
-    private function rewriteTreePaths($branch_id) {
+//    public function getPriceListStructure() {
+//        return $this->getTableStructure('price_list');
+//    }
 
-        function findPath(&$_this, $prefix, $parent_id) {
-            $res = $_this->Base->query("SELECT branch_id,label FROM acc_tree WHERE parent_id='$parent_id'");
-            if (mysql_num_rows($res) > 0) {
-                while ($row = mysql_fetch_assoc($res)) {
-                    $new_prefix = $prefix . '>' . $row['label'];
-                    findPath($_this, $new_prefix, $row['branch_id']);
-                }
-            } else
-                $prefix = substr($prefix, 1);
-            $_this->Base->query("UPDATE acc_list SET branch_path='$prefix' WHERE branch_id='$parent_id'");
-            mysql_free_result($res);
-        }
-
-        findPath($this, '', $branch_id);
-    }
-
-    public function getPriceListStructure() {
-        return $this->getTableStructure('price_list');
-    }
-
-    public function fetchPriceListData($table_query) {
-        $table = 'price_list';
-        return $this->getTableData($table, $table_query, "product_code,price_usd,price_uah,buy_price_usd,buy_price_uah");
-    }
+//    public function fetchPriceListData($table_query) {
+//        $table = 'price_list';
+//        return $this->getTableData($table, $table_query, "product_code,price_usd,price_uah,buy_price_usd,buy_price_uah");
+//    }
 
     public function fetchAccList($use_clientbank) {
-        $response = array('identifier' => 'acc_code', 'label' => 'branch_path', 'items' => array());
-        $res = $this->Base->query("SELECT acc_id,acc_code,acc_name,branch_path FROM acc_list WHERE IF($use_clientbank,use_clientbank,1) ORDER BY branch_path");
+        $response = array('identifier' => 'acc_code', 'label' => 'path', 'items' => array());
+        $res = $this->Base->query("SELECT acc_id,acc_code,label acc_name,path FROM acc_tree WHERE IF($use_clientbank,use_clientbank,1) ORDER BY branch_path");
         //$response['items'][]=array('acc_id'=>'0','acc_code'=>'99999','acc_name'=>'','branch_path'=>'---');
         while ($row = mysql_fetch_assoc($res)) {
             $response['items'][] = $row;
@@ -456,7 +456,7 @@ class Accounts extends Data {
 
     public function getAccountBalance($acc_code, $pcomp_id = NULL) {
         $passive_case = ($pcomp_id === NULL) ? "" : "passive_company_id=$pcomp_id AND";
-        $account = $this->Base->get_row("SELECT * FROM acc_list WHERE acc_code='$acc_code'");
+        $account = $this->Base->get_row("SELECT * FROM acc_tree WHERE acc_code='$acc_code'");
         $account['balance'] = $this->Base->get_row("SELECT ROUND(SUM(IF(acc_debit_code='$acc_code',amount,-amount)),2) 
             FROM acc_trans 
             WHERE $passive_case (acc_debit_code='$acc_code' OR acc_credit_code='$acc_code')", 0);
@@ -590,19 +590,19 @@ class Accounts extends Data {
         $this->Base->query("UPDATE acc_trans SET check_id=$check_id WHERE trans_id=$trans_id");
     }
 
-    public function favoriteUpdate($acc_code, $is_favorite) {
-        $this->Base->set_level(3);
-        $this->Base->query("UPDATE acc_list SET is_favorite='$is_favorite' WHERE acc_code='$acc_code'");
-    }
+//    public function favoriteUpdate($acc_code, $is_favorite) {
+//        $this->Base->set_level(3);
+//        $this->Base->query("UPDATE acc_tree SET is_favorite='$is_favorite' WHERE acc_code='$acc_code'");
+//    }
 
     public function favoriteFetch() {
-        return $this->Base->get_list("SELECT * FROM acc_list WHERE is_favorite=1 ORDER BY acc_code");
+        return $this->Base->get_list("SELECT * FROM acc_tree WHERE is_favorite=1 ORDER BY acc_code");
     }
 
-    public function clientBankUseSet($acc_code, $use_clientbank) {
-        $this->Base->set_level(3);
-        $this->Base->query("UPDATE acc_list SET use_clientbank='$use_clientbank' WHERE acc_code='$acc_code'");
-    }
+//    public function clientBankUseSet($acc_code, $use_clientbank) {
+//        $this->Base->set_level(3);
+//        $this->Base->query("UPDATE acc_list SET use_clientbank='$use_clientbank' WHERE acc_code='$acc_code'");
+//    }
 
     /////////////////////////////////////
     // REPORTS SECTION
@@ -752,27 +752,27 @@ class Accounts extends Data {
 
 
 
-    public $getAccountProperties='(int) acc_code';
+    //public $getAccountProperties='(int) acc_code';
     
     public function getAccountProperties($acc_code) {
-        return $this->Base->get_row("SELECT acc_list.*,curr_list.curr_symbol  FROM acc_list JOIN curr_list USING(curr_id) WHERE acc_code='$acc_code'");
+        return $this->Base->get_row("SELECT * FROM acc_tree JOIN curr_list ON (curr_list.curr_id=acc_tree.curr_id OR curr_list.curr_id=1) WHERE acc_code=$acc_code");
     }
 
-    public $setAccountProperties='(int) acc_code,(json) props';
-    
-    public function setAccountProperties($acc_code, $props) {
-        $this->Base->set_level(4);
-        $sql = "UPDATE acc_list SET 
-                is_favorite='{$props['is_favorite'][0]}',
-                use_clientbank='{$props['use_clientbank'][0]}',
-                use_articles='{$props['use_articles'][0]}',
-                acc_name='{$props['acc_name']}',
-                acc_type='{$props['acc_type']}',
-                curr_id='{$props['curr_id']}'
-                WHERE acc_code=$acc_code";
-        $this->Base->query($sql);
-	return true;
-    }
+//    public $setAccountProperties='(int) acc_code,(json) props'; JOIN curr_list ON (curr_list.curr_id=1)
+//    
+//    public function setAccountProperties($acc_code, $props) {
+//        $this->Base->set_level(4);
+//        $sql = "UPDATE acc_list SET 
+//                is_favorite='{$props['is_favorite'][0]}',
+//                use_clientbank='{$props['use_clientbank'][0]}',
+//                use_articles='{$props['use_articles'][0]}',
+//                acc_name='{$props['acc_name']}',
+//                acc_type='{$props['acc_type']}',
+//                curr_id='{$props['curr_id']}'
+//                WHERE acc_code=$acc_code";
+//        $this->Base->query($sql);
+//	return true;
+//    }
 
 }
 
