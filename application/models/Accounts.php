@@ -445,7 +445,7 @@ class Accounts extends Data {
 
     public function fetchAccList($use_clientbank) {
         $response = array('identifier' => 'acc_code', 'label' => 'path', 'items' => array());
-        $res = $this->Base->query("SELECT acc_code,label acc_name,path FROM acc_tree WHERE IF($use_clientbank,use_clientbank,1) ORDER BY branch_path");
+        $res = $this->Base->query("SELECT acc_code,label acc_name,path FROM acc_tree WHERE IF($use_clientbank,use_clientbank,1) ORDER BY acc_code");
         //$response['items'][]=array('acc_id'=>'0','acc_code'=>'99999','acc_name'=>'','branch_path'=>'---');
         while ($row = mysql_fetch_assoc($res)) {
             $response['items'][] = $row;
