@@ -1,7 +1,51 @@
 <script type="text/javascript">
-    TradeJs={};
-    TradeJs.init=function(){
-	App.loadModule('page/accounts/balance');
+    TradeJs = {
+	init:function(){
+	    
+	    App.loadWindow('page/trade/document',{doc_id:557});
+	    //App.loadModule('page/trade/document_list');
+	},
+	selectCompany:function(company){
+	    $.ajax({
+		url: 'Company/selectPassiveCompany/' + company.company_id
+	    });
+	    App.pcomp=company;
+	}
     };
 </script>
-<div id="page_accounts_balance"></div>
+<div class="transp60" style="min-width:200px;padding:5px;float:left">
+    <input class="easyui-combobox" data-options="
+	valueField: 'company_id',
+	textField: 'label',
+	url: 'Company/listFetch/',
+	mode: 'remote',
+	method:'get',
+	onSelect: TradeJs.selectCompany
+	">
+    <ul class="easyui-tree " data-options="
+	url:'Company/branchFetch/',
+	method:'get',
+	loadFilter:function(data){
+	    for(var i in data){
+		data[i].id=data[i].branch_id;
+		data[i].text=data[i].label;
+	    }
+	    return data;
+	},
+	onSelect:function(node){
+	    if(node.state=='closed')
+		$(this).tree('expand',node.target);
+	    else
+		TradeJs.selectCompany(node);
+	},
+	animate:true,
+	dnd:true">
+    </ul>
+</div>
+ 
+<div id="page_trade_documents" class="transp_grad" style="width:1200px;min-height: 500px;margin: auto;"></div>
+<!--
+<div id="trade_main_tabs" class="easyui-tabs" style="width:1200px;min-height: 500px;margin: auto;">
+    <div title="Документы" href="page/trade/documents.html" style="min-height: 500px;padding:10px;"></div>
+</div>
+-->

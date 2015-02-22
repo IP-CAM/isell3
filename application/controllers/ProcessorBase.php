@@ -273,7 +273,7 @@ class ProcessorBase extends Session {
     }
     
     public function LoadClass($class_name) {
-	$this->load->model($class_name);
+	$this->load->model('proc/'.$class_name);
 //	if ( isset($this->$class_name) ){
 //	    return;
 //	}

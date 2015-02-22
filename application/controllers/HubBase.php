@@ -10,33 +10,30 @@ class HubBase extends CI_Controller{
 	session_set_cookie_params(36000, '/');
 	session_name('baycikSid' . BAY_COOKIE_NAME);
 	session_start();
-	if (method_exists($this, 'initApplication')) {
-	    $this->initApplication();
-	}
-	//$this->DataBase();
     }
     
-    public function get_list( $sql ){
-	$list=array();
-	$query=$this->db->query($sql);
-	if( !$query || $query->num_rows()==0 ){
-	    return 0;
-	}
-	foreach( $query->result() as $row ){
-	    $list[]=$row;
-	}
-	$query->free_result();
-	return $list;
+    public function acomp($name){
+	$acomp=$this->svar('acomp');
+
+	return isset($acomp[$name])?$acomp[$name]:NULL;
     }
     
+    public function pcomp($name){
+	$pcomp=$this->svar('pcomp');
+	return isset($pcomp->$name)?$pcomp->$name:NULL;
+    }
     
     public function svar($name, $value = NULL) {
 	if (isset($value)) {
 	    $_SESSION[$name] = $value;
 	}
-	return isset($_SESSION[$name])?$_SESSION[$name]:'';
+	return isset($_SESSION[$name])?$_SESSION[$name]:NULL;
     }
-
+    public function load_model( $name ){
+	$this->load->model($name);
+	$this->{$name}->Base=$this;
+    }
+    
     public function set_level($allowed_level) {
 	if ($this->svar('user_level') < $allowed_level) {
 	    if ($this->svar('user_level') == 0) {
@@ -62,11 +59,24 @@ class HubBase extends CI_Controller{
 	$this->msg.="$msg\n";
     }
 
+    public function db_msg(){
+	switch( $this->db->_error_number() ){
+	    case 1451:
+		$this->msg('Элемент ипользуется, поэтому не может быть изменен или удален!');
+		break;
+	    default:
+		header("X-isell-type:error");
+		show_error($this->msg."<br>".$this->db->_error_message()."<pre>".$this->db->last_query()."<pre>", 500);
+		break;
+	}
+    }
+    
+    
     public function response( $response ){
 	$this->output->set_header("X-isell-msg:".urlencode($this->msg));
 	$this->output->set_header("X-isell-type:".$this->rtype);
 	
-	if(is_array($response) ){
+	if( is_array($response) || is_object($response) ){
 	    $this->output->set_header("Content-type:text/plain;charset=utf8"); 
 	    $this->output->set_output(json_encode($response,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE));	    
 	}

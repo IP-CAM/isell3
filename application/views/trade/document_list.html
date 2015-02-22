@@ -1,0 +1,76 @@
+<script type="text/javascript" src="js/jquery-easyui-1.4/datagridfilter/datagrid-filter.js"></script>
+<script type="text/javascript">
+    App.page_trade_document_list = {
+	init: function () {
+
+	},
+	initAfter: function () {
+	    this.list.init();
+	}
+    };
+    App.page_trade_document_list.list = {
+	init: function () {
+	},
+	toggleFilter: function () {
+	    if (this.filterEnabled) {
+		$('#document_list_dg').datagrid('disableFilter');
+		this.filterEnabled = false;
+	    }
+	    else {
+		$('#document_list_dg').datagrid('enableFilter');
+		this.filterEnabled = true;
+	    }
+	},
+	toggleHide: function(){
+	    if (this.colsHidden) {
+		$('#document_list_dg').datagrid('showColumn','doc_type_name');
+		$('#document_list_dg').datagrid('showColumn','company_name');
+		$('#document_list_dg').datagrid('showColumn','views');
+		$('#document_list_dg').datagrid('resize',{width:650});
+		this.colsHidden = false;
+	    }
+	    else {
+		$('#document_list_dg').datagrid('hideColumn','doc_type_name');
+		$('#document_list_dg').datagrid('hideColumn','company_name');
+		$('#document_list_dg').datagrid('hideColumn','views');
+		$('#document_list_dg').datagrid('resize',{width:270});
+		this.colsHidden = true;
+	    }	    
+	}
+    };
+</script>
+<div style="display: table-cell;min-width: 270px;padding: 20px;">
+    <div class="easyui-panel" title="Новый документ" style="min-height: 150px">
+	<button style="margin: 50px;"><img src="img/edit_add.png" title="Создать документ" style="vertical-align: middle"> Создать документ</button>
+    </div>
+</div>
+<div style="display: table-cell;">
+    <table id="document_list_dg" class="easyui-datagrid" title="Список документов" style="width:650px;"
+	   data-options="
+	   noheader:true,
+	   singleSelect:true,
+	   remoteFilter:true,
+	   url:'Document/listFetch',
+	   tools:'#document_list_dg_tools',
+	   method:'get'">
+	<thead>
+	    <tr>
+		<th data-options="width:30,field:'doc_type_icon',align:'center',formatter:App.page_trade_documents.list.tooltip">Док</th>
+		<th data-options="width:65,field:'doc_date'">Дата</th>
+		<th data-options="width:140,field:'doc_type_name'">Документ</th>
+		<th data-options="width:50,field:'doc_num',align:'right'">Номер</th>
+		<th data-options="width:60,field:'amount',align:'right'">Сумма</th>
+		<th data-options="width:30,field:'commited',align:'center',formatter:App.datagrid.tooltip">ПР</th>
+		<th data-options="width:30,field:'trans_status',align:'center',formatter:App.datagrid.tooltip">Опл</th>
+		<th data-options="width:120,field:'company_name'">Компания</th>
+		<th data-options="width:120,field:'views'">Шаблоны печати</th>
+	    </tr>
+	</thead>
+    </table>
+</div>
+
+<div id="document_list_dg_tools">
+    <a href="javascript:void(0)" class="icon-eye" onclick="App.page_trade_documents.list.toggleHide();" title="Скрыть/показать колонки"></a>
+    <a href="javascript:void(0)" class="icon-filter" onclick="App.page_trade_documents.list.toggleFilter();" title="Фильтр таблицы"></a>
+    <a href="javascript:void(0)" class="icon-reload" onclick="$('#document_list_dg').datagrid('reload')" title="Обновить"></a>
+</div>

@@ -64,12 +64,7 @@ h6{
     padding: 0px;
     vertical-align: middle;
 }
-.transparent{
-    opacity:0.5;
-}
-.transparent:hover{
-    opacity: 1;
-}
+
 .hidden{
     display:none !important;
 }
@@ -188,11 +183,7 @@ h6{
     background:url(../img/bg.jpg) repeat-x top #ffffff;
     z-index:99999999;
 }
-input{
-    font-family:"Trebuchet MS", Arial, Helvetica, sans-serif;
-    color:#356;
-    border:1px solid #cdf;
-}
+
 .tile_item{
     border: solid 1px #9ab;
     border-radius:5px;

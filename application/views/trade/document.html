@@ -1,0 +1,142 @@
+<script type="text/javascript">
+    App.page_trade_document = {
+	init: function () {
+	    this.node.window({
+		title: 'Документ',
+		width: 700,
+		height: 'auto',
+		top: 50,
+		onClose: function () {
+		    App.page_trade_document.handler.notify('close');
+		}
+	    });
+	    this.load(this.data.doc_id);
+	},
+	load: function (doc_id) {
+	    App.page_trade_document.head.load(doc_id);
+	}
+    };
+
+    App.page_trade_document.head = {
+	load: function (doc_id) {
+	    App.setupForm("#page_dialog_event_frm", {});
+	    $.get('Document/headGet/' + doc_id, function (xhr) {
+		var head = JSON.parse(xhr);
+		head.shown_price = "with_vat";
+		$('#page_dialog_event_frm').form('load', head);
+	    });
+	},
+	formatterComboType: function (data) {
+	    return "<img src='img/" + ["", "sell", "buy", "serviceout", "servicein"][Math.abs(data.value)] + ".png'> " + data.text;
+	}
+    };
+
+    App.page_trade_document.entries = {
+	loader: function (param, success, error) {
+	    $.post("Document/entriesFetch/", function (xhr) {
+		try {
+		    var resp = JSON.parse(xhr);
+		    success(resp ? resp : []);
+		}
+		catch (e) {
+		}
+	    });
+	},
+	suggestSelect: function () {
+
+	}
+    };
+</script>
+<form id="page_dialog_event_frm" onsubmit="return false;" style="-moz-user-select:none;">
+    <div style="width: 658px;margin: auto;">
+	<div>
+	    <select class="easyui-combobox" data-options="
+		    editable:false,
+		    formatter:App.page_trade_document.head.formatterComboType,
+		    panelHeight:'auto'" name="doc_type" title="Вид">
+		<option value="1">Реализация</option>
+		<option value="2">Поступление</option>
+		<option value="-1">Реализация Возврат </option>
+		<option value="-2">Поступление Возврат </option>
+		<option value="3">Оказание услуги</option>
+		<option value="4">Получение услуги</option>
+	    </select>
+	    <input type="text" name="doc_ratio" class="easyui-numberbox" data-options="min:1,precision:2" title="Курс">
+	    <input type="text" name="doc_date" class="easyui-datebox" data-options="required:'required'" title="Дата">
+	    <input type="text" name="doc_num" class="easyui-numberspinner" data-options="min:1,required:'required'" title="Номер">
+	</div>
+	<div id="document_utils" style="display: none">
+	    <div class="inp_rule"></div>
+	    <select class="easyui-combobox" name="notcount" data-options="editable:false,panelHeight:'auto'" title="На складе">
+		<option value="0">Учитывать</option>
+		<option value="1">Неучитывать</option>
+	    </select>
+	    <input type="text" name="signs_after_dot" class="easyui-numberspinner" data-options="min:0,max:5,editable:false,required:'required'" title="Точность">
+	    <select class="easyui-combobox" data-options="editable:false,panelHeight:'auto'" name="shown_price" title="Цена">
+		<option value="with_vat">В том числе НДС</option>
+		<option value="vatless">Плюс НДС</option>
+	    </select>
+	    <input type="text" name="vat_rate" class="easyui-numberbox" data-options="min:0,precision:0" title="НДС %">
+	</div>
+	<div style="text-align: center" class="force_center force_opaque">
+	    <div id="document_tool_bar" class="" style="padding:1px;text-align: right;">
+		<div style="float:left" title="← для вывода предыдущего запроса,↑ для вывода предыдущего кода">
+		    <input class="easyui-combobox" style="width:230px;" data-options="
+			   valueField: 'product_code',
+			   textField: 'label',
+			   selectOnNavigation:true,
+			   url: 'Document/suggestFetch/',
+			   panelHeight:'auto',
+			   mode: 'remote',
+			   method:'get',
+			   hasDownArrow:false,
+			   panelWidth:400,
+			   panelMinWidth:400,
+			   prompt:'Введите код, название или штрихкод',
+			   onSelect: App.page_trade_document.entries.suggestSelect
+			   ">
+		    <input type="text" class="easyui-numberbox" style="width:50px;" value="1" data-options="min:1,precision:0,prompt:'Кол-во'">
+		    <a href="#" class="easyui-linkbutton" iconCls="icon-add" title="Добавить строку в документ" plain="true"></a>
+		</div>
+
+		<span class="icon-24 icon-lorry"> </span>
+		<span class="icon-24 icon-sms"> </span>
+		<span class="icon-24 icon-delete"> </span>
+		<span class="icon-24 icon-calc"> </span>
+		<span class="icon-24 icon-utils" onclick="$('#document_utils').toggle('slow')"> </span>
+		<span class="icon-24 icon-refresh"> </span>
+	    </div>
+	</div>
+
+	<table class="easyui-datagrid" title="DataGrid with Toolbar" style="width:660px;"
+	       data-options="
+	       rownumbers:true,
+	       noheader:true,
+	       ctrlSelect:true,
+	       loader:App.page_trade_document.entries.loader,
+	       method:'get'
+	       ">
+	    <thead>
+		<tr>
+		    <th data-options="field:'product_code',width:80">Код</th>
+		    <th data-options="field:'product_name',width:327">Название</th>
+		    <th data-options="field:'product_quantity',width:50,align:'right'">Кол-во</th>
+		    <th data-options="field:'product_unit',width:40,align:'center'">Ед.</th>
+		    <th data-options="field:'product_price',width:55,align:'right'">Цена</th>
+		    <th data-options="field:'product_sum',width:55,align:'right'">Сумма</th>
+		    <th data-options="field:'row_status',width:24,align:'center',formatter:App.datagrid.tooltip">!</th>
+		</tr>
+	    </thead>
+	</table>
+	<textarea name="doc_data" title="Комментарий" placeholder="Комментарий" data-skip="1" style="width: 650px;height:30px;margin-left:0px;margin-top: 3px;background-color: #dfd"></textarea>
+    </div>
+</form>
+<style type="text/css">
+    .force_center .panel{
+	margin:auto;
+    }
+    .combo-panel{
+	cursor: default;
+	background-color: #fff;
+    }
+</style>

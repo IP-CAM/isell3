@@ -27,6 +27,7 @@ class Hub extends HubBase{
     public function page(){
 	$file_name = "application/views/".implode('/',func_get_args());
 	if( file_exists($file_name) ){
+	    header("X-isell-type:OK");
 	    include $file_name;
 	}
 	else{
@@ -36,17 +37,5 @@ class Hub extends HubBase{
     }
     
     
-    public function db_msg(){
-	switch( $this->db->_error_number() ){
-	    case 1451:
-		$this->msg('Элемент ипользуется, поэтому не может быть изменен или удален!');
-		break;
-	    
-	    
-	    default:
-		$this->msg($this->db->_error_message());
-		break;
-	}
-    }
-    
+
 }

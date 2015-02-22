@@ -4,8 +4,36 @@ class Catalog extends CI_Model {
     ////////////////////////////////////////////////////
     // CORE LIST FUNCTIONS
     ////////////////////////////////////////////////////
-    private function get( $table_name, $key ){
-	return $this->db->get_where( $table_name, $key )->row();
+    protected function get_list( $query ){
+	$list=array();
+	if(is_string($query)){
+	    $query=$this->db->query($query);
+	}
+	if( !$query || $query->num_rows()==0 ){
+	    $this->db->_error_number()?$this->Base->db_msg():'';
+	    return NULL;
+	}
+	foreach( $query->result() as $row ){
+	    $list[]=$row;
+	}
+	$query->free_result();
+	return $list;
+    }
+    protected function get_row( $query ){
+	if(is_string($query)){
+	    $query=$this->db->query($query);
+	}
+	if( !$query || $query->num_rows()==0 ){
+	    $this->db->_error_number()?$this->Base->db_msg():'';
+	    return NULL;
+	}
+	$row=$query->row();
+	$query->free_result();
+	return $row;
+    }
+    
+    protected function get( $table, $key ){
+	return $this->db->get_where( $table, $key )->row();
     }
     private function create($table,$data) {
 	$this->db->insert($table, $data);
@@ -25,7 +53,7 @@ class Catalog extends CI_Model {
     ////////////////////////////////////////////////////
     // CORE TREE FUNCTIONS
     ////////////////////////////////////////////////////
-    private function treeFetch($table, $parent_id = 0, $depth = 'all') {
+    protected function treeFetch($table, $parent_id = 0, $depth = 'all') {
 	$branches = array();
 	$res = $this->db->query("SELECT * FROM $table WHERE parent_id=$parent_id ORDER BY is_leaf,label");
 	foreach ($res->result() as $row) {
@@ -98,6 +126,23 @@ class Catalog extends CI_Model {
 	return false;
     }
     ////////////////////////////////////////////////////
+    // EASYUI DATAGRID FUNCTIONS
+    ////////////////////////////////////////////////////    
+    protected function decodeFilterRules(){
+	$raw=$this->input->get('filterRules');
+	$filter=json_decode($raw);
+	if( !is_array($filter) || count($filter)===0 ){
+	    return 1;
+	}
+	$having=array();
+	foreach( $filter as $rule ){
+	    $having[]="$rule->field LIKE '%$rule->value%'";
+	}
+	return implode(' AND ',$having);
+    }
+    
+    
+    ////////////////////////////////////////////////////
     // CORE TABLE ROW FUNCTIONS
     ////////////////////////////////////////////////////    
     public function rowGet( $table, $key_field, $id ){
@@ -128,162 +173,4 @@ class Catalog extends CI_Model {
 	$data=  json_decode($json);
 	return $this->update($table,$data,$key);
     }
-    
-    
-    
-    
-    
-    
-    ////////////////////////////////////////////////////
-    // ACCOUNTS SPECIFIC FUNCTIONS
-    ////////////////////////////////////////////////////
-    public function accountBalanceTreeFetch( $parent_id=0, $idate='', $fdate='', $show_unused=0 ){
-	$this->Base->set_level(3);
-	$this->db->query("SET @idate='$idate 00:00:00', @fdate='$fdate 23:59:59', @parent_id='$parent_id';");
-	$sql=
-	"SELECT 
-	    d.branch_id,
-	    d.label,
-	    d.acc_code,
-	    d.acc_type,
-	    d.curr_id,
-	    (SELECT curr_symbol FROM curr_list WHERE curr_id=d.curr_id) curr_symbol,
-	    d.is_favorite,
-	    d.use_clientbank,
-	    IF( is_leaf,'','closed') state,
-	    is_leaf,
-	    IF(d.acc_type='P',-1,1)*(COALESCE(open_d,0)-COALESCE(open_c,0)) open_bal,
-	    period_d,
-	    period_c,
-	    IF(d.acc_type='P',-1,1)*(COALESCE(close_d,0)-COALESCE(close_c,0)) close_bal
-	FROM
-	    (SELECT 
-		tree.*,
-		ROUND(SUM(IF(dtrans.cstamp < @idate, dtrans.amount, 0)), 2) open_d,
-		ROUND(SUM(IF(dtrans.cstamp > @idate AND dtrans.cstamp < @fdate,dtrans.amount,0)),2) period_d,
-		ROUND(SUM(IF(dtrans.cstamp < @fdate, dtrans.amount, 0)), 2) close_d
-	    FROM
-		acc_tree tree
-		    LEFT JOIN 
-		acc_tree subtree ON subtree.path LIKE CONCAT(tree.path,'%')
-		    LEFT JOIN
-		acc_trans dtrans ON dtrans.acc_debit_code = subtree.acc_code
-	    WHERE
-		tree.parent_id=@parent_id
-	    GROUP BY tree.branch_id) d
-	JOIN
-	    (SELECT 
-		tree.branch_id,
-		ROUND(SUM(IF(ctrans.cstamp < @idate, ctrans.amount, 0)), 2) open_c,
-		ROUND(SUM(IF(ctrans.cstamp > @idate AND ctrans.cstamp < @fdate,ctrans.amount,0)),2) period_c,
-		ROUND(SUM(IF(ctrans.cstamp < @fdate, ctrans.amount, 0)), 2) close_c
-	    FROM
-		acc_tree tree
-		    LEFT JOIN 
-		acc_tree subtree ON subtree.path LIKE CONCAT(tree.path,'%')
-		    LEFT JOIN
-		acc_trans ctrans ON ctrans.acc_credit_code = subtree.acc_code
-	    WHERE
-		tree.parent_id=@parent_id
-	    GROUP BY tree.branch_id) c 
-	ON (d.branch_id=c.branch_id) 
-	HAVING IF( $show_unused, 1, open_bal OR  period_d OR period_c OR close_bal )
-	ORDER BY acc_code";
-	return $this->Base->get_list($sql);
-    }
-    public function accountBalanceTreeCreate( $parent_id, $label ){
-	$this->treeUpdate('acc_tree',$parent_id,'is_leaf',0);
-	$new_code=  $this->accountCodeAssign( $parent_id );
-	$branch_id= $this->treeCreate('acc_tree','leaf',$parent_id,$label);
-	$ok=$this->update('acc_tree',array('acc_code'=>$new_code),array('branch_id'=>$branch_id));
-	if( $ok ){
-	    return "$branch_id,$new_code";
-	}
-	return "$branch_id,";
-    }
-    private function accountCodeAssign( $parent_id ){
-	$row=$this->db->query("SELECT MAX(acc_code)+1 acc_code FROM acc_tree WHERE parent_id=$parent_id")->row();
-	if( !$row->acc_code ){
-	    $row=$this->db->query("SELECT CONCAT(acc_code,'1') acc_code FROM acc_tree WHERE branch_id=$parent_id")->row();
-	}
-	return $row->acc_code;
-    }
-    
-    
-    
-    
-    ////////////////////////////////////////////////////
-    // COMPANY SPECIFIC FUNCTIONS
-    ////////////////////////////////////////////////////
-    public function companyTreeFetch() {
-	$parent_id = $this->input->post('id') or $parent_id = 0;
-	$table = "companies_tree LEFT JOIN companies_list USING(branch_id)";
-	return $this->treeFetch($table, $parent_id, 'top');
-    }
-    public function companyCreate($parent_id){
-    }
-    public function companyUpdate($company_id, $field, $value) {
-	$key = array(
-	    'company_id' => $company_id
-	);
-	$data = array(
-	    $field => $value
-	);
-	return $this->update("companies_tree LEFT JOIN companies_list USING(branch_id)", $key, $data);
-    }
-    public function companyDelete($company_id){
-	$company_id=(int) $company_id;
-	$row = $this->db->query("SELECT branch_id FROM companies_list WHERE company_id='$company_id'")->row();
-	if( $row && $row->branch_id ){
-	    return $this->treeDelete('companies_tree', $row->branch_id);
-	}
-	return false;
-    }
-}
-
-class CatalogUtils {
-
-//    public function CatalogUtils($db) {
-//	$this->db = $db;
-//    }
-//
-//    public function struct($table) {
-//
-//	function calc_props($type) {
-//	    if (strstr($type, 'tinyint')) {
-//		return array(
-//		    'width' => 20,
-//		    'cellalign' => 'center',
-//		    'bool' => 1
-//		);
-//	    }
-//	    if (strstr($type, 'int') || strstr($type, 'double')) {
-//		return array(
-//		    'width' => 50,
-//		    'cellalign' => 'right'
-//		);
-//	    }
-//	    if (strstr($type, 'text')) {
-//		return array(
-//		    'width' => 200
-//		);
-//	    }
-//	    return array(
-//		'width' => 100
-//	    );
-//	}
-//
-//	$struct = array();
-//	$res = $this->db->query("SHOW FULL COLUMNS FROM $table");
-//	foreach ($res->result() as $col) {
-//	    $props = (object) calc_props($col->Type);
-//	    $props->datafield = $col->Field;
-//	    $props->text = $col->Comment;
-//	    $props->key = $col->Key;
-//	    $struct['cols'][] = $props;
-//	}
-//	$res->free_result();
-//	return $struct;
-//    }
-
 }

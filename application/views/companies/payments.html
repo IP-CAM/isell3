@@ -236,10 +236,10 @@ function(dom,registry,on,locale,query){
 	<div id="paym_company_accounts" style="display: table-cell;vertical-align:top;">
 		<b>Счета по компании</b>
 		<!--{%for acc in accs%}-->
-		<div id="paym_acc_button_{{acc.acc_code|default:''}}" onclick="CompaniesJs.payments.selectCompanyAccount('{{acc.acc_code|default:\'\'}}')" class="acc_label">
+		<div id="paym_acc_button_{{acc.acc_code|default:''}}" onclick="CompaniesJs.payments.selectCompanyAccount('{{acc.acc_code}}')" class="acc_label">
 			<img src="img/hrivna24.png" align="absmiddle">
 			<b><big><big><!--{{acc.balance|default:'0'}} {{acc.curr_symbol|default:''}}--></big></big></b><br>
-			<i> <!--{{acc.acc_name|default:''}}--></i>
+			<i> <!--{{acc.acc_code|default:''}}--> <!--{{acc.label|default:''}}--></i>
 		</div>
 		<!--{%endfor%}-->
 	</div>
