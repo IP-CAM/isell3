@@ -1,0 +1,14 @@
+<script type="text/javascript">
+    App.page_trade_view_settings = {
+	init: function () {
+	    this.node.window({
+		title: 'Свойства бланка',
+		width: 300,
+		height: 'auto',
+		onClose: function () {
+		    App.page_view_settings.handler.notify('close');
+		}
+	    });
+	}
+    };
+</script>

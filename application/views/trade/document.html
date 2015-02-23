@@ -24,7 +24,9 @@
 		var head = JSON.parse(xhr);
 		head.shown_price = "with_vat";
 		$('#page_dialog_event_frm').form('load', head);
+		App.renderTpl('document_owners',head);
 	    });
+	    App.page_trade_document.view.loadTile();
 	},
 	formatterComboType: function (data) {
 	    return "<img src='img/" + ["", "sell", "buy", "serviceout", "servicein"][Math.abs(data.value)] + ".png'> " + data.text;
@@ -33,21 +35,58 @@
 
     App.page_trade_document.entries = {
 	loader: function (param, success, error) {
-	    $.post("Document/entriesFetch/", function (xhr) {
+	    $.post("Document/documentGet/", function ( xhr ) {
 		try {
-		    var resp = JSON.parse(xhr);
-		    success(resp ? resp : []);
+		    var resp = JSON.parse( xhr );
+		    success(resp.entries ? resp.entries : []);
+		    App.page_trade_document.entries.renderFooter( resp.footer );
 		}
 		catch (e) {
 		}
 	    });
 	},
+	renderFooter:function( data ){
+	    App.renderTpl('document_footer',data);
+	},
 	suggestSelect: function () {
 
 	}
     };
+    App.page_trade_document.view={
+	loadTile:function(){
+	    var _this=this;
+	    var doc_id=App.page_trade_document.data.doc_id;
+	    $.get('View/listFetch/' + doc_id, function (xhr) {
+		_this.views = _this.compile(JSON.parse(xhr));
+		App.renderTpl('document_view_tile',{views:_this.views});
+	    });
+	},
+	compile:function( views ){
+	    for( var i in views ){
+		var view=views[i];
+		try{
+		    var efield_vals=JSON.parse(view.view_efield_values);
+		    var efield_labs=JSON.parse(view.view_efield_labels);
+		    views[i].efields=[];
+		    for( var k in efield_labs ){
+			views[i].efields.push({field:k,label:efield_labs[k],value:efield_vals[k]});
+		    }
+		}
+		catch(e){};
+	    }
+	    return views;
+	},
+	settings:function( i ){
+	    var view=App.page_trade_document.view.views[i];
+	    App.loadWindow('page/trade/view_settings',view);
+	},
+	click:function(doc_view_id){
+	    window.open("./?mod=Companies&rq=DocumentOut&doc_view_id="+doc_view_id, '_new');
+	}
+    };
 </script>
 <form id="page_dialog_event_frm" onsubmit="return false;" style="-moz-user-select:none;">
+    <!-- DOCUMENT HEADER -->
     <div style="width: 658px;margin: auto;">
 	<div>
 	    <select class="easyui-combobox" data-options="
@@ -78,7 +117,7 @@
 	    </select>
 	    <input type="text" name="vat_rate" class="easyui-numberbox" data-options="min:0,precision:0" title="НДС %">
 	</div>
-	<div style="text-align: center" class="force_center force_opaque">
+	<div>
 	    <div id="document_tool_bar" class="" style="padding:1px;text-align: right;">
 		<div style="float:left" title="← для вывода предыдущего запроса,↑ для вывода предыдущего кода">
 		    <input class="easyui-combobox" style="width:230px;" data-options="
@@ -107,8 +146,8 @@
 		<span class="icon-24 icon-refresh"> </span>
 	    </div>
 	</div>
-
-	<table class="easyui-datagrid" title="DataGrid with Toolbar" style="width:660px;"
+	<!-- DOCUMENT ENTRIES -->
+	<table class="easyui-datagrid" style="width:660px;"
 	       data-options="
 	       rownumbers:true,
 	       noheader:true,
@@ -128,7 +167,52 @@
 		</tr>
 	    </thead>
 	</table>
-	<textarea name="doc_data" title="Комментарий" placeholder="Комментарий" data-skip="1" style="width: 650px;height:30px;margin-left:0px;margin-top: 3px;background-color: #dfd"></textarea>
+        <!-- DOCUMENT FOOTER -->
+	<div id="document_footer">
+	    <table style="float:left" class="footer_table">
+		<tr>
+		    <td>Вес:</td><td style="font-weight: bold;">{{total_weight}} кг</td>
+		</tr>
+		<tr>
+		    <td>Объем:</td><td style="font-weight: bold;">{{total_volume}} м<sup>3</sup></td>
+		</tr>
+	    </table>
+
+	    <table style="float:right" class="footer_table">
+		<tr>
+		    <td>Всего:</td><td style="font-weight: bold;">{{vatless}} {{curr_symbol}}</td>
+		</tr>
+		<tr>
+		    <td>НДС:</td><td style="font-weight: bold;">{{vat}} {{curr_symbol}}</td>
+		</tr>
+		<tr>
+		    <td>Всего с НДС:</td><td style="font-weight: bold;">{{total}} {{curr_symbol}}</td>
+		</tr>
+	    </table>
+	    <div id="document_owners" class="transparent" style="clear: left">
+		<img src="img/add-16.png" title="Создано пользователем" style="vertical-align: middle"> {{created_by}} 
+		<img src="img/edit-16.png" title="Изменено пользователем" style="vertical-align: middle"> {{modified_by}}
+	    </div>
+	</div>
+	<!-- DOCUMENT VIEWS -->
+	<div id="document_view_tile" style="clear:both;">
+	    {{views}}
+	    <div class="view_button transparent" data-view-id="{{doc_view_id}}" onclick="App.page_trade_document.view.click( $(this).attr('data-view-id') )">
+		<img src="img/settings.png" data-view-i="{{#}}" onclick="App.page_trade_document.view.settings( $(this).attr('data-view-i') );event.stopPropagation()" style="float:right;">
+		<div>{{view_name}}</div>
+		#{{view_num}} {{view_date}}
+		
+		<div class="view_efields transp60">
+		{{if efields}}
+		    {{efields}}
+		     {{label}}: {{if value}}<u>{{value}}</u>{{/if}}<br/>
+		    {{/efields}}
+		{{/if}}
+		</div>
+	    </div>
+	    {{/views}}
+	</div>
+	<textarea name="doc_data" title="Комментарий" placeholder="Комментарий" data-skip="1" class="document_comment"></textarea>
     </div>
 </form>
 <style type="text/css">
@@ -138,5 +222,54 @@
     .combo-panel{
 	cursor: default;
 	background-color: #fff;
+    }
+    .document_comment{
+	width: 650px;
+	height:30px;
+	margin-left:0px;
+	margin-top: 3px;
+	background-color: #dfd
+    }
+    .footer_table {
+	background-image: linear-gradient(#fff 0%,  #eee 100%);
+	border-collapse: collapse;
+	margin:5px -2px 2px 0px;
+    }
+    .footer_table td{
+	text-align: right;
+	width: 80px;
+	border: 1px solid #ccc;
+	padding: 3px;
+    }
+    .view_button{
+	display: inline-block;
+	border: 1px #999 solid;
+	color: #000;
+	border-radius: 3px;
+	width:150px;
+	margin: 0px 5px 5px 0px;
+	text-align: center;
+	background-image: linear-gradient(rgba(255,255,255,0.75) 0%,  rgba(255,255,255,0) 100%);
+	background-color:#ffe48d;
+	cursor: pointer;
+    }
+    .view_button img{
+	visibility: hidden;
+	z-index: 10;
+    }
+    .view_button:hover img{
+	visibility: visible;
+    }
+    .view_button:hover .view_efields{
+	display: block;
+    }
+    .view_efields{
+	position: absolute;
+	text-align: left;
+	width:150px;
+	border: 1px #999 solid;
+	overflow: hidden;
+	display: none;
+	margin-left:-1px;
     }
 </style>

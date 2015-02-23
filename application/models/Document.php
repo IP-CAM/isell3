@@ -102,6 +102,30 @@ class Document extends DocumentCore{
 	    ";
 	return $this->get_list($sql);
     }
+    private function footerGet(){
+	$doc_id=$this->doc('doc_id');
+	$this->calcCorrections();
+	$sql = "
+	    SELECT
+		total_weight,
+		total_volume,
+		vatless,
+		total - vatless vat,
+		total,
+		@curr_symbol curr_symbol,
+		self
+	    FROM
+		(SELECT
+		    ROUND(SUM(product_quantity*product_weight),2) total_weight,
+		    ROUND(SUM(product_quantity*product_volume),2) total_volume,
+		    SUM(ROUND(product_quantity*invoice_price * @curr_correction,2)) vatless,
+		    SUM(ROUND(product_quantity*invoice_price * @curr_correction * @vat_ratio,2)) total,
+		    SUM(ROUND(product_quantity*self_price,2)) self
+		FROM
+		    document_entries JOIN prod_list USING(product_code)
+		WHERE doc_id='$doc_id') t";
+	return $this->get_row($sql);
+    }
     public function entriesFetch(){
 	$doc_id=$this->doc('doc_id');
 	$this->calcCorrections();
@@ -128,12 +152,21 @@ class Document extends DocumentCore{
             ORDER BY pl.product_code";
 	return $this->get_list($sql);
     }
+    public function documentGet(){
+	$document=array();
+	$document['entries']=$this->entriesFetch();
+	$document['footer']=$this->footerGet();
+	return $document;
+    }
     private function calcCorrections() {
 	$doc_id=$this->doc('doc_id');
+	$curr_symbol=$this->Base->pcomp('curr_symbol');
 	$native_curr=($this->Base->pcomp('curr_code') == $this->Base->acomp('curr_code'))?1:0;
 	$sql="SELECT 
-		@vat_correction:=IF(use_vatless_price,1,1+vat_rate/100) vat_correction,
-		@curr_correction:=IF($native_curr,1,1/doc_ratio) curr_correction
+		@vat_ratio:=1+vat_rate/100 vat_ratio,
+		@vat_correction:=IF(use_vatless_price,1,@vat_ratio) vat_correction,
+		@curr_correction:=IF($native_curr,1,1/doc_ratio) curr_correction,
+		@curr_symbol:='$curr_symbol' curr_symbol
 	    FROM
 		document_list
 	    WHERE

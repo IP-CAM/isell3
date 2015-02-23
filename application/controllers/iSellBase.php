@@ -53,12 +53,22 @@ class iSellBase extends ProcessorBase{
         $this->selectActiveCompany( $this->acomp('company_id') );
     }
     public function acomp($name,$warn=true){
-        if( isset($this->_acomp[$name]) )return $this->_acomp[$name];
-        else if( $warn )$this->response_error("Trying to access Active company property '$name', but it's not loaded");else return false;
+        if( is_array($this->_acomp) && isset($this->_acomp[$name]) ){
+	    return $this->_acomp[$name];
+	}
+	else if( is_object($this->_acomp) && isset($this->_acomp->$name) ){
+	     return $this->_acomp->$name;
+	}
+        return NULL;
     }
     public function pcomp($name,$warn=true){
-        if( isset($this->_pcomp[$name]) )return $this->_pcomp[$name];
-        else if( $warn )$this->response_error("Trying to access Passive company property '$name', but it's not loaded");else return false;
+        if( is_array($this->_pcomp) && isset($this->_pcomp[$name]) ){
+	    return $this->_pcomp[$name];
+	}
+	else if( is_object($this->_pcomp) && isset($this->_pcomp->$name) ){
+	     return $this->_pcomp->$name;
+	}
+        return NULL;
     }
     public function loadSessionData(){
         if( isset($_SESSION['acomp']) )
