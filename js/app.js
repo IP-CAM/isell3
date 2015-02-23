@@ -1,105 +1,71 @@
-var App = {};
-App.flash = function (msg, type) {
-    if (type === 'error') {
-	$("#appStatus").html(msg);
-	$("#appStatus").window({
-	    title: 'Ошибка',
-	    width: 800,
-	    height: 300
-	});
-	$("#appStatus").window('move', {top: 0});
-    }
-    else if (type === 'alert') {
-	$.messager.alert('Внимание!', msg, 'error');
-    }
-    else {
-	clearTimeout(App.flashClock);
-	App.flashClock = setTimeout(function () {
-	    $.messager.show({title: 'Сообщение', msg: App.msg, showType: 'show'});
-	    App.msg = '';
-	}, 300);
-	App.msg = (App.msg || '') + msg + '<br>';
-    }
-};
-App.initTabs = function (tab_id) {
-    $('#' + tab_id).tabs({
-	selected: App.cookie(tab_id),
-	onSelect: function (title, index) {
-	    var href = $('#' + tab_id).tabs('getTab', title).panel('options').href;
-	    var id = href.replace(/\//g, '_').replace('.html', '');
-	    App[id] && App[id].init ? App[id].init() : '';
-	    App[id] && App[id].initAfter ? App[id].initAfter() : '';
-	    App.cookie(tab_id, title);
-	}
-    });
-};
-App.loadModule = function (path, data) {
-    var id = path.replace(/\//g, '_');
-    var handler = $.Deferred();
-    App[id] = {};
-    $("#" + id).load(path + '.html', function () {
-	App[id].data = data;
-	App[id].handler = handler;
-	App[id].node = $("#" + id);
-	App[id].init ? App[id].init(data, handler) : '';
-	$.parser.parse("#" + id);//for easy ui
-	App[id].initAfter ? App[id].initAfter(data, handler) : '';
-    });
-    return handler.promise();
-};
-App.loadWindow = function (path, data) {
-    var id = path.replace(/\//g, '_');
-    if (!$('#' + id).length) {
-	$('#appWindowContainer').append('<div id="' + id + '" class="app_window"></div>');
-    }
-    return App.loadModule(path, data);
-};
-App.init = function () {
-    //App.loadModule('appMenu');
-    //App.loadWindow('catalog/company_list');
-    //App.loadWindow('catalog/company_form');
-    //App.loadWindow('page/dialog/move_doc');
-    App.loadBg();
-};
-$(App.init);
-
-
-//////////////////////////////////////////////////
-//AJAX SETUP
-//////////////////////////////////////////////////
-$.ajaxSetup({
-    cache: true
-});
-$(document).ajaxComplete(function (event, xhr, settings) {
-    $(document).css('cursor', '');
-    var type = xhr.getResponseHeader('X-isell-type');
-    var msg = xhr.getResponseHeader('X-isell-msg');
-    if (msg) {
-	var msg = decodeURIComponent(msg.replace(/\+/g, " "));
+var App = {
+    tplcache:{},
+    urlcache:{},
+    init: function () {
+	App.loadBg();
+    },
+    flash:function (msg, type) {
 	if (type === 'error') {
-	    App.flash(msg, 'error');
+	    $("#appStatus").html(msg);
+	    $("#appStatus").window({
+		title: 'Ошибка',
+		width: 800,
+		height: 300
+	    });
+	    $("#appStatus").window('move', {top: 0});
+	}
+	else if (type === 'alert') {
+	    $.messager.alert('Внимание!', msg, 'error');
 	}
 	else {
-	    App.flash(msg);
+	    clearTimeout(App.flashClock);
+	    App.flashClock = setTimeout(function () {
+		$.messager.show({title: 'Сообщение', msg: App.msg, showType: 'show'});
+		App.msg = '';
+	    }, 300);
+	    App.msg = (App.msg || '') + msg + '<br>';
 	}
+    },
+    initTabs: function (tab_id) {
+	$('#' + tab_id).tabs({
+	    selected: App.cookie(tab_id),
+	    onSelect: function (title, index) {
+		var href = $('#' + tab_id).tabs('getTab', title).panel('options').href;
+		var id = href.replace(/\//g, '_').replace('.html', '');
+		App[id] && App[id].init ? App[id].init() : '';
+		App[id] && App[id].initAfter ? App[id].initAfter() : '';
+		App.cookie(tab_id, title);
+	    }
+	});
+    },
+    loadModule: function (path, data) {
+	var id = path.replace(/\//g, '_');
+	var handler = $.Deferred();
+	App[id] = {};
+	$("#" + id).load(path + '.html', function () {
+	    App[id].data = data;
+	    App[id].handler = handler;
+	    App[id].node = $("#" + id);
+	    App[id].init ? App[id].init(data, handler) : '';
+	    $.parser.parse("#" + id);//for easy ui
+	    App[id].initAfter ? App[id].initAfter(data, handler) : '';
+	});
+	return handler.promise();
+    },
+    loadWindow: function (path, data) {
+	var id = path.replace(/\//g, '_');
+	if (!$('#' + id).length) {
+	    $('#appWindowContainer').append('<div id="' + id + '" class="app_window"></div>');
+	}
+	return App.loadModule(path, data);
     }
-    else if (!type || type.indexOf('OK') === -1) {
-	App.flash("<h3>url: " + settings.url + "</h3>" + xhr.responseText, 'error');
-    }
-});
-$(document).ajaxError(function (event, xhr, settings) {
-    var type = xhr.getResponseHeader('X-isell-type');
-    if (type && type.indexOf('OK') > -1) {
-	return;
-    }
-    App.flash("<h3>url: " + settings.url + "</h3>" + xhr.responseText, 'error');
-});
-$(document).ajaxSend(function () {
-    $(document).css('cursor', 'wait');
-});
+};
+$(App.init);
 //////////////////////////////////////////////////
 //UTILS
 //////////////////////////////////////////////////
+
+
 App.uri = function () {
     var args = Array.prototype.slice.call(arguments);
     return args.map(encodeURIComponent).join('/');
@@ -200,7 +166,60 @@ App.datagrid = {
 	    return '';
     }
 };
+App.renderTpl=function( id, data ){
+    if( !this.tplcache[id] ){
+	this.tplcache[id]=$('#'+id).html();
+    }
+    //this.loadScript('js/markup.min.js',function(){
+	$('#'+id).html( Mark.up(App.tplcache[id], data) );
+    //});
+};
+//App.loadScript = function (path,handler) {
+//    if( this.urlcache[path] ){
+//	handler();
+//    }
+//    else {
+//	$.getScript(path,handler);
+//	this.urlcache[path]=1;
+//    }
+//};
 
+
+
+
+//////////////////////////////////////////////////
+//AJAX SETUP
+//////////////////////////////////////////////////
+$.ajaxSetup({
+    cache: true
+});
+$(document).ajaxComplete(function (event, xhr, settings) {
+    $(document).css('cursor', '');
+    var type = xhr.getResponseHeader('X-isell-type');
+    var msg = xhr.getResponseHeader('X-isell-msg');
+    if (msg) {
+	var msg = decodeURIComponent(msg.replace(/\+/g, " "));
+	if (type === 'error') {
+	    App.flash(msg, 'error');
+	}
+	else {
+	    App.flash(msg);
+	}
+    }
+    else if (!type || type.indexOf('OK') === -1) {
+	App.flash("<h3>url: " + settings.url + "</h3>" + xhr.responseText, 'error');
+    }
+});
+$(document).ajaxError(function (event, xhr, settings) {
+    var type = xhr.getResponseHeader('X-isell-type');
+    if (type && type.indexOf('OK') > -1) {
+	return;
+    }
+    App.flash("<h3>error url: " + settings.url + "</h3>" + xhr.responseText, 'error');
+});
+$(document).ajaxSend(function () {
+    $(document).css('cursor', 'wait');
+});
 $.fn.datebox.defaults.formatter = function (date) {
     return App.toDmy(date);
 };
