@@ -54,6 +54,11 @@ class ProcHome extends iSellBase {
         $this->Home->getGridOut($grid_structure, $grid_data['grid'], $out_type);
         exit;
     }
+     public function onFetchAvgRate(){
+         $this->LoadClass('Home');
+         $avg=$this->Home->fetchAvgRate();
+         $this->response($avg);
+     }
 
 }
 
