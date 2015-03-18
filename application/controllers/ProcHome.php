@@ -55,8 +55,10 @@ class ProcHome extends iSellBase {
         exit;
     }
      public function onFetchAvgRate(){
+         $year=$this->request('year');
+         $month=$this->request('month');
          $this->LoadClass('Home');
-         $avg=$this->Home->fetchAvgRate();
+         $avg=$this->Home->fetchAvgRate($month,$year);
          $this->response($avg);
      }
 
