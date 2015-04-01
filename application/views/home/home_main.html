@@ -88,7 +88,7 @@ function (ready, dom, on, registry, Tooltip, DataGrid) {
     HomeJs.initAvgRatio=function(){
 	var month=registry.byId("avgratio_month").get('value');
 	var year=registry.byId("avgratio_year").get('value');
-	Connector.addRequest({fn:'Home:fetchAvgRate',month:month,year:year},function(response){
+	Connector.addRequest({mod:'Home',rq:'FetchAvgRate',month:month,year:year},function(response){
 	    if( response ){
 		Acc.renderTpl('avgratio_result',response);
 		$("#avgratio_result").css('display','block');
@@ -107,6 +107,7 @@ function (ready, dom, on, registry, Tooltip, DataGrid) {
 	vertical-align: top;
 	border: 1px #fff solid;
 	padding: 2px;
+        background: rgba(255, 255, 255, 0.6); 
     }
     .report_frame_title{
 	background-color: white;
