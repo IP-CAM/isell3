@@ -64,8 +64,37 @@ $(App.init);
 //////////////////////////////////////////////////
 //UTILS
 //////////////////////////////////////////////////
-
-
+App.json=function( text ){
+    try{
+	return text==''?null:JSON.parse(text);
+    }
+    catch(e){
+	alert(text);
+	console.log('isell-app: '+e+text);
+	return null;
+    }
+};
+//App.xhr={
+//    wait:false,
+//    sequence:[],
+//    post:function( url, data, success, dataType ){
+//	this.sequence.push({url:url,data:data,success:success,dataType:dataType});
+//	this.next();
+//    },
+//    next:function(){
+//	if( this.wait ){
+//	    return;
+//	}
+//	this.send( this.sequence.shift() );
+//    },
+//    send:function( rq ){
+//	this.wait=true;
+//	$.post(rq.url,rq.data,rq.success.success,rq.dataType).always(function(){
+//	    App.xhr.wait=false;
+//	    App.xhr.next();
+//	});
+//    }
+//};
 App.uri = function () {
     var args = Array.prototype.slice.call(arguments);
     return args.map(encodeURIComponent).join('/');
@@ -96,7 +125,7 @@ App.setupForm = function (fquery, fvalue) {
 	return false;
     }
     $(fquery + " input," + fquery + " textarea," + fquery + " select").each(function (i, element) {
-	$(element).val(fvalue[element.name] || '');
+	$(element).val(fvalue[element.name] || $(element).val() || '');
 	if ($(element).attr('type') === 'hidden') {
 	    return true;
 	}

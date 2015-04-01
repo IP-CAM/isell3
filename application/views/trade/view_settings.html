@@ -2,13 +2,45 @@
     App.page_trade_view_settings = {
 	init: function () {
 	    this.node.window({
-		title: 'Свойства бланка',
-		width: 300,
+		title: 'Свойства бланка: '+App.page_trade_view_settings.data.view_name,
+		width: 350,
 		height: 'auto',
 		onClose: function () {
-		    App.page_view_settings.handler.notify('close');
+		    App.page_trade_view_settings.handler.notify('close');
 		}
 	    });
+	    this.initEfields(this.data);
+	    App.setupForm("#view_settings_frm",this.data).change(function(){
+		App.page_trade_view_settings.fieldChanged(this.name,this.value)
+	    });
+		    
+	},
+	initEfields:function(data){
+	    App.renderTpl('view_settings_efields',data);
+
+	},
+	fieldChanged:function( name, value ){
+	    alert(value);
 	}
     };
 </script>
+<form id="view_settings_frm">
+    <input type="date" name="view_date" class="easyui-datebox" title="Дата" 
+	   data-options="required:'required',
+	   onChange:function(val){App.page_trade_view_settings.fieldChanged('view_date',val);}">
+    <input type="text" name="view_num" class="easyui-numberspinner" title="Номер" data-options="min:1,required:'required',
+	   onChange:function(val){App.page_trade_view_settings.fieldChanged('view_num',val);}">
+    <div class="inp_rule"></div>
+    <div id="view_settings_efields">
+    {{if efields}}
+	{{efields}}
+	<input type="text" name="{{field}}" title="{{label}}" value="{{value}}">
+	{{/efields}}
+    {{/if}}
+    </div>
+</form>
+<div style="text-align: center">
+    <button><img src="img/Save-24.png" style="vertical-align: middle"> Сохранить</button>
+    <button><img src="img/delete.png" style="vertical-align: middle"> Удалить</button>
+</div>
+<br>

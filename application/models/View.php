@@ -1,6 +1,6 @@
 <?php
-require_once 'Document.php';
-class View extends Document{
+require_once 'DocumentItems.php';
+class View extends DocumentItems{
     public function listFetch(){
 	$doc_id=$this->doc('doc_id');
 	$sql="SELECT 

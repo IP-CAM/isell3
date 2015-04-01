@@ -2,7 +2,7 @@
 
 require_once 'Data.php';
 
-class DocumentUtils extends Data {
+class Document extends Data {
 
     protected $vat_rate = 1;
     public $use_vatless_price = 0;
@@ -23,6 +23,9 @@ class DocumentUtils extends Data {
 	}
 	if (isset($this->_doc[$name])) {
 	    return $this->_doc[$name];
+	}
+	else if (isset($this->_doc->$name)) {
+	    return $this->_doc->$name;
 	} else {
 	    $this->Base->msg("Trying to access DOCUMENT property '$name', but it's not loaded\n");
 	    return NULL;
@@ -169,9 +172,9 @@ class DocumentUtils extends Data {
 	return $discount !== NULL ? $discount : 1;
     }
 
-}
-
-class DocumentCore extends DocumentUtils {
+/////////////////////////////////////////////////////////////////
+//DOCUMENT CORE
+/////////////////////////////////////////////////////////////////
 
     public function commit() {
 	$this->Base->set_level(2);
@@ -420,9 +423,10 @@ class DocumentCore extends DocumentUtils {
 	$this->updateTrans();
 	$this->setDocumentModifyingUser();
     }
-}
+/////////////////////////////////////////////////////////////////
+//DOCUMENT VIEW
+/////////////////////////////////////////////////////////////////
 
-class DocumentView extends DocumentCore {
 
     public function getViewOut($doc_view_id) {
 	$view = $this->getDocViewData($doc_view_id);
@@ -652,9 +656,10 @@ class DocumentView extends DocumentCore {
 	$cstamp = $this->doc('cstamp');
 	$this->Base->query("INSERT INTO document_view_list SET doc_id='$doc_id', view_type_id='$view_type_id', view_efield_values='$efields', tstamp='$cstamp', view_num='$view_num'");
     }
-}
+/////////////////////////////////////////////////////////////////
+//DOCUMENT ALL
+/////////////////////////////////////////////////////////////////
 
-class Document extends DocumentView {
     /////////////////////////////////////////////
     // CRUD
     /////////////////////////////////////////////

@@ -167,3 +167,15 @@ button[diasbled="disabled"]{
 .icon-utils{
     background:url('../img/utils.png') no-repeat center center;
 }
+.icon-sell{
+    background:url('../img/sell.png') no-repeat center center;
+}
+.icon-buy{
+    background:url('../img/buy.png') no-repeat center center;
+}
+.icon-servicein{
+    background:url('../img/servicein.png') no-repeat center center;
+}
+.icon-serviceout{
+    background:url('../img/serviceout.png') no-repeat center center;
+}

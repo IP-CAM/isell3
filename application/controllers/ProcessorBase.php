@@ -2,6 +2,9 @@
 //extends CI_Controller
 class InputOutput extends CI_Controller{
     function InputOutput(){
+	if( BAY_OMIT_CONTROLLER_CONSTRUCT ){
+	    return;
+	}
 	parent::__construct();
     }
     
@@ -186,7 +189,7 @@ class Session extends DataBase {
     public function Session() {
 	session_set_cookie_params(36000, '/');
 	session_name('baycikSid' . BAY_COOKIE_NAME);
-	session_start();
+	@session_start();
 	if (method_exists($this, 'initApplication')) {
 	    $this->initApplication();
 	}
@@ -273,13 +276,13 @@ class ProcessorBase extends Session {
     }
     
     public function LoadClass($class_name) {
-	$this->load->model('proc/'.$class_name);
-//	if ( isset($this->$class_name) ){
-//	    return;
-//	}
-//	//echo var_dump(stream_resolve_include_path ( "./isell/$class_name/" ));
-//	require_once "application/models/$class_name.php";
-//	$this->$class_name = new $class_name();
+	//$this->load->model('proc/'.$class_name);
+	if ( isset($this->$class_name) ){
+	    return;
+	}
+	//echo var_dump(stream_resolve_include_path ( "./isell/$class_name/" ));
+	require_once "application/models/proc/$class_name.php";
+	$this->$class_name = new $class_name();
 	$this->$class_name->Base = $this;
 	if (method_exists($this->$class_name, 'Init'))
 	    $this->$class_name->Init();

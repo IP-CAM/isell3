@@ -1,5 +1,6 @@
 <script type="text/javascript">
-    App.page_trade_document = {
+    /* global App */
+    var Doc=App.page_trade_document = {
 	init: function () {
 	    this.node.window({
 		title: 'Документ',
@@ -7,55 +8,133 @@
 		height: 'auto',
 		top: 50,
 		onClose: function () {
-		    App.page_trade_document.handler.notify('close');
+		    Doc.handler.notify('close');
+		    delete Doc,App.page_trade_document;
 		}
 	    });
-	    this.load(this.data.doc_id);
+	    this.head.load(this.data.doc_id);
 	},
-	load: function (doc_id) {
-	    App.page_trade_document.head.load(doc_id);
+	initAfter:function(){
+	    this.suggest.init();
 	}
     };
-
-    App.page_trade_document.head = {
+    /////////////////////////////////////////////
+    // HEAD
+    /////////////////////////////////////////////
+    Doc.head = {
 	load: function (doc_id) {
-	    App.setupForm("#page_dialog_event_frm", {});
-	    $.get('Document/headGet/' + doc_id, function (xhr) {
-		var head = JSON.parse(xhr);
-		head.shown_price = "with_vat";
-		$('#page_dialog_event_frm').form('load', head);
-		App.renderTpl('document_owners',head);
+	    App.setupForm("#document_head_frm", {});
+	    $.get('DocumentItems/headGet/' + doc_id, function (xhr) {
+		Doc.head.props = App.json(xhr);
+		Doc.head.props.shown_price = "with_vat";
+		Doc.head.setPropsForm(Doc.head.props);
+		App.renderTpl('document_owners',Doc.head.props);
+		Doc.entries.reload();
+		Doc.head.typeComboFormatterIcon(Doc.head.props.doc_type);
 	    });
-	    App.page_trade_document.view.loadTile();
+	    Doc.view.loadTile();
 	},
-	formatterComboType: function (data) {
+	setPropsForm:function(props){
+	    Doc.head.loaded=false;
+	    $('#document_head_frm').form('load', props);
+	    Doc.head.loaded=true;
+	},
+	update:function( field, value, oldval ){
+	    if( Doc.head.loaded ){
+		$.post('DocumentItems/headUpdate/'+field+'/'+value,function(ok){
+		    if( !ok ){
+			Doc.head.setPropsForm(Doc.head.props);
+			App.flash('Свойства документа не были сохранены');
+		    }
+		    else{
+			Doc.head.props[field]=value;
+			Doc.head.afterUpdate(field, value, oldval );
+		    }
+		});
+	    }
+	},
+	afterUpdate:function( field, value, oldval ){
+	    switch( field ){
+		case 'doc_ratio':
+		    Doc.entries.reload();
+		    break;
+	    }
+	    
+	},
+	typeComboFormatter: function (data) {
 	    return "<img src='img/" + ["", "sell", "buy", "serviceout", "servicein"][Math.abs(data.value)] + ".png'> " + data.text;
+	},
+	typeComboFormatterIcon:function(newVal){
+	    var icon=Doc.head.typeComboFormatter({value:newVal,text:''});
+	    $('#document_type_cmb').next().find(".l-btn-text").html( icon );
 	}
     };
-
-    App.page_trade_document.entries = {
+    /////////////////////////////////////////////
+    // ENTRIES
+    /////////////////////////////////////////////
+    Doc.entries = {
+	reload:function(){
+	    $('#document_entry_dg').datagrid('reload');
+	},
 	loader: function (param, success, error) {
-	    $.post("Document/documentGet/", function ( xhr ) {
-		try {
-		    var resp = JSON.parse( xhr );
+	    if( Doc.head.loaded ){
+		$.post("DocumentItems/get/", function ( xhr ) {
+		    var resp = App.json(xhr);
 		    success(resp.entries ? resp.entries : []);
-		    App.page_trade_document.entries.renderFooter( resp.footer );
-		}
-		catch (e) {
-		}
-	    });
+		    Doc.entries.renderFooter( resp.footer );
+		});
+	    }
+	    else{
+		success([]);
+	    }
+
 	},
 	renderFooter:function( data ){
 	    App.renderTpl('document_footer',data);
-	},
-	suggestSelect: function () {
-
 	}
     };
-    App.page_trade_document.view={
+    /////////////////////////////////////////////
+    // SUGGEST
+    /////////////////////////////////////////////
+    Doc.suggest={
+	prevQuery:'',
+	prevCode:'',
+	init:function(){
+	    var cmb=$('#document_suggest_cmb').combobox('textbox');
+	    cmb.bind( 'keydown', function(e){
+		Doc.suggest.prevQuery=$('#document_suggest_cmb').combobox('getValue');
+		if( e.key==='Left' ){
+		    $('#document_suggest_cmb').combobox('setValue',Doc.suggest.prevQuery);
+		}
+		else if( e.key==='Up' ){
+		    $('#document_suggest_cmb').combobox('setValue',Doc.suggest.prevCode);
+		}
+	    });
+	},
+	loader:function(param, success, error){
+	    if( param.q ){
+		$.get("DocumentItems/suggestFetch/",param, function ( xhr ) {
+		    success( App.json(xhr) || [] );
+		});		
+	    }
+	    else{
+		success([]);
+	    }
+	},
+	formatter:function(row){
+	    return row['product_code']+' '+row['label'];
+	},
+	select:function(){
+	    Doc.suggest.prevCode=$('#document_suggest_cmb').combobox('getValue');
+	}
+    };
+    /////////////////////////////////////////////
+    // VIEW
+    /////////////////////////////////////////////
+    Doc.view={
 	loadTile:function(){
 	    var _this=this;
-	    var doc_id=App.page_trade_document.data.doc_id;
+	    var doc_id=Doc.data.doc_id;
 	    $.get('View/listFetch/' + doc_id, function (xhr) {
 		_this.views = _this.compile(JSON.parse(xhr));
 		App.renderTpl('document_view_tile',{views:_this.views});
@@ -64,20 +143,17 @@
 	compile:function( views ){
 	    for( var i in views ){
 		var view=views[i];
-		try{
-		    var efield_vals=JSON.parse(view.view_efield_values);
-		    var efield_labs=JSON.parse(view.view_efield_labels);
-		    views[i].efields=[];
-		    for( var k in efield_labs ){
-			views[i].efields.push({field:k,label:efield_labs[k],value:efield_vals[k]});
-		    }
+		var efield_vals=App.json(view.view_efield_values);
+		var efield_labs=App.json(view.view_efield_labels);
+		views[i].efields=[];
+		for( var k in efield_labs ){
+		    views[i].efields.push({field:k,label:efield_labs[k],value:efield_vals?efield_vals[k]||'':''});
 		}
-		catch(e){};
 	    }
 	    return views;
 	},
 	settings:function( i ){
-	    var view=App.page_trade_document.view.views[i];
+	    var view=Doc.view.views[i];
 	    App.loadWindow('page/trade/view_settings',view);
 	},
 	click:function(doc_view_id){
@@ -85,46 +161,81 @@
 	}
     };
 </script>
-<form id="page_dialog_event_frm" onsubmit="return false;" style="-moz-user-select:none;">
+<form id="document_head_frm" onsubmit="return false;" style="-moz-user-select:none;">
     <!-- DOCUMENT HEADER -->
-    <div style="width: 658px;margin: auto;">
+    <div style="width: 658px;margin: auto;padding-top: 10px;">
 	<div>
-	    <select class="easyui-combobox" data-options="
+	    <select class="easyui-combobox" id="document_type_cmb" name="doc_type" title="Вид" data-options="
 		    editable:false,
-		    formatter:App.page_trade_document.head.formatterComboType,
-		    panelHeight:'auto'" name="doc_type" title="Вид">
+		    buttonText:'<img src=img/sell.png>',
+		    buttonAlign:'left',
+		    formatter:Doc.head.typeComboFormatter,
+		    onChange:Doc.head.typeComboFormatterIcon,
+		    panelHeight:'auto'
+		    ">
 		<option value="1">Реализация</option>
 		<option value="2">Поступление</option>
-		<option value="-1">Реализация Возврат </option>
-		<option value="-2">Поступление Возврат </option>
+		<option value="-1">Реализация Возврат</option>
+		<option value="-2">Поступление Возврат</option>
 		<option value="3">Оказание услуги</option>
 		<option value="4">Получение услуги</option>
 	    </select>
-	    <input type="text" name="doc_ratio" class="easyui-numberbox" data-options="min:1,precision:2" title="Курс">
-	    <input type="text" name="doc_date" class="easyui-datebox" data-options="required:'required'" title="Дата">
-	    <input type="text" name="doc_num" class="easyui-numberspinner" data-options="min:1,required:'required'" title="Номер">
+	    <input type="text" name="doc_ratio" class="easyui-numberbox" title="Курс" data-options="
+		   min:1,
+		   precision:2,
+		   onChange:function(val,old){Doc.head.update('doc_ratio',val,old)}
+		   ">
+	    <input type="text" name="doc_date" class="easyui-datebox" title="Дата" data-options="
+		   required:'required',
+		   onChange:function(val,old){Doc.head.update('doc_date',val,old)}
+		   ">
+	    <input type="text" name="doc_num" class="easyui-numberspinner" title="Номер" data-options="
+		   min:1,
+		   required:'required',
+		   onChange:function(val,old){Doc.head.update('doc_num',val,old)}
+		   ">
 	</div>
-	<div id="document_utils" style="display: none">
+	<div id="document_utils" style="display: none1">
 	    <div class="inp_rule"></div>
-	    <select class="easyui-combobox" name="notcount" data-options="editable:false,panelHeight:'auto'" title="На складе">
+	    <select class="easyui-combobox" name="notcount" title="На складе" data-options="
+		    editable:false,
+		    panelHeight:'auto',
+		    onChange:function(val,old){Doc.head.update('notcount',val,old)}
+		    ">
 		<option value="0">Учитывать</option>
 		<option value="1">Неучитывать</option>
 	    </select>
-	    <input type="text" name="signs_after_dot" class="easyui-numberspinner" data-options="min:0,max:5,editable:false,required:'required'" title="Точность">
-	    <select class="easyui-combobox" data-options="editable:false,panelHeight:'auto'" name="shown_price" title="Цена">
-		<option value="with_vat">В том числе НДС</option>
-		<option value="vatless">Плюс НДС</option>
+	    <input type="text" name="signs_after_dot" class="easyui-numberspinner" title="Точность" data-options="
+		   min:0,
+		   max:5,
+		   editable:false,
+		   required:'required',
+		   onChange:function(val,old){Doc.head.update('signs_after_dot',val,old)}
+		   ">
+	    <select class="easyui-combobox" name="use_vatless_price" title="Цена" data-options="
+		    editable:false,
+		    panelHeight:'auto',
+		    onChange:function(val,old){Doc.head.update('use_vatless_price',val,old)}
+		    ">
+		<option value="0">В том числе НДС</option>
+		<option value="1">Плюс НДС</option>
 	    </select>
-	    <input type="text" name="vat_rate" class="easyui-numberbox" data-options="min:0,precision:0" title="НДС %">
+	    <input type="text" name="vat_rate" class="easyui-numberbox" title="НДС %" data-options="
+		   min:0,
+		   precision:0,
+		   onChange:function(val,old){Doc.head.update('vat_rate',val,old)}
+		   ">
 	</div>
 	<div>
 	    <div id="document_tool_bar" class="" style="padding:1px;text-align: right;">
 		<div style="float:left" title="← для вывода предыдущего запроса,↑ для вывода предыдущего кода">
-		    <input class="easyui-combobox" style="width:230px;" data-options="
+		    <input class="easyui-combobox" id="document_suggest_cmb" style="width:230px;" data-options="
 			   valueField: 'product_code',
-			   textField: 'label',
+			   textField: 'product_code',
+			   formatter:Doc.suggest.formatter,
+			   loader:Doc.suggest.loader,
 			   selectOnNavigation:true,
-			   url: 'Document/suggestFetch/',
+			   url: 'DocumentItems/suggestFetch/',
 			   panelHeight:'auto',
 			   mode: 'remote',
 			   method:'get',
@@ -132,27 +243,26 @@
 			   panelWidth:400,
 			   panelMinWidth:400,
 			   prompt:'Введите код, название или штрихкод',
-			   onSelect: App.page_trade_document.entries.suggestSelect
+			   onSelect: Doc.suggest.select
 			   ">
 		    <input type="text" class="easyui-numberbox" style="width:50px;" value="1" data-options="min:1,precision:0,prompt:'Кол-во'">
 		    <a href="#" class="easyui-linkbutton" iconCls="icon-add" title="Добавить строку в документ" plain="true"></a>
 		</div>
-
-		<span class="icon-24 icon-lorry"> </span>
-		<span class="icon-24 icon-sms"> </span>
-		<span class="icon-24 icon-delete"> </span>
-		<span class="icon-24 icon-calc"> </span>
-		<span class="icon-24 icon-utils" onclick="$('#document_utils').toggle('slow')"> </span>
-		<span class="icon-24 icon-refresh"> </span>
+		<span class="icon-24 icon-lorry" title="Добавить в распорядок"> </span>
+		<span class="icon-24 icon-sms" title="Отправить СМС"> </span>
+		<span class="icon-24 icon-delete" title="Удалить строку"> </span>
+		<span class="icon-24 icon-calc" title="Перерасчитать"> </span>
+		<span class="icon-24 icon-utils" title="Дополнительные свойства" onclick="$('#document_utils').toggle('slow')"> </span>
+		<span class="icon-24 icon-refresh" title="Обновить" onclick="Doc.entries.reload();"> </span>
 	    </div>
 	</div>
 	<!-- DOCUMENT ENTRIES -->
-	<table class="easyui-datagrid" style="width:660px;"
+	<table class="easyui-datagrid" id="document_entry_dg" style="width:660px;"
 	       data-options="
 	       rownumbers:true,
 	       noheader:true,
 	       ctrlSelect:true,
-	       loader:App.page_trade_document.entries.loader,
+	       loader:Doc.entries.loader,
 	       method:'get'
 	       ">
 	    <thead>
@@ -197,11 +307,10 @@
 	<!-- DOCUMENT VIEWS -->
 	<div id="document_view_tile" style="clear:both;">
 	    {{views}}
-	    <div class="view_button transparent" data-view-id="{{doc_view_id}}" onclick="App.page_trade_document.view.click( $(this).attr('data-view-id') )">
-		<img src="img/settings.png" data-view-i="{{#}}" onclick="App.page_trade_document.view.settings( $(this).attr('data-view-i') );event.stopPropagation()" style="float:right;">
+	    <div class="view_button transparent" data-view-id="{{doc_view_id}}" onclick="Doc.view.click( $(this).attr('data-view-id') )">
+		<img src="img/settings.png" data-view-i="{{#}}" onclick="Doc.view.settings( $(this).attr('data-view-i') );event.stopPropagation()" style="float:right;">
 		<div>{{view_name}}</div>
 		#{{view_num}} {{view_date}}
-		
 		<div class="view_efields transp60">
 		{{if efields}}
 		    {{efields}}
@@ -212,7 +321,7 @@
 	    </div>
 	    {{/views}}
 	</div>
-	<textarea name="doc_data" title="Комментарий" placeholder="Комментарий" data-skip="1" class="document_comment"></textarea>
+	<textarea name="doc_data" title="Комментарий" placeholder="Комментарий" data-skip="1" class="document_comment" onchange="Doc.head.update('doc_data',this.value)"></textarea>
     </div>
 </form>
 <style type="text/css">
@@ -231,7 +340,7 @@
 	background-color: #dfd
     }
     .footer_table {
-	background-image: linear-gradient(#fff 0%,  #eee 100%);
+	background-image: linear-gradient(#fff 0%,  #e0eeff 100%);
 	border-collapse: collapse;
 	margin:5px -2px 2px 0px;
     }
@@ -244,13 +353,13 @@
     .view_button{
 	display: inline-block;
 	border: 1px #999 solid;
-	color: #000;
+	color: #036;
 	border-radius: 3px;
 	width:150px;
 	margin: 0px 5px 5px 0px;
 	text-align: center;
 	background-image: linear-gradient(rgba(255,255,255,0.75) 0%,  rgba(255,255,255,0) 100%);
-	background-color:#ffe48d;
+	background-color:#cef;
 	cursor: pointer;
     }
     .view_button img{
@@ -265,9 +374,10 @@
     }
     .view_efields{
 	position: absolute;
+	margin-top:1px;
 	text-align: left;
 	width:150px;
-	border: 1px #999 solid;
+	border: 1px #ddd solid;
 	overflow: hidden;
 	display: none;
 	margin-left:-1px;
