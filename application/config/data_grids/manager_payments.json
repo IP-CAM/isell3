@@ -10,6 +10,9 @@
 		"name":"Дата"
 	  },
 	  {
+		"field":"not_tax_payer",
+		"name":"НП"
+	  },	  {
 		"field":"label",
 		"name":"Клиент"
 	  },

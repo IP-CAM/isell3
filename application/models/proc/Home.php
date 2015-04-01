@@ -69,6 +69,7 @@ class Home extends Data{
         $select="
                 DATE_FORMAT(cstamp,'%d.%m.%Y') cdate,
                 cstamp,
+		IF(company_vat_id,'','НП') not_tax_payer,
                 label,
                 description,
                 IF(acc_debit_code=361,ROUND(amount,2),0) AS debit,
@@ -92,6 +93,7 @@ class Home extends Data{
                 CREATE TEMPORARY TABLE mng_paym_temp(
                 cdate VARCHAR(10),
                 cstamp VARCHAR(10),
+		not_tax_payer VARCHAR(2),
                 label VARCHAR(100),
                 description VARCHAR(255),
                 debit VARCHAR(10),
