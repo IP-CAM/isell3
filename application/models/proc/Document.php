@@ -643,10 +643,10 @@ class Document extends Data {
 	    //$this->checkInErnn();
 	    $view_num = $this->getViewNextNum($view_type_id);
             if ($this->Base->pcomp('company_vat_id')){
-                $efields = '{"sign":"' . $this->Base->svar('user_sign') . '"}';
+                $efields = '{"sign":"' . $this->Base->acomp('company_director') . '"}';
             }
 	    else{
-                $efields = '{"sign":"' . $this->Base->svar('user_sign') . '","type_of_reason":"02"}';
+                $efields = '{"sign":"' . $this->Base->acomp('company_director') . '","type_of_reason":"02"}';
             }
             
 	} else {
