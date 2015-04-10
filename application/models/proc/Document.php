@@ -855,12 +855,12 @@ class Document extends Data {
 	    $this->Base->query("UPDATE document_list SET doc_ratio='$new_val' WHERE doc_id='$doc_id'");
 	    $this->selectDoc($doc_id);
 	    $this->recalc();
-	}
+	} else
 	if ($field == 'num') {
 	    if ($new_val > 0) {// not null nan or zero
 		$this->Base->query("UPDATE document_list SET doc_num='$new_val' WHERE doc_id='$doc_id'");
 	    }
-	}
+	} else
 	if ($field == 'date') {
 	    if ($new_val) {
 		$this->Base->query("UPDATE document_list SET reg_stamp=STR_TO_DATE('$new_val','%d.%m.%Y'),cstamp=CONCAT(STR_TO_DATE('$new_val','%d.%m.%Y'),DATE_FORMAT(NOW(),' %H:%i:%s')) WHERE doc_id='$doc_id'");
@@ -870,34 +870,35 @@ class Document extends Data {
 		    $this->updateTrans(); //Time of trans
 		}
 	    }
-	}
+	} else
 	if ($field == 'reg_date') {
 	    $this->Base->query("UPDATE document_list SET reg_stamp='{$new_val}-01' WHERE doc_id='$doc_id'");
-	}
+	} else
 	if ($field == 'doc_data') {
 	    $this->Base->query("UPDATE document_list SET doc_data='$new_val' WHERE doc_id='$doc_id'");
-	}
+	} else
 	if ($field == 'notcount') {
 	    if ($this->isCommited())
-		return;
+		return false;
 	    $this->Base->query("UPDATE document_list SET notcount=IF(notcount,0,1) WHERE doc_id='$doc_id'");
 	    $this->selectDoc($doc_id);
-	}
+
+	} else
 	if ($field == 'is_reclamation') {
 	    if ($this->isCommited())
 		return;
 	    $this->Base->query("UPDATE document_list SET is_reclamation=IF(is_reclamation,0,1) WHERE doc_id='$doc_id'");
 	    $this->selectDoc($doc_id);
 	    $this->normalizeQuantitySign();
-	}
+	} else
 	if ($field == 'use_vatless_price') {
 	    $this->Base->query("UPDATE document_list SET use_vatless_price=IF(use_vatless_price,0,1) WHERE doc_id='$doc_id'");
 	    $this->selectDoc($doc_id);
-	}
+	} else
 	if ($field == 'signs_after_dot') {
 	    $this->Base->query("UPDATE document_list SET signs_after_dot='$new_val' WHERE doc_id='$doc_id'");
 	    $this->selectDoc($doc_id);
-	}
+	} else
 	if ($field == 'vat_rate') {
 	    $this->Base->set_level(3);
 	    $this->Base->query("UPDATE document_list SET vat_rate='$new_val' WHERE doc_id='$doc_id'");
@@ -906,7 +907,10 @@ class Document extends Data {
 		$this->clearTrans(); // To change
 		$this->updateTrans(); //Time of trans
 	    }
+	} else{
+	    return false;
 	}
+	return true;
     }
 
     public function fetchEntries($vatless = true, $dot = '.') {
