@@ -2,14 +2,14 @@
     TradeJs = {
 	init:function(){
 	    
-	    App.loadWindow('page/trade/document',{doc_id:557});
+	    App.loadWindow('page/trade/document',{doc_id:5});
 	    //App.loadModule('page/trade/document_list');
 	},
 	selectCompany:function(company){
-	    $.ajax({
-		url: 'Company/selectPassiveCompany/' + company.company_id
+	   //App.pcomp=company;
+	    $.post('Company/selectPassiveCompany/' + company.company_id,function(xhr){
+		App.pcomp=App.json(xhr);
 	    });
-	    App.pcomp=company;
 	}
     };
 </script>

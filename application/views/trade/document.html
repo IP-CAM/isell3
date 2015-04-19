@@ -16,6 +16,9 @@
 	},
 	initAfter:function(){
 	    this.suggest.init();
+	},
+	setTitle:function(){
+	    $('#page_trade_document').window('setTitle','Документ - '+(Doc.head.props.is_commited?"Проведен":"Не проведен") );
 	}
     };
     /////////////////////////////////////////////
@@ -23,16 +26,23 @@
     /////////////////////////////////////////////
     Doc.head = {
 	load: function (doc_id) {
+	    this.doc_id=doc_id;
 	    App.setupForm("#document_head_frm", {});
-	    $.get('DocumentItems/headGet/' + doc_id, function (xhr) {
+	    $.get('DocumentItems/headGet/' + this.doc_id, function (xhr) {
 		Doc.head.props = App.json(xhr);
-		Doc.head.props.shown_price = "with_vat";
-		Doc.head.setPropsForm(Doc.head.props);
-		App.renderTpl('document_owners',Doc.head.props);
-		Doc.entries.reload();
-		Doc.head.typeComboFormatterIcon(Doc.head.props.doc_type);
+		if( Doc.head.props ){
+		    //Doc.entries.reload();
+		    Doc.head.setPropsForm(Doc.head.props);
+		    Doc.head.typeComboFormatterIcon(Doc.head.props.doc_type);
+		    App.renderTpl('document_owners',Doc.head.props);
+		    Doc.setTitle();
+		    Doc.view.loadTile();
+		}
+		else{
+		    App.flash("Документ удален",'alert');
+		    Doc.node.window('close');
+		}
 	    });
-	    Doc.view.loadTile();
 	},
 	setPropsForm:function(props){
 	    Doc.head.loaded=false;
@@ -40,26 +50,45 @@
 	    Doc.head.loaded=true;
 	},
 	update:function( field, value, oldval ){
-	    if( Doc.head.loaded ){
+	    if( Doc.head.loaded && value!==oldval ){
 		$.post('DocumentItems/headUpdate/'+field+'/'+value,function(ok){
-		    if( !ok ){
-			Doc.head.setPropsForm(Doc.head.props);
-			App.flash('Свойства документа не были сохранены');
-		    }
-		    else{
-			Doc.head.props[field]=value;
-			Doc.head.afterUpdate(field, value, oldval );
-		    }
+		    Doc.head.afterUpdate( ok, field, value, oldval );
 		});
 	    }
 	},
-	afterUpdate:function( field, value, oldval ){
+	afterUpdate:function( ok, field, value, oldval ){
 	    switch( field ){
 		case 'doc_ratio':
+		case 'vat_rate':
+		case 'use_vatless_price':
+		case 'signs_after_dot':
 		    Doc.entries.reload();
 		    break;
+		case 'passive_company_id':
+		    if( !ok ){
+			App.flash("Сменить контрагента можно только у не проведенного документа.",'alert');
+			$("#document_pci").combobox('reload');
+		    }
+		    break;
+		case 'doc_type':
+		    if( !ok ){
+			App.flash("Сменить тип документа можно только у не проведенного документа.",'alert');
+			this.typeComboFormatterIcon(oldval);
+		    }
+		    break;
+		case 'notcount':
+		    if( !ok ){
+			App.flash("Сменить учет на складе можно только у не проведенного документа.",'alert');
+		    }
+		    break;
 	    }
-	    
+	    if( !ok ){
+		Doc.head.setPropsForm( Doc.head.props );
+		App.flash('Свойства документа не были сохранены');
+	    }
+	    else{
+		Doc.head.props[field]=value;
+	    }
 	},
 	typeComboFormatter: function (data) {
 	    return "<img src='img/" + ["", "sell", "buy", "serviceout", "servicein"][Math.abs(data.value)] + ".png'> " + data.text;
@@ -67,6 +96,45 @@
 	typeComboFormatterIcon:function(newVal){
 	    var icon=Doc.head.typeComboFormatter({value:newVal,text:''});
 	    $('#document_type_cmb').next().find(".l-btn-text").html( icon );
+	},
+	companyListFrm:function(row){
+	    var path_chunks=row.path.split('>');
+	    var label=path_chunks.slice(path_chunks.length-2).reverse().join('/ ');
+	    return label;
+	},
+	sendSms:function(){
+	    $.get("Company/companyGet/"+Doc.head.props.passive_company_id, function ( xhr ) {
+		var passive_data=App.json(xhr);
+		var data={to:passive_data.company_mobile,body:Doc.head.props.doc_data};
+		App.loadWindow('page/dialog/send_sms',data);	    
+	    });
+	},
+	addEvent:function(){
+	    $.get("Company/companyGet/"+Doc.head.props.passive_company_id, function ( xhr ) {
+		var passive_data=App.json(xhr);
+		var fvalue={
+		    event_id:0,
+		    event_user_id: App.userData.user_id,
+		    event_name: 'Документ №' + Doc.head.props.doc_num,
+		    event_descr: Doc.head.props.doc_data,
+		    event_target: passive_data.company_person + " (" + passive_data.label + ")",
+		    event_place: passive_data.company_address,
+		    event_note: passive_data.company_mobile
+		};
+		App.loadWindow('page/dialog/event',fvalue);	    
+	    });
+	},
+	commit:function(){
+	    $.post("DocumentItems/entryDocumentCommit/", function ( xhr ) {
+		Doc.head.loaded=false;
+		Doc.head.load(Doc.head.doc_id);
+	    });
+	},
+	uncommit:function(){
+	    $.post("DocumentItems/entryDocumentUncommit/", function ( xhr ) {
+		Doc.head.loaded=false;
+		Doc.head.load(Doc.head.doc_id);
+	    });
 	}
     };
     /////////////////////////////////////////////
@@ -77,8 +145,9 @@
 	    $('#document_entry_dg').datagrid('reload');
 	},
 	loader: function (param, success, error) {
+	    //alert(Doc.head.loaded);
 	    if( Doc.head.loaded ){
-		$.post("DocumentItems/get/", function ( xhr ) {
+		$.post("DocumentItems/entryDocumentGet/", function ( xhr ) {
 		    var resp = App.json(xhr);
 		    success(resp.entries ? resp.entries : []);
 		    Doc.entries.renderFooter( resp.footer );
@@ -87,10 +156,53 @@
 	    else{
 		success([]);
 	    }
-
+	},
+	edit:function(){
+	    var row=$("#document_entry_dg").datagrid('getSelected');
+	    if( !row ){
+		App.flash("Строка не выбрана!");
+		return;
+	    }
+	    App.loadWindow('page/trade/document_entry_edit',row).progress(function(state){
+		if(state==='change'){
+		    Doc.entries.reload();
+		}
+	    });
+	},
+	delete:function(){
+	    var rows=$("#document_entry_dg").datagrid('getSelections');
+	    if( !rows.length ){
+		App.flash("Ни одна строка не выбрана!");
+		return;
+	    }
+	    if( confirm("Удалить выделенные строки?") ){
+		var ids=[];
+		rows.forEach(function(row){
+		    ids.push(row.doc_entry_id);
+		});
+		$.post(App.uri('DocumentItems','entryDelete',ids.join(',')), function () {
+		    Doc.entries.reload();
+		});		
+	    }
+	},
+	onRowContextMenu: function (e, row) {
+	    e.preventDefault();
+	    $('#document_entry_menu').menu('show', {
+		left: e.pageX,
+		top: e.pageY
+	    });
 	},
 	renderFooter:function( data ){
 	    App.renderTpl('document_footer',data);
+	},
+	initRecalculate:function(){
+	    App.loadWindow('page/trade/document_recalculate').progress(function(state,data){
+		if( state==='submit' ){
+		    $.post("DocumentItems/recalc/"+(data.recalc_proc||0), function ( xhr ) {
+			Doc.entries.reload();
+		    });
+		}
+	    });
 	}
     };
     /////////////////////////////////////////////
@@ -170,8 +282,11 @@
 		    buttonText:'<img src=img/sell.png>',
 		    buttonAlign:'left',
 		    formatter:Doc.head.typeComboFormatter,
-		    onChange:Doc.head.typeComboFormatterIcon,
-		    panelHeight:'auto'
+		    panelHeight:'auto',
+		    onChange:function(val,old){
+			Doc.head.update('doc_type',val,old);
+			Doc.head.typeComboFormatterIcon(val);
+		    }
 		    ">
 		<option value="1">Реализация</option>
 		<option value="2">Поступление</option>
@@ -185,6 +300,22 @@
 		   precision:2,
 		   onChange:function(val,old){Doc.head.update('doc_ratio',val,old)}
 		   ">
+	    <input class="easyui-combobox" name="passive_company_id" id="document_pci" title="Контрагент" data-options="
+		    valueField: 'company_id',
+		    textField: 'label',
+		    url: 'Company/listFetch/selected_passive_if_empty',
+		    mode: 'remote',
+		    method:'get',
+		    formatter:Doc.head.companyListFrm,
+		    onSelect: function(company){Doc.head.update('passive_company_id',company.company_id)}
+		    ">
+	    <input type="text" name="signs_after_dot" class="easyui-numberspinner" title="Точность" data-options="
+		   min:0,
+		   max:5,
+		   editable:false,
+		   required:'required',
+		   onChange:function(val,old){Doc.head.update('signs_after_dot',val,old)}
+		   ">
 	    <input type="text" name="doc_date" class="easyui-datebox" title="Дата" data-options="
 		   required:'required',
 		   onChange:function(val,old){Doc.head.update('doc_date',val,old)}
@@ -195,7 +326,7 @@
 		   onChange:function(val,old){Doc.head.update('doc_num',val,old)}
 		   ">
 	</div>
-	<div id="document_utils" style="display: none1">
+	<div id="document_utils" style="display: none">
 	    <div class="inp_rule"></div>
 	    <select class="easyui-combobox" name="notcount" title="На складе" data-options="
 		    editable:false,
@@ -205,13 +336,6 @@
 		<option value="0">Учитывать</option>
 		<option value="1">Неучитывать</option>
 	    </select>
-	    <input type="text" name="signs_after_dot" class="easyui-numberspinner" title="Точность" data-options="
-		   min:0,
-		   max:5,
-		   editable:false,
-		   required:'required',
-		   onChange:function(val,old){Doc.head.update('signs_after_dot',val,old)}
-		   ">
 	    <select class="easyui-combobox" name="use_vatless_price" title="Цена" data-options="
 		    editable:false,
 		    panelHeight:'auto',
@@ -246,37 +370,52 @@
 			   onSelect: Doc.suggest.select
 			   ">
 		    <input type="text" class="easyui-numberbox" style="width:50px;" value="1" data-options="min:1,precision:0,prompt:'Кол-во'">
-		    <a href="#" class="easyui-linkbutton" iconCls="icon-add" title="Добавить строку в документ" plain="true"></a>
+		    <button title="Добавить строку в документ" style="margin:4px;padding: 0px;">+</button>
 		</div>
-		<span class="icon-24 icon-lorry" title="Добавить в распорядок"> </span>
-		<span class="icon-24 icon-sms" title="Отправить СМС"> </span>
-		<span class="icon-24 icon-delete" title="Удалить строку"> </span>
-		<span class="icon-24 icon-calc" title="Перерасчитать"> </span>
+		<span class="icon-24 icon-commit" title="Провести" onclick="Doc.head.commit();"> </span>
+		<span class="icon-24 icon-uncommit" title="Отменить" onclick="Doc.head.uncommit();"> </span>
+		<span style="display: inline-block;width:26px"> </span>
+		<span class="icon-24 icon-lorry" title="Добавить в распорядок" onclick="Doc.head.addEvent();"> </span>
+		<span class="icon-24 icon-sms" title="Отправить СМС" onclick="Doc.head.sendSms();"> </span>
+		<span class="icon-24 icon-calc" title="Перерасчитать цены" onclick="Doc.entries.initRecalculate();"> </span>
 		<span class="icon-24 icon-utils" title="Дополнительные свойства" onclick="$('#document_utils').toggle('slow')"> </span>
+		<span class="icon-24 icon-change" title="Изменить строку" onclick="Doc.entries.edit();"> </span>
+		<span class="icon-24 icon-delete" title="Удалить строку" onclick="Doc.entries.delete();"> </span>
 		<span class="icon-24 icon-refresh" title="Обновить" onclick="Doc.entries.reload();"> </span>
 	    </div>
 	</div>
-	<!-- DOCUMENT ENTRIES -->
+	<!-- 
+	----------------------------
+	DOCUMENT ENTRIES 
+	----------------------------
+	-->
 	<table class="easyui-datagrid" id="document_entry_dg" style="width:660px;"
 	       data-options="
 	       rownumbers:true,
 	       noheader:true,
 	       ctrlSelect:true,
 	       loader:Doc.entries.loader,
-	       method:'get'
+	       method:'get',
+	       onDblClickRow:Doc.entries.edit,
+	       onRowContextMenu: Doc.entries.onRowContextMenu
 	       ">
 	    <thead>
 		<tr>
 		    <th data-options="field:'product_code',width:80">Код</th>
-		    <th data-options="field:'product_name',width:327">Название</th>
+		    <th data-options="field:'product_name',width:317">Название</th>
 		    <th data-options="field:'product_quantity',width:50,align:'right'">Кол-во</th>
 		    <th data-options="field:'product_unit',width:40,align:'center'">Ед.</th>
 		    <th data-options="field:'product_price',width:55,align:'right'">Цена</th>
-		    <th data-options="field:'product_sum',width:55,align:'right'">Сумма</th>
+		    <th data-options="field:'product_sum',width:65,align:'right'">Сумма</th>
 		    <th data-options="field:'row_status',width:24,align:'center',formatter:App.datagrid.tooltip">!</th>
 		</tr>
 	    </thead>
 	</table>
+	<!-- CONTEXT MENU -->
+	<div id="document_entry_menu" class="easyui-menu" style="width:170px;">
+	    <div data-options="iconCls:'icon-edit'" onclick="Doc.entries.edit()">Изменить</div>
+	    <div data-options="iconCls:'icon-remove'" onclick="Doc.entries.delete()">Удалить</div>
+	</div>
         <!-- DOCUMENT FOOTER -->
 	<div id="document_footer">
 	    <table style="float:left" class="footer_table">
@@ -324,6 +463,14 @@
 	<textarea name="doc_data" title="Комментарий" placeholder="Комментарий" data-skip="1" class="document_comment" onchange="Doc.head.update('doc_data',this.value)"></textarea>
     </div>
 </form>
+
+
+
+
+
+
+
+
 <style type="text/css">
     .force_center .panel{
 	margin:auto;

@@ -1,0 +1,78 @@
+<script type="text/javascript">
+    /* global App */
+    DocEntEd=App.page_trade_document_entry_edit = {
+	init: function () {
+	    this.node.window({
+		title: 'Редактирование строки',
+		width: 420,
+		height: 'auto',
+		onClose: function () {
+		    DocEntEd.handler.notify('close');
+		    delete App.page_trade_document_entry_edit,DocEntEd;
+		}
+	    });
+	    App.renderTpl('DocEntEd_markup',this.data);
+	    App.setupForm("#document_ented_frm",this.data);
+	    $("input[name=product_quantity]").numberspinner({suffix:' '+this.data.product_unit});
+	    setTimeout(DocEntEd.getStats,100);
+	},
+	change: function( name, value ){
+	    $.post( App.uri('DocumentItems','entryUpdate',DocEntEd.data.doc_entry_id,name,value), function(ok){
+		if(ok*1){
+		    DocEntEd.handler.notify('change');
+		    DocEntEd.data[name]=value;
+		    DocEntEd.renderStats();
+		}
+		else{
+		    $("#document_ented_frm").form('load',DocEntEd.data);
+		    App.flash('Ошибка. Значение не изменено!');
+		}
+	    });
+	},
+	getStats:function(){
+	    $.post( App.uri('DocumentItems','entryStatsGet',DocEntEd.data.product_code), function(xhr){
+		DocEntEd.stats=App.json(xhr);
+		DocEntEd.renderStats();
+	    });
+	},
+	renderStats:function(){
+	    var stats=DocEntEd.stats;
+	    stats.unit=DocEntEd.data.product_unit;
+	    if( stats.price>DocEntEd.data.product_price ){
+		stats.color='red';
+	    }else{
+		stats.color='green';
+	    }
+	    App.renderTpl('DocEntEd_qty_markup',stats);
+	    App.renderTpl('DocEntEd_price_markup',stats);	    
+	}
+    };
+</script>
+<form id="document_ented_frm">
+    <div id="DocEntEd_markup">
+	<input type="text" value="{{product_code}}" title="Код" disabled="disabled">
+	<textarea disabled="disabled" title="Название" rows="1">{{product_name}}</textarea>
+    </div>
+    <div>
+    <input class="easyui-numberspinner" name="product_quantity" title="Кол-во" data-options="
+	   precision:0,
+	   suffix:'шт',
+	   onChange:function(val){DocEntEd.change('product_quantity',val)}
+	   " />
+    <span id="DocEntEd_qty_markup" title="Кол-во на складе">{{product_quantity}} {{unit}}</span>
+    </div>
+    <div>
+    <input class="easyui-numberspinner" name="product_price" title="Цена" data-options="
+	   precision:2,
+	   groupSeparator:' ',
+	   decimalSeparator:',',
+	   onChange:function(val){DocEntEd.change('product_price',val)}
+	   " />
+    <span id="DocEntEd_price_markup" title="Стандартная цена"><b style="color:{{color}}">{{price}} {{curr_symbol}}</b></span>
+    </div>
+</form>
+<div style="text-align: center">
+    <button type="button" onclick="DocEntEd.node.window('close')"><img src="img/apply24.png" style="vertical-align: middle"> Закрыть</button>
+    <button type="button"><img src="img/delete.png" style="vertical-align: middle"> Удалить</button>
+</div>
+<br>

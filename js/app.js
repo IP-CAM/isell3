@@ -124,6 +124,7 @@ App.setupForm = function (fquery, fvalue) {
     if (!fquery) {
 	return false;
     }
+    fvalue=fvalue||{};
     $(fquery + " input," + fquery + " textarea," + fquery + " select").each(function (i, element) {
 	$(element).val(fvalue[element.name] || $(element).val() || '');
 	if ($(element).attr('type') === 'hidden') {
@@ -136,7 +137,7 @@ App.setupForm = function (fquery, fvalue) {
 	if ($(element).attr('type') === 'checkbox' && fvalue[element.name] * 1) {
 	    $(element).attr('checked', 'checked');
 	}
-	$(element).attr('data-wrapped', 1);
+	$(element).attr('data-skip', 1);
     });
     return $(fquery + " input," + fquery + " textarea," + fquery + " select");
 };

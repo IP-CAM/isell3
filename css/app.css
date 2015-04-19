@@ -152,11 +152,20 @@ button[diasbled="disabled"]{
 .icon-calc{
     background:url('../img/recalc.png') no-repeat center center;
 }
+.icon-commit{
+    background:url('../img/commit.png') no-repeat center center;
+}
+.icon-uncommit{
+    background:url('../img/uncommit.png') no-repeat center center;
+}
 .icon-lorry{
     background:url('../img/lorry24.png') no-repeat center center;
 }
 .icon-delete{
     background:url('../img/delete.png') no-repeat center center;
+}
+.icon-change{
+    background:url('../img/Edit-24.png') no-repeat center center;
 }
 .icon-refresh{
     background:url('../img/reload.png') no-repeat center center;

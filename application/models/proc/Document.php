@@ -422,6 +422,7 @@ class Document extends Data {
 	}
 	$this->updateTrans();
 	$this->setDocumentModifyingUser();
+	return true;
     }
 /////////////////////////////////////////////////////////////////
 //DOCUMENT VIEW
@@ -1077,7 +1078,7 @@ class Document extends Data {
     //PRICE FUNCTIONS SECTION
     ///////////////////////////////////
 
-    protected function getProductInvoicePrice($product_code) {
+    public function getProductInvoicePrice($product_code) {
 	$price = $this->getProductPrice($product_code);
 	return $this->doc('doc_type') == 1 ? $price['sell'] : $price['buy'];
     }

@@ -61,8 +61,8 @@ class DocumentItems extends DocumentCore{
                 $company_lang product_name,
                 product_quantity,
                 product_unit,
-                ROUND(invoice_price * @vat_correction * @curr_correction,signs_after_dot) AS product_price,
-                ROUND(invoice_price * @vat_correction * @curr_correction * product_quantity,2) AS product_sum,
+                REPLACE(FORMAT(invoice_price * @vat_correction * @curr_correction,signs_after_dot),',',' ') AS product_price,
+                REPLACE(FORMAT(invoice_price * @vat_correction * @curr_correction * product_quantity,2),',',' ') AS product_sum,
                 CHK_ENTRY(doc_entry_id) AS row_status,
                 party_label,
                 product_uktzet
@@ -77,11 +77,54 @@ class DocumentItems extends DocumentCore{
             ORDER BY pl.product_code";
 	return $this->get_list($sql);
     }
-    public function get(){
+    public function entryUpdate( $doc_entry_id, $name, $value ){
+	$Document2=$this->Base->bridgeLoad('Document');
+	switch( $name ){
+	    case 'product_quantity':
+		return $Document2->updateEntry($doc_entry_id, $value, NULL);
+	    case 'product_price':
+		return $Document2->updateEntry($doc_entry_id, NULL, $value);
+	}
+    }
+    public function entryDelete( $ids ){
+	$ids_arr=  json_decode('[['.str_replace(',', '],[', rawurldecode($ids)).']]');
+	$Document2=$this->Base->bridgeLoad('Document');
+	return $Document2->deleteEntry($ids_arr);
+    }
+    public function entryStatsGet( $product_code ){
+	$curr=$this->get_row("SELECT curr_symbol FROM curr_list WHERE curr_code='".$this->Base->pcomp('curr_code')."'");
+	$sql="SELECT 
+	    product_quantity
+	FROM 
+	    stock_entries
+	WHERE
+	    product_code='$product_code'";
+	$stats=$this->get_row($sql);
+	$stats->curr_symbol=$curr->curr_symbol;
+	$stats->price=round($this->entryPriceGet($product_code),$this->doc('signs_after_dot'));
+	return $stats;
+    }
+    private function entryPriceGet( $product_code ){
+	$Document2=$this->Base->bridgeLoad('Document');
+	return $Document2->getProductInvoicePrice($product_code);
+    }
+    public function entryDocumentGet(){
 	$document=array();
 	$document['entries']=$this->entriesFetch();
 	$document['footer']=$this->footerGet();
 	return $document;
+    }
+    public function entryDocumentCommit(){
+	$Document2=$this->Base->bridgeLoad('Document');
+	return $Document2->commit();	
+    }
+    public function entryDocumentUncommit(){
+	$Document2=$this->Base->bridgeLoad('Document');
+	return $Document2->uncommit();
+    }
+    public function recalc( $proc=0 ){
+	$Document2=$this->Base->bridgeLoad('Document');
+	$Document2->recalc($proc);
     }
     private function calcCorrections() {
 	$doc_id=$this->doc('doc_id');

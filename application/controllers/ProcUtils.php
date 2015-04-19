@@ -25,7 +25,7 @@ class ProcUtils extends iSellBase {
         $this->response($out[1][0]);
     }
 
-    function onSendSms() {
+    public function onSendSms() {
         $number = $this->request('to');
         $subject = $this->request('subject', 4);
         $body = $this->request('body');

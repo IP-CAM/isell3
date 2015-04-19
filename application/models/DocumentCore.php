@@ -80,6 +80,7 @@ class DocumentCore extends DocumentUtils{
 	$this->selectDoc($doc_id);
 	$sql="
 	    SELECT
+		passive_company_id,
 		IF(is_reclamation,-1,1)*doc_type doc_type,
 		is_reclamation,
 		is_commited,
@@ -110,10 +111,21 @@ class DocumentCore extends DocumentUtils{
 	    case 'doc_date':
 		$field='date';
 		break;
+	    case 'passive_company_id':
+		if( $this->isCommited() ){
+		    return false;
+		}
+		else{
+		    $doc_id=$this->doc('doc_id');
+		    $passive_company_id=$new_val;
+		    $this->db->query("UPDATE document_list SET passive_company_id=$passive_company_id WHERE doc_id=$doc_id");
+		    return true;
+		}
+		break;
 	}
+	$new_val=  rawurldecode($new_val);
 	$Document2=$this->Base->bridgeLoad('Document');
-	$Document2->updateHead($new_val,$field);
-	return true;
+	return $Document2->updateHead($new_val,$field);
     }
 
 }
