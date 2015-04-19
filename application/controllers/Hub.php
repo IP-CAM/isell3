@@ -36,16 +36,17 @@ class Hub extends HubBase{
 	exit;
     }
     
+    /*
+     * bridgeLoad function to load and use legacy iSell2 class files
+     */
     public function bridgeLoad( $class_name ){
 	define('BAY_OMIT_CONTROLLER_CONSTRUCT',true);
-	require_once 'iSellBase.php';
-	$iSellBase=new iSellBase();
-	//$iSellBase->ProcessorBase(1);
-	$iSellBase->LoadClass($class_name);
-	return $iSellBase->$class_name;
+	if( !isset($this->bridge) ){
+	    require_once 'iSellBase.php';
+	    $this->bridge=new iSellBase();
+	}
+	return $this->bridge->LoadClass($class_name);
     }
-    
-
 }
 class HubBase extends CI_Controller{
     private $rtype='OK';
@@ -121,6 +122,9 @@ class HubBase extends CI_Controller{
     
     
     public function response( $response ){
+	if( isset($this->bridge) && $this->bridge->msg ){
+	    $this->msg.=$this->bridge->msg;
+	}
 	$this->output->set_header("X-isell-msg:".urlencode($this->msg));
 	$this->output->set_header("X-isell-type:".$this->rtype);
 	
@@ -129,6 +133,9 @@ class HubBase extends CI_Controller{
 	    $this->output->set_output(json_encode($response,JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE));	    
 	}
 	else{
+	    if( is_bool($response) ){
+		$response*=1;
+	    }
 	    $this->output->set_header("Content-type:text/html;charset=utf8"); 
 	    $this->output->set_output($response);	    
 	}

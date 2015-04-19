@@ -18,7 +18,7 @@
 	    this.suggest.init();
 	},
 	setTitle:function(){
-	    $('#page_trade_document').window('setTitle','Документ - '+(Doc.head.props.is_commited?"Проведен":"Не проведен") );
+	    $('#page_trade_document').window('setTitle','Документ - '+(Doc.head.props.is_commited*1?"Проведен":"Не проведен") );
 	}
     };
     /////////////////////////////////////////////
@@ -126,14 +126,21 @@
 	},
 	commit:function(){
 	    $.post("DocumentItems/entryDocumentCommit/", function ( xhr ) {
-		Doc.head.loaded=false;
-		Doc.head.load(Doc.head.doc_id);
+		if( xhr*1 ){
+		    Doc.head.loaded=false;
+		    Doc.head.load(Doc.head.doc_id);
+		}
 	    });
 	},
 	uncommit:function(){
+	    if( Doc.head.props.is_commited*1==0 && !confirm("Удалить документ?") ){
+		return;
+	    }
 	    $.post("DocumentItems/entryDocumentUncommit/", function ( xhr ) {
-		Doc.head.loaded=false;
-		Doc.head.load(Doc.head.doc_id);
+		if( xhr*1 ){
+		    Doc.head.loaded=false;
+		    Doc.head.load(Doc.head.doc_id);
+		}
 	    });
 	}
     };
@@ -378,10 +385,10 @@
 		<span class="icon-24 icon-lorry" title="Добавить в распорядок" onclick="Doc.head.addEvent();"> </span>
 		<span class="icon-24 icon-sms" title="Отправить СМС" onclick="Doc.head.sendSms();"> </span>
 		<span class="icon-24 icon-calc" title="Перерасчитать цены" onclick="Doc.entries.initRecalculate();"> </span>
-		<span class="icon-24 icon-utils" title="Дополнительные свойства" onclick="$('#document_utils').toggle('slow')"> </span>
 		<span class="icon-24 icon-change" title="Изменить строку" onclick="Doc.entries.edit();"> </span>
 		<span class="icon-24 icon-delete" title="Удалить строку" onclick="Doc.entries.delete();"> </span>
 		<span class="icon-24 icon-refresh" title="Обновить" onclick="Doc.entries.reload();"> </span>
+		<span class="icon-24 icon-utils" title="Дополнительные свойства" onclick="$('#document_utils').toggle('slow')"> </span>
 	    </div>
 	</div>
 	<!-- 

@@ -116,7 +116,7 @@ class DocumentItems extends DocumentCore{
     }
     public function entryDocumentCommit(){
 	$Document2=$this->Base->bridgeLoad('Document');
-	return $Document2->commit();	
+	return $Document2->commit();
     }
     public function entryDocumentUncommit(){
 	$Document2=$this->Base->bridgeLoad('Document');

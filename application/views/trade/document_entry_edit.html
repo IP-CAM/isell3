@@ -36,7 +36,7 @@
 	    });
 	},
 	renderStats:function(){
-	    var stats=DocEntEd.stats;
+	    var stats=DocEntEd.stats||{};
 	    stats.unit=DocEntEd.data.product_unit;
 	    if( stats.price>DocEntEd.data.product_price ){
 		stats.color='red';

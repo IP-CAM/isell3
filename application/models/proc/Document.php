@@ -17,14 +17,14 @@ class Document extends Data {
     }
 
     public function doc($name) {
-	if (!$this->_doc) {
+	if ( !isset($this->_doc) ){
 	    $doc_id = $this->Base->svar('doc_id');
 	    $this->selectDoc($doc_id);
 	}
-	if (isset($this->_doc[$name])) {
+	if ( isset($this->_doc[$name]) ){
 	    return $this->_doc[$name];
 	}
-	else if (isset($this->_doc->$name)) {
+	else if ( isset($this->_doc->$name) ) {
 	    return $this->_doc->$name;
 	} else {
 	    $this->Base->msg("Trying to access DOCUMENT property '$name', but it's not loaded\n");
@@ -178,7 +178,7 @@ class Document extends Data {
 
     public function commit() {
 	$this->Base->set_level(2);
-	if ($this->isCommited()) {
+	if ( $this->isCommited() ) {
 	    $this->Base->msg("Документ уже проведен!\n");
 	    return false;
 	}
