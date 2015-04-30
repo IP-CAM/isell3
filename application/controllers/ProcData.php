@@ -29,7 +29,7 @@ class ProcData extends iSellBase {
     public function onPermitedTableList() {
 	$table_list = array("items" => array());
 	foreach ($this->permited_tables as $table) {
-	    if ($this->svar('user_level') < $table[1] || $table[2] == "hidden")
+	    if (isset($table[1]) && $this->svar('user_level') < $table[1] || isset($table[2]) && $table[2] == "hidden")
 		continue;
 	    $table_list['items'][] = array('table_name' => $table[0]);
 	}

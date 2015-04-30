@@ -31,6 +31,11 @@ class Catalog extends CI_Model {
 	$query->free_result();
 	return $row;
     }
+    protected function get_value( $query ){
+	foreach( $this->get_row( $query ) as $value ){
+	    return $value;
+	}
+    }
     
     protected function get( $table, $key ){
 	return $this->db->get_where( $table, $key )->row();
@@ -156,6 +161,9 @@ class Catalog extends CI_Model {
     public function rowDelete( $table, $key_field, $id ){
 	$key=array($key_field=>$id);
 	$this->delete($table, $key);
+    }
+    protected function rowUpdate( $table, $data, $key ){
+	return $this->update($table,$data,$key);
     }
     public function rowUpdateField( $table, $key_field, $id, $field, $value ){
 	$key=array($key_field=>$id);

@@ -17,19 +17,26 @@
 	},
 	initEfields:function(data){
 	    App.renderTpl('view_settings_efields',data);
-
 	},
-	fieldChanged:function( name, value ){
-	    alert(value);
+	fieldChanged:function( field, value, type ){
+	    $.post( App.uri('DocumentView','viewUpdate',this.data.doc_view_id,field,value,type=='notextra'?0:1), function(xhr){
+		Doc.view.loadTile();
+	    });
+	},
+	deleteView:function(){
+	    $.post( App.uri('DocumentView','viewDelete',this.data.doc_view_id), function(xhr){
+		Doc.view.loadTile();
+		App.page_trade_view_settings.node.window('close');
+	    });	    
 	}
     };
 </script>
 <form id="view_settings_frm">
     <input type="text" name="view_date" class="easyui-datebox" title="Дата" 
 	   data-options="required:'required',
-	   onChange:function(val){App.page_trade_view_settings.fieldChanged('view_date',val);}">
+	   onChange:function(val){App.page_trade_view_settings.fieldChanged('view_date',val,'notextra');}">
     <input type="text" name="view_num" class="easyui-numberspinner" title="Номер" data-options="min:1,required:'required',
-	   onChange:function(val){App.page_trade_view_settings.fieldChanged('view_num',val);}">
+	   onChange:function(val){App.page_trade_view_settings.fieldChanged('view_num',val,'notextra');}">
     <div class="inp_rule"></div>
     <div id="view_settings_efields">
     {{if efields}}
@@ -40,7 +47,7 @@
     </div>
 </form>
 <div style="text-align: center">
-    <button><img src="img/Save-24.png" style="vertical-align: middle"> Сохранить</button>
-    <button><img src="img/delete.png" style="vertical-align: middle"> Удалить</button>
+    <button onclick="App.page_trade_view_settings.node.window('close')"><img src="img/apply24.png" style="vertical-align: middle"> Закрыть</button>
+    <button onclick="App.page_trade_view_settings.deleteView();"><img src="img/delete.png" style="vertical-align: middle"> Удалить</button>
 </div>
 <br>

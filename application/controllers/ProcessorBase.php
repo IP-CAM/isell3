@@ -2,7 +2,7 @@
 //extends CI_Controller
 class InputOutput extends CI_Controller{
     function InputOutput(){
-	if( BAY_OMIT_CONTROLLER_CONSTRUCT ){
+	if( defined('BAY_OMIT_CONTROLLER_CONSTRUCT') ){
 	    return;
 	}
 	parent::__construct();
@@ -55,22 +55,22 @@ class InputOutput extends CI_Controller{
 	exit();
     }
 
-    public function response_confirm($msg) {
+    public function response_confirm($msg='') {
 	$this->rtype = 'confirm';
 	$this->response("$msg");
     }
 
-    public function response_dialog($msg) {
+    public function response_dialog($msg='') {
 	$this->rtype = 'dialog';
 	$this->response($msg);
     }
 
-    public function response_error($msg) {
+    public function response_error($msg='') {
 	$this->rtype = 'error';
 	$this->response("On " . $this->request('fn') . $this->request('mod') . ":$this->rq \n\n$msg");
     }
 
-    public function response_wrn($msg) {
+    public function response_wrn($msg='') {
 	$this->rtype = 'wrn';
 	$this->response($msg);
     }
@@ -81,12 +81,12 @@ class InputOutput extends CI_Controller{
 	$this->response(file_get_contents("application/views/$path", true));
     }
 
-    public function response_alert($msg) {
+    public function response_alert($msg='') {
 	$this->rtype = 'alert';
 	$this->response($msg);
     }
 
-    public function msg($msg) {
+    public function msg($msg='') {
 	$this->msg.="$msg\n";
     }
 

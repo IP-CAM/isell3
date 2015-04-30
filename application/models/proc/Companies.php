@@ -186,7 +186,7 @@ class Companies extends Data {
                 LIMIT $start , $count";
         $response['items'] = $this->Base->get_list($sql);
         if ($user_level > 2) {
-            $response['items'][] = array(label => $this->Base->acomp('company_name'), company_id => $this->Base->acomp('company_id'));
+            $response['items'][] = array('label' => $this->Base->acomp('company_name'), 'company_id' => $this->Base->acomp('company_id'));
         }
         return $response;
     }

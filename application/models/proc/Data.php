@@ -7,9 +7,13 @@ class Data {
     ///////////////////////////////
     public function makeGridFilter($table, $grid_query) {
         $table_filter = array();
-        foreach ($grid_query['filter'] as $key => $val)
-            if (preg_match('/[a-z_]+/', $key))
-                $table_filter[] = "$key LIKE '%$val%'";
+	if( isset($grid_query['filter']) ){
+	    foreach ($grid_query['filter'] as $key => $val){
+		if (preg_match('/[a-z_]+/', $key)){
+		    $table_filter[] = "$key LIKE '%$val%'";
+		}
+	    }
+	}
         return $table_filter;
     }
 
@@ -365,7 +369,7 @@ class Data {
                 $children_count = $this->Base->get_row("SELECT COUNT(*) FROM $table_name WHERE parent_id=" . $branch[$bid_alias], 0);
             } else
                 return;
-            if ($branch['item'] || $children_count) {
+            if (isset($branch['item']) || $children_count) {
                 $branch['child'] = 1;
                 $branch['im0'] = 'folderClosed.gif';
             } else

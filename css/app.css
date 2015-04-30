@@ -152,6 +152,10 @@ button[diasbled="disabled"]{
 .icon-calc{
     background:url('../img/recalc.png') no-repeat center center;
 }
+.icon-calc16{
+    background:url('../img/recalc.png') no-repeat center center;
+    background-size: 16px 16px;
+}
 .icon-commit{
     background:url('../img/commit.png') no-repeat center center;
 }
@@ -161,17 +165,37 @@ button[diasbled="disabled"]{
 .icon-lorry{
     background:url('../img/lorry24.png') no-repeat center center;
 }
+.icon-lorry16{
+    background:url('../img/lorry24.png') no-repeat center center;
+    background-size: 16px 16px;
+}
 .icon-delete{
     background:url('../img/delete.png') no-repeat center center;
+}
+.icon-delete16{
+    background:url('../img/delete.png') no-repeat center center;
+    background-size: 16px 16px;
 }
 .icon-change{
     background:url('../img/Edit-24.png') no-repeat center center;
 }
+.icon-change16{
+    background:url('../img/Edit-24.png') no-repeat center center;
+    background-size: 16px 16px;
+}
 .icon-refresh{
     background:url('../img/reload.png') no-repeat center center;
 }
+.icon-refresh16{
+    background:url('../img/reload.png') no-repeat center center;
+    background-size: 16px 16px;
+}
 .icon-sms{
     background:url('../img/sms.png') no-repeat center center;
+}
+.icon-sms16{
+    background:url('../img/sms.png') no-repeat center center;
+    background-size: 16px 16px;
 }
 .icon-utils{
     background:url('../img/utils.png') no-repeat center center;

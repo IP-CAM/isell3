@@ -17,7 +17,7 @@ class iSellBase extends ProcessorBase{
     public function initLoggedUser($user_data){
         $this->svar('user_sign',$user_data['user_sign']);
         $this->svar('user_position',$user_data['user_position']);
-        $this->svar('user_only_assigned',$user_data['user_only_assigned']);
+        //$this->svar('user_only_assigned',$user_data['user_only_assigned']);
         $this->svar('user_assigned_stat',$user_data['user_assigned_stat']);
         $this->svar('user_assigned_path',$user_data['user_assigned_path']);
         $this->selectActiveCompany( $user_data['company_id'] );

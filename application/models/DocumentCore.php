@@ -21,6 +21,11 @@ class DocumentUtils extends Catalog{
 	$this->_doc->vat_ratio=1 + $this->_doc->vat_rate / 100;
 	$this->checkPassiveLoad();
     }
+    protected function updateProps( $props ){
+	$doc_id = $this->doc('doc_id');
+	$this->rowUpdate( 'document_list', $props, array('doc_id'=>$doc_id) );
+	$this->selectDoc($doc_id);
+    }
     protected function doc($name) {
 	if ( !isset($this->_doc) ) {
 	    $doc_id = $this->Base->svar('doc_id');
@@ -38,7 +43,11 @@ class DocumentUtils extends Catalog{
 	$user_id = $this->Base->svar('user_id');
 	$this->rowUpdateField( 'document_list', 'doc_id', $this->doc('doc_id'), 'modified_by', $user_id );
     }
-    
+    protected function getNextDocNum($doc_type) {//Util
+	$active_company_id = $this->Base->acomp('company_id');
+	$next_num = $this->get_value("SELECT MAX(doc_num)+1 FROM document_list WHERE doc_type='$doc_type' AND active_company_id='$active_company_id' AND cstamp>DATE_FORMAT(NOW(),'%Y')");
+	return $next_num ? $next_num : 1;
+    }
 }
 class DocumentCore extends DocumentUtils{
     public function listFetch(){
@@ -81,7 +90,7 @@ class DocumentCore extends DocumentUtils{
 	$sql="
 	    SELECT
 		passive_company_id,
-		IF(is_reclamation,-1,1)*doc_type doc_type,
+		IF(is_reclamation,-doc_type,doc_type) doc_type,
 		is_reclamation,
 		is_commited,
 		notcount,
@@ -99,6 +108,24 @@ class DocumentCore extends DocumentUtils{
 	    WHERE doc_id=$doc_id
 	";
 	return $this->get_row($sql);
+    }
+    private function setType( $doc_type ){
+	if( $this->isCommited() ){
+	    return false;
+	}
+	else{
+	    $doc_id = $this->doc('doc_id');
+	    $next_doc_num = $this->getNextDocNum($doc_type);
+	    $this->db->query("DELETE FROM document_view_list WHERE doc_id='$doc_id'");
+	    $quantity_sign = $doc_type<0 ? -1 : 1;
+	    $this->db->query("UPDATE document_entries SET product_quantity=ABS(product_quantity)*$quantity_sign WHERE doc_id=$doc_id");
+	    $this->updateProps( array(
+		'doc_type'=>abs($doc_type),
+		'doc_num'=>$next_doc_num,
+		'is_reclamation'=>($doc_type<0)
+	    ));
+	}
+	return true;
     }
     public function headUpdate( $field, $new_val ){
 	switch( $field ){
@@ -122,6 +149,8 @@ class DocumentCore extends DocumentUtils{
 		    return true;
 		}
 		break;
+	    case 'doc_type':
+		return $this->setType($new_val);
 	}
 	$new_val=  rawurldecode($new_val);
 	$Document2=$this->Base->bridgeLoad('Document');

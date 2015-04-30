@@ -45,7 +45,7 @@ class Document extends Data {
 	$this->vat_rate = 1 + $this->_doc['vat_rate'] / 100;
     }
 
-    protected function getCurrCorrection($mode) {
+    protected function getCurrCorrection($mode='') {
 	if ($this->Base->pcomp('curr_code') == $this->Base->acomp('curr_code') || $mode == 'total_in_uah') {
 	    return 1;
 	} else {
@@ -298,6 +298,9 @@ class Document extends Data {
 		    $stock_action = $quantity > $entry['product_quantity'] ? 'increase' : 'decrease';
 		    $amount = abs($quantity - $entry['product_quantity']);
 		}
+		else{
+		    $amount = 0;
+		}
 	    } else {//don't move product if not commited document
 		$amount = 0;
 	    }
@@ -514,7 +517,7 @@ class Document extends Data {
 	    $labels = json_decode($labels);
 	    $values = json_decode($values);
 	    foreach ($labels as $name => $label) {
-		$efields[] = array('name' => $name, 'label' => $label, 'value' => $values->$name);
+		$efields[] = array('name' => $name, 'label' => $label, 'value' => isset($values->$name)?$values->$name:'');
 	    }
 	    return $efields;
 	}
@@ -602,10 +605,12 @@ class Document extends Data {
 	}
 	$user_id = $this->Base->svar('user_id');
 	$this->Base->query("UPDATE document_view_list SET $field='$value',modified_by='$user_id' WHERE doc_view_id='$doc_view_id'");
+	return true;
     }
 
     public function deleteView($doc_view_id) {
 	$this->Base->query("DELETE FROM document_view_list WHERE doc_view_id='$doc_view_id'");
+	return true;
     }
 
     public function unfreezeView($doc_view_id) {
@@ -656,6 +661,7 @@ class Document extends Data {
 	}
 	$cstamp = $this->doc('cstamp');
 	$this->Base->query("INSERT INTO document_view_list SET doc_id='$doc_id', view_type_id='$view_type_id', view_efield_values='$efields', tstamp='$cstamp', view_num='$view_num'");
+	return mysql_insert_id();
     }
 /////////////////////////////////////////////////////////////////
 //DOCUMENT ALL
@@ -887,7 +893,7 @@ class Document extends Data {
 	} else
 	if ($field == 'is_reclamation') {
 	    if ($this->isCommited())
-		return;
+		return false;
 	    $this->Base->query("UPDATE document_list SET is_reclamation=IF(is_reclamation,0,1) WHERE doc_id='$doc_id'");
 	    $this->selectDoc($doc_id);
 	    $this->normalizeQuantitySign();

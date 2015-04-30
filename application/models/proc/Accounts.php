@@ -29,7 +29,7 @@ class Accounts extends Data {
         return mysql_insert_id();
     }
 
-    private function checkUserAccessLevel($trans_id, $acc_debit_code, $acc_credit_code) {
+    private function checkUserAccessLevel($trans_id, $acc_debit_code=null, $acc_credit_code=null) {
         return;
         $user_level = $this->Base->svar('user_level');
         if ($trans_id) {

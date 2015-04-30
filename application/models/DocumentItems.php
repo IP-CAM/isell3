@@ -18,11 +18,16 @@ class DocumentItems extends DocumentCore{
 	$sql="
 	    SELECT
 		product_code,
-		$company_lang label
+		$company_lang label,
+		product_spack,
+		product_quantity
 	    FROM
 		prod_list
+		    JOIN
+		stock_entries USING(product_code)
 	    WHERE
 		".( implode(' AND ',$where) )."
+		    ORDER BY fetch_count DESC, product_code
 	    LIMIT 15
 	    ";
 	return $this->get_list($sql);
@@ -77,6 +82,10 @@ class DocumentItems extends DocumentCore{
             ORDER BY pl.product_code";
 	return $this->get_list($sql);
     }
+    public function entryAdd( $code, $quantity ){
+	$Document2=$this->Base->bridgeLoad('Document');
+	return $Document2->addEntry( $code, $quantity );
+    }
     public function entryUpdate( $doc_entry_id, $name, $value ){
 	$Document2=$this->Base->bridgeLoad('Document');
 	switch( $name ){
@@ -101,12 +110,17 @@ class DocumentItems extends DocumentCore{
 	    product_code='$product_code'";
 	$stats=$this->get_row($sql);
 	$stats->curr_symbol=$curr->curr_symbol;
-	$stats->price=round($this->entryPriceGet($product_code),$this->doc('signs_after_dot'));
+	$stats->price=$this->entryPriceGet($product_code);
 	return $stats;
     }
     private function entryPriceGet( $product_code ){
 	$Document2=$this->Base->bridgeLoad('Document');
-	return $Document2->getProductInvoicePrice($product_code);
+	$invoice=$Document2->getProductInvoicePrice($product_code);
+	$invoice=round($invoice,$this->doc('signs_after_dot'));
+	if( !$this->doc('use_vatless_price') ){
+	    $invoice*=1+$this->doc('vat_rate')/100;
+	}
+	return round($invoice,$this->doc('signs_after_dot'));
     }
     public function entryDocumentGet(){
 	$document=array();
