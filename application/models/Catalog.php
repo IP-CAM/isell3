@@ -58,15 +58,16 @@ class Catalog extends CI_Model {
     ////////////////////////////////////////////////////
     // CORE TREE FUNCTIONS
     ////////////////////////////////////////////////////
-    protected function treeFetch($table, $parent_id = 0, $depth = 'all') {
+    protected function treeFetch($table, $parent = 0, $depth = 'all') {
 	$branches = array();
-	$res = $this->db->query("SELECT * FROM $table WHERE parent_id=$parent_id ORDER BY is_leaf,label");
+	$where=  is_numeric($parent)?"parent_id=$parent":"path LIKE '$parent%'";
+	$res = $this->db->query("SELECT * FROM $table WHERE $where ORDER BY is_leaf,label");
 	foreach ($res->result() as $row) {
 	    //$this->treeUpdatePath($table, $row->branch_id);
 	    if ($depth == 'top') {
 		$row->state = $row->is_leaf ? '' : 'closed';
 	    } else {
-		$row->children = $this->treeFetch($table, $row->branch_id);
+		$row->children = $this->treeFetch($table, $row->branch_id, 'all');
 	    }
 	    $branches[] = $row;
 	}

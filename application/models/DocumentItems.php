@@ -34,6 +34,7 @@ class DocumentItems extends DocumentCore{
     }
     private function footerGet(){
 	$doc_id=$this->doc('doc_id');
+	//$curr_symbol=$this->Base->pcomp('curr_symbol');
 	$this->calcCorrections();
 	$sql = "
 	    SELECT
@@ -142,13 +143,13 @@ class DocumentItems extends DocumentCore{
     }
     private function calcCorrections() {
 	$doc_id=$this->doc('doc_id');
-	$curr_symbol=$this->Base->pcomp('curr_symbol');
+	$curr_code=$this->Base->pcomp('curr_code');
 	$native_curr=($this->Base->pcomp('curr_code') == $this->Base->acomp('curr_code'))?1:0;
 	$sql="SELECT 
 		@vat_ratio:=1+vat_rate/100 vat_ratio,
 		@vat_correction:=IF(use_vatless_price,1,@vat_ratio) vat_correction,
 		@curr_correction:=IF($native_curr,1,1/doc_ratio) curr_correction,
-		@curr_symbol:='$curr_symbol' curr_symbol
+		@curr_symbol:=(SELECT curr_symbol FROM curr_list WHERE curr_code='$curr_code') curr_symbol
 	    FROM
 		document_list
 	    WHERE

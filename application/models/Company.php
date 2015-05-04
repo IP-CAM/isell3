@@ -7,9 +7,15 @@
 require_once 'Catalog.php';
 class Company extends Catalog{
     public function branchFetch() {
-	$parent_id = $this->input->get('id') or $parent_id = 0;
+	$parent_id = $this->input->get('id');
 	$table = "companies_tree LEFT JOIN companies_list USING(branch_id)";
-	return $this->treeFetch($table, $parent_id, 'all');
+	$assigned_path=  $this->Base->svar('user_assigned_path');
+	if( $parent_id ){
+	    $parent=$parent_id;
+	} else {
+	    $parent=$assigned_path;
+	}
+	return $this->treeFetch($table, $parent, 'top');
     }
     public function listFetch( $mode='' ){
 	$q = $this->input->get('q') or $q = 0;
@@ -33,20 +39,7 @@ class Company extends Catalog{
 	}
 	return array();
     }
-//    public function listFetch1( $mode='' ){
-//	$q = $this->input->get('q') or $q = 0;
-//	if( $q ){
-//	    $query=$this->db->like('label', $q, 'both')->get_where("companies_tree LEFT JOIN companies_list USING(branch_id)",array('is_leaf'=>1));
-//	    return $this->get_list( $query );
-//	}
-//	else if( $mode=='selected_passive_if_empty' ){
-//	    $company_id=$this->Base->pcomp('company_id');
-//	    $query=$this->db->get_where("companies_tree LEFT JOIN companies_list USING(branch_id)",array('company_id'=>$company_id));
-//	    return $this->get_list( $query );	    
-//	}
-//	return array();
-//    }
-    
+
     public function companyGet( $company_id=0 ){
 	$assigned_path=$this->Base->svar('user_assigned_path');
 	$sql="SELECT

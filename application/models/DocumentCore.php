@@ -50,9 +50,17 @@ class DocumentUtils extends Catalog{
     }
 }
 class DocumentCore extends DocumentUtils{
-    public function listFetch(){
+    public function listFetch( $page=1, $rows=30, $mode='' ){
+	$offset=($page-1)*$rows;
+	if( $offset<0 ){
+	    $offset=0;
+	}
 	$having=$this->decodeFilterRules();
-	$pcomp_id=$this->Base->pcomp('company_id');
+	$andwhere='';
+	if( $mode==='show_only_pcomp_docs' ){
+	    $pcomp_id=$this->Base->pcomp('company_id');
+	    $andwhere=" AND passive_company_id=$pcomp_id";
+	}
 	$sql="
 	    SELECT 
 		doc_id,
@@ -60,11 +68,17 @@ class DocumentCore extends DocumentUtils{
 		DATE_FORMAT(dl.cstamp,'%d.%m.%Y') doc_date,
 		doc_num,
 		doc_type_name,
-		333.44 amount,
+		(SELECT amount 
+		    FROM 
+			acc_trans 
+			    JOIN 
+			document_trans USING(trans_id)
+		    WHERE doc_id=dl.doc_id 
+		    ORDER BY trans_id LIMIT 1) amount,
 		label company_name,
-		GROUP_CONCAT(CONCAT(LEFT(view_name,3),view_num)) views,
-		IF(is_commited,'ok РџСЂРѕРІРµРґРµРЅ','') as commited,
-		'payed Оплачено' trans_status
+		GROUP_CONCAT(CONCAT(' ',LEFT(view_name,3),view_num)) views,
+		IF(is_commited,'ok Проведен','') as commited,
+		(SELECT CONCAT(code,' ',descr) FROM acc_trans_status JOIN acc_trans USING(trans_status) JOIN document_trans USING(trans_id) WHERE doc_id=dl.doc_id ORDER BY trans_id LIMIT 1) trans_status
 	    FROM 
 		document_list dl
 		    JOIN
@@ -77,13 +91,15 @@ class DocumentCore extends DocumentUtils{
 		document_view_list dv USING(doc_id)
 		    LEFT JOIN
 		document_view_types dvt USING(view_type_id)
-	    WHERE dl.doc_type<10
+	    WHERE dl.doc_type<10 $andwhere
 	    GROUP BY doc_id
 	    HAVING $having
-	    ORDER BY cstamp DESC
-	    LIMIT 130
+	    ORDER BY dl.is_commited,dl.cstamp DESC
+	    LIMIT $rows OFFSET $offset
 	";
-	return $this->get_list($sql);
+	$result_rows=$this->get_list($sql);
+	$total_estimate=$offset+(count($result_rows)==$rows?$rows+1:count($result_rows));
+	return array('rows'=>$result_rows,'total'=>$total_estimate);
     }
     public function headGet( $doc_id ){
 	$this->selectDoc($doc_id);
