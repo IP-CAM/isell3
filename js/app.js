@@ -1,6 +1,9 @@
+/* global Mark, encodeURIComponent */
+
 var App = {
     tplcache:{},
-    urlcache:{},
+    //urlcache:{},
+    handler:$.Deferred(),
     init: function () {
 	App.loadBg();
     },
@@ -38,19 +41,29 @@ var App = {
 	    }
 	});
     },
+    initModule: function(id,data,handler){
+	App[id].data = data;
+	App[id].handler = handler;
+	App[id].node = $("#" + id);
+	App[id].init ? App[id].init(data, handler) : '';
+	if( !App[id].parsed ){
+	    $.parser.parse("#" + id);//for easy ui
+	    App[id].parsed=true;
+	}
+	App[id].initAfter ? App[id].initAfter(data, handler) : '';
+    },
     loadModule: function (path, data) {
 	var id = path.replace(/\//g, '_');
 	var handler = $.Deferred();
-	App[id] = {};
-	$("#" + id).load(path + '.html', function () {
-	    App[id].data = data;
-	    App[id].handler = handler;
-	    App[id].node = $("#" + id);
-	    App[id].init ? App[id].init(data, handler) : '';
-	    $.parser.parse("#" + id);//for easy ui
-	    App[id].initAfter ? App[id].initAfter(data, handler) : '';
-	});
-	return handler.promise();
+	if( App[id] ){
+	    App.initModule(id,data,handler);
+	} else {
+	    App[id] = {};
+	    $("#" + id).load(path + '.html', function () {
+		App.initModule(id,data,handler);
+	    });	    
+	}
+	return handler.promise();	
     },
     loadWindow: function (path, data) {
 	var id = path.replace(/\//g, '_');
@@ -66,7 +79,7 @@ $(App.init);
 //////////////////////////////////////////////////
 App.json=function( text ){
     try{
-	return text==''?null:JSON.parse(text);
+	return text===''?null:JSON.parse(text);
     }
     catch(e){
 	alert(text);
@@ -188,6 +201,9 @@ App.setBg = function () {
 };
 App.datagrid = {
     tooltip: function (value, row) {
+	if( !value ){
+	    return '';
+	}
 	var parts = value.split(' ');
 	var cmd = parts.shift();
 	if (cmd)
