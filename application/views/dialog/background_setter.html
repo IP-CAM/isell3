@@ -1,0 +1,45 @@
+<script type="text/javascript">
+    /* global App */
+    App.page_dialog_background_setter={
+	init:function(){
+	    this.node.window({
+		title: 'Фоновый рисунок',
+		closable:true,
+		collapsible:true,
+		width: 270,
+		height: 'auto',
+		onClose: function () {
+		    App.page_dialog_background_setter.handler.notify('close');
+		    delete App.page_dialog_background_setter;
+		}
+	    });
+	},
+	setBg:function(input){
+	    if (input.files && input.files[0]) {
+		var reader = new FileReader();
+		reader.onload = function (e) {
+		    try{
+			localStorage.setItem('isell_bg',e.target.result);
+			App.loadBg();
+		    }
+		    catch(e){
+			alert("Не удалось сохранить файл! Возможно слишком большой размер.");
+		    }
+		};
+		reader.readAsDataURL(input.files[0]);
+	    }
+	},
+	removeBg:function(){
+	    localStorage.removeItem('isell_bg');
+	    $("body").css('background-image', '');
+	}
+    };
+</script>
+<p style="padding: 10px;">
+    <img src="img/personalize-icon.png" style="float:left;width:60px;height:60px;margin: 2px">
+    Загрузите изображение заднего фона в формате .jpeg, .png или .gif<br><br>
+    <input type="file" style="margin: auto" onchange="App.page_dialog_background_setter.setBg(this)">
+    <br><br>
+    <button type="button" onclick="App.page_dialog_background_setter.node.window('close')"><img src="img/apply24.png" style="vertical-align: middle"> Закрыть</button>
+    <button onclick="App.page_dialog_background_setter.removeBg()"><img src="img/delete.png" style="vertical-align: middle"> Удалить фон</button>
+</p>

@@ -190,14 +190,13 @@ App.cookie = function (cname, cvalue) {
     }
 };
 App.loadBg = function () {
-    if (App.cookie('bg').length > 10) {
-	$("body").css('background', 'url("' + App.cookie('bg') + '") repeat scroll center top #ffffff');
+    if (localStorage.getItem('isell_bg')) {
+	$("body").css('background', 'url("' + localStorage.getItem('isell_bg') + '") repeat scroll center top');
 	$("body").css('background-size', '100%');
     }
 };
 App.setBg = function () {
-    App.cookie('bg', prompt("Введите интернет адрес изображения заднего плана!\n\nНапример\n http://7-themes.com/data_images/out/68/7005391-sport-cars-wallpapers.jpg", App.cookie('bg')));
-    App.loadBg();
+    App.loadWindow('page/dialog/background_setter');
 };
 App.datagrid = {
     tooltip: function (value, row) {
