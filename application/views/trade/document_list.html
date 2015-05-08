@@ -28,6 +28,9 @@
 		if( resp.rows ){
 		    resp.rows.unshift(DocList.list.getNewDocRow());
 		    success( resp );
+		    if( DocList.list.selectedDocId ){
+			$('#document_list_dg').datagrid('selectRecord',DocList.list.selectedDocId);
+		    }
 		}
 		else{
 		    success({
@@ -74,6 +77,10 @@
 	    }	    
 	},
 	onSelect:function(index,row){
+	    if( row.doc_id===0 ){
+		DocList.list.createDoc();
+		return;
+	    }
 	    App.loadModule('page/trade/document',{doc_id:row.doc_id,open_in:'panel'}).progress(function(status){
 		if( status=='close' ){
 		    DocList.list.toggleHide('show');
@@ -84,21 +91,26 @@
 		}
 	    });
 	    DocList.list.toggleHide('hide');
+	},
+	createDoc:function(){
+	    $.post('DocumentCore/createDoc',function(resp){
+		if( resp*1!==0 ){
+		    DocList.list.selectedDocId=resp;
+		    $('#document_list_dg').datagrid('reload');
+		}
+	    });
 	}
     };
 
 </script>
-<div style="display: table-cell;min-width: 270px;padding:5px;">
+
+<div style="display: table-cell;padding:3px;">
     <div id="page_trade_document"></div>
-    <!--
-    <div class="easyui-panel" title="Новый документ" style="min-height: 150px">
-	<button style="margin: 50px;"><img src="img/edit_add.png" title="Создать документ" style="vertical-align: middle"> Создать документ</button>
-    </div>
-    -->
 </div>
-<div style="display: table-cell;">
+<div style="display: table-cell;padding:3px;">
     <table id="document_list_dg" class="easyui-datagrid" title="Список документов" style="width:650px;"
 	   data-options="
+	   idField:'doc_id',
 	   loader:DocList.list.loader,
 	   pagination:true,
 	   pageSize:20,
@@ -123,7 +135,6 @@
 	</thead>
     </table>
 </div>
-
 <div id="document_list_dg_tools">
     <a href="javascript:void(0)" class="icon-eye" onclick="DocList.list.toggleHide();" title="Скрыть/показать колонки"></a>
     <a href="javascript:void(0)" class="icon-filter" onclick="DocList.list.toggleFilter();" title="Фильтр таблицы"></a>

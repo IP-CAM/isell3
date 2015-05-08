@@ -35,34 +35,41 @@
 	    var type=$('#document_type_cmb').combobox('getText');
 	    var status=Doc.head.props.is_commited*1?"Проведен":"Не проведен";
 	    $('#page_trade_document').window('setTitle','Документ - '+type+' ('+status+')' );
+	},
+	close:function(){
+	    Doc.data.open_in==='panel'?Doc.node.panel('close'):Doc.node.window('close');
 	}
     };
     /////////////////////////////////////////////
     // HEAD
     /////////////////////////////////////////////
     Doc.head = {
+	props:{},
 	load: function (doc_id) {
-	    this.doc_id=doc_id;
+	    Doc.head.props.doc_id=doc_id;
 	    App.setupForm("#document_head_frm", {});
-	    $.get('DocumentItems/headGet/' + this.doc_id, function (xhr) {
+	    $.get('DocumentItems/headGet/' + Doc.head.props.doc_id, function (xhr) {
 		Doc.head.props = App.json(xhr);
 		if( Doc.head.props ){
 		    Doc.entries.reload();
 		    Doc.head.setPropsForm(Doc.head.props);
 		    Doc.head.typeComboFormatterIcon(Doc.head.props.doc_type);
-		    App.renderTpl('document_owners',Doc.head.props);
 		    Doc.setTitle();
 		    setTimeout(function(){
 			Doc.view.loadTile();
 			$("#document_pci").combobox('reload');
 		    },200);
+		    App.renderTpl('document_owners',Doc.head.props);
 		}
 		else{
 		    App.flash("Документ удален");
 		    Doc.handler.notify('deleted');
-		    Doc.data.open_in==='panel'?Doc.node.panel('close'):Doc.node.window('close');
+		    Doc.close();
 		}
 	    });
+	},
+	create:function(){
+	    
 	},
 	setPropsForm:function(props){
 	    Doc.head.loaded=false;

@@ -59,7 +59,11 @@ class DocumentCore extends DocumentUtils{
 	$andwhere='';
 	if( $mode==='show_only_pcomp_docs' ){
 	    $pcomp_id=$this->Base->pcomp('company_id');
-	    $andwhere=" AND passive_company_id=$pcomp_id";
+	    $andwhere.=" AND passive_company_id=$pcomp_id";
+	}
+	$assigned_path=  $this->Base->svar('user_assigned_path');
+	if( $assigned_path ){
+	    $andwhere.=" AND path LIKE '$assigned_path%'";
 	}
 	$sql="
 	    SELECT 
@@ -101,7 +105,18 @@ class DocumentCore extends DocumentUtils{
 	$total_estimate=$offset+(count($result_rows)==$rows?$rows+1:count($result_rows));
 	return array('rows'=>$result_rows,'total'=>$total_estimate);
     }
+    public function createDoc(){
+	$pcomp_id=$this->Base->pcomp('company_id');
+	if( $pcomp_id ){
+	    $Document2=$this->Base->bridgeLoad('Document');
+	    return $Document2->add();
+	}
+	return 0;
+    }
     public function headGet( $doc_id ){
+//	if( $doc_id==0 ){
+//	    $doc_id=$this->createDoc();
+//	}
 	$this->selectDoc($doc_id);
 	$sql="
 	    SELECT
@@ -121,8 +136,8 @@ class DocumentCore extends DocumentUtils{
 		(SELECT last_name FROM user_list WHERE user_id=modified_by) modified_by
 	    FROM
 		document_list
-	    WHERE doc_id=$doc_id
-	";
+	    WHERE doc_id=".(int) $doc_id
+	;
 	return $this->get_row($sql);
     }
     private function setType( $doc_type ){

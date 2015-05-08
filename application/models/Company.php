@@ -7,15 +7,10 @@
 require_once 'Catalog.php';
 class Company extends Catalog{
     public function branchFetch() {
-	$parent_id = $this->input->get('id');
+	$parent_id = $this->input->get('id') or $parent_id=null;
 	$table = "companies_tree LEFT JOIN companies_list USING(branch_id)";
 	$assigned_path=  $this->Base->svar('user_assigned_path');
-	if( $parent_id ){
-	    $parent=$parent_id;
-	} else {
-	    $parent=$assigned_path;
-	}
-	return $this->treeFetch($table, $parent, 'top');
+	return $this->treeFetch($table, $parent_id, 'top', $assigned_path);
     }
     public function listFetch( $mode='' ){
 	$q = $this->input->get('q') or $q = 0;
