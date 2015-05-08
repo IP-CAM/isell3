@@ -60,7 +60,7 @@ class Catalog extends CI_Model {
     ////////////////////////////////////////////////////
     protected function treeFetch($table, $parent_id = null, $depth = 'all', $super_path='') {
 	$branches = array();
-	$where='';
+	$where=array();
 	if( $super_path!=='' ){
 	    $where[]="path LIKE '$super_path".($parent_id===null?'':'%')."'";
 	}
