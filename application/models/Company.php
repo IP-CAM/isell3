@@ -10,11 +10,13 @@ class Company extends Catalog{
 	$parent_id = $this->input->get('id') or $parent_id=0;
 	$table = "companies_tree LEFT JOIN companies_list USING(branch_id)";
 	$assigned_path=  $this->Base->svar('user_assigned_path');
-	return $this->treeFetch($table, $parent_id, 'top', $assigned_path);
+	$level=$this->Base->svar('user_level');
+	return $this->treeFetch($table, $parent_id, 'top', $assigned_path, $level);
     }
     public function listFetch( $mode='' ){
 	$q = $this->input->get('q') or $q = 0;
 	$assigned_path=$this->Base->svar('user_assigned_path');
+	$level=$this->Base->svar('user_level');
 	if( $q ){
 	    $sql="SELECT *
 		FROM
@@ -26,7 +28,10 @@ class Company extends Catalog{
 			AND
 		    is_leaf=1
 			AND
-		    path LIKE '$assigned_path%'";
+		    path LIKE '$assigned_path%'
+			AND
+		    level<=$level
+		    ";
 	    return $this->get_list( $sql );
 	}
 	else if( $mode=='selected_passive_if_empty' ){
