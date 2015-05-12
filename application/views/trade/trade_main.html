@@ -21,7 +21,7 @@
 	<input class="easyui-combobox" data-options="
 	    valueField: 'company_id',
 	    textField: 'label',
-	    url: 'Company/listFetch/',
+	    url: 'Company/listFetch/selected_passive_if_empty',
 	    mode: 'remote',
 	    method:'get',
 	    width:150,
@@ -51,13 +51,8 @@
 	</ul>
     </div>
 </div>
-    <div id="trade_main_tabs" class="easyui-tabs" style="max-width:calc(100%);min-width: 900px;">
-	<div title="Документы" href="page/trade/document_list.html" style="min-height: 500px;"></div>
-    </div>
-
- <!--
-<div id="page_trade_document_list" class="transp_grad" style="width:1150px;min-height: 500px;margin: auto;">
-    
+<div id="trade_main_tabs" class="easyui-tabs" style="min-width:1111px;max-width:60%">
+    <div title="Реквизиты" href="page/catalog/company_details.html" style="min-height: 500px;"></div>
+    <div title="Настройки" href="page/catalog/company_prefs.html" style="min-height: 500px;"></div>
+    <div title="Документы" href="page/trade/document_list.html" style="min-height: 500px;"></div>
 </div>
--->
-

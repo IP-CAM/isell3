@@ -82,4 +82,61 @@ class Company extends Catalog{
 	$this->Base->svar('pcomp',$company);
 	return $company;
     }
+    
+    public function companyPrefsGet(){
+	$passive_company_id=$this->Base->pcomp('company_id');
+	if( !$passive_company_id ){
+	    return null;
+	}
+	$sql_disct="SELECT
+		st.branch_id,
+		label,
+		discount
+	    FROM
+		stock_tree st
+	    LEFT JOIN
+		companies_discounts cd ON st.branch_id=cd.branch_id AND company_id=$passive_company_id
+	    WHERE 
+		parent_id=0
+	    ORDER BY label";
+	$sql_other="SELECT
+		deferment,
+		curr_code,
+		manager_id,
+		is_supplier,
+		company_acc_list,
+		language,
+		'".$this->Base->pcomp('path')."' path
+	    FROM
+		companies_list
+	    WHERE 
+		company_id='$passive_company_id'
+	    ";
+	return array(
+	    'discounts'=>$this->get_list($sql_disct),
+	    'other'=>$this->get_row($sql_other)
+		);
+    }
+    public function companyPrefsUpdate( $type, $field, $value ){
+	$this->Base->set_level(2);
+	switch( $type ){
+	    case 'discount':
+		return $this->discountUpdate($field,$value);
+	    case 'other':
+		if( in_array($field, array('deferment','curr_code','manager_id','is_supplier','company_acc_list','language')) ){
+		    $passive_company_id = $this->Base->pcomp('company_id');
+		    return $this->db->query("UPDATE companies_list SET $field='$value' WHERE company_id=$passive_company_id");
+		}
+		return false;
+	}
+    }
+    private function discountUpdate( $branch_id, $discount ){
+	$passive_company_id = $this->Base->pcomp('company_id');
+	if( $discount==1 ){/*Discount is zero so lets delete it*/
+	    $this->db->query("DELETE FROM companies_discounts WHERE branch_id=$branch_id AND company_id=$passive_company_id");
+	} else {
+	    $this->db->query("REPLACE INTO companies_discounts SET company_id=$passive_company_id, branch_id=$branch_id, discount=$discount");
+	}
+	return true;
+    }
 }

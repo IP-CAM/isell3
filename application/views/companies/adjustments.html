@@ -108,8 +108,8 @@
 		<!--{%for dis in discounts%}-->
 		<tr>
 		    <td><!--{{dis.label}}--></td>
-		    <td align="right"><input type="text" value="{{dis.minus|default'0'}}" onchange="CompaniesJs.adjustments.update_dis('{{dis.branch_id}}', -this.value.match(/\d*.?\d+/))" onfocus="CompaniesJs.adjustments.postponeRefresh()" style="text-align:right" size="3" /> %</td>
-		    <td align="right"><input type="text" value="{{dis.plus|default'0'}}" onchange="CompaniesJs.adjustments.update_dis('{{dis.branch_id}}', +this.value.match(/\d*.?\d+/))" onfocus="CompaniesJs.adjustments.postponeRefresh()" style="text-align:right" size="3" /> %</td>
+		    <td align="right"><input type="text" value="{{dis.minus|default'0'}}" onchange="CompaniesJs.adjustments.update_dis('{{dis.branch_id}}', -this.value.match(/\d*.?\d+/))" onfocus="CompaniesJs.adjustments.postponeRefresh()" style="text-align:right;width:50px;" size="3" /> %</td>
+		    <td align="right"><input type="text" value="{{dis.plus|default'0'}}" onchange="CompaniesJs.adjustments.update_dis('{{dis.branch_id}}', +this.value.match(/\d*.?\d+/))" onfocus="CompaniesJs.adjustments.postponeRefresh()" style="text-align:right;width:50px;" size="3" /> %</td>
 		</tr>
 		<!--{%endfor%}-->
 	    </table>

@@ -133,12 +133,15 @@ App.formatNum = function (num, mode) {
     }
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 };
+App.formElements=function( fquery ){
+    return $(fquery + " input," + fquery + " textarea," + fquery + " select");
+};
 App.setupForm = function (fquery, fvalue) {
     if (!fquery) {
 	return false;
     }
     fvalue=fvalue||{};
-    $(fquery + " input," + fquery + " textarea," + fquery + " select").each(function (i, element) {
+    App.formElements(fquery).each(function (i, element) {
 	$(element).val(fvalue[element.name] || $(element).val() || '');
 	if ($(element).attr('type') === 'hidden') {
 	    return true;
@@ -152,11 +155,11 @@ App.setupForm = function (fquery, fvalue) {
 	}
 	$(element).attr('data-skip', 1);
     });
-    return $(fquery + " input," + fquery + " textarea," + fquery + " select");
+    return App.formElements(fquery);
 };
 App.collectForm = function (fquery) {
     var fvalue = {};
-    $(fquery + " input," + fquery + " textarea," + fquery + " select").each(function (i, element) {
+    App.formElements(fquery).each(function (i, element) {
 	if (element.name) {
 	    fvalue[element.name] = App.val(element);
 	}
