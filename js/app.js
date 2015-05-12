@@ -224,6 +224,7 @@ App.renderTpl=function( id, data ){
     //this.loadScript('js/markup.min.js',function(){
 	$('#'+id).html( Mark.up(App.tplcache[id], data) );
     //});
+    $('#'+id).removeClass('covert');
 };
 //App.loadScript = function (path,handler) {
 //    if( this.urlcache[path] ){

@@ -215,3 +215,6 @@ button[diasbled="disabled"]{
 .icon-serviceout{
     background:url('../img/serviceout.png') no-repeat center center;
 }
+.covert{
+    visibility: hidden;
+}

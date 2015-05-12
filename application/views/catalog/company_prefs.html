@@ -5,13 +5,19 @@
 	init:function(){
 	    App.setupForm("#CompPrefs_other");
 	    this.load();
-	    
+	    App.handler.progress(function(status){
+		if( status==="passiveCompanySelected" ){
+		    CompPrefs.load();
+		}
+	    });
 	},
 	load:function(){
 	    $.get('Company/companyPrefsGet',function(resp){
-		resp=App.json(resp);
-		CompPrefs.processDiscounts(resp);
-		CompPrefs.processOthers(resp);
+		if( resp ){
+		    resp=App.json(resp);
+		    CompPrefs.processDiscounts(resp);
+		    CompPrefs.processOthers(resp);
+		}
 	    });
 	},
 	update:function(type, id, value){
@@ -61,7 +67,7 @@
 
 <div class="panel_block">
     <div class="easyui-panel" title="Скидки и надбавки" style="padding: 3px;">
-	<div id="CompPrefs_markup">
+	<div id="CompPrefs_markup" class="covert">
 	    <div style="padding: 2px;height: 20px;">
 		<b style="width:110px;display: inline-block">Категория</b>
 		<b style="width:55px;display: inline-block">Скидка</b>
