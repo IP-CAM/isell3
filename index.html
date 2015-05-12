@@ -89,7 +89,10 @@
 	    </div>
 	</div>
     </div>
-    <div id="module_menu" class="hidden transparent" style="text-align: center;width:60px;vertical-align: top;float: left;">
+    <table width="100%"><!-- TEMP FIX -->
+        <tr>
+            <td style="width: 60px;vertical-align: top;">
+    <div id="module_menu" class="hidden transparent" style="text-align: center;width:60px;vertical-align: top;">
 	<!--
 	{% for item in menuitems %}
 	<div class="ModuleButton" id="{{item.name}}Button" title="{{item.label}}"><a href="#mod={{item.name}}"><img src="img/Mods/{{item.icon}}" width="45" height="45" /></a></div>
@@ -97,7 +100,14 @@
 	-->
 	<img src="img/personalize-icon.png" style="width:48px;height:48px;cursor: pointer;" onclick="App.setBg()" title="Установить обои" />
     </div>
+        
+            </td>
+            <td style="vertical-align: top">
     <div id="ModuleContainer" style="margin: 3px;vertical-align: top;"></div>
+        
+            </td>
+        </tr>
+    </table>
     <div id="appWindowContainer"></div>
     <div id="appStatus"></div>
 </body>

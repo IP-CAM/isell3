@@ -19,18 +19,19 @@
 		var reader = new FileReader();
 		reader.onload = function (e) {
 		    try{
-			localStorage.setItem('isell_bg',e.target.result);
+                        var suffix=App.getUrlParent();
+			localStorage.setItem('isell_bg'+suffix,e.target.result);
 			App.loadBg();
 		    }
 		    catch(e){
-			alert("Не удалось сохранить файл! Возможно слишком большой размер.");
+			alert("Не удалось сохранить файл! Возможно слишком большой размер.\n"+e);
 		    }
 		};
 		reader.readAsDataURL(input.files[0]);
 	    }
 	},
 	removeBg:function(){
-	    localStorage.removeItem('isell_bg');
+	    localStorage.removeItem('isell_bg'+App.getUrlParent());
 	    $("body").css('background-image', '');
 	}
     };

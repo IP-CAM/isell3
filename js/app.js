@@ -192,9 +192,12 @@ App.cookie = function (cname, cvalue) {
 	document.cookie = cname + "=" + cvalue + "; " + expires;
     }
 };
+App.getUrlParent=function(){
+    return location.href.split('/')[3];
+};
 App.loadBg = function () {
-    if (localStorage.getItem('isell_bg')) {
-	$("body").css('background', 'url("' + localStorage.getItem('isell_bg') + '") repeat scroll center top');
+    if (localStorage.getItem('isell_bg'+App.getUrlParent())) {
+	$("body").css('background', 'url("' + localStorage.getItem('isell_bg'+App.getUrlParent()) + '") repeat scroll center top');
 	$("body").css('background-size', '100%');
     }
 };
