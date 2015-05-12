@@ -5,8 +5,8 @@ body{
     padding:0px;
     font-family:Trebuchet MS;
     font-size:12px;
-    background:url(../img/bg.jpg) top #ffffff;
-
+    background:url(../img/bg.jpg) repeat scroll center top;
+    background-size:100%;
 }
 img{
     border:none;
