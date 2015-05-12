@@ -74,11 +74,17 @@ class Maintain extends CI_Model {
     }
 
     private function updateSwap() {
-	$this->delTree($this->dirBackup);
-	rename($this->dirWork, $this->dirBackup);
-	rename($this->dirUnpack . $this->zipSubFolder, $this->dirWork);
-	$this->delTree($this->dirUnpack);
-	return true;
+	if( file_exists($this->dirBackup)
+	    && file_exists($this->dirWork)
+	    && file_exists($this->dirUnpack . $this->zipSubFolder)
+	    && file_exists($this->dirUnpack)){
+	    $this->delTree($this->dirBackup);
+	    rename($this->dirWork, $this->dirBackup);
+	    rename($this->dirUnpack . $this->zipSubFolder, $this->dirWork);
+	    $this->delTree($this->dirUnpack);
+	    return true;
+	}
+	return false;
     }
 
     private function delTree($dir) {
