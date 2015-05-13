@@ -25,7 +25,7 @@
     App.page_accounts_acc_form.destroy = function () {
 	$('#page_accounts_acc_form').window('destroy');
 	$('#page_accounts_acc_form').remove();
-	delete this;
+	delete App.page_accounts_acc_form;
     };
 </script>
 <form id="page_accounts_acc_form_frm" onsubmit="return false;" style="-moz-user-select:none;">
