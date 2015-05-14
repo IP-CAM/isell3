@@ -1,31 +1,31 @@
 <script>
-    App.page_accounts_acc_form.init = function (data,handler) {
-	$('#page_accounts_acc_form').window({
-	    title: 'Свойства счета - '+App.page_accounts_acc_form.data.label,
-	    width: 350,
-	    height: 230,
-	    onClose: function(){
-		App.page_accounts_acc_form.handler.notify('close',App.page_accounts_acc_form.data);
-		App.page_accounts_acc_form.destroy();
-	    }
-	});
-	App.setupForm("#page_accounts_acc_form_frm", App.page_accounts_acc_form.data).change(function () {
-	    var node=this;
-	    $('#page_accounts_acc_form').css('cursor', 'wait');
-	    $.ajax({
-		url: 'Catalog/treeUpdate/acc_tree/'+App.uri(data.branch_id,node.name,App.val(node)),
-		complete: function () {
-		    App.page_accounts_acc_form.data[node.name]=App.val(node);
-		    App.flash("Сохранено: " + node.title);
-		    $('#page_accounts_acc_form').css('cursor', '');
+    /* global App*/
+    App.page_accounts_acc_form={
+	init: function (data,handler) {
+	    this.node.window({
+		title: 'Свойства счета',
+		width: 350,
+		height: 230,
+		onClose: function(){
+		    App.page_accounts_acc_form.handler.notify('close',App.page_accounts_acc_form.data);
+		    App.page_accounts_acc_form.destroy();
 		}
 	    });
-	});
-    };
-    App.page_accounts_acc_form.destroy = function () {
-	$('#page_accounts_acc_form').window('destroy');
-	$('#page_accounts_acc_form').remove();
-	delete App.page_accounts_acc_form;
+	    App.setupForm("#page_accounts_acc_form_frm", App.page_accounts_acc_form.data).change(function () {
+		var node=this;
+		$.post('Catalog/treeUpdate/acc_tree/'+App.uri(data.branch_id,node.name,App.val(node)),function(ok){
+		    if( ok*1 ){
+			App.page_accounts_acc_form.data[node.name]=App.val(node);
+			App.flash("Сохранено: " + node.title);
+		    }
+		});
+	    });
+	},
+	destroy:function(){
+	    this.node.window('destroy');
+	    this.node.remove();
+	    delete App.page_accounts_acc_form;
+	}
     };
 </script>
 <form id="page_accounts_acc_form_frm" onsubmit="return false;" style="-moz-user-select:none;">
