@@ -1,4 +1,5 @@
 <script type="text/javascript">
+    /*global App */
     App.page_dialog_event.init = function (data, handler) {
 	$('#page_dialog_event').window({
 	    title: 'Добавить в распорядок',
@@ -16,7 +17,7 @@
     App.page_dialog_event.destroy=function(){
 	$('#page_dialog_event').window('close');
 	$('#page_dialog_event').remove();
-	delete this;
+	delete App.page_dialog_event;
     };
     $('#page_dialog_event_frm').submit(function(event){
 	event.preventDefault();
@@ -102,6 +103,6 @@
     </div>
     <div style="text-align: center;margin-top: 30px;">
 	<button type="submit"><img src="img/Save-24.png" style="vertical-align: middle" /> Сохранить</button>
-	<button type="button" onclick="App.page_dialog_event.deleteEvent()" id="event_delete_button" disabled="true"><img src="img/delete.png" style="vertical-align: middle" /> Удалить</button>
+	<button type="button" onclick="App.page_dialog_event.deleteEvent()" id="event_delete_button" disabled="disabled"><img src="img/delete.png" style="vertical-align: middle" /> Удалить</button>
     </div>
 </form>
