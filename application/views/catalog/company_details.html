@@ -1,3 +1,51 @@
+<script>
+    /* global App*/
+    App.catalog_company_form={
+	properties:{
+	    title: 'Контрагент',
+	    width: 880,
+	    height: 500,
+	    onClose: function(){
+		App.catalog_company_form.handler.notify('close',App.catalog_company_form.data);
+		App.catalog_company_form.destroy();
+	    }
+	},
+	init:function () {
+	    if( this.data.open_in==='panel' ){
+		this.node.panel(this.properties);
+		this.node.panel('open');
+	    }
+	    else{
+		this.node.window(this.properties);
+	    }
+	    this.load(this.data.company_id);
+	},
+	load:function(company_id){
+	    $.get('Company/companyGet/'+company_id,function(xhr){
+		var data=App.json(xhr);
+		App.catalog_company_form.setup(data);
+	    });
+	},
+	setup:function(data){
+	    App.setupForm("catalog_company_form_frm", data).change(function () {
+		var node=this;
+		$.post('Company/companyUpdate/'+App.uri(data.company_id*1,node.name,node.value),function(ok){
+		    if( ok*1 ){
+			App.catalog_company_form.data[node.name]=node.value;
+			App.flash("Сохранено: " + node.title);
+		    } else {
+			App.flash("Сохраненние не удалось: " + node.title);
+		    }
+		});
+	    });	    
+	},
+	destroy:function () {
+	    this.node.window('destroy');
+	    this.node.remove();
+	    delete App.catalog_company_form;
+	}
+    };
+</script>
 <form id="catalog_company_form_frm" onsubmit="return false;" style="-moz-user-select:none;">
     <fieldset>
 	<legend>Обязательные реквизиты:</legend>
@@ -40,33 +88,3 @@
     <div class="inp_rule"></div>
     <textarea name="comment" title="Дополнительно"></textarea>
 </form>
-<script>
-    App.catalog_company_form.init = function (data,handler) {
-	App.catalog_company_form.data= data || {};
-	$('#catalog_company_form').window({
-	    title: App.catalog_company_form.data.name || 'Контрагент',
-	    width: 880,
-	    height: 500,
-	    onClose: function(){
-		handler.notify('close',App.catalog_company_form.data);
-		App.catalog_company_form.destroy();
-	    }
-	});
-	App.setupForm("catalog_company_form_frm", data, function (node, event) {
-	    $('#catalog_company_form').css('cursor', 'wait');
-	    $.ajax({
-		url: 'catalog-companyUpdate/'+App.uri(data.company_id*1,node.name,node.value),
-		complete: function () {
-		    App.catalog_company_form.data[node.name]=node.value;
-		    App.flash("Сохранено: " + node.title);
-		    $('#catalog_company_form').css('cursor', '');
-		}
-	    });
-	});
-    };
-    App.catalog_company_form.destroy = function () {
-	$('#catalog_company_form').window('destroy');
-	$('#catalog_company_form').remove();
-	delete this;
-    };
-</script>

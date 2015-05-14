@@ -31,13 +31,16 @@ var App = {
     },
     initTabs: function (tab_id) {
 	$('#' + tab_id).tabs({
+	    cache:false,
 	    selected: App.cookie(tab_id),
 	    onSelect: function (title, index) {
 		var href = $('#' + tab_id).tabs('getTab', title).panel('options').href;
-		var id = href.replace(/\//g, '_').replace('.html', '');
-		App[id] && App[id].init ? App[id].init() : '';
-		App[id] && App[id].initAfter ? App[id].initAfter() : '';
-		App.cookie(tab_id, title);
+		if( href ){
+		    var id = href.replace(/\//g, '_').replace('.html', '');
+		    App[id] && App[id].init ? App[id].init() : '';
+		    App[id] && App[id].initAfter ? App[id].initAfter() : '';
+		}
+		App.cookie(tab_id, title);		    
 	    }
 	});
     },

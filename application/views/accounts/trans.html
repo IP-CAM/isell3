@@ -1,4 +1,6 @@
 <script type="text/javascript">
+/* global AccountsJs,baycik,Connector */
+
     AccountsJs.trans={};
 require([
     "dojo/dom",
@@ -7,6 +9,7 @@ require([
     "dojo/date/locale",
     "dojo/query",
     "dojo/parser",
+    "dojo/ready",
     "baycik/grid/DataGrid",
     "dojo/domReady!"
 ],
@@ -16,15 +19,18 @@ function(
     on,
     locale,
     query,
-    parser
+    parser,
+    ready
 ){
     parser.parse('accounts_trans_divv');
     AccountsJs.trans.init=function(){
         this.initGrid();
         this.initCalendars();
         this.getAccFavorites();
-	//AccountsJs.trans.ledger_grid.loadByAccCode(App.cookie('last_acc_code'));
     };
+    ready(function(){
+	AccountsJs.trans.init();
+    });
     /////////////////
     //TRANS GRID
     ////////////////
@@ -40,17 +46,17 @@ function(
             onRequest=function( request ){
                 request.mod='Accounts';
                 request.rq='AccountLedgerGrid';
-                if( !request.idate || !request.fdate || !request.acc_code )
-                    return;
-                Connector.addRequest(request,function(ledger){
-                    dom.byId('incoming_balance_div').innerHTML= (ledger.incoming_balance || '0.00')+AccountsJs.trans.accProps.curr_symbol;
-                    dom.byId('closing_balance_div').innerHTML= (ledger.closing_balance || '0.00')+AccountsJs.trans.accProps.curr_symbol;
-                    dom.byId('acc_trans_selected_name').innerHTML=ledger.acc_code+' '+ledger.label;
-                    AccountsJs.trans.ledgerCurrId=ledger.curr_id;
-                    AccountsJs.trans.selectedAccounts=ledger.acc_code;
-                    AccountsJs.trans.accType=ledger.acc_type;
-                    AccountsJs.trans.ledger_grid.setData(ledger.entries);
-                });
+                if( request.idate && request.fdate && request.acc_code ){
+		    Connector.addRequest(request,function(ledger){
+			dom.byId('incoming_balance_div').innerHTML= (ledger.incoming_balance || '0.00')+AccountsJs.trans.accProps.curr_symbol;
+			dom.byId('closing_balance_div').innerHTML= (ledger.closing_balance || '0.00')+AccountsJs.trans.accProps.curr_symbol;
+			dom.byId('acc_trans_selected_name').innerHTML=ledger.acc_code+' '+ledger.label;
+			AccountsJs.trans.ledgerCurrId=ledger.curr_id;
+			AccountsJs.trans.selectedAccounts=ledger.acc_code;
+			AccountsJs.trans.accType=ledger.acc_type;
+			AccountsJs.trans.ledger_grid.setData(ledger.entries);
+		    });
+		}
             };
             onPrint=function( request ){
                 request.rq='AccountLedgerGrid';
@@ -125,18 +131,18 @@ function(
                 alert("Выберите одну проводку для отмены!");
         };
         this.ledger_grid.loadByAccCode=function( acc_code ){
-	    App.cookie('last_acc_code', acc_code );
-            AccountsJs.trans.getAccProps(acc_code);
-            AccountsJs.trans.ledger_grid.addToRequest({acc_code:acc_code});
-            if( !AccountsJs.trans.ledger_grid.started ){
-                AccountsJs.trans.ledger_grid.startup();
-                AccountsJs.trans.ledger_grid.started=true;
-                dom.byId('accounts_content_pane').style.display='block';
-                dom.byId('acc_month_box').style.display='table-cell';
-            }
-            else
-                AccountsJs.trans.ledger_grid.loadGrid();
-            AccountsJs.trans.loadTransNames( acc_code );
+		App.cookie('last_acc_code', acc_code );
+		AccountsJs.trans.getAccProps(acc_code);
+		AccountsJs.trans.ledger_grid.addToRequest({acc_code:acc_code});
+		if( !AccountsJs.trans.ledger_grid.started ){
+		    AccountsJs.trans.ledger_grid.startup();
+		    AccountsJs.trans.ledger_grid.started=true;
+		    dom.byId('accounts_content_pane').style.display='block';
+		    dom.byId('acc_month_box').style.display='table-cell';
+		}
+		else
+		    AccountsJs.trans.ledger_grid.loadGrid();
+		AccountsJs.trans.loadTransNames( acc_code );
         };
         this.ledger_grid.addTrans=function(){
             AccountsJs.trans.addTransaction();
@@ -208,7 +214,7 @@ function(
     AccountsJs.trans.selectMonth=function( start_month, finish_month ){
         var now=new Date();
         registry.byId('accounts_idate').set('value',new Date(now.getFullYear(),start_month-1,1),false);
-        registry.byId('accounts_fdate').set('value',new Date(now.getFullYear(),finish_month,0));
+        registry.byId('accounts_fdate').set('value',new Date(now.getFullYear(),finish_month,0),false);
         setTimeout(function(){
             query("#acc_month_box>div").forEach(function(node,index,array){
                 var m=node.id.split('_')[2]*1;
@@ -269,15 +275,13 @@ function(
             AccountsJs.trans.accProps=resp;
         });
     };
-
-    AccountsJs.trans.init();
 });
 </script>
 <div style="margin: auto;padding: 10px" id="accounts_trans_divv">
 
         <div id="acc_favorite_list" class="hidden">
             <!--{%for item in items%}-->
-            <div class="light_grad" style="margin:3px;padding:3px;cursor:pointer;width:200px;display: inline-block" onclick="AccountsJs.trans.ledger_grid.loadByAccCode({{item.acc_code}});">
+            <div class="light_grad" style="margin:3px;padding:3px;cursor:pointer;width:200px;display: inline-block" onclick="AccountsJs.trans.ledger_grid.loadByAccCode('{{item.acc_code}}');">
             <img src="img/star.png" align="absmiddle">{{item.acc_code}} {{item.label}} 
             </div>
             <!--{%endfor%}-->

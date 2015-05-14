@@ -5,6 +5,8 @@
 	    
 	    //App.loadWindow('page/trade/document',{doc_id:8});
 	    //App.loadModule('page/trade/document_list');
+	    
+	    App.initTabs('trade_main_tabs');
 	},
 	selectCompany:function(company){
 	    if( company.company_id*1 ){
@@ -21,7 +23,12 @@
 	<input class="easyui-combobox" data-options="
 	    valueField: 'company_id',
 	    textField: 'label',
-	    url: 'Company/listFetch/selected_passive_if_empty',
+	    loader:function(param,success,error){
+		$.get('Company/listFetch/selected_passive_if_empty',param,function(xhr){
+		    var resp=App.json(xhr);
+		    success(resp[0]?resp:[]);
+		});
+	    },
 	    mode: 'remote',
 	    method:'get',
 	    width:150,
@@ -51,7 +58,7 @@
 	</ul>
     </div>
 </div>
-<div id="trade_main_tabs" class="easyui-tabs" style="min-width:1111px;max-width:60%">
+<div id="trade_main_tabs" style="min-width:1111px;max-width:60%">
     <div title="Документы" href="page/trade/document_list.html" style="min-height: 500px;"></div>
     <div title="Настройки" href="page/catalog/company_prefs.html" style="min-height: 500px;"></div>
 </div>
