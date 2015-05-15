@@ -277,9 +277,9 @@ function(
     };
 });
 </script>
-<div style="margin: auto;padding: 10px" id="accounts_trans_divv">
+<div style="" id="accounts_trans_divv">
 
-    <div id="acc_favorite_list" class="hidden" style="float:left;width: 210px;">
+    <div id="acc_favorite_list" class="hidden" style="float:left;width: 215px;text-align: left;">
             <!--{%for item in items%}-->
             <div class="light_grad" style="margin:3px;padding:3px;cursor:pointer;width:200px;display: inline-block" onclick="AccountsJs.trans.ledger_grid.loadByAccCode('{{item.acc_code}}');">
             <img src="img/star.png" align="absmiddle">{{item.acc_code}} {{item.label}} 
