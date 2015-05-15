@@ -59,7 +59,8 @@ class Accounts extends Catalog{
 	ON (d.branch_id=c.branch_id) 
 	HAVING IF( $show_unused, 1, open_bal OR  period_d OR period_c OR close_bal )
 	ORDER BY acc_code";
-	return $this->get_list($sql);
+        $balance=$this->get_list($sql);
+	return $balance?$balance:array();
     }
     public function accountBalanceTreeCreate( $parent_id, $label ){
 	$this->treeUpdate('acc_tree',$parent_id,'is_leaf',0);

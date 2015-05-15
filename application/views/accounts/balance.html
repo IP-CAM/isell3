@@ -1,6 +1,11 @@
-<table id="page_accounts_balance_dg" class="easyui-treegrid"
-       toolbar="#toolbar" fitColumns="true" singleSelect="true"
-       data-options="idField:'branch_id',treeField:'label',fitColumns:false,
+<table id="page_accounts_balance_dg" class="easyui-treegrid" 
+       data-options="
+       fitColums:true,
+       singleSelect:true,
+       toolbar:'#toolbar',
+       idField:'branch_id',
+       treeField:'label',
+       fitColumns:false,
        loader:App.page_accounts_balance.loadBranch,
        onDblClickRow:App.page_accounts_balance.showLedger,
        onBeforeDrop:App.page_accounts_balance.CRUD.updateDrop,
@@ -10,8 +15,8 @@
        onContextMenu: App.page_accounts_balance.onContextMenu">
     <thead>
 	<tr>
-	    <th data-options="field:'label',width:350">Название</th>
 	    <th data-options="field:'acc_code',width:30,align:'right'">Код</th>
+	    <th data-options="field:'label',width:350">Название</th>
 	    <th data-options="field:'open_bal',width:100,align:'right',formatter:App.page_accounts_balance.formatNum">Вх. остаток</th>
 	    <th data-options="field:'period_d',width:100,align:'right',formatter:App.page_accounts_balance.formatNum">Оборот дебит</th>
 	    <th data-options="field:'period_c',width:100,align:'right',formatter:App.page_accounts_balance.formatNum">Оборот кредит</th>
@@ -26,7 +31,7 @@
 <div id="toolbar">
     Начало периода: <input type="date" id="page_accounts_balance_idate" title="Начало периода" class="easyui-datebox" style="width:100px" />
     Конец периода:  <input type="date" id="page_accounts_balance_fdate" title="Конец периода" class="easyui-datebox" style="width:100px" />
-    <a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-reload" plain="true" onclick="$('#page_accounts_balance_dg').treegrid('reload')">Обновить</a>
+    <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-reload',plain:true" onclick="$('#page_accounts_balance_dg').treegrid('reload')">Обновить</a>
     <a href="javascript:App.page_accounts_balance.show_unused()" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-ok',toggle:true">Показать неиспользуемые счета</a>
 </div>
 <div id="page_accounts_balance_menu" class="easyui-menu" style="width:170px;">
