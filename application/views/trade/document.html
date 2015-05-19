@@ -47,7 +47,7 @@
 	props:{},
 	load: function (doc_id) {
 	    Doc.head.props.doc_id=doc_id;
-	    App.setupForm("#document_head_frm", {});
+	    App.setupForm("#document_head_frm", {},'use_inp_values');
 	    $.get('DocumentItems/headGet/' + Doc.head.props.doc_id, function (xhr) {
 		Doc.head.props = App.json(xhr);
 		if( Doc.head.props ){

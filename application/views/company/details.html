@@ -1,0 +1,103 @@
+<script>
+    /* global App*/
+    App.page_company_details={
+	properties:{
+	    title: 'Компания',
+	    width: 920,
+	    height: 'auto',
+	    onClose: function(){
+		App.page_company_details.handler.notify('close',App.page_company_details.data);
+		App.page_company_details.destroy();
+	    }
+	},
+	init:function () {
+	    if( this.data.inpanel ){
+		this.node.panel(App.page_company_details.properties);
+	    } else {
+		this.node.window(App.page_company_details.properties);
+	    }
+	    App.page_company_details.setup();
+	    App.handler.progress(function(status){
+		if( status==="passiveCompanySelected" ){
+		    this.data=App.pcomp;
+		    App.page_company_details.load( App.pcomp.company_id );
+		}
+	    });
+	    App.setupForm("#page_company_details_frm");
+	    App.formElements("#page_company_details_frm").change(function () {
+		var node=this;
+		App.page_company_details.updateField(node.name,node.value,node.title);
+	    });
+	    //this.load(this.data.company_id);
+	},
+	focus:function(){
+	    this.load(this.data.company_id);
+	},
+	load:function( company_id ){
+	    $.get('Company/companyGet/'+company_id*1,function(xhr){
+		App.page_company_details.data=App.json(xhr);
+		App.page_company_details.setup();
+		App.page_company_details.setTitle();
+	    });
+	},
+	setTitle:function(){
+	    this.node.panel('setTitle','Компания - '+this.data.label);
+	},
+	updateField:function(field,value,title){
+	    $.post('Company/companyUpdate/'+App.uri(App.page_company_details.data.company_id*1,field,value),function(ok){
+		if( ok*1 ){
+		    App.page_company_details.data[field]=value;
+		    App.flash("Сохранено: " + title);
+		} else {
+		    App.flash("Сохраненние не удалось: " + title);
+		}
+	    });
+	},
+	setup:function(){
+	    App.setupForm("#page_company_details_frm", App.page_company_details.data);
+	},
+	destroy:function () {
+	    this.node.window('destroy');
+	    this.node.remove();
+	    delete App.page_company_details;
+	}
+    };
+</script>
+<div id="page_company_details_frm" style="">
+    <div class="inp_group" style="width: 550px;">
+	<input type="text" name="company_name" title="Полное название*" style="width:410px;"/>	
+	<input type="text" name="company_jaddress" title="Юр. Адрес*" style="width:410px;"/>
+	<input type="text" name="company_vat_id" title="ИНН*"/>
+	<input type="text" name="company_code" title="КОД"/>	
+	<input type="text" name="company_vat_licence_id" title="Доп. КОД"/>	
+	<input type="text" name="company_phone" title="Телефон*"/>	
+    </div>
+    <div class="inp_group" style="width:340px;">
+	<input type="text" name="company_agreement_num" title="Номер договора"/>
+	<input type="text" name="company_agreement_date" title="Дата договора"/>
+	<div class="inp_rule"></div>
+	<input type="text" name="company_bank_account" title="Поточный счет"/>
+	<input type="text" name="company_bank_id" title="Код Банка"/>
+	<input type="text" name="company_bank_name" title="Название банка"/>	
+    </div>
+    <div class="inp_rule"></div>
+    <div class="inp_group" style="width:340px;">
+	<input type="text" name="label" title="Короткое название"/>
+	<input type="text" name="company_address" title="Фактический Адрес"/>
+	<input type="text" name="company_person" title="Контактное лицо"/>
+	<input type="text" name="company_director" title="Директор"/>
+    </div>
+    <div class="inp_group" style="width:340px;">
+	<input type="text" name="company_mobile" title="Мобильный"/>
+	<input type="text" name="company_fax" title="Факс"/>
+	<input type="text" name="company_email" title="E-mail"/>
+	<input type="text" name="company_web" title="Сайт"/>
+    </div>
+    <div class="inp_rule"></div>
+    <textarea name="company_description" title="Дополнительно" style="width:550px;"></textarea>
+</div>
+<style>
+    #page_company_details_frm b{
+	width:120px;
+    }
+</style>

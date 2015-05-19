@@ -1,12 +1,6 @@
 <script type="text/javascript" src="js/jquery-easyui-1.4/datagridfilter/datagrid-filter.js"></script>
 <script type="text/javascript">
     /* global App,DocList */
-    App.handler.progress(function(status){
-	if( status==='passiveCompanySelected'){
-	    DocList.show_only_pcomp_docs=true;
-	    $('#document_list_dg').datagrid('reload');
-	}
-    });
     DocList=App.page_trade_document_list = {
 	show_only_pcomp_docs:false,
 	init: function () {
@@ -14,6 +8,12 @@
 	},
 	initAfter: function () {
 	    this.list.init();
+	    App.handler.progress(function(status){
+		if( status==='passiveCompanySelected'){
+		    DocList.show_only_pcomp_docs=true;
+		    $('#document_list_dg').datagrid('reload');
+		}
+	    });
 	}
     };
     DocList.list = {

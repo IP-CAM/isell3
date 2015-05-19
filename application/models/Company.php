@@ -18,7 +18,10 @@ class Company extends Catalog{
 	$assigned_path=$this->Base->svar('user_assigned_path');
 	$level=$this->Base->svar('user_level');
 	if( $q ){
-	    $sql="SELECT *
+	    $sql="SELECT 
+		    company_id,
+		    label,
+		    path
 		FROM
 		    companies_tree
 		JOIN 
@@ -41,6 +44,7 @@ class Company extends Catalog{
     }
 
     public function companyGet( $company_id=0 ){
+	$company_id=(int) $company_id;
 	$assigned_path=$this->Base->svar('user_assigned_path');
 	$sql="SELECT
 		*
@@ -59,13 +63,14 @@ class Company extends Catalog{
     public function companyCreate($parent_id){
     }
     public function companyUpdate($company_id, $field, $value) {
-	$key = array(
-	    'company_id' => $company_id
-	);
-	$data = array(
-	    $field => $value
-	);
-	return $this->update("companies_tree LEFT JOIN companies_list USING(branch_id)", $key, $data);
+	$value=  rawurldecode($value);
+	$fields="company_name/company_jaddress/company_vat_id/company_code/company_vat_licence_id/company_phone/company_agreement_num/
+		 company_agreement_date/company_bank_account/company_bank_id/company_bank_name/label/company_person/company_director/
+		 company_mobile/company_address/company_email/company_web/company_description";
+	if( strpos($fields, $field)!==false ){
+	    return $this->db->query("UPDATE companies_tree LEFT JOIN companies_list USING(branch_id) SET $field='$value' WHERE company_id=$company_id");
+	}
+	return false;
     }
     public function companyDelete($company_id){
 	$company_id=(int) $company_id;
