@@ -1,5 +1,5 @@
 [
-    {"level":"1","name":"Trade","icon":"trade.png","label":"Торговля"},
+    {"level":"1","name":"Trade","icon":"trade.png","label":"Торговля БЕТА"},
     {"level":"1","name":"Companies","icon":"companies.png","label":"Контрагенты"},
     {"level":"3","name":"Accounts","icon":"accounts.png","label":"Бухгалтерия"},
     {"level":"1","name":"Stock","icon":"stock.png","label":"Склад"},
