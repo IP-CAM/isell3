@@ -755,7 +755,12 @@ class Accounts extends Data {
     //public $getAccountProperties='(int) acc_code';
     
     public function getAccountProperties($acc_code) {
-        return $this->Base->get_row("SELECT * FROM acc_tree JOIN curr_list ON (curr_list.curr_id=acc_tree.curr_id) WHERE acc_code='$acc_code'");
+        $sql="SELECT
+            * 
+            FROM acc_tree at
+            JOIN curr_list cl ON IF(at.curr_id,cl.curr_id=at.curr_id,cl.curr_id=1)
+            WHERE acc_code='$acc_code'";
+        return $this->Base->get_row($sql);
     }
 
 //    public $setAccountProperties='(int) acc_code,(json) props'; JOIN curr_list ON (curr_list.curr_id=1)
