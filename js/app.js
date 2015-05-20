@@ -212,7 +212,7 @@ App.getUrlParent=function(){
 };
 App.loadBg = function () {
     if (localStorage.getItem('isell_bg'+App.getUrlParent())) {
-	$("body").css('background', 'url("' + localStorage.getItem('isell_bg'+App.getUrlParent()) + '") repeat scroll center top');
+	$("body").css('background', 'url("' + localStorage.getItem('isell_bg'+App.getUrlParent()) + '") repeat fixed center top');
 	$("body").css('background-size', '100%');
     }
 };
