@@ -12,8 +12,8 @@
 		}
 	    });
 	    App.renderTpl('DocEntEd_markup',this.data);
-	    App.setupForm("#document_ented_frm",this.data);
-	    //DocEntEd.formSet(DocEntEd.data);
+	    App.setupForm("#document_ented_frm",this.data,'use_inp_values');
+            //DocEntEd.formSet(DocEntEd.data);
 	    $("input[name=product_quantity]").numberspinner({suffix:' '+this.data.product_unit});
 	    $("input[name=product_price]").numberspinner({precision:this.data.head.signs_after_dot});
 	    setTimeout(DocEntEd.getStats,100);
@@ -48,7 +48,7 @@
 	renderStats:function(){
 	    var stats=DocEntEd.stats||{};
 	    stats.unit=DocEntEd.data.product_unit;
-	    if( stats.price==DocEntEd.data.product_price ){
+	    if( stats.price===DocEntEd.data.product_price ){
 		stats.color='blue';
 	    }else
 	    if(stats.price>DocEntEd.data.product_price){
@@ -66,6 +66,7 @@
     <div id="DocEntEd_markup">
 	<input type="text" value="{{product_code}}" title="Код" disabled="disabled">
 	<textarea disabled="disabled" title="Название" rows="1">{{product_name}}</textarea>
+        <input type="text" value="{{product_uktzet}}" title="УКТ ЗЕД" disabled="disabled">
     </div>
     <div>
     <input class="easyui-numberspinner" name="product_quantity" title="Кол-во" data-options="
@@ -81,7 +82,7 @@
 	   decimalSeparator:',',
 	   onChange:function(val){DocEntEd.change('product_price',val);}
 	   " />
-    <span id="DocEntEd_price_markup" title="Стандартная цена">Цена: <b style="color:{{color}}">{{price}} {{curr_symbol}}</b></span>
+    <span id="DocEntEd_price_markup" title="Стандартная цена">Цена: <b style="color:'{{color}}'">{{price}} {{curr_symbol}}</b></span>
     </div>
 </form>
 <div style="text-align: center">
