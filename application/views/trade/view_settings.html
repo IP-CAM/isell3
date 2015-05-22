@@ -1,4 +1,5 @@
 <script type="text/javascript">
+    /*global App,Doc*/
     App.page_trade_view_settings = {
 	init: function () {
 	    this.node.window({
@@ -11,15 +12,15 @@
 	    });
 	    this.initEfields(this.data);
 	    App.setupForm("#view_settings_frm",this.data).change(function(){
-		App.page_trade_view_settings.fieldChanged(this.name,this.value)
+		App.page_trade_view_settings.fieldChanged(this.name,this.value);
 	    });
-		    
+	    this.node.window('center');
 	},
 	initEfields:function(data){
 	    App.renderTpl('view_settings_efields',data);
 	},
 	fieldChanged:function( field, value, type ){
-	    $.post( App.uri('DocumentView','viewUpdate',this.data.doc_view_id,field,value,type=='notextra'?0:1), function(xhr){
+	    $.post( App.uri('DocumentView','viewUpdate',this.data.doc_view_id,field,value,type==='notextra'?0:1), function(xhr){
 		Doc.view.loadTile();
 	    });
 	},

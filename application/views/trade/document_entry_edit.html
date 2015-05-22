@@ -11,6 +11,7 @@
 		    delete App.page_trade_document_entry_edit,DocEntEd;
 		}
 	    });
+	    this.node.window('center');
 	    App.renderTpl('DocEntEd_markup',this.data);
 	    App.setupForm("#document_ented_frm",this.data,'use_inp_values');
             //DocEntEd.formSet(DocEntEd.data);
