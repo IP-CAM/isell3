@@ -88,6 +88,7 @@ function(
 	StockJs.list.stock_list.createProduct= function() {
 	    var product_code=prompt('Добавление в категорию "'+StockJs.SelectedCatName+'".\nВведите код из справочника товаров',"");
 	    if( product_code!==null ){
+		StockJs.list.stock_list.request.product_code=product_code;
 		StockJs.list.stock_list.request.rq = 'StockEntryInsert';
 		Connector.addRequest(StockJs.list.stock_list.request);		
 	    }
@@ -138,7 +139,7 @@ function(
 	this.stock_list.loadGrid();
 	dom.byId("stock_tree_status").innerHTML = 'Категория ' + this.parent_id;
 	StockJs.SelectedCatName= this.parent_id ? cat_name : 'Все Категории';
-	dom.byId("stock_cat_name").innerHTML =SelectedCatName;
+	dom.byId("stock_cat_name").innerHTML =StockJs.SelectedCatName;
     };
     StockJs.list.getIncomeOrder = function() {
 	var request = {mod: 'Stock', rq: 'IncomeOrder', parent_id: this.parent_id};

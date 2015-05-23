@@ -116,7 +116,7 @@ class Stock extends Data {
     }
 
     public function stockEntryInsert($product_code, $parent_id) {
-        $this->Base->query("INSERT INTO " . BAY_DB_MAIN . ".stock_entries SET product_code='$product_code',party_label=NULL, parent_id='$parent_id'");
+        $this->Base->query("INSERT INTO " . BAY_DB_MAIN . ".stock_entries SET product_code='$product_code',party_label=NULL, parent_id='$parent_id'",false);
         if (mysql_errno() == 1062){
             $this->Base->response_wrn("Строка с артикулом '$product_code' уже есть");
         }

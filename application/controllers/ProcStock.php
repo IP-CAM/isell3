@@ -97,9 +97,8 @@ class ProcStock extends iSellBase {
 
     public function onStockEntryInsert() {
         $this->set_level(2);
-        $insert_id = $this->request('newrow', 3);
+        $product_code = $this->request('product_code');
         $parent_id = $this->request('parent_id', 1);
-        $product_code = $insert_id['product_code'];
         $this->LoadClass('Stock');
         $this->Stock->stockEntryInsert($product_code, $parent_id);
     }
