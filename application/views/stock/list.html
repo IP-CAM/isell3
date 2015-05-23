@@ -19,6 +19,7 @@ function(
     StockJs.list.init = function() {
 	this.initStockList();
 	this.initTree();
+	StockJs.SelectedCatName='Все категории';
     };
     StockJs.list.initStockList = function() {
 	StockJs.list.stock_list = new baycik.grid.DataGrid( {}, 'stock_list');
@@ -85,7 +86,11 @@ function(
 	    startup();
 	}
 	StockJs.list.stock_list.createProduct= function() {
-	    StockJs.list.entryEditDialog('');
+	    var product_code=prompt('Добавление в категорию "'+StockJs.SelectedCatName+'".\nВведите код из справочника товаров',"");
+	    if( product_code!==null ){
+		StockJs.list.stock_list.request.rq = 'StockEntryInsert';
+		Connector.addRequest(StockJs.list.stock_list.request);		
+	    }
 	};
 	StockJs.list.stock_list.updateProduct= function() {
 	    var selected=StockJs.list.stock_list.getSelected();
@@ -130,10 +135,10 @@ function(
 	    parent_id = 0;
 	this.parent_id = parent_id;
 	this.stock_list.addToRequest({parent_id:parent_id});
-
 	this.stock_list.loadGrid();
 	dom.byId("stock_tree_status").innerHTML = 'Категория ' + this.parent_id;
-	dom.byId("stock_cat_name").innerHTML = this.parent_id ? cat_name : 'Все Категории';
+	StockJs.SelectedCatName= this.parent_id ? cat_name : 'Все Категории';
+	dom.byId("stock_cat_name").innerHTML =SelectedCatName;
     };
     StockJs.list.getIncomeOrder = function() {
 	var request = {mod: 'Stock', rq: 'IncomeOrder', parent_id: this.parent_id};

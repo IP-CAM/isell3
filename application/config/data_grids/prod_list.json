@@ -1,5 +1,5 @@
 {
-    "grid_name": "Список Товаров",
+    "grid_name": "Справочник Товаров",
     "selectionMode": "extended",
     "readonly": 0,
     "toolnames": [
