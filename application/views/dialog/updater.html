@@ -38,8 +38,9 @@
 		    }
 		});
 	    } else {
-		$('#updater_status_finish'+this.actionQueue[step-1]+' img').attr('src','img/ok.png');
-		alert("Обновления установлены!");
+		$('#updater_status_finish img').attr('src','img/ok.png');
+		$('#updater_close_btn').show();
+		App.checkUpdates();
 	    }
 	}
     };
@@ -60,6 +61,9 @@
     <div id="updater_status_swap"><img src="img/time.png"> Установка файлов</div>
     <div id="updater_status_install"><img src="img/time.png"> Настройка базы данных</div>
     <div id="updater_status_finish"><img src="img/time.png"> Финиш!</div>
+</div>
+<div style="text-align: center">
+    <button onclick="App.page_dialog_updater.node.window('close');" style="display: none;margin: auto;" id="updater_close_btn"><img src="img/close24.png" style="width:24px;height: 24px;"> Закрыть</button>
 </div>
 <style>
     #updater_list_ul div{

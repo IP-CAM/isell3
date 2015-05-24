@@ -2,20 +2,6 @@
 
 class Maintain extends CI_Model {
 
-    public function Maintain() {
-	$this->dirParent=realpath('..');
-	$this->dirWork = realpath('.');
-	if( file_exists($this->dirWork.'/.git') ){
-	    print("Work folder contains .git folder. Update may corrupt your work! Workdir is set to -isell3 ");
-	    $this->dirWork = $this->dirParent.'/-isell3';//realpath('.');
-	}	
-	$this->dirUnpack=$this->dirParent.'/isell3_update';
-	$this->dirBackup=$this->dirParent.'/isell3_backup';
-	$this->zipPath = $this->dirUnpack.'/isell3_update.zip';
-	$this->zipSubFolder = '/isell3-master/';
-	parent::__construct();
-    }
-
     public function autoUpdate( $step='' ){
 	if( !$step ){
 	    header("Refresh: 2; url= download");
@@ -28,9 +14,13 @@ class Maintain extends CI_Model {
 	    }
 	    if( $step=='unpack' ){
 		header("Refresh: 2; url= swap");
-		return  'installing...';
+		return  'installing files...';
 	    }
 	    if( $step=='swap' ){
+		header("Refresh: 2; url= install");
+		return  'finishing installation...';
+	    }
+	    if( $step=='install' ){
 		return  'update succeded!';
 	    }
 	}
@@ -39,7 +29,21 @@ class Maintain extends CI_Model {
 	}
     }
     
+    private function setupUpdater(){
+	$this->dirParent=realpath('..');
+	$this->dirWork = realpath('.');
+	if( file_exists($this->dirWork.'/.git') ){
+	    $this->Base->msg("Work folder contains .git folder. Update may corrupt your work! Workdir is set to -isell3 ");
+	    $this->dirWork = $this->dirParent.'/-isell3';//realpath('.');
+	}	
+	$this->dirUnpack=$this->dirParent.'/isell3_update';
+	$this->dirBackup=$this->dirParent.'/isell3_backup';
+	$this->zipPath = $this->dirUnpack.'/isell3_update.zip';
+	$this->zipSubFolder = '/isell3-master/';	
+    }
+    
     public function appUpdate($action = 'download') {
+	$this->setupUpdater();
 	if ($action == 'download') {
 	    return $this->updateDownload(BAY_UPDATE_URL, $this->zipPath);
 	}
@@ -49,8 +53,8 @@ class Maintain extends CI_Model {
 	if ($action == 'swap') {
 	    return $this->updateSwap();
 	}
-	if ($action == 'init') {
-	    //copy config file;run db migrations
+	if ($action == 'install') {
+	    return $this->updateInstall();
 	}
     }
 
@@ -87,6 +91,10 @@ class Maintain extends CI_Model {
 	}
 	return false;
     }
+    
+    private function updateInstall(){
+	return true;
+    }
 
     private function delTree($dir) {
 	if( !file_exists ($dir) ){
@@ -99,4 +107,8 @@ class Maintain extends CI_Model {
 	return rmdir($dir);
     }
 
+    public function getCurrentVersionStamp(){
+	//date_default_timezone_set('Europe/Kiev');
+	return date ("Y-m-d\TH:i:s\Z", filemtime(realpath('.')));
+    }
 }
