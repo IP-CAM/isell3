@@ -8,7 +8,7 @@ var App = {
 	App.loadBg();
 	setTimeout(function(){
 	    App.checkUpdates();
-	},0);
+	},15000);
     },
     flash:function (msg, type) {
 	if (type === 'error') {
