@@ -244,7 +244,7 @@ App.renderTpl=function( id, data ){
     //});
     $('#'+id).removeClass('covert');
 };
-App.checkUpdates=function (){
+App.checkUpdates=function (){ 
     $.get('Maintain/getCurrentVersionStamp',function(stamp){
 	$.getJSON('https://api.github.com/repos/baycik/isell3/commits?since='+stamp+'&callback=?',function(resp){
 	    try{
