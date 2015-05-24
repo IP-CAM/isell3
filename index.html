@@ -93,6 +93,13 @@
 		<div style="background:#DAE5F0;color:#FF0000;overflow: hidden;" class="rounded" align="center">{{user_level_name|default:''}} <span style="font-weight:bold;color:#000">{{user_login}}</span> <a href="javascript:logout()">[выход]</a></div> 
 	    </div>
 	</div>
+	<div id="sync_panel" class="covert" style="display: inline-block;float: right;margin: 4px;cursor: pointer;">
+	    {{if updates}}
+	    <img src="img/update_yes.png" style="vertical-align: middle" title="Есть обновления" />{{updates|length}}
+	    {{else}}
+	    <img src="img/update_no.png" style="vertical-align: middle" title="Обновлений нет" />{{updates|length}}
+	    {{/if}}
+	</div>
     </div>
     <div id="module_menu" class="hidden transparent" style="text-align: center;width:60px;vertical-align: top;float: left;">
 	<!--

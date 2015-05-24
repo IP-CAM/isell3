@@ -6,6 +6,9 @@ var App = {
     handler:$.Deferred(),
     init: function () {
 	App.loadBg();
+	setTimeout(function(){
+	    App.checkUpdates();
+	},0);
     },
     flash:function (msg, type) {
 	if (type === 'error') {
@@ -47,7 +50,7 @@ var App = {
 			    panel.wrapInner('<div id="'+id+'" style="padding:5px"></div>');
 			    panel.css('padding','5px');
 			}
-			App[id].data={inpanel:true};
+			App[id].data={inline:true};
 			App[id].node=$("#" + id);
 			App[id].init && App[id].init();
 			App[id].initAfter && App[id].initAfter();
@@ -136,7 +139,7 @@ App.toDmy = function (iso) {
     if (iso instanceof Date) {
 	return String("0" + iso.getDate()).slice(-2) + '.' + String("0" + (iso.getMonth() + 1)).slice(-2) + '.' + iso.getFullYear();
     }
-    return iso.replace(/^(\d\d\d\d)-(\d\d)-(\d\d)$/, "$3.$2.$1");
+    return iso.replace(/^(\d\d\d\d)-(\d\d)-(\d\d)T?(\d\d:\d\d:\d\d)?Z?$/, "$3.$2.$1");
 };
 App.today = function () {
     return App.toDmy(new Date());
@@ -241,19 +244,25 @@ App.renderTpl=function( id, data ){
     //});
     $('#'+id).removeClass('covert');
 };
-//App.loadScript = function (path,handler) {
-//    if( this.urlcache[path] ){
-//	handler();
-//    }
-//    else {
-//	$.getScript(path,handler);
-//	this.urlcache[path]=1;
-//    }
-//};
-
-
-
-
+App.checkUpdates=function (){
+    $.get('Maintain/getCurrentVersionStamp',function(stamp){
+	$.getJSON('https://api.github.com/repos/baycik/isell3/commits?since='+stamp+'&callback=?',function(resp){
+	    try{
+		var list=[];
+		for(var i in resp.data){
+		    var commit=resp.data[i].commit;
+		    list.push({name:commit.committer.name,date:App.toDmy(commit.committer.date),message:commit.message});
+		}
+		App.renderTpl('sync_panel',{updates:list});
+		$('#sync_panel').click(function(){
+		    App.loadWindow('page/dialog/updater',{updates:list});
+		});
+	    } catch (e){
+		console.log( e );
+	    }
+	});
+    });
+};
 //////////////////////////////////////////////////
 //AJAX SETUP
 //////////////////////////////////////////////////
@@ -261,25 +270,27 @@ $.ajaxSetup({
     cache: true
 });
 $(document).ajaxComplete(function (event, xhr, settings) {
-    $(document).css('cursor', '');
-    var type = xhr.getResponseHeader('X-isell-type');
-    var msg = xhr.getResponseHeader('X-isell-msg');
-    if (msg) {
-	var msg = decodeURIComponent(msg.replace(/\+/g, " "));
-	if (type === 'error') {
-	    App.flash(msg, 'error');
+    if( settings.crossDomain===false ){
+	$(document).css('cursor', '');
+	var type = xhr.getResponseHeader('X-isell-type');
+	var msg = xhr.getResponseHeader('X-isell-msg');
+	if (msg) {
+	    var msg = decodeURIComponent(msg.replace(/\+/g, " "));
+	    if (type === 'error') {
+		App.flash(msg, 'error');
+	    }
+	    else {
+		App.flash(msg);
+	    }
 	}
-	else {
-	    App.flash(msg);
+	else if (!type || type.indexOf('OK') === -1) {
+	    App.flash("<h3>url: " + settings.url + "</h3>" + xhr.responseText, 'error');
 	}
-    }
-    else if (!type || type.indexOf('OK') === -1) {
-	App.flash("<h3>url: " + settings.url + "</h3>" + xhr.responseText, 'error');
     }
 });
 $(document).ajaxError(function (event, xhr, settings) {
     var type = xhr.getResponseHeader('X-isell-type');
-    if (type && type.indexOf('OK') > -1) {
+    if (type && type.indexOf('OK') > -1 || settings.crossDomain===true) {
 	return;
     }
     App.flash("<h3>error url: " + settings.url + "</h3>" + xhr.responseText, 'error');
