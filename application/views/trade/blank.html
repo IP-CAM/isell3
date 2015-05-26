@@ -1,0 +1,164 @@
+<script type="text/javascript">
+    /* global App,Blank */
+    Blank=App.page_trade_blank = {
+	show_only_pcomp_docs:false,
+	init: function () {
+	    
+	},
+	initAfter: function () {
+	    App.handler.progress(function(status){
+		if( status==='passiveCompanySelected'){
+		    Blank.show_only_pcomp_docs=true;
+		    $('#blank_list_dg').datagrid('reload');
+		}
+	    });
+	    this.list.init();
+	    this.availsOpen();
+	},
+	availsOpen:function(){
+	    $.get('DocumentBlank/availFetch/',function(resp){
+		var avails=App.json(resp);
+		$('#blank_avails').panel('expand');
+		App.renderTpl('blank_avails',{avails:avails});
+	    });
+	},
+	blankCreate:function(view_type_id){
+	    $.post('DocumentBlank/blankCreate/'+view_type_id,function(resp){
+		if( resp*1>0 ){
+		    Blank.list.selectedDocId=resp;
+		    $('#blank_list_dg').datagrid('reload');
+		}		
+	    });
+	},
+	blankLoad:function(){
+	    var doc_id=Blank.list.selectedDocId;
+	    $.get('DocumentBlank/blankGet/'+doc_id,function(resp){
+		var blank_data=App.json(resp);
+		$('#blank_wrapper').html(blank_data.html);
+		
+		
+		
+		//App.renderTpl('blank_edit',blank_data);
+	    });
+	}
+    };
+    Blank.list = {
+	init: function () {
+	    $('#blank_list_dg').datagrid('getPager').pagination({
+                layout:['list','sep','first','prev','sep','links','sep','next','sep','refresh']
+            });
+	},
+	loader:function(param,success,error){
+	    $.get(App.uri('DocumentBlank','listFetch',param.page,param.rows,Blank.show_only_pcomp_docs?'show_only_pcomp_docs':''),function(xhr){
+		var resp=App.json(xhr);
+		if( resp.rows ){
+		    resp.rows.unshift(Blank.list.getNewDocRow());
+		    success( resp );
+		    if( Blank.list.selectedDocId ){
+			$('#blank_list_dg').datagrid('selectRecord',Blank.list.selectedDocId);
+		    }
+		}
+		else{
+		    success({
+			rows:[Blank.list.getNewDocRow()],
+			total:1
+		    });
+		}
+	    });
+	},
+	getNewDocRow:function(){
+	    return {
+		doc_id:0,
+		view_name:'Новый документ',
+		doc_date:App.today(),
+		company_name:App.pcomp?App.pcomp.label:'',
+		doc_type_icon:"new Новый документ"
+	    };
+	},
+	onSelect:function(index,row){
+	    Blank.list.selectedDocId=row.doc_id;
+	    if( row.doc_id===0 ){
+		Blank.blankCreate();
+		$('#blank_avails').panel('expand');
+		$('#blank_edit').panel('collapse');
+	    } else {
+		$('#blank_avails').panel('collapse');
+		$('#blank_edit').panel('expand');
+		Blank.blankLoad();
+	    }
+	}
+    };
+</script>
+
+<div style="display: table-cell;">
+    <div class="easyui-panel" title="Создать новый бланк" id="blank_avails" data-options="collapsible:true,iconCls:'icon-document16'">
+	{{avails}}
+	{{if avail_views}}
+	<div class="blank_group">
+	    <div class="blank_group_title"><img src="img/{{icon_name}}.png"> {{doc_type_name}}</div>
+	    {{avail_views}}
+	    <button onclick="Blank.blankCreate($(this).data('vt-id'))" data-vt-id="{{view_type_id}}"><img src="img/edit_add.png"> {{view_name}}</button>
+	    {{/avail_views}}
+	</div>
+	{{/if}}
+	{{/avails}}
+    </div>
+    <div class="easyui-panel" title="Редактирование бланка" id="blank_edit" data-options="collapsible:true,iconCls:'icon-document16'">
+	<div id="blank_wrapper">
+	    {{html}}
+	</div>
+    </div>
+</div>
+<div style="display: table-cell;padding-left:3px;">
+    <table id="blank_list_dg" class="easyui-datagrid" title="Список бланков" style="width:430px;"
+	   data-options="
+	   idField:'doc_id',
+	   loader:Blank.list.loader,
+	   pagination:true,
+	   pageSize:20,
+	   singleSelect:true,
+	   onSelect:Blank.list.onSelect,
+	   url:'DocumentCore/listFetch',
+	   tools:'#blank_list_dg_tools',
+	   method:'get'">
+	<thead>
+	    <tr>
+		<th data-options="width:120,field:'company_name'">Компания</th>
+		<th data-options="width:30,field:'doc_type_icon',align:'center',formatter:App.datagrid.tooltip">Док</th>
+		<th data-options="width:65,field:'doc_date'">Дата</th>
+		<th data-options="width:50,field:'doc_num',align:'right'">Номер</th>
+		<th data-options="width:160,field:'view_name'">Документ</th>
+	    </tr>
+	</thead>
+    </table>
+</div>
+<div id="blank_list_dg_tools">
+    <a href="javascript:void(0)" class="icon-reload" onclick="$('#blank_list_dg').datagrid('reload')" title="Обновить"></a>
+</div>
+<style>
+    #blank_avails{
+	width: 800px;
+    }
+    #blank_avails div{
+	
+    }
+    #blank_avails .blank_group{
+	font-weight: bold;
+	vertical-align: top;
+	margin: 5px;
+    }
+    #blank_avails img{
+	vertical-align: middle;
+    }
+    #blank_avails button{
+	text-align: left;
+	vertical-align: top;
+	width: 200px;
+    }
+    .blank_group_title{
+	padding: 5px 0px 5px 0px;
+    }
+    #blank_wrapper{
+	padding:10px
+    }
+</style>
