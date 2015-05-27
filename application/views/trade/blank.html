@@ -9,11 +9,13 @@
 	    App.handler.progress(function(status){
 		if( status==='passiveCompanySelected'){
 		    Blank.show_only_pcomp_docs=true;
-		    $('#blank_list_dg').datagrid('reload');
+		    //$('#blank_list_dg').datagrid('reload');
 		}
 	    });
-	    this.list.init();
-	    this.availsOpen();
+	    //this.availsOpen();
+	    Blank.list.selectedDocId=684;
+	    //this.list.init();
+	    //this.load();
 	},
 	availsOpen:function(){
 	    $.get('DocumentBlank/availFetch/',function(resp){
@@ -50,12 +52,32 @@
 	    });	    
 	},
 	edit: function(fillData){
-	    $('#blank_wrapper').css('background-color','rgba(255,255,200,.6)');
+	    $('#blank_wrapper').css('background-color','rgba(255,255,230,.6)');
 	    App.renderTpl('blank_edit',fillData,'nocache');
 	    Blank.renderInputs();
 	},
+	spellNumber:function(){
+	    var node=$(this);
+	    $.get('Utils/spellNumber/'+parseInt(node.val()),function(text){
+		node.val(text);
+	    });
+	},
 	renderInputs:function(){
-	    
+	    $('#blank_wrapper .blank_row').each(function(){
+		var node=$(this);
+		$('<div>e</div>').appendTo('#blank_wrapper')
+			.addClass('blank_row_controller')
+			.css('left',node.offset().left)
+			.css('top',node.offset().top+20);
+	    });
+	    $('#blank_wrapper .blank_input').each(function(){
+		var node=$(this);
+		node.html('<input type="text" value="'+node.html()+'" />');
+		node.addClass("blank_input_active");
+		if( node.hasClass('blank_spell') ){
+		    node.find("input").change(Blank.spellNumber);
+		}
+	    });
 	}
     };
     Blank.list = {
@@ -134,7 +156,6 @@
 	   pageSize:20,
 	   singleSelect:true,
 	   onSelect:Blank.list.onSelect,
-	   url:'DocumentCore/listFetch',
 	   tools:'#blank_list_dg_tools',
 	   method:'get'">
 	<thead>
@@ -153,6 +174,31 @@
     <a href="javascript:void(0)" class="icon-reload" onclick="$('#blank_list_dg').datagrid('reload')" title="Обновить"></a>
 </div>
 <style>
+    .blank_input_active{
+	text-align: center;
+    }
+    .blank_input_active input{
+        width: calc(100% - 10px);
+        background-color: #FF8;
+        border: none;
+        padding-top: 2px;
+        padding-bottom: 2px;
+        margin: 0px;
+        margin-right: 3px;
+        font-family: Arial;
+        font-size: 12px;
+        color: #000000;
+        font-weight: bold;
+        font-style: normal;
+    }
+    .blank_row_controller{
+	background-color: #F88;
+	width:30px;
+	height: 20px;
+	position: absolute;
+    }
+    
+    
     #blank_avails{
 	width: 750px;
     }
