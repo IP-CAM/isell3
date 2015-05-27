@@ -22,7 +22,7 @@
 		App.renderTpl('blank_avails',{avails:avails});
 	    });
 	},
-	blankCreate:function(view_type_id){
+	create:function(view_type_id){
 	    $.post('DocumentBlank/blankCreate/'+view_type_id,function(resp){
 		if( resp*1>0 ){
 		    Blank.list.selectedDocId=resp;
@@ -30,16 +30,32 @@
 		}		
 	    });
 	},
-	blankLoad:function(){
+	load:function(){
 	    var doc_id=Blank.list.selectedDocId;
 	    $.get('DocumentBlank/blankGet/'+doc_id,function(resp){
-		var blank_data=App.json(resp);
-		$('#blank_wrapper').html(blank_data.html);
-		
-		
-		
-		//App.renderTpl('blank_edit',blank_data);
+		var blankData=App.json(resp);
+		$('#blank_wrapper').html(blankData.html);
+		if( blankData.loaded_is_tpl ){
+		    Blank.getFillData(blankData);
+		}
 	    });
+	},
+	getFillData:function(blankData){
+	    $.get('DocumentBlank/getFillData',function(resp){
+		var fillData=App.json(resp);
+		fillData.doc_num=blankData.doc_num;
+		fillData.doc_date=blankData.doc_date;
+		fillData.doc_data=blankData.doc_data;
+		Blank.edit(fillData);
+	    });	    
+	},
+	edit: function(fillData){
+	    $('#blank_wrapper').css('background-color','rgba(255,255,200,.6)');
+	    App.renderTpl('blank_edit',fillData,'nocache');
+	    Blank.renderInputs();
+	},
+	renderInputs:function(){
+	    
 	}
     };
     Blank.list = {
@@ -78,13 +94,13 @@
 	onSelect:function(index,row){
 	    Blank.list.selectedDocId=row.doc_id;
 	    if( row.doc_id===0 ){
-		Blank.blankCreate();
+		Blank.create();
 		$('#blank_avails').panel('expand');
 		$('#blank_edit').panel('collapse');
 	    } else {
 		$('#blank_avails').panel('collapse');
 		$('#blank_edit').panel('expand');
-		Blank.blankLoad();
+		Blank.load();
 	    }
 	}
     };
@@ -97,7 +113,7 @@
 	<div class="blank_group">
 	    <div class="blank_group_title"><img src="img/{{icon_name}}.png"> {{doc_type_name}}</div>
 	    {{avail_views}}
-	    <button onclick="Blank.blankCreate($(this).data('vt-id'))" data-vt-id="{{view_type_id}}"><img src="img/edit_add.png"> {{view_name}}</button>
+	    <button onclick="Blank.create($(this).data('vt-id'))" data-vt-id="{{view_type_id}}"><img src="img/edit_add.png"> {{view_name}}</button>
 	    {{/avail_views}}
 	</div>
 	{{/if}}
@@ -110,7 +126,7 @@
     </div>
 </div>
 <div style="display: table-cell;padding-left:3px;">
-    <table id="blank_list_dg" class="easyui-datagrid" title="Список бланков" style="width:430px;"
+    <table id="blank_list_dg" class="easyui-datagrid" title="Список бланков" style="width:460px;"
 	   data-options="
 	   idField:'doc_id',
 	   loader:Blank.list.loader,
@@ -128,6 +144,7 @@
 		<th data-options="width:65,field:'doc_date'">Дата</th>
 		<th data-options="width:50,field:'doc_num',align:'right'">Номер</th>
 		<th data-options="width:160,field:'view_name'">Документ</th>
+		<th data-options="width:30,field:'saved',align:'center',formatter:App.datagrid.tooltip">Сохранен</th>
 	    </tr>
 	</thead>
     </table>
@@ -137,7 +154,7 @@
 </div>
 <style>
     #blank_avails{
-	width: 800px;
+	width: 750px;
     }
     #blank_avails div{
 	

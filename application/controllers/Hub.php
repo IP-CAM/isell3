@@ -81,6 +81,7 @@ class HubBase extends CI_Controller{
     public function load_model( $name ){
 	$this->load->model($name,null,true);
 	$this->{$name}->Base=$this;
+	return $this->{$name};
     }
     
     public function set_level($allowed_level) {

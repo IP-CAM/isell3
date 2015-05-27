@@ -50,10 +50,10 @@ class Company extends Catalog{
 		*
 	    FROM
 		companies_list cl
-	    JOIN
+	    LEFT JOIN
 		companies_tree USING(branch_id)
 	    WHERE
-		path LIKE '$assigned_path%'
+		(path LIKE '$assigned_path%' OR path IS NULL)
 		    AND
 		company_id=$company_id";
 	return $this->get_row($sql);

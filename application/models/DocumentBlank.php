@@ -7,12 +7,13 @@ class DocumentBlank extends DocumentCore {
 	    $offset=0;
 	}
         $sql = "SELECT 
-		    label company_name,
                     doc_id,
-                    icon_name doc_type_icon,
                     doc_type_name,
-                    DATE_FORMAT(dl.cstamp, '%d.%m.%Y') as doc_date,
                     doc_num,
+		    IF(html>'','ok','unknown') saved,
+		    label company_name,
+                    icon_name doc_type_icon,
+                    DATE_FORMAT(dl.cstamp, '%d.%m.%Y') as doc_date,
                     COALESCE(view_name, CONCAT('REG ', doc_type_name)) as view_name
                 FROM
                     document_list dl
@@ -30,7 +31,7 @@ class DocumentBlank extends DocumentCore {
                     dl.doc_type > 9
                         AND dl.active_company_id = '" . $this->Base->acomp('company_id') . "'
                         AND dl.passive_company_id = '" . $this->Base->pcomp('company_id') . "'
-                ORDER BY cstamp , doc_num";
+                ORDER BY html>'',cstamp , doc_num";
 	$result_rows=$this->get_list($sql);
 	$total_estimate=$offset+(count($result_rows)==$rows?$rows+1:count($result_rows));
 	return array('rows'=>$result_rows,'total'=>$total_estimate);
@@ -72,5 +73,13 @@ class DocumentBlank extends DocumentCore {
         $blank->doc_data = $Document2->doc('doc_data');
         return $blank;
     }
-
+    public function getFillData(){
+	$Company=$this->Base->load_model('Company');
+	$Pref=$this->Base->load_model('Pref');
+	$fillData = new stdClass();
+	$fillData->a=$Company->companyGet($this->Base->acomp('company_id'));
+	$fillData->p=$Company->companyGet($this->Base->pcomp('company_id'));
+	$fillData->staff=$Pref->getStaffList();
+	return $fillData;
+    }
 }

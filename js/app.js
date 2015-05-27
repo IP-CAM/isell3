@@ -235,13 +235,11 @@ App.datagrid = {
 	    return '';
     }
 };
-App.renderTpl=function( id, data ){
-    if( !this.tplcache[id] ){
+App.renderTpl=function( id, data, mode ){
+    if( !this.tplcache[id] || mode==='nocache' ){
 	this.tplcache[id]=$('#'+id).html();
     }
-    //this.loadScript('js/markup.min.js',function(){
-	$('#'+id).html( Mark.up(App.tplcache[id], data) );
-    //});
+    $('#'+id).html( Mark.up(App.tplcache[id], data) );
     $('#'+id).removeClass('covert');
 };
 App.checkUpdates=function (){ 
