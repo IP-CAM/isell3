@@ -237,7 +237,7 @@ App.datagrid = {
 };
 App.renderTpl=function( id, data, mode ){
     if( !this.tplcache[id] || mode==='nocache' ){
-	this.tplcache[id]=$('#'+id).html();
+	this.tplcache[id]=$('#'+id).html().replace('&gt;','>');
     }
     $('#'+id).html( Mark.up(App.tplcache[id], data) );
     $('#'+id).removeClass('covert');

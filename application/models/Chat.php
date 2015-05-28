@@ -12,7 +12,7 @@ class Chat extends Catalog{
     public function sendRecieve( $counterpart='all', $msg=null ){
         if( $counterpart && $msg ){
             $counterpart=$this->db->escape($counterpart);
-            $msg=$this->db->escape($msg);
+            $msg=$this->db->escape(rawurldecode($msg));
             $this->addMessage($counterpart, $msg);
         }
         return $this->getMessages();
@@ -33,7 +33,7 @@ class Chat extends Catalog{
     private function getMessages(){
         $user_login = $this->Base->svar('user_login');
         $user_id = $this->Base->svar('user_id');
-        $sql="SELECT *,IF(event_target='$user_login','left','right') me FROM event_list WHERE event_label='Chat' AND (event_user_id='$user_id' OR event_target='$user_login')";
+        $sql="SELECT *,event_target='$user_login' me FROM event_list WHERE event_label='Chat' AND (event_user_id='$user_id' OR event_target='$user_login')";
         return $this->get_list($sql);
     }
 }
