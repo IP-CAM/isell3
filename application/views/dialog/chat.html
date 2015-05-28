@@ -1,0 +1,120 @@
+<script>
+    /* global App*/
+    App.page_dialog_chat={
+        init:function(){
+            this.node.window({
+                width:500,
+                title:'Chat',
+                height:400,
+                onClose:function(){
+                    clearInterval(this.clock);
+                    App.page_dialog_chat.node.window('destroy');
+                    delete App.page_dialog_chat;
+                }
+            });
+            this.node.window('center');
+            this.loadUserlist();
+            $("#chat_form").submit(function(e){
+                e.preventDefault();
+                var text=$("#chat_form input").val();
+                $("#chat_form input").val('');
+                App.page_dialog_chat.sendRecieve(text);
+            });
+            //this.clock=setInterval(App.page_dialog_chat.sendRecieve,500);
+            //TMPPPPPPPPP
+            this.counterpart='all';
+            delete App.tplcache['chat_field'];
+            this.sendRecieve();
+        },
+        loadUserlist:function(){
+            $.get('Chat/getUserList',function(resp){
+                var users={user_list:App.json(resp)};
+                users.user_list.push({user_login:'all'});
+                App.renderTpl('chat_users',users,'nocache');
+            });
+        },
+        setCounterpart:function( user_div ){
+            $("#chat_users div").removeClass('user_selected');
+            $(user_div).addClass('user_selected');
+            this.counterpart=$(user_div).html();
+        },
+        sendRecieve:function(msg){
+            $.get(App.uri('Chat','sendRecieve',App.page_dialog_chat.counterpart||'',msg||''),function(resp){
+                App.renderTpl('chat_field',{msgs:App.json(resp)});
+            });
+        }
+    };
+</script>
+<div id="chat_users">
+    {{user_list}}
+    <div onclick="App.page_dialog_chat.setCounterpart(this)">{{user_login}}</div>
+    {{/user_list}}
+</div>
+<div id="chat_field">
+    {{msgs}}
+    <div class="{{me}} bubble">
+            <b>{{event_target}}</b> {{event_descr}}
+        </div>
+    {{/msgs}}
+</div>
+<form id="chat_form">
+<table style="width: 100%">
+    <tr>
+        <td><input type="text" style="width: calc(100% - 10px)"/></td>
+        <td style="width:30px"><button type="submit">Отправить</button></td>
+    </tr>
+</table>
+</form>
+<style>
+    #chat_field{
+        height: 300px;
+        overflow: auto;
+    }
+    #chat_field div{
+        border-radius: 5px;
+        background-color: rgba(255,255,255,0.8);
+        padding: 5px;
+        margin: 5px;
+    }
+    #chat_field .left{
+        margin-left: auto;
+        background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), rgba(150, 200, 255, 0.5)) repeat;
+    }
+    #chat_field .right{
+        margin-right: 150px;
+        background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), rgba(150, 255, 200, 0.5)) repeat;
+    }
+    #chat_users{
+        float: right;
+        background-color: #bb60d5;
+    }
+    #chat_users div{
+        padding: 5px;
+        margin: 1px;
+        cursor: pointer;
+    }
+    #chat_users div:hover{
+        background-color: #ffc;
+    }
+    #chat_users .user_selected{
+        background-color: #ffc;
+    }
+    .bubble {
+        box-sizing: border-box;
+        float: left;
+        width: auto;
+        max-width: 80%;
+        position: relative;
+        clear: both;
+        background: #95c2fd;
+        background-image: linear-gradient(bottom, #bee2ff 15%, #95c2fd 100%);
+        border: solid 1px rgba(0,0,0,0.5);
+        border-radius: 20px;
+        box-shadow: inset 0 8px 5px rgba(255,255,255,0.65), 0 1px 2px rgba(0,0,0,0.2);
+        margin-bottom: 20px;
+        padding: 6px 20px;
+        color: #000;
+        text-shadow: 0 1px 1px rgba(255,255,255,0.8);
+        word-wrap: break-word;
+    }
+</style>
