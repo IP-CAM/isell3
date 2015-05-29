@@ -78,6 +78,11 @@ class Maintain extends CI_Model {
     }
 
     private function updateSwap() {
+        //$this->load->helper('file');
+        //delete_files('./path/to/directory/', TRUE);
+        
+        
+        
 	if( file_exists($this->dirWork)
 	    && file_exists($this->dirUnpack . $this->zipSubFolder)
 	    && file_exists($this->dirUnpack)){
