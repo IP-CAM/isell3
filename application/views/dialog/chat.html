@@ -23,6 +23,7 @@
 	    //this.clock=setInterval(App.page_dialog_chat.sendRecieve,500);
 	    //TMPPPPPPPPP
 	    delete App.tplcache['chat_field'];
+            App.page_dialog_chat.counterpart = App.cookie('last_chat_counterpart')||'all';
 	    this.sendRecieve();
 	},
 	loadUserlist: function () {
@@ -30,8 +31,7 @@
 		var users = {user_list: App.json(resp)};
 		users.user_list.push({user_login: 'all'});
 		App.renderTpl('chat_users', users, 'nocache');
-		this.counterpart = App.cookie('last_chat_counterpart')||'all';
-		$("#chat_users div[data-user="+this.counterpart+"]").addClass('user_selected');
+		$("#chat_users div[data-user="+App.page_dialog_chat.counterpart+"]").addClass('user_selected');
 	    });
 	},
 	setCounterpart: function (user_div) {
@@ -55,13 +55,13 @@
 </div>
 <div id="chat_field">
     {{msgs}}
-    {{if me|more>0}}
+    {{if is_me|more>0}}
     <div class="bubble blue">
-	<b>{{event_target}}</b> {{event_descr}}
+	<b>{{sender}}</b> {{event_descr}}
     </div>
     {{else}}
     <div class="bubble bubble-alt yellow">
-	<b>{{event_target}}</b> {{event_descr}}
+	{{event_descr}}
     </div>
     {{/if}}
     {{/msgs}}
