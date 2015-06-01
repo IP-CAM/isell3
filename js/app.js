@@ -7,8 +7,12 @@ var App = {
     init: function () {
 	App.loadBg();
 	setTimeout(function(){
-	    App.checkUpdates();
+	    App.initAfter();
 	},5000);
+    },
+    initAfter:function(){
+	App.checkUpdates();
+	App.checkChat();
     },
     flash:function (msg, type) {
 	if (type === 'error') {
@@ -259,6 +263,16 @@ App.checkUpdates=function (){
 		console.log( e );
 	    }
 	});
+    });
+};
+App.checkChat=function(){
+    $.get('Chat/checkNew',function(resp){
+	var count=resp*1;
+	App.renderTpl('chat_panel',{count:count});
+	if( count ){
+	    App.flash("У вас "+count+" новых сообщенией!");
+	}
+	setTimeout(App.checkChat,1000*60);
     });
 };
 //////////////////////////////////////////////////

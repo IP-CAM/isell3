@@ -4,9 +4,14 @@ class Chat extends Catalog{
     public function getUserList(){
         $sql="SELECT 
                 user_id,
-                user_login
+                user_login,
+		CONCAT(first_name,' ',SUBSTRING(last_name,1,1)) name,
+		MAX( IF(event_status=1,1,0) ) has_new
             FROM
-                " . BAY_DB_MAIN . ".user_list";
+                " . BAY_DB_MAIN . ".user_list
+                    LEFT JOIN
+                event_list ON event_user_id=user_id
+		GROUP BY user_id";
         return $this->get_list($sql);
     }
     public function sendRecieve( $counterpart='all', $msg=null ){
@@ -27,16 +32,20 @@ class Chat extends Catalog{
                 event_user_id=$user_id,
                 event_target=$counterpart,
                 event_descr=$msg,
-                event_is_private=1";
+                event_is_private=1,
+		event_status=1";
         $this->db->query($sql);
     }
     private function getMessages( $he ){
         $me = $this->db->escape($this->Base->svar('user_login'));
+	$this->query("SET @unread_id=0;");
         $sql="SELECT
             event_list.*,
-            event_target=$me is_me,
+            IF(event_target=$me OR event_target='all',1,NULL) for_me,
             event_target reciever,
-            user_login sender
+            user_login sender,
+	    event_status unread,
+	    IF( (event_target=$me OR event_target='all') AND @unread_id=0 AND event_status,@unread_id:=event_id,0) unread_id
                 FROM
                     event_list
                         JOIN
@@ -45,9 +54,20 @@ class Chat extends Catalog{
                     event_label='Chat' 
                 HAVING
                     IF($he='all',
-                        sender=$me OR reciever=$me,
+                        reciever='all' OR reciever=$me,
                         sender=$me AND reciever=$he OR sender=$he AND reciever=$me)
                 ORDER BY event_date";
-        return $this->get_list($sql);
+	$messages=$this->get_list($sql);
+	$this->setAsRead();
+        return array('msgs'=>$messages,'has_new'=>$this->checkNew());
+    }
+    private function setAsRead(){
+	$this->query("UPDATE event_list SET event_status=0 WHERE event_id=@unread_id;");
+    }
+    public function checkNew(){
+	$me = $this->Base->svar('user_login');
+	$my_user_id = $this->Base->svar('user_id');
+	$sql="SELECT COUNT(*) FROM event_list WHERE event_status=1 AND (event_target='all' OR event_target='$me')";
+	return $this->get_value($sql);
     }
 }

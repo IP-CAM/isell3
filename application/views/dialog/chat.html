@@ -7,9 +7,7 @@
 		title: 'Chat',
 		height: 400,
 		onClose: function () {
-		    clearInterval(this.clock);
-		    App.page_dialog_chat.node.window('destroy');
-		    delete App.page_dialog_chat;
+		    App.page_dialog_chat.destroy();
 		}
 	    });
 	    this.node.window('center');
@@ -20,47 +18,67 @@
 		$("#chat_form input").val('');
 		App.page_dialog_chat.sendRecieve(text);
 	    });
-	    //this.clock=setInterval(App.page_dialog_chat.sendRecieve,500);
-	    //TMPPPPPPPPP
-	    delete App.tplcache['chat_field'];
-            App.page_dialog_chat.counterpart = App.cookie('last_chat_counterpart')||'all';
+	    App.page_dialog_chat.counterpart = App.cookie('last_chat_counterpart') || 'all';
+	    //this.clock=setInterval(App.page_dialog_chat.sendRecieve,1000);
 	    this.sendRecieve();
+	},
+	destroy:function(){
+	    clearInterval(App.page_dialog_chat.clock);
+	    App.page_dialog_chat.node.window('destroy');
+	    delete App.page_dialog_chat;
 	},
 	loadUserlist: function () {
 	    $.get('Chat/getUserList', function (resp) {
 		var users = {user_list: App.json(resp)};
-		users.user_list.push({user_login: 'all'});
-		App.renderTpl('chat_users', users, 'nocache');
-		$("#chat_users div[data-user="+App.page_dialog_chat.counterpart+"]").addClass('user_selected');
+		users.user_list.push({user_login: 'all',name:'Всем'});
+		App.renderTpl('chat_users', users);
+		$("#chat_users div[data-user=" + App.page_dialog_chat.counterpart + "]").addClass('user_selected');
+		setTimeout(function(){
+		    try{App.page_dialog_chat.loadUserlist();}catch(e){};
+		},30*1000);
 	    });
 	},
 	setCounterpart: function (user_div) {
 	    $("#chat_users div").removeClass('user_selected');
 	    $(user_div).addClass('user_selected');
-	    this.counterpart = $(user_div).html();
-	    App.cookie('last_chat_counterpart',this.counterpart);
+	    this.counterpart = $(user_div).data('user');
+	    App.cookie('last_chat_counterpart', this.counterpart);
 	},
+	msg_count:0,
 	sendRecieve: function (msg) {
 	    $.get(App.uri('Chat', 'sendRecieve', App.page_dialog_chat.counterpart || '', msg || ''), function (resp) {
-		App.renderTpl('chat_field', {msgs: App.json(resp)});
-		$("#chat_field").animate({ scrollTop: $("#chat_field")[0].scrollHeight}, 1000);
+		var resp=App.json(resp);
+		App.renderTpl('chat_field', resp);
+		if( App.page_dialog_chat.msg_count!==resp.msgs.length ){
+		    App.page_dialog_chat.msg_count=resp.msgs.length;
+		    $("#chat_field").animate({scrollTop: $("#chat_field")[0].scrollHeight}, 1000);
+		}
+		setTimeout(function(){
+		    try{App.page_dialog_chat.sendRecieve();}catch(e){};
+		},1000);
 	    });
 	}
     };
 </script>
 <div id="chat_users">
     {{user_list}}
-    <div onclick="App.page_dialog_chat.setCounterpart(this)" data-user="{{user_login}}">{{user_login}}</div>
+    <div onclick="App.page_dialog_chat.setCounterpart(this)" data-user="{{user_login}}" class="{{if has_new|more>0}}has_new{{/if}}">
+	{{if name}}
+	    {{name}}
+	{{else}}
+	    {{user_login}}
+	{{/if}}
+    </div>
     {{/user_list}}
 </div>
 <div id="chat_field">
     {{msgs}}
-    {{if is_me|more>0}}
-    <div class="bubble blue">
+    {{if for_me}}
+    <div class="bubble {{if unread|more>0}}red{{else}}yellow{{/if}} ">
 	<b>{{sender}}</b> {{event_descr}}
     </div>
     {{else}}
-    <div class="bubble bubble-alt yellow">
+    <div class="bubble bubble-alt {{if unread|more>0}}white{{else}}blue{{/if}}">
 	{{event_descr}}
     </div>
     {{/if}}
@@ -78,7 +96,7 @@
     #chat_users{
 	max-height: 300px;
         float: right;
-        background-color: #c3c;
+        background-color: #7af;
 	overflow: auto;
     }
     #chat_users div{
@@ -87,17 +105,24 @@
         cursor: pointer;
     }
     #chat_users div:hover{
-        background-color: #ffc;
+        background-color: rgb(180,220,250);
     }
     #chat_users .user_selected{
         background-color: #ffc;
+    }
+    #chat_users .has_new{
+	font-weight: bold;
+	text-decoration: underline;
     }
     #chat_field{
         height: 300px;
         overflow: auto;
 	margin: 0 auto;
 	padding: 10px;
+	z-index: 1;
     }
+    
+    /** ios1-ios6 bubbles **/
     .bubble {
 	box-sizing: border-box;
 	float: left;
@@ -105,8 +130,8 @@
 	max-width: 80%;
 	position: relative;
 	clear: both;
-	background: #95c2fd;
-	background-image: linear-gradient(bottom, #bee2ff 15%, #95c2fd 100%);
+	-background: #95c2fd;
+	-background-image: linear-gradient(bottom, #bee2ff 15%, #95c2fd 100%);
 	border: solid 1px rgba(0,0,0,0.2);
 	border-radius: 20px;
 	box-shadow: inset 0 8px 5px rgba(255,255,255,0.65), 0 1px 2px rgba(0,0,0,0.2);
@@ -125,45 +150,72 @@
     }
     .bubble:before {
 	border: 10px solid transparent;
-	border-bottom-color: rgba(0,0,0,0.5);
+	border-bottom-color: rgba(0,0,0,0.2);
 	bottom: 0px;
-	left: -7px;
-	z-index: -2;
+	left: -9px;
+	top:8px;
     }
     .bubble:after {
 	border: 8px solid transparent;
-	border-bottom-color: #bee2ff; /* arrow color */
+	border-bottom-color: #95c2fd; /* arrow color */
 	bottom: 1px;
 	left: -5px;
     }
-
 
     .bubble-alt {
 	float: right;
     }
     .bubble-alt:before {
 	left: auto;
-	right: -7px;
+	right: -9px;
     }
     .bubble-alt:after {
 	left: auto;
 	right: -5px;
     }
 
-    .blue {
-	background: rgba(0,120,255,.3);
-	background-image: linear-gradient(bottom, rgba(100,220,255,.5) 15%, rgba(50,120,255,.3) 100%);
+    .bubble p {
+	font-size: 1.4em;
     }
-    .blue:after {
-	border-bottom-color: rgba(50,120,255,.3);
+
+    /* green bubble */
+    .green {
+	background: #7acd47;
+	background-image: linear-gradient(bottom, #ace44b 15%, #7acd47 100%);
+    }
+    .green:after {
+	border-bottom-color: #ace44b;
+    }
+
+    /* white bubble */
+    .white {
+	-background: rgba(255,255,255,.5);
+	background-image: linear-gradient(bottom, #fcf3c3 15%, #f4e371 100%);
+    }
+    .white:after {
+	border-bottom-color: rgba(255,255,255,.9);
     }
 
     .yellow {
-	background: rgba(255,255,50,.3);
-	background-image: linear-gradient(bottom, rgba(255,255,100,.5) 15%, rgba(255,255,50,.3) 100%);
+	background: #fcf3c3;
+	-background-image: linear-gradient(bottom, #fcf3c3 15%, #f4e371 100%);
     }
     .yellow:after {
-	border-bottom-color: rgba(255,255,50,.5);
+	border-bottom-color: #fcf3c3;
     }
 
+    .red {
+	background: rgba(255,150,100,0.3);
+    }
+    .red:after {
+	border-bottom-color: rgba(255,220,200,1);
+    }
+
+    .blue {
+	background: rgba(180,220,250,1);
+	background-image: linear-gradient(bottom, rgba(250,100,250,1) 15%, rgba(250,100,250,1) 100%);
+    }
+    .blue:after {
+	border-bottom-color: rgba(180,220,250,1);
+    }
 </style>

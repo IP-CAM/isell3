@@ -221,4 +221,8 @@ button[diasbled="disabled"]{
 }
 .covert{
     visibility: hidden;
+    display: none;
+}
+img{
+    vertical-align: middle;
 }

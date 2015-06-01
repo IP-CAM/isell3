@@ -4,31 +4,33 @@ class Catalog extends CI_Model {
     ////////////////////////////////////////////////////
     // CORE LIST FUNCTIONS
     ////////////////////////////////////////////////////
-    protected function get_list( $query ){
-	$list=array();
+    protected function query( $query ){
 	if(is_string($query)){
 	    $query=$this->db->query($query);
 	}
-	if( !$query || $query->num_rows()==0 ){
-	    $this->db->_error_number()?$this->Base->db_msg():'';
+	if($this->db->_error_number()){
+	    $this->Base->db_msg();
 	    return NULL;
 	}
-	foreach( $query->result() as $row ){
+//	if( is_object($query) && $query->num_rows()==0 ){
+//	    $this->db->_error_number()?$this->Base->db_msg():'';
+//	    return NULL;
+//	}
+	return $query;
+    }
+    protected function get_list( $query ){
+	$list=array();
+	$result=$this->query($query);
+	foreach( $result->result() as $row ){
 	    $list[]=$row;
 	}
-	$query->free_result();
+	$result->free_result();
 	return $list;
     }
     protected function get_row( $query ){
-	if(is_string($query)){
-	    $query=$this->db->query($query);
-	}
-	if( !$query || $query->num_rows()==0 ){
-	    $this->db->_error_number()?$this->Base->db_msg():'';
-	    return NULL;
-	}
-	$row=$query->row();
-	$query->free_result();
+	$result=$this->query($query);
+	$row=$result->row();
+	$result->free_result();
 	return $row;
     }
     protected function get_value( $query ){

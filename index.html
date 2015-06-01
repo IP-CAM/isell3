@@ -91,11 +91,18 @@
 	<div style="color:#009;padding:8px;display: inline-block;font-size: 18px;" id="module_title">&nbsp;</div>
 	<div style="display: inline-block;float: right;">
 	    <div id="div_user_panel" style="display:none;background:#bAc5ff;margin:3px;" class="rounded hidden" align="center">
-                <div style="background:#DAE5F0;color:#FF0000;overflow: hidden;" class="rounded" align="center" onclick="App.loadWindow('page/dialog/chat')">
+                <div style="background:#DAE5F0;color:#FF0000;overflow: hidden;" class="rounded" align="center">
                     {{user_level_name|default:''}} <span style="font-weight:bold;color:#000">{{user_login}}</span> 
                     <a href="javascript:logout()">[выход]</a>
                 </div> 
 	    </div>
+	</div>
+	<div id="chat_panel" class="covert" style="display: inline-block;float: right;margin: 4px;cursor: pointer;" onclick="App.loadWindow('page/dialog/chat')">
+	    {{if count|more>0}}
+	    <img src="img/chat_yes.png" style="vertical-align: middle" title="Есть новые сообщения" />{{count}}
+	    {{else}}
+	    <img src="img/chat_no.png" style="vertical-align: middle" title="Новых сообщений нет" />
+	    {{/if}}	    
 	</div>
 	<div id="sync_panel" class="covert" style="display: inline-block;float: right;margin: 4px;cursor: pointer;">
 	    {{if updates}}
