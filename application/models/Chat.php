@@ -5,7 +5,7 @@ class Chat extends Catalog{
         $sql="SELECT 
                 user_id,
                 user_login,
-		CONCAT(first_name,' ',SUBSTRING(last_name,1,1)) name,
+		CONCAT(first_name,' ',last_name) name,
 		MAX( IF(event_status=1,1,0) ) has_new
             FROM
                 " . BAY_DB_MAIN . ".user_list
