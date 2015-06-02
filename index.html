@@ -97,20 +97,20 @@
                 </div> 
 	    </div>
 	</div>
-	<div id="chat_panel" class="covert" style="display: inline-block;float: right;margin: 4px;cursor: pointer;" onclick="App.loadWindow('page/dialog/chat')">
+	<span id="chat_panel" class="covert" style="margin: 4px;cursor: pointer;float:right" onclick="App.loadWindow('page/dialog/chat')">
 	    {{if count|more>0}}
 	    <img src="img/chat_yes.png" style="vertical-align: middle" title="Есть новые сообщения" />{{count}}
 	    {{else}}
 	    <img src="img/chat_no.png" style="vertical-align: middle" title="Новых сообщений нет" />
 	    {{/if}}	    
-	</div>
-	<div id="sync_panel" class="covert" style="display: inline-block;float: right;margin: 4px;cursor: pointer;">
+	</span>
+	<span id="sync_panel" class="covert" style="margin: 4px;cursor: pointer;float:right">
 	    {{if updates}}
 	    <img src="img/update_yes.png" style="vertical-align: middle" title="Есть обновления" />{{updates|length}}
 	    {{else}}
 	    <img src="img/update_no.png" style="vertical-align: middle" title="Обновлений нет" />{{updates|length}}
 	    {{/if}}
-	</div>
+	</span>
     </div>
     <div id="module_menu" class="hidden transparent" style="text-align: center;width:60px;vertical-align: top;float: left;">
 	<!--
