@@ -1,6 +1,7 @@
 <?php
 require_once 'Catalog.php';
 class Chat extends Catalog{
+    public $min_level=1;
     public function getUserList(){
         $sql="SELECT 
                 user_id,
@@ -15,14 +16,14 @@ class Chat extends Catalog{
         return $this->get_list($sql);
     }
     public function sendRecieve( $counterpart='all', $msg=null ){
-        $counterpart=$this->db->escape($counterpart);
-        if( $counterpart && $msg ){
+        $he=$this->db->escape($counterpart);
+        if( $he && $msg ){
             $msg=$this->db->escape(rawurldecode($msg));
-            $this->addMessage($counterpart, $msg);
+            $this->addMessage($he, $msg);
         }
-        return $this->getMessages($counterpart);
+        return $this->getMessages($he);
     }
-    private function addMessage( $counterpart, $msg ){
+    private function addMessage( $he, $msg ){
         $user_id = $this->Base->svar('user_id');
         $sql="INSERT INTO
                 event_list
@@ -30,7 +31,7 @@ class Chat extends Catalog{
                 event_label='Chat',
                 event_date=NOW(),
                 event_user_id=$user_id,
-                event_target=$counterpart,
+                event_target=$he,
                 event_descr=$msg,
                 event_is_private=1,
 		event_status=1";
@@ -66,7 +67,6 @@ class Chat extends Catalog{
     }
     public function checkNew(){
 	$me = $this->Base->svar('user_login');
-	$my_user_id = $this->Base->svar('user_id');
 	$sql="SELECT COUNT(*) FROM event_list WHERE event_status=1 AND (event_target='all' OR event_target='$me')";
 	return $this->get_value($sql);
     }
