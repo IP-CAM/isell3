@@ -1,17 +1,16 @@
 [
-    ["prod_list",1],
-    ["price_list",2],
-    ["document_view_registry",1],
-    ["stat_annual_sold",4],
-    ["stat_annual_sellbuy",4],
-    ["stat_sell_analyse",4],
-    ["stat_brand_sold",4],
-    ["event_list",1,"hidden"],
-    ["user_list",1,"hidden"],
-    ["stock_entry_view",1,"hidden"],
-    ["stock_trans_view",2,"hidden"],
-    ["expired_list",1,"hidden"],
-    ["document_registry",3,"hidden"],
-    ["manager_payments",1,"hidden"],
-    ["account_ledger",1,"hidden"]
+    {"table_name":"prod_list","table_title":"Список товаров","level":1},
+    {"table_name":"price_list","table_title":"Список цен","level":2},
+    {"table_name":"stat_annual_sold","table_title":"Стат. годовые продажи","level":4},
+    {"table_name":"stat_annual_sellbuy","table_title":"Стат. годовые покупки-продажи","level":4},
+    {"table_name":"stat_sell_analyse","table_title":"Стат. анализ продаж","level":4},
+    {"table_name":"stat_brand_sold","table_title":"Стат. продажи брендов"},
+
+    {"table_name":"event_list","hidden":1,"level":1},
+    {"table_name":"user_list","hidden":1,"level":1},
+    {"table_name":"stock_entry_view","hidden":1,"level":1},
+    {"table_name":"stock_trans_view","hidden":1,"level":2},
+    {"table_name":"expired_list","hidden":1,"level":1},
+    {"table_name":"document_registry","hidden":3,"level":1},
+    {"table_name":"account_ledger","hidden":1,"level":1}
 ]

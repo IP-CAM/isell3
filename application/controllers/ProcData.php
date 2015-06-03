@@ -18,10 +18,12 @@ class ProcData extends iSellBase {
     private function checkTable() {
 	$table_name = $this->request('table_name');
 	foreach ($this->permited_tables as $table) {
-	    if ($this->svar('user_level') < $table[1])
+	    if ($this->svar('user_level') < $table->level){
 		continue;
-	    if ($table_name == $table[0])
+            }
+	    if ($table_name == $table->table_name){
 		return $table_name;
+            }
 	}
 	$this->response_wrn("The '$table_name' table is not permitted for browsing!");
     }
@@ -29,9 +31,10 @@ class ProcData extends iSellBase {
     public function onPermitedTableList() {
 	$table_list = array("items" => array());
 	foreach ($this->permited_tables as $table) {
-	    if (isset($table[1]) && $this->svar('user_level') < $table[1] || isset($table[2]) && $table[2] == "hidden")
+	    if (isset($table->level) && $this->svar('user_level') < $table->level || isset($table->hidden) && $table->hidden){
 		continue;
-	    $table_list['items'][] = array('table_name' => $table[0]);
+            }
+	    $table_list['items'][] = array('table_name' => $table->table_name,'table_title'=>$table->table_title);
 	}
 	$this->response($table_list);
     }

@@ -76,7 +76,7 @@
 	    request.mod = 'Data';
 	    request.table_name = 'table_list';
 	    onStructure = function () {
-		var table_structure = {readonly: 1, hidestatus: 1, hidefilter: 1, selectionMode: 'single', columns: [{field: "table_name", name: "Доступные таблицы"}]};
+		var table_structure = {readonly: 1, hidestatus: 1, hidefilter: 1, selectionMode: 'single', columns: [{field: "table_title", name: "Доступные таблицы"}]};
 		setStructure(table_structure);
 	    };
 	    onRequest = function (request) {
