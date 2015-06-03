@@ -9,7 +9,7 @@ class Hub extends HubBase{
     public function on( $model, $method ){
 	$method_args = array_slice(func_get_args(), 2);
 	if( $model ){
-	    $this->load->model($model,NULL,true);
+	    $this->load_model($model);
 	    if( method_exists($this->{$model},$method) ){
 		$this->{$model}->Base=$this;
 		$response=call_user_func_array(array($this->{$model}, $method),$method_args);
@@ -49,6 +49,7 @@ class Hub extends HubBase{
     }
 }
 class HubBase extends CI_Controller{
+    protected $level_names=array("Нет доступа","Ограниченный","Менеджер","Бухгалтер","Администратор");
     private $rtype='OK';
     private $msg='';
     function HubBase(){
@@ -80,6 +81,9 @@ class HubBase extends CI_Controller{
     }
     public function load_model( $name ){
 	$this->load->model($name,null,true);
+	if( isset($this->{$name}->min_level) ){
+	    $this->set_level($this->{$name}->min_level);
+	}
 	$this->{$name}->Base=$this;
 	return $this->{$name};
     }
@@ -87,8 +91,8 @@ class HubBase extends CI_Controller{
     public function set_level($allowed_level) {
 	if ($this->svar('user_level') < $allowed_level) {
 	    if ($this->svar('user_level') == 0) {
-		msg("Текущий уровень <b>" . $this->level_names[$this->svar('user_level') * 1] . "</b><br>");
-		msg("Необходим уровень доступа <b>" . $this->level_names[$allowed_level] . "</b>");
+		$this->msg("Текущий уровень <b>" . $this->level_names[$this->svar('user_level') * 1] . "</b><br>");
+		$this->msg("Необходим уровень доступа <b>" . $this->level_names[$allowed_level] . "</b>");
 		$this->kick_out();
 	    } else {
 		$this->response_wrn("Текущий уровень '" . $this->level_names[$this->svar('user_level') * 1] . "'\nНеобходим мин. уровень доступа '" . $this->level_names[$allowed_level] . "'");
@@ -96,8 +100,9 @@ class HubBase extends CI_Controller{
 	}
     }
     private function kick_out() {
-	include 'views/dialog/loginform.html';
-	$this->response_dialog();
+	$this->rtype = 'DIALOG';
+	$this->response('page/dialog/loginform.html');
+	//exit;
     }
     
     protected function response_dialog($msg) {
@@ -140,6 +145,8 @@ class HubBase extends CI_Controller{
 	    $this->output->set_header("Content-type:text/html;charset=utf8"); 
 	    $this->output->set_output($response);	    
 	}
+	$this->output->_display();
+	exit;
     }
 
 }
