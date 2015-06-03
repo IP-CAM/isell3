@@ -320,7 +320,7 @@ function(
         <div class="trigger month" id="acc_month_11">Ноябрь</div>
         <div class="trigger month" id="acc_month_12">Декабрь</div>
     </div>
-    <div id="acc_sugg_trans_container" class="hidden" style="display: table-cell;vertical-align:top;">
+    <div id="acc_sugg_trans_container"  style="display: table-cell;vertical-align:top;min-height: 200px;">
 	<div title="Проводки по счету">
 	    <!--{%for item in items%}-->
 	    <div class="light_grad" style="margin:3px;padding:3px;cursor:pointer;width:90%"
@@ -342,11 +342,11 @@ function(
 		vertical-align:top;
 	}
 	#acc_sugg_trans_container a{
-		display:none;
+		-display:none;
 	}
 	#acc_sugg_trans_container:hover a{
-		display:inline;
-		float:right;
+		-display:inline;
+		-float:right;
 	}
 	.month{
 		background-color:#ddf;
