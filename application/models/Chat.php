@@ -44,8 +44,8 @@ class Chat extends Catalog{
             IF(event_target=$me OR event_target='all',1,NULL) for_me,
             event_target reciever,
             user_login sender,
-	    event_status unread,
-	    IF( (event_target=$me OR event_target='all') AND @unread_id=0 AND event_status,@unread_id:=event_id,0) unread_id
+	    event_status=1 unread,
+	    IF( (event_target=$me OR event_target='all') AND @unread_id=0 AND event_status=1,@unread_id:=event_id,0) unread_id
                 FROM
                     event_list
                         JOIN
@@ -62,7 +62,7 @@ class Chat extends Catalog{
         return array('msgs'=>$messages,'has_new'=>$this->checkNew());
     }
     private function setAsRead(){
-	$this->query("UPDATE event_list SET event_status=0 WHERE event_id=@unread_id;");
+	$this->query("UPDATE event_list SET event_status=2 WHERE event_id=@unread_id;");
     }
     public function checkNew(){
 	$me = $this->Base->svar('user_login');
