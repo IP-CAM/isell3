@@ -4,6 +4,7 @@
     ["document_view_registry",1],
     ["stat_annual_sold",4],
     ["stat_annual_sellbuy",4],
+    ["stat_sell_analyse",4],
     ["stat_brand_sold",4],
     ["event_list",1,"hidden"],
     ["user_list",1,"hidden"],
