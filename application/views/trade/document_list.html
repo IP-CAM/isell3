@@ -10,7 +10,12 @@
 	    this.list.init();
 	    App.handler.progress(function(status){
 		if( status==='passiveCompanySelected'){
-		    DocList.show_only_pcomp_docs=true;
+		    //DocList.show_only_pcomp_docs=true;
+                    $('#document_list_dg').datagrid('addFilterRule', {
+                            field: 'company_name',
+                            op: 'equal',
+                            value: App.pcomp.label
+                    });
 		    $('#document_list_dg').datagrid('reload');
 		}
 	    });
@@ -21,6 +26,7 @@
 	    $('#document_list_dg').datagrid('getPager').pagination({
                 layout:['list','sep','first','prev','sep','links','sep','next','sep','refresh']
             });
+            this.toggleFilter();
 	},
 	loader:function(param,success,error){
 	    $.get(App.uri('DocumentCore','listFetch',param.page,param.rows,DocList.show_only_pcomp_docs?'show_only_pcomp_docs':''),{filterRules:param.filterRules},function(xhr){
@@ -82,11 +88,11 @@
 		return;
 	    }
 	    App.loadModule('page/trade/document',{doc_id:row.doc_id,open_in:'panel'}).progress(function(status){
-		if( status=='close' ){
+		if( status==='close' ){
 		    DocList.list.toggleHide('show');
 		    $('#document_list_dg').datagrid('unselectAll');
 		}
-		if( status=='deleted' ){
+		if( status==='deleted' ){
 		    $('#document_list_dg').datagrid('reload');
 		}
 	    });
