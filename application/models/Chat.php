@@ -18,7 +18,7 @@ class Chat extends Catalog{
     public function sendRecieve( $counterpart='all' ){
         $msg=$this->db->escape($this->input->post('message'));
         $he=$this->db->escape($counterpart);
-        if( $he && $msg ){
+        if( $he && $msg!="''" ){
             $this->addMessage($he, $msg);
         }
         return $this->getMessages($he);
@@ -42,6 +42,7 @@ class Chat extends Catalog{
 	$this->query("SET @unread_id=0;");
         $sql="SELECT
             event_list.*,
+            DATE_FORMAT(event_date,'%H:%i:%s') time,
             IF(event_target=$me OR event_target='all',1,NULL) for_me,
             event_target reciever,
             user_login sender,

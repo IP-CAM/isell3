@@ -75,12 +75,12 @@
 <div id="chat_field">
     {{msgs}}
     {{if for_me}}
-    <div class="bubble {{if unread|more>0}}red{{else}}yellow{{/if}} ">
-	<b>{{sender}}</b> {{event_descr}}
+    <div class="bubble {{if unread|more>0}}red{{else}}yellow{{/if}} " title="Отправлено {{event_date}}">
+        <span style="color:#333">{{time}}</span> <b>{{sender}}</b> {{event_descr}} 
     </div>
     {{else}}
     <div class="bubble bubble-alt {{if unread|more>0}}white{{else}}blue{{/if}}">
-	{{event_descr}}
+        <span style="color:#333">{{time}}</span> {{event_descr}}
     </div>
     {{/if}}
     {{/msgs}}
