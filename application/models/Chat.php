@@ -1,6 +1,7 @@
 <?php
 require_once 'Catalog.php';
 class Chat extends Catalog{
+    public $min_level=1;
     public function getUserList(){
         $sql="SELECT 
                 user_id,
@@ -15,14 +16,14 @@ class Chat extends Catalog{
         return $this->get_list($sql);
     }
     public function sendRecieve( $counterpart='all', $msg=null ){
-        $counterpart=$this->db->escape($counterpart);
-        if( $counterpart && $msg ){
+        $he=$this->db->escape($counterpart);
+        if( $he && $msg ){
             $msg=$this->db->escape(rawurldecode($msg));
-            $this->addMessage($counterpart, $msg);
+            $this->addMessage($he, $msg);
         }
-        return $this->getMessages($counterpart);
+        return $this->getMessages($he);
     }
-    private function addMessage( $counterpart, $msg ){
+    private function addMessage( $he, $msg ){
         $user_id = $this->Base->svar('user_id');
         $sql="INSERT INTO
                 event_list
@@ -30,7 +31,7 @@ class Chat extends Catalog{
                 event_label='Chat',
                 event_date=NOW(),
                 event_user_id=$user_id,
-                event_target=$counterpart,
+                event_target=$he,
                 event_descr=$msg,
                 event_is_private=1,
 		event_status=1";
@@ -44,8 +45,8 @@ class Chat extends Catalog{
             IF(event_target=$me OR event_target='all',1,NULL) for_me,
             event_target reciever,
             user_login sender,
-	    event_status unread,
-	    IF( (event_target=$me OR event_target='all') AND @unread_id=0 AND event_status,@unread_id:=event_id,0) unread_id
+	    event_status=1 unread,
+	    IF( (event_target=$me OR event_target='all') AND @unread_id=0 AND event_status=1,@unread_id:=event_id,0) unread_id
                 FROM
                     event_list
                         JOIN
@@ -62,11 +63,10 @@ class Chat extends Catalog{
         return array('msgs'=>$messages,'has_new'=>$this->checkNew());
     }
     private function setAsRead(){
-	$this->query("UPDATE event_list SET event_status=0 WHERE event_id=@unread_id;");
+	$this->query("UPDATE event_list SET event_status=2 WHERE event_id=@unread_id;");
     }
     public function checkNew(){
 	$me = $this->Base->svar('user_login');
-	$my_user_id = $this->Base->svar('user_id');
 	$sql="SELECT COUNT(*) FROM event_list WHERE event_status=1 AND (event_target='all' OR event_target='$me')";
 	return $this->get_value($sql);
     }
