@@ -6,13 +6,8 @@ var App = {
     handler:$.Deferred(),
     init: function () {
 	App.loadBg();
-	setTimeout(function(){
-	    App.initAfter();
-	},5000);
-    },
-    initAfter:function(){
-	App.checkUpdates();
-	App.checkChat();
+	App.updaterInit();
+        App.chatInit();
     },
     flash:function (msg, type) {
 	if (type === 'error') {
@@ -246,7 +241,8 @@ App.renderTpl=function( id, data, mode ){
     $('#'+id).html( Mark.up(App.tplcache[id], data) );
     $('#'+id).removeClass('covert');
 };
-App.checkUpdates=function (){ 
+App.updaterCheck=function (){ 
+    var handler=$.Deferred();
     $.get('Maintain/getCurrentVersionStamp',function(stamp){
 	$.getJSON('https://api.github.com/repos/baycik/isell3/commits?since='+stamp+'&callback=?',function(resp){
 	    try{
@@ -256,17 +252,24 @@ App.checkUpdates=function (){
 		    list.push({name:commit.committer.name,date:App.toDmy(commit.committer.date),message:commit.message});
 		}
 		App.renderTpl('sync_panel',{updates:list});
-		$('#sync_panel').click(function(){
-                    App.checkUpdates();
-		    App.loadWindow('page/dialog/updater',{updates:list});
-		});
+                handler.notify('updatesChecked',list);
 	    } catch (e){
 		console.log( e );
 	    }
 	});
     });
+    return handler;
 };
-App.checkChat=function(){
+App.updaterInit=function(){
+    App.renderTpl('sync_panel',{updates:[]});
+    $('#sync_panel').click(function(){
+        App.updaterCheck().progress(function(status,list){
+            App.loadWindow('page/dialog/updater',{updates:list});
+        });
+    });
+    setTimeout(App.updaterCheck,1000*5);
+};
+App.chatCheck=function(){
     $.get('Chat/checkNew',function(resp){
 	var count=resp*1;
 	App.renderTpl('chat_panel',{count:count});
@@ -275,6 +278,10 @@ App.checkChat=function(){
 	}
 	setTimeout(App.checkChat,1000*60);
     });
+};
+App.chatInit=function(){
+    App.renderTpl('chat_panel',{count:0});
+    setTimeout(App.checkChat,1000*5);
 };
 //////////////////////////////////////////////////
 //AJAX SETUP
