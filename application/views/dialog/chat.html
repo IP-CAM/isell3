@@ -79,7 +79,7 @@
         <span style="color:#333">{{time}}</span> <b>{{sender}}</b> {{event_descr}} 
     </div>
     {{else}}
-    <div class="bubble bubble-alt {{if unread|more>0}}white{{else}}blue{{/if}}">
+    <div class="bubble bubble-alt {{if unread|more>0}}white{{else}}blue{{/if}}" title="Отправлено {{event_date}}">
         <span style="color:#333">{{time}}</span> {{event_descr}}
     </div>
     {{/if}}
