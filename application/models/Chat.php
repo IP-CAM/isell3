@@ -15,10 +15,10 @@ class Chat extends Catalog{
 		GROUP BY user_id";
         return $this->get_list($sql);
     }
-    public function sendRecieve( $counterpart='all', $msg=null ){
+    public function sendRecieve( $counterpart='all' ){
+        $msg=$this->db->escape($this->input->post('message'));
         $he=$this->db->escape($counterpart);
         if( $he && $msg ){
-            $msg=$this->db->escape(rawurldecode($msg));
             $this->addMessage($he, $msg);
         }
         return $this->getMessages($he);
@@ -35,7 +35,7 @@ class Chat extends Catalog{
                 event_descr=$msg,
                 event_is_private=1,
 		event_status=1";
-        $this->db->query($sql);
+        $this->query($sql);
     }
     private function getMessages( $he ){
         $me = $this->db->escape($this->Base->svar('user_login'));

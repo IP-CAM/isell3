@@ -3,7 +3,7 @@
     App.page_dialog_chat = {
 	init: function () {
 	    this.node.window({
-		width: 400,
+		width: 500,
 		title: 'Chat',
 		height: 400,
 		onClose: function () {
@@ -46,14 +46,15 @@
 	},
 	msg_count:0,
 	sendRecieve: function (msg) {
-	    $.get(App.uri('Chat', 'sendRecieve', App.page_dialog_chat.counterpart || '', msg || ''), function (resp) {
+	    $.post(App.uri('Chat', 'sendRecieve', App.page_dialog_chat.counterpart || ''),{message:msg}, function (resp) {
 		var resp=App.json(resp);
 		App.renderTpl('chat_field', resp);
 		if( App.page_dialog_chat.msg_count!==resp.msgs.length ){
 		    App.page_dialog_chat.msg_count=resp.msgs.length;
 		    $("#chat_field").animate({scrollTop: $("#chat_field")[0].scrollHeight}, 1000);
 		}
-		setTimeout(function(){
+                clearTimeout(App.page_dialog_chat.clock);
+		App.page_dialog_chat.clock=setTimeout(function(){
 		    try{App.page_dialog_chat.sendRecieve();}catch(e){};
 		},1000);
 	    });
