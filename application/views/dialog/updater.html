@@ -40,7 +40,9 @@
 	    } else {
 		$('#updater_status_finish img').attr('src','img/ok.png');
 		$('#updater_close_btn').show();
-		App.checkUpdates();
+                if( confirm("Обновить страницу?") ){
+                    location.reload();
+                }
 	    }
 	}
     };
