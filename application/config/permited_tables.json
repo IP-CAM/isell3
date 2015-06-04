@@ -10,6 +10,7 @@
     {"table_name":"user_list","hidden":1,"level":1},
     {"table_name":"stock_entry_view","hidden":1,"level":1},
     {"table_name":"stock_trans_view","hidden":1,"level":2},
+    {"table_name":"manager_payments","hidden":1,"level":1},
     {"table_name":"expired_list","hidden":1,"level":1},
     {"table_name":"document_registry","hidden":3,"level":1},
     {"table_name":"account_ledger","hidden":1,"level":1}
