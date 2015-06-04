@@ -257,6 +257,7 @@ App.checkUpdates=function (){
 		}
 		App.renderTpl('sync_panel',{updates:list});
 		$('#sync_panel').click(function(){
+                    App.checkUpdates();
 		    App.loadWindow('page/dialog/updater',{updates:list});
 		});
 	    } catch (e){
