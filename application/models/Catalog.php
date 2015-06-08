@@ -13,10 +13,6 @@ class Catalog extends CI_Model {
 	    $this->Base->db_msg();
 	    return NULL;
 	}
-//	if( is_object($query) && $query->num_rows()==0 ){
-//	    $this->db->_error_number()?$this->Base->db_msg():'';
-//	    return NULL;
-//	}
 	return $query;
     }
     protected function get_list( $query ){
@@ -30,9 +26,12 @@ class Catalog extends CI_Model {
     }
     protected function get_row( $query ){
 	$result=$this->query($query);
-	$row=$result->row();
-	$result->free_result();
-	return $row;
+        if( $result && $result->num_rows()>0 ){
+            $row=$result->row();
+            $result->free_result();
+            return $row;
+        }
+	return null;
     }
     protected function get_value( $query ){
 	foreach( $this->get_row( $query ) as $value ){
