@@ -246,13 +246,20 @@ App.updaterCheck=function (){
     $.get('Maintain/getCurrentVersionStamp',function(stamp){
 	$.getJSON('https://api.github.com/repos/baycik/isell3/commits?since='+stamp+'&callback=?',function(resp){
 	    try{
+		var is_release=false;
 		var list=[];
 		for(var i in resp.data){
 		    var commit=resp.data[i].commit;
 		    list.push({name:commit.committer.name,date:App.toDmy(commit.committer.date),message:commit.message});
+		    if( commit.message.indexOf('release')>-1 || commit.message.indexOf('bugfix')>-1 ){
+			is_release=true;
+		    }
 		}
 		App.renderTpl('sync_panel',{updates:list});
                 handler.notify('updatesChecked',list);
+		if( is_release && confirm("Поступили важные обновления. Обновить сейчас?") ){
+		    App.loadWindow('page/dialog/updater',{updates:list});
+		}
 	    } catch (e){
 		console.log( e );
 	    }
