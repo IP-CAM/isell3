@@ -283,12 +283,12 @@ App.chatCheck=function(){
 	if( count ){
 	    App.flash("У вас "+count+" новых сообщенией!");
 	}
-	setTimeout(App.checkChat,1000*60);
+	setTimeout(App.chatCheck,1000*60);
     });
 };
 App.chatInit=function(){
     App.renderTpl('chat_panel',{count:0});
-    setTimeout(App.checkChat,1000*5);
+    setTimeout(App.chatCheck,1000*5);
 };
 //////////////////////////////////////////////////
 //AJAX SETUP
