@@ -226,3 +226,12 @@ button[diasbled="disabled"]{
 img{
     vertical-align: middle;
 }
+@keyframes blink{
+    0%{background-color: red;}
+    50%{background-color: yellow;}
+    100%{background-color: red;}
+}
+.blink{
+    animation:blink normal 2s infinite ease-in-out;
+    border-radius: 5px;
+}
