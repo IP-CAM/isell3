@@ -6,6 +6,7 @@
  */
 require_once 'Catalog.php';
 class DocumentUtils extends Catalog{
+    public $min_level=1;
     protected function selectDoc( $doc_id ){
 	$this->Base->svar('doc_id',$doc_id);
 	unset( $this->_doc );
@@ -114,6 +115,7 @@ class DocumentCore extends DocumentUtils{
 	return 0;
     }
     public function headGet( $doc_id ){
+        $doc_id=(int) $doc_id;
 //	if( $doc_id==0 ){
 //	    $doc_id=$this->createDoc();
 //	}

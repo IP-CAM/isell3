@@ -1,6 +1,7 @@
 <?php
 require_once 'DocumentItems.php';
 class DocumentView extends DocumentItems{
+    public $min_level=1;
     public function listFetch(){
 	$doc_id=$this->doc('doc_id');
 	$doc_type=$this->doc('doc_type');
