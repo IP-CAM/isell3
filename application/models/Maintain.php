@@ -113,7 +113,10 @@ class Maintain extends CI_Model {
     }
 
     public function getCurrentVersionStamp(){
-	//date_default_timezone_set('Europe/Kiev');
-	return date ("Y-m-d\TH:i:s\Z", filemtime(realpath('.')));
+	$this->dirWork = realpath('.');
+	if( file_exists($this->dirWork.'/.git') ){
+	    return date(time());
+	}
+	return date ("Y-m-d\TH:i:s\Z", filemtime($this->dirWork));
     }
 }
