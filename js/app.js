@@ -241,7 +241,7 @@ App.renderTpl=function( id, data, mode ){
     $('#'+id).html( Mark.up(App.tplcache[id], data) );
     $('#'+id).removeClass('covert');
 };
-App.updaterCheck=function (){ 
+App.updaterCheck=function ( skip_release_check ){ 
     var handler=$.Deferred();
     $.get('Maintain/getCurrentVersionStamp',function(stamp){
 	$.getJSON('https://api.github.com/repos/baycik/isell3/commits?since='+stamp+'&callback=?',function(resp){
@@ -255,9 +255,9 @@ App.updaterCheck=function (){
 			is_release=true;
 		    }
 		}
-		App.renderTpl('sync_panel',{updates:list});
+		App.renderTpl('sync_panel',{updates:list,is_release:is_release});
                 handler.notify('updatesChecked',list);
-		if( is_release && confirm("Поступили важные обновления. Обновить сейчас?") ){
+		if( !skip_release_check && is_release && App.flash("Поступили важные обновления!") ){
 		    App.loadWindow('page/dialog/updater',{updates:list});
 		}
 	    } catch (e){
@@ -270,7 +270,7 @@ App.updaterCheck=function (){
 App.updaterInit=function(){
     App.renderTpl('sync_panel',{updates:[]});
     $('#sync_panel').click(function(){
-        App.updaterCheck().progress(function(status,list){
+        App.updaterCheck( false ).progress(function(status,list){
             App.loadWindow('page/dialog/updater',{updates:list});
         });
     });
