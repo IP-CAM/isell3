@@ -63,13 +63,6 @@
 	    });
 	},
 	renderInputs:function(){
-	    $('#blank_wrapper .blank_row').each(function(){
-		var node=$(this);
-		$('<div>e</div>').appendTo('#blank_wrapper')
-			.addClass('blank_row_controller')
-			.css('left',node.offset().left)
-			.css('top',node.offset().top+20);
-	    });
 	    $('#blank_wrapper .blank_input').each(function(){
 		var node=$(this);
 		node.html('<input type="text" value="'+node.html()+'" />');
@@ -78,6 +71,28 @@
 		    node.find("input").change(Blank.spellNumber);
 		}
 	    });
+	    this.blankRowRender();
+	},
+	blankRowRender:function(){
+	    this.blankRowCheckEmpty();
+	    $('#blank_wrapper .blank_row input').change(Blank.blankRowCheckEmpty);
+	},
+	blankRowCheckEmpty:function(){
+	    if( !Blank.blankRowFindEmpty() ){
+		var clone=$('#blank_wrapper .blank_row').last().clone();
+		clone.find('input').val('').change(Blank.blankRowCheckEmpty);
+		$('#blank_wrapper .blank_row').last().after(clone);
+	    }	    
+	},
+	blankRowFindEmpty:function(){
+	    var empty_row=null;
+	    $('#blank_wrapper .blank_row').each(function(){
+		empty_row=$(this);
+		$(this).find('input').each(function(){
+		    empty_row=( $(this).val()!=='' )?null:empty_row;
+		});
+	    });
+	    return empty_row;
 	}
     };
     Blank.list = {
@@ -116,8 +131,7 @@
 	onSelect:function(index,row){
 	    Blank.list.selectedDocId=row.doc_id;
 	    if( row.doc_id===0 ){
-		Blank.create();
-		$('#blank_avails').panel('expand');
+		Blank.availsOpen();
 		$('#blank_edit').panel('collapse');
 	    } else {
 		$('#blank_avails').panel('collapse');
@@ -191,14 +205,6 @@
         font-weight: bold;
         font-style: normal;
     }
-    .blank_row_controller{
-	background-color: #F88;
-	width:30px;
-	height: 20px;
-	position: absolute;
-    }
-    
-    
     #blank_avails{
 	width: 750px;
     }
@@ -222,6 +228,7 @@
 	padding: 5px 0px 5px 0px;
     }
     #blank_wrapper{
-	padding:10px
+	padding:10px;
+	position: relative;
     }
 </style>
