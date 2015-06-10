@@ -189,6 +189,12 @@ App.val = function (element) {
     }
     return $(element).val();
 };
+App.store=function(key,value){
+    if(value===undefined){
+	return localStorage.getItem(key);
+    }
+    localStorage.setItem(key,value);
+};
 App.cookie = function (cname, cvalue) {
     if (cvalue === undefined) {
 	var name = cname + "=";
