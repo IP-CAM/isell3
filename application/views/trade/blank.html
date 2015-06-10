@@ -44,11 +44,14 @@
 	},
 	getFillData:function(blankData){
 	    $.get('DocumentBlank/getFillData',function(resp){
-		var fillData=App.json(resp);
-		fillData.doc_num=blankData.doc_num;
-		fillData.doc_date=blankData.doc_date;
-		fillData.doc_data=blankData.doc_data;
-		Blank.edit(fillData);
+		Blank.fillData=App.json(resp);
+		Blank.fillData.today10=App.toDmy(new Date(new Date().getTime()+(10*24*60*60*1000)));
+		Blank.fillData.doc={
+		    num:blankData.doc_num,
+		    date:blankData.doc_date,
+		    data:blankData.doc_data
+		};
+		Blank.edit(Blank.fillData);
 	    });	    
 	},
 	edit: function(fillData){
@@ -63,6 +66,40 @@
 	    });
 	},
 	renderInputs:function(){
+	    this.blankInputRender();
+	    this.blankRowRender();
+	    this.blankCalendarRender();
+	    this.blankSelectRender();
+	    $.parser.parse('#blank_wrapper');
+	},
+	blankSelectRender:function(){
+	    $('#blank_wrapper .blank_select').each(function(){
+		var identificator = this.id.match(/[^_]+/);
+		var dataSource = Blank.fillData[identificator];
+		$(this).combobox({
+		    width:'100%',
+		    editable:false,
+		    valueField:'label',
+		    textField:'label',
+		    value:App.store('blank_combo_'+identificator),
+		    data:dataSource,
+		    onChange:function(val){
+			App.store('blank_combo_'+identificator,val);
+			alert(val);
+		    }
+		});
+		
+		
+		//node.html('<input type="text" class="easyui-datebox" style="width:90px;" value="'+node.html()+'" />');
+	    });
+	},
+	blankCalendarRender:function(){
+	    $('#blank_wrapper .blank_calendar').each(function(){
+		var node=$(this);
+		node.html('<input type="text" class="easyui-datebox" style="width:90px;" value="'+node.html()+'" />');
+	    });
+	},
+	blankInputRender:function(){
 	    $('#blank_wrapper .blank_input').each(function(){
 		var node=$(this);
 		node.html('<input type="text" value="'+node.html()+'" />');
@@ -70,29 +107,35 @@
 		if( node.hasClass('blank_spell') ){
 		    node.find("input").change(Blank.spellNumber);
 		}
-	    });
-	    this.blankRowRender();
+	    });	    
 	},
 	blankRowRender:function(){
-	    this.blankRowCheckEmpty();
+	    Blank.blankRowCheckEmpty();
 	    $('#blank_wrapper .blank_row input').change(Blank.blankRowCheckEmpty);
 	},
 	blankRowCheckEmpty:function(){
-	    if( !Blank.blankRowFindEmpty() ){
+	    var empty_rows=Blank.blankRowFindEmpty();
+	    if( !empty_rows.length ){
 		var clone=$('#blank_wrapper .blank_row').last().clone();
 		clone.find('input').val('').change(Blank.blankRowCheckEmpty);
 		$('#blank_wrapper .blank_row').last().after(clone);
-	    }	    
+	    } else 
+	    if( empty_rows.length>1 ){
+		for(var i=1;i<empty_rows.length;i++){
+		    empty_rows[i].remove();
+		}
+	    }
 	},
 	blankRowFindEmpty:function(){
-	    var empty_row=null;
+	    var empty_rows=[];
 	    $('#blank_wrapper .blank_row').each(function(){
-		empty_row=$(this);
+		var empty_row=$(this);
 		$(this).find('input').each(function(){
 		    empty_row=( $(this).val()!=='' )?null:empty_row;
 		});
+		empty_row?empty_rows.push(empty_row):'';
 	    });
-	    return empty_row;
+	    return empty_rows;
 	}
     };
     Blank.list = {
