@@ -1,3 +1,4 @@
+<script type="text/javascript" src="js/jquery-easyui-1.4/datagridfilter/datagrid-filter.js"></script>
 <script type="text/javascript">
     /* global App,Blank */
     Blank=App.page_trade_blank = {
@@ -6,15 +7,19 @@
 	    
 	},
 	initAfter: function () {
+	    this.list.init();
+	    this.availsOpen();
+	    this.buttonsAdjust();
 	    App.handler.progress(function(status){
 		if( status==='passiveCompanySelected'){
-		    Blank.show_only_pcomp_docs=true;
+                    $('#blank_list_dg').datagrid('addFilterRule', {
+                            field: 'company_name',
+                            op: 'equal',
+                            value: App.pcomp.label
+                    });
 		    $('#blank_list_dg').datagrid('reload');
 		}
 	    });
-	    this.availsOpen();
-	    this.list.init();
-	    this.buttonsAdjust();
 	},
 	print:function(){
 	    if( Blank.parser.inputsRendered ){
@@ -44,7 +49,9 @@
 		if( resp*1>0 ){
 		    Blank.list.selectedDocId=resp;
 		    $('#blank_list_dg').datagrid('reload');
-		}		
+		} else {
+		    App.flash("Не удалось создать бланк! Возможно не выбран контрагент!")
+		}	
 	    });
 	},
 	delete:function(){
@@ -75,7 +82,7 @@
 		    date:Blank.blankData.doc_date,
 		    data:Blank.blankData.doc_data
 		};
-		$('#blank_wrapper').css('background-color','rgba(255,255,230,.6)');
+		$('#blank_wrapper').css('background-color','rgba(255,255,240,.6)');
 		App.renderTpl('blank_edit',Blank.fillData,'nocache');
 		Blank.parser.renderInputs();
 		Blank.buttonsAdjust();
@@ -259,6 +266,9 @@
 	    $("#blank_wrapper .blank_required").each(function(){
 		if( !$(this).text() ){
 		    error += "\nНе заполнено: " + this.title;
+		    $(this).css('border','3px solid #f00');
+		} else {
+		    $(this).css('border','');
 		}
 	    });
 	    if (!Blank.parser.xtra.date) {
@@ -280,9 +290,11 @@
 	    $('#blank_list_dg').datagrid('getPager').pagination({
                 layout:['list','sep','first','prev','sep','links','sep','next','sep','refresh']
             });
+	    $('#blank_list_dg').datagrid('enableFilter');
 	},
 	loader:function(param,success,error){
-	    $.get(App.uri('DocumentBlank','listFetch',param.page,param.rows,Blank.show_only_pcomp_docs?'show_only_pcomp_docs':''),function(xhr){
+	    //alert(33333);
+	    $.get(App.uri('DocumentBlank','listFetch',param.page,param.rows),{filterRules:param.filterRules},function(xhr){
 		var resp=App.json(xhr);
 		if( resp.rows ){
 		    resp.rows.unshift(Blank.list.getNewDocRow());
@@ -310,7 +322,10 @@
 	},
 	onSelect:function(index,row){
 	    Blank.list.selectedDocId=row.doc_id;
-	    if( row.doc_id===0 ){
+	    if( Blank.parser.inputsRendered ){
+		Blank.parser.unRenderInputs();
+	    }
+	    if( Blank.list.selectedDocId===0 ){
 		Blank.availsOpen();
 		$('#blank_edit').panel('collapse');
 	    } else {
@@ -355,6 +370,7 @@
 	   pagination:true,
 	   pageSize:20,
 	   singleSelect:true,
+	   remoteFilter:true,
 	   onSelect:Blank.list.onSelect,
 	   tools:'#blank_list_dg_tools',
 	   method:'get'">
@@ -379,7 +395,8 @@
     }
     .blank_input_active input{
         width: calc(100% - 10px);
-        background-color: #FF8;
+	max-width: 300px;
+        background-color: #FFb;
         border: none;
         padding-top: 2px;
         padding-bottom: 2px;
@@ -390,6 +407,9 @@
         color: #000000;
         font-weight: bold;
         font-style: normal;
+    }
+    .blank_required input{
+        background-color: #FF8;
     }
     #blank_avails{
 	width: 750px;

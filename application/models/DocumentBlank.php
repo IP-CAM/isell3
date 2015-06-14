@@ -1,7 +1,8 @@
 <?php
 require_once 'DocumentCore.php';
 class DocumentBlank extends DocumentCore {
-    public function listFetch( $page=1, $rows=30, $mode='' ) {
+    public function listFetch( $page=1, $rows=30) {
+	$having=$this->decodeFilterRules();
 	$offset=($page-1)*$rows;
 	if( $offset<0 ){
 	    $offset=0;
@@ -30,8 +31,9 @@ class DocumentBlank extends DocumentCore {
                 WHERE
                     dl.doc_type > 9
                         AND dl.active_company_id = '" . $this->Base->acomp('company_id') . "'
-                        AND dl.passive_company_id = '" . $this->Base->pcomp('company_id') . "'
-                ORDER BY html>'',cstamp , doc_num";
+		HAVING $having
+                ORDER BY html>'',cstamp , doc_num
+		LIMIT $rows OFFSET $offset";
 	$result_rows=$this->get_list($sql);
 	$total_estimate=$offset+(count($result_rows)==$rows?$rows+1:count($result_rows));
 	return array('rows'=>$result_rows,'total'=>$total_estimate);
@@ -44,15 +46,18 @@ class DocumentBlank extends DocumentCore {
         return $avail_docs;
     }
     public function blankCreate( $view_type_id, $register_only = false ){
-        $doc_type = $this->get_value("SELECT doc_type FROM document_view_types WHERE view_type_id='$view_type_id'");
-	$Document2=$this->Base->bridgeLoad('Document');
-        $Document2->add($doc_type);
-        if ($register_only === false){
-            $Document2->insertView($view_type_id);
-        }
-        $doc_id=$Document2->doc('doc_id');
-        $this->Base->svar('selectedBlankId',$doc_id);
-        return $doc_id;
+	if( $this->Base->pcomp('company_id') ){
+	    $doc_type = $this->get_value("SELECT doc_type FROM document_view_types WHERE view_type_id='$view_type_id'");
+	    $Document2=$this->Base->bridgeLoad('Document');
+	    $Document2->add($doc_type);
+	    if ($register_only === false){
+		$Document2->insertView($view_type_id);
+	    }
+	    $doc_id=$Document2->doc('doc_id');
+	    $this->Base->svar('selectedBlankId',$doc_id);
+	    return $doc_id;
+	}
+	return 0;
     }
     public function blankGet($doc_id) {
         $this->Base->svar('selectedBlankId',$doc_id);
