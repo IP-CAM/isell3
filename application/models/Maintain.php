@@ -97,7 +97,14 @@ class Maintain extends CI_Model {
 	return false;
     }
     
-    private function updateInstall(){
+    public function updateInstall(){
+	$this->dirWork = realpath('.');
+	$file = fopen($this->dirWork.'/install/db_update.sql', "r");
+	while(!feof($file)){
+	    $line = fgets($file);
+	    $this->db->query($line);
+	}
+	fclose($file);
 	return true;
     }
 
