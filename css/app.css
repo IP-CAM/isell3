@@ -89,11 +89,14 @@ button:active{
     box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.2);
     transition-duration: 0.1s;
 }
-button[diasbled="disabled"]{
+button:disabled{
   background-image: none;
   outline: none;
+  opacity: 0.5;
 }
-
+button img{
+    vertical-align: middle;
+}
 #error{
     margin: 10px;
     border: 1px solid #D0D0D0;
@@ -116,6 +119,9 @@ button[diasbled="disabled"]{
 }
 .panel-body{
     background-color: rgba(255,255,255,0.60);
+}
+.combo-panel{
+    background-color: #fff;
 }
 .easyui-tabs .tabs-panels>.panel>.panel-body,.transp_grad{
     background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.60), rgba(150, 200, 255, 0.65)) repeat scroll 0 0 rgba(0, 0, 0, 0) !important;

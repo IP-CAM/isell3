@@ -40,7 +40,7 @@ class Hub extends HubBase{
      * bridgeLoad function to load and use legacy iSell2 class files
      */
     public function bridgeLoad( $class_name ){
-	define('BAY_OMIT_CONTROLLER_CONSTRUCT',true);
+	!defined('BAY_OMIT_CONTROLLER_CONSTRUCT') && define('BAY_OMIT_CONTROLLER_CONSTRUCT',true);
 	if( !isset($this->bridge) ){
 	    require_once 'iSellBase.php';
 	    $this->bridge=new iSellBase();

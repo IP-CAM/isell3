@@ -9,13 +9,28 @@
 	    App.handler.progress(function(status){
 		if( status==='passiveCompanySelected'){
 		    Blank.show_only_pcomp_docs=true;
-		    //$('#blank_list_dg').datagrid('reload');
+		    $('#blank_list_dg').datagrid('reload');
 		}
 	    });
-	    //this.availsOpen();
-	    Blank.list.selectedDocId=684;
-	    //this.list.init();
-	    //this.load();
+	    this.availsOpen();
+	    this.list.init();
+	    this.buttonsAdjust();
+	},
+	print:function(){
+	    if( Blank.parser.inputsRendered ){
+		alert('Сначала сохраните бланк!');
+		return;
+	    }
+	    window.open("./?mod=Companies&rq=DocumentOut&doc_view_id="+Blank.blankData.doc_view_id);
+	},
+	buttonsAdjust:function(){
+	    if( Blank.parser.inputsRendered ){
+		$('#blank_button_save').prop('disabled',false);
+		$('#blank_button_edit').prop('disabled',true);
+	    } else {
+		$('#blank_button_save').prop('disabled',true);
+		$('#blank_button_edit').prop('disabled',false);
+	    }
 	},
 	availsOpen:function(){
 	    $.get('DocumentBlank/availFetch/',function(resp){
@@ -32,32 +47,54 @@
 		}		
 	    });
 	},
-	load:function(){
-	    var doc_id=Blank.list.selectedDocId;
-	    $.get('DocumentBlank/blankGet/'+doc_id,function(resp){
-		var blankData=App.json(resp);
-		$('#blank_wrapper').html(blankData.html);
-		if( blankData.loaded_is_tpl ){
-		    Blank.getFillData(blankData);
+	delete:function(){
+	    if (!confirm('Вы уверенны, что хотите удалить бланк?')){
+		return;
+	    }
+	    $.post('DocumentBlank/delete',function(ok){
+		if(ok*1){
+		    Blank.list.selectedDocId=0;
+		    $('#blank_list_dg').datagrid('selectRow',0);
+		    $('#blank_list_dg').datagrid('reload');
+		    App.flash('Бланк удален!');
+		} else {
+		    App.flash('Ошибка удаления бланка!');
 		}
 	    });
+  
 	},
-	getFillData:function(blankData){
+	edit: function(){
+	    if( Blank.parser.inputsRendered===true ){
+		return;
+	    }
 	    $.get('DocumentBlank/getFillData',function(resp){
 		Blank.fillData=App.json(resp);
 		Blank.fillData.today10=App.toDmy(new Date(new Date().getTime()+(10*24*60*60*1000)));
 		Blank.fillData.doc={
-		    num:blankData.doc_num,
-		    date:blankData.doc_date,
-		    data:blankData.doc_data
+		    num:Blank.blankData.doc_num,
+		    date:Blank.blankData.doc_date,
+		    data:Blank.blankData.doc_data
 		};
-		Blank.edit(Blank.fillData);
+		$('#blank_wrapper').css('background-color','rgba(255,255,230,.6)');
+		App.renderTpl('blank_edit',Blank.fillData,'nocache');
+		Blank.parser.renderInputs();
+		Blank.buttonsAdjust();
 	    });	    
 	},
-	edit: function(fillData){
-	    $('#blank_wrapper').css('background-color','rgba(255,255,230,.6)');
-	    App.renderTpl('blank_edit',fillData,'nocache');
-	    Blank.renderInputs();
+	blankData:{},
+	load:function(){
+	    var doc_id=Blank.list.selectedDocId;
+	    $.get('DocumentBlank/blankGet/'+doc_id,function(resp){
+		Blank.blankData=App.json(resp);
+		$('#blank_wrapper').html(Blank.blankData.html);
+		if( Blank.blankData.loaded_is_tpl ){
+		    Blank.edit();
+		} else {
+		    Blank.parser.inputsRendered=false;
+		    Blank.buttonsAdjust();
+		    $('#blank_wrapper').css('background-color','');
+		}
+	    });
 	},
 	spellNumber:function(){
 	    var node=$(this);
@@ -65,38 +102,80 @@
 		node.val(text);
 	    });
 	},
+	save:function(){
+	    if( Blank.parser.inputsRendered===false ){
+		return;
+	    }
+	    this.parser.unRenderInputs();
+	    this.parser.collectXtra();
+	    if( this.parser.checkNoErrors() ){
+		var vars=Blank.parser.xtra;
+		vars.html=$("#blank_wrapper").html();
+		$.post('DocumentBlank/save',vars,function(ok){
+		    if( ok*1 ){
+			$('#blank_list_dg').datagrid('reload');
+			$('#blank_wrapper').css('background-color','#fff');
+		    } else {
+			App.flash("Сохранение бланка не удалось!");
+		    }
+		});
+	    } else {
+		this.parser.renderInputs();
+	    }
+	    Blank.buttonsAdjust();
+	}
+    };
+    Blank.parser={
+	inputsRendered:false,
 	renderInputs:function(){
-	    this.blankInputRender();
-	    this.blankRowRender();
-	    this.blankCalendarRender();
-	    this.blankSelectRender();
-	    $.parser.parse('#blank_wrapper');
+	    if( !this.inputsRendered ){
+		this.comboBoxes=[];
+		this.dateBoxes=[];
+		this.blankInputRender();
+		this.blankRowRender();
+		this.blankCalendarRender();
+		this.blankSelectRender();
+		this.inputsRendered=true;
+	    }
 	},
 	blankSelectRender:function(){
 	    $('#blank_wrapper .blank_select').each(function(){
 		var identificator = this.id.match(/[^_]+/);
 		var dataSource = Blank.fillData[identificator];
-		$(this).combobox({
-		    width:'100%',
+		App.store('blank_combo_'+identificator,$(this).text() || App.store('blank_combo_'+identificator));
+		var combo=$(this).html('<span></span>').find('span');
+		combo.combobox({
+		    width:'300px',
 		    editable:false,
 		    valueField:'label',
 		    textField:'label',
-		    value:App.store('blank_combo_'+identificator),
 		    data:dataSource,
 		    onChange:function(val){
+			Blank.parser.blankSelectAssign(val,dataSource,identificator);
 			App.store('blank_combo_'+identificator,val);
-			alert(val);
 		    }
 		});
-		
-		
-		//node.html('<input type="text" class="easyui-datebox" style="width:90px;" value="'+node.html()+'" />');
+		combo.combobox('setValue',App.store('blank_combo_'+identificator));
+		Blank.parser.comboBoxes.push(combo);
 	    });
+	},
+	blankSelectAssign:function(label,data,identificator){
+	    for(var i in data){
+		if( data[i].label===label ){
+		    for(var k in data[i]){
+			$("#"+identificator+'_'+k).html(data[i][k]);
+		    }
+		}
+	    }
 	},
 	blankCalendarRender:function(){
 	    $('#blank_wrapper .blank_calendar').each(function(){
-		var node=$(this);
-		node.html('<input type="text" class="easyui-datebox" style="width:90px;" value="'+node.html()+'" />');
+		var dbox=$(this).html('<span></span>').find('span');
+		dbox.datebox({
+		    width:'90px',
+		    value:$(this).html()
+		});
+		Blank.parser.dateBoxes.push(dbox);
 	    });
 	},
 	blankInputRender:function(){
@@ -110,14 +189,14 @@
 	    });	    
 	},
 	blankRowRender:function(){
-	    Blank.blankRowCheckEmpty();
+	    Blank.parser.blankRowCheckEmpty();
 	    $('#blank_wrapper .blank_row input').change(Blank.blankRowCheckEmpty);
 	},
 	blankRowCheckEmpty:function(){
-	    var empty_rows=Blank.blankRowFindEmpty();
+	    var empty_rows=Blank.parser.blankRowFindEmpty();
 	    if( !empty_rows.length ){
 		var clone=$('#blank_wrapper .blank_row').last().clone();
-		clone.find('input').val('').change(Blank.blankRowCheckEmpty);
+		clone.find('input').val('').change(Blank.parser.blankRowCheckEmpty);
 		$('#blank_wrapper .blank_row').last().after(clone);
 	    } else 
 	    if( empty_rows.length>1 ){
@@ -136,6 +215,64 @@
 		empty_row?empty_rows.push(empty_row):'';
 	    });
 	    return empty_rows;
+	},
+	unRenderInputs:function(){
+	    if( this.inputsRendered ){
+		this.blankRowUnRender();
+		this.blankInputUnRender();
+		this.blankWidgetUnRender();
+		this.inputsRendered=false;
+		this.comboBoxes=[];
+		this.dateBoxes=[];
+	    }
+	},
+	blankInputUnRender:function(){
+	    $('#blank_wrapper .blank_input').each(function(){
+		$(this).html( $(this).find('input').val() );
+	    });
+	},
+	blankRowUnRender:function(){
+	    this.blankRowFindEmpty()[0] && this.blankRowFindEmpty()[0].remove();
+	},
+	blankWidgetUnRender:function(){
+	    $.each(Blank.parser.comboBoxes,function(i,node){
+		var val=node.combobox('getValue');
+		node.after(val);
+		node.combobox('destroy');
+	    });
+	    $.each(Blank.parser.dateBoxes,function(i,node){
+		node.after(node.datebox('getValue'));
+		node.datebox('destroy');
+	    });
+	},
+	xtra:{},
+	collectXtra:function(){
+	    $("#blank_wrapper .blank_date").each(function(){
+		Blank.parser.xtra.date=$(this).text();
+	    });
+	    $("#blank_wrapper .blank_number").each(function(){
+		Blank.parser.xtra.num=$(this).text();
+	    });
+	},
+	checkNoErrors:function(){
+	    var error='';
+	    $("#blank_wrapper .blank_required").each(function(){
+		if( !$(this).text() ){
+		    error += "\nНе заполнено: " + this.title;
+		}
+	    });
+	    if (!Blank.parser.xtra.date) {
+		error += "\nДата бланка не установленна";
+	    }
+	    if (!Blank.parser.xtra.num) {
+		error += "\nНомер бланка не установлен";
+	    }
+	    if (error) {
+		error += "\n\nБланк не сохранен!";
+		alert(error);
+		return false;
+	    }
+	    return true;
 	}
     };
     Blank.list = {
@@ -198,7 +335,13 @@
 	{{/if}}
 	{{/avails}}
     </div>
-    <div class="easyui-panel" title="Редактирование бланка" id="blank_edit" data-options="collapsible:true,iconCls:'icon-document16'">
+    <div class="easyui-panel" title="Редактирование бланка" id="blank_edit" data-options="collapsible:true,iconCls:'icon-document16',collapsed:true">
+	<div style="text-align:center;padding: 2px;background-color: white">
+	    <button onclick="Blank.print()"><img src="img/print.png"/> Печать</button>
+	    <button onclick="Blank.edit()" id="blank_button_edit"><img src="img/Edit-24.png"/> Изменить</button>
+	    <button onclick="Blank.save()" id="blank_button_save"><img src="img/Save-24.png"/> Сохранить</button>
+	    <button onclick="Blank.delete()"><img src="img/delete.png"/> Удалить</button>
+	</div>
 	<div id="blank_wrapper">
 	    {{html}}
 	</div>

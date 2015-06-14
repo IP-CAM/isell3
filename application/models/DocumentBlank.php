@@ -56,21 +56,20 @@ class DocumentBlank extends DocumentCore {
     }
     public function blankGet($doc_id) {
         $this->Base->svar('selectedBlankId',$doc_id);
-	$Document2=$this->Base->bridgeLoad('Document');
-        $Document2->selectDoc($this->Base->svar('selectedBlankId'));
+        $this->selectDoc($this->Base->svar('selectedBlankId'));
         $blank = $this->get_row("SELECT * FROM document_view_list JOIN document_view_types USING(view_type_id) WHERE doc_id='$doc_id'");
         if (!$blank) {//only registry record
-            $doc_type = $Document2->doc('doc_type');
+            $doc_type = $this->doc('doc_type');
             $blank = $this->get_row("SELECT view_name FROM document_view_types WHERE doc_type='$doc_type'");
         } elseif ($blank->html) {
             $blank->html = stripslashes($blank->html);
         } else {
-            $blank->html = file_get_contents('views/rpt/' . $blank->view_file, true);
+            $blank->html = file_get_contents('application/views/rpt/' . $blank->view_file, true);
             $blank->loaded_is_tpl = true;
         }
-        $blank->doc_num = $Document2->doc('doc_num');
-        $blank->doc_date = $Document2->doc('doc_date');
-        $blank->doc_data = $Document2->doc('doc_data');
+        $blank->doc_num = $this->doc('doc_num');
+        $blank->doc_date = $this->doc('doc_date');
+        $blank->doc_data = $this->doc('doc_data');
         return $blank;
     }
     public function getFillData(){
@@ -81,5 +80,33 @@ class DocumentBlank extends DocumentCore {
 	$fillData->p=$Company->companyGet($this->Base->pcomp('company_id'));
 	$fillData->staff=$Pref->getStaffList();
 	return $fillData;
+    }
+    public function save(){
+	$num=$this->input->post('num');
+	$date=$this->input->post('date');
+	$html=$this->input->post('html');
+	
+	$this->selectDoc($this->Base->svar('selectedBlankId'));
+	$doc_id = $this->doc('doc_id');
+	$this->headUpdate('num', $num);
+	$this->headUpdate('date', $date);
+	$doc_view_id=$this->get_value("SELECT doc_view_id FROM document_view_list WHERE doc_id='$doc_id'");
+	
+        if ($doc_view_id) {
+	    $View=$this->Base->load_model('DocumentView');
+            $View->unfreezeView($doc_view_id);
+            $View->viewUpdate($doc_view_id, 'view_num', $num, false);
+            $View->viewUpdate($doc_view_id, 'view_date', $date, false);
+            $View->freezeView($doc_view_id, $html);
+	    return true;
+        }
+	return false;
+    }
+    public function delete(){
+	$this->selectDoc($this->Base->svar('selectedBlankId'));
+	$doc_id = $this->doc('doc_id');
+	$this->query("DELETE FROM document_view_list WHERE doc_id=$doc_id");
+	$this->query("DELETE FROM document_list WHERE doc_id=$doc_id");
+	return true;
     }
 }

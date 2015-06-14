@@ -33,12 +33,12 @@ var App = {
     },
     initTabs: function (tab_id) {
 	$('#' + tab_id).tabs({
-	    selected: App.cookie(tab_id) || 0,
+	    selected: App.store(tab_id) || 0,
 	    onSelect: function (title, index) {
 		var href = $('#' + tab_id).tabs('getTab', title).panel('options').href;
 		var id = href.replace(/\//g, '_').replace('.html', '');
 		App[id] && App[id].focus && App[id].focus();
-		App.cookie(tab_id, title);		    
+		App.store(tab_id, title);		    
 	    },
 	    onLoad:function(panel){
 		var href = panel.panel('options').href;
