@@ -2,11 +2,28 @@
 
 class Utils extends CI_Model {
 
-    public function spellNumber($number, $units=null) {
+    public function spellAmount($number, $unit = NULL, $return_cents = true) {
+	if (!$unit) {
+	    $unit[0] = array('копійка', 'копійки', 'копійок');
+	    $unit[1] = array('гривня', 'гривні', 'гривень');
+	    $unit[2] = array('тисяча', 'тисячи', 'тисяч');
+	    $unit[3] = array('мільон', 'мільони', 'мільонів');
+	}
+	$millions = $this->getNumberPosition($number, 1000000, 100);
+	$thousands = $this->getNumberPosition($number, 1000, 100);
+	$ones = $this->getNumberPosition($number, 1, 100);
+	$cents = $this->getNumberPosition($number * 100, 1, 10);
+
+	$str = $this->spellNumber($millions, $unit[3]) . ' ' . $this->spellNumber($thousands, $unit[2]) . ' ' . $this->spellNumber($ones, $unit[1]) . ' ' . $this->spellNumber($cents, $unit[0], $return_cents);
+	$str = trim($str);
+	return mb_strtoupper(mb_substr($str, 0, 1, 'utf-8'), 'utf-8') . mb_substr($str, 1, mb_strlen($str) - 1, 'utf-8');
+    }
+
+    public function spellNumber($number, $units=null, $ret_number = false) {
 	$hundreds_i = $this->getNumberPosition($number, 100, 1);
 	$tens_i = $this->getNumberPosition($number, 10, 1);
 	$ones_i = $this->getNumberPosition($number, 1, 1);
-	if (!($hundreds_i || $tens_i || $ones_i)){
+	if (!($hundreds_i || $tens_i || $ones_i) && !$ret_number){
 	    return '';
 	}
 	if( $units ){
@@ -17,6 +34,11 @@ class Utils extends CI_Model {
 		$unit = $units[1];
 	    } else {
 		$unit = $units[2];
+	    }
+	    if ($ret_number) {
+		if ($number < 10)
+		    return "0$number $unit";
+		return "$number $unit";
 	    }
 	} else {
 	    $unit='';

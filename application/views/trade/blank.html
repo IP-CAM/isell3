@@ -58,11 +58,14 @@
 	    if (!confirm('Вы уверенны, что хотите удалить бланк?')){
 		return;
 	    }
+	    if( Blank.parser.inputsRendered ){
+		Blank.parser.unRenderInputs();
+	    }
 	    $.post('DocumentBlank/delete',function(ok){
 		if(ok*1){
 		    Blank.list.selectedDocId=0;
 		    $('#blank_list_dg').datagrid('selectRow',0);
-		    $('#blank_list_dg').datagrid('reload');
+		    //$('#blank_list_dg').datagrid('reload');
 		    App.flash('Бланк удален!');
 		} else {
 		    App.flash('Ошибка удаления бланка!');
@@ -103,12 +106,6 @@
 		}
 	    });
 	},
-	spellNumber:function(){
-	    var node=$(this);
-	    $.get('Utils/spellNumber/'+parseInt(node.val()),function(text){
-		node.val(text);
-	    });
-	},
 	save:function(){
 	    if( Blank.parser.inputsRendered===false ){
 		return;
@@ -136,13 +133,13 @@
 	inputsRendered:false,
 	renderInputs:function(){
 	    if( !this.inputsRendered ){
+		this.inputsRendered=true;
 		this.comboBoxes=[];
 		this.dateBoxes=[];
 		this.blankInputRender();
 		this.blankRowRender();
 		this.blankCalendarRender();
 		this.blankSelectRender();
-		this.inputsRendered=true;
 	    }
 	},
 	blankSelectRender:function(){
@@ -191,9 +188,28 @@
 		node.html('<input type="text" value="'+node.html()+'" />');
 		node.addClass("blank_input_active");
 		if( node.hasClass('blank_spell') ){
-		    node.find("input").change(Blank.spellNumber);
+		    node.find("input").change(Blank.parser.spellNumber);
+		}
+		if( node.hasClass('blank_spell_amount') ){
+		    node.find("input").change(Blank.parser.spellAmount);
 		}
 	    });	    
+	},
+	spellNumber:function(){
+	    var node=$(this);
+	    $.get('Utils/spellNumber/'+parseInt(node.val()),function(text){
+		node.val(text);
+	    });
+	},
+	spellAmount:function(){
+	    var node=$(this);
+	    $.get('Utils/spellAmount/'+parseFloat(node.val()),function(text){
+		if( node.parent().nextAll('.blank_spell_text').length ){
+		    node.parent().nextAll('.blank_spell_text').text(text);
+		} else {
+		    node.val(text);
+		}
+	    });
 	},
 	blankRowRender:function(){
 	    Blank.parser.blankRowCheckEmpty();
@@ -225,10 +241,10 @@
 	},
 	unRenderInputs:function(){
 	    if( this.inputsRendered ){
+		this.inputsRendered=false;
 		this.blankRowUnRender();
 		this.blankInputUnRender();
 		this.blankWidgetUnRender();
-		this.inputsRendered=false;
 		this.comboBoxes=[];
 		this.dateBoxes=[];
 	    }
