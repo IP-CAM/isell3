@@ -19,7 +19,7 @@
   <br>
   <br>
     <table width="100%"><tr>
-      <td width="50%" valign="top" align="left"><b>м. Мелітополь</b></td>
+      <td width="50%" valign="top" align="left"><b>м. <span class="blank_input blank_required" title="Город">Мелітополь</span></b></td>
       <td width="50%" valign="top" align="right"><b class="blank_calendar blank_date" title="Дата документа">{{doc.date}}</b></td>
     </tr></table>
   <br>
@@ -82,14 +82,14 @@
       {{a.company_name}}
       <br />{{a.company_jaddress}}
       <br> Тел.:{{a.company_phone}}
-      {% if a.company_bank_account %}<br />П/р {{a.company_bank_account}}{% endif %}
-      {% if a.company_bank_name %} в {{a.company_bank_name}} {% endif %}
-      {% if a.company_bank_id %} МФО:{{a.company_bank_id}} {% endif %}
-      {% if a.company_vat_id %}<br /> ІПН:{{a.company_vat_id}} {% endif %}
-      {% if a.company_vat_licence_id %}<br /> № свідоцтва:{{a.company_vat_licence_id}} {% endif %}
-      {% if a.company_code %}<br /> ЄДРПОУ:{{a.company_code}} {% endif %}
-      {% if a.company_web %}<br /> Сайт:{{a.company_web}} {% endif %}
-      {% if a.company_email %}<br /> e-mail:{{a.company_email}} {% endif %}
+      {{if a.company_bank_account}}<br />П/р {{a.company_bank_account}}{{/if}}
+      {{if a.company_bank_name }} в {{a.company_bank_name}} {{/if}}
+      {{if a.company_bank_id }} МФО:{{a.company_bank_id}} {{/if}}
+      {{if a.company_vat_id }}<br /> ІПН:{{a.company_vat_id}} {{/if}}
+      {{if a.company_vat_licence_id }}<br /> № свідоцтва:{{a.company_vat_licence_id}} {{/if}}
+      {{if a.company_code }}<br /> ЄДРПОУ:{{a.company_code}} {{/if}}
+      {{if a.company_web }}<br /> Сайт:{{a.company_web}} {{/if}}
+      {{if a.company_email }}<br /> e-mail:{{a.company_email}} {{/if}}
       <br><br>
     </td>
   <td width="50%" align="left" valign="top">
@@ -97,14 +97,14 @@
       {{p.company_name}}
       <br />{{p.company_jaddress}}
       <br> Тел.:{{p.company_phone}}
-      {% if p.company_bank_account %}<br />П/р {{p.company_bank_account}}{% endif %}
-      {% if p.company_bank_name %} в {{p.company_bank_name}} {% endif %}
-      {% if p.company_bank_id %} МФО:{{p.company_bank_id}} {% endif %}
-      {% if p.company_vat_id %}<br /> ІПН:{{p.company_vat_id}} {% endif %}
-      {% if p.company_vat_licence_id %}<br /> № свідоцтва:{{p.company_vat_licence_id}} {% endif %}
-      {% if p.company_code %}<br /> ЄДРПОУ:{{p.company_code}} {% endif %}
-      {% if p.company_web %}<br /> Сайт:{{p.company_web}} {% endif %}
-      {% if p.company_email %}<br /> e-mail:{{p.company_email}} {% endif %}
+      {{if p.company_bank_account }}<br />П/р {{p.company_bank_account}}{{/if}}
+      {{if p.company_bank_name }} в {{p.company_bank_name}} {{/if}}
+      {{if p.company_bank_id }} МФО:{{p.company_bank_id}} {{/if}}
+      {{if p.company_vat_id }}<br /> ІПН:{{p.company_vat_id}} {{/if}}
+      {{if p.company_vat_licence_id }}<br /> № свідоцтва:{{p.company_vat_licence_id}} {{/if}}
+      {{if p.company_code }}<br /> ЄДРПОУ:{{p.company_code}} {{/if}}
+      {{if p.company_web }}<br /> Сайт:{{p.company_web}} {{/if}}
+      {{if p.company_email }}<br /> e-mail:{{p.company_email}} {{/if}}
       <br><br>
   </td>
 </tr>
