@@ -24,15 +24,14 @@
 	}
     };
 </script>
-<div style="float:left;padding-right: 3px;vertical-align: top">
-    <div class="transp60" style="min-width:150px;padding:5px;">
-	<input class="easyui-combobox" id="trade_comp_cmb" data-options="
+<div style="float:left;padding-right: 2px;vertical-align: top">
+    <div class="transp60" style="min-width:130px;padding-left:2px;">
+	<input class="easyui-combobox" id="trade_comp_cmb" style="width:100%" data-options="
 	    valueField: 'company_id',
 	    textField: 'label',
 	    loader:TradeJs.comboLoader,
 	    mode: 'remote',
 	    method:'get',
-	    width:150,
 	    onSelect: TradeJs.selectCompany
 	    ">
 	<ul class="easyui-tree " data-options="

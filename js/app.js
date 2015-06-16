@@ -46,7 +46,7 @@ var App = {
 		    var id = href.replace(/\//g, '_').replace('.html', '');
 		    if( App[id] ){
 			if( !$("#" + id).length ){
-			    panel.wrapInner('<div id="'+id+'" style="padding:5px"></div>');
+			    panel.wrapInner('<div id="'+id+'" style="padding:0px"></div>');
 			    panel.css('padding','5px');
 			}
 			App[id].data={inline:true};

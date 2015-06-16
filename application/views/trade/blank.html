@@ -378,8 +378,8 @@
 	</div>
     </div>
 </div>
-<div style="display: table-cell;padding-left:3px;">
-    <table id="blank_list_dg" class="easyui-datagrid" title="Список бланков" style="width:460px;"
+<div style="display: table-cell;padding-left:1px;">
+    <table id="blank_list_dg" class="easyui-datagrid" title="Список бланков" style="width:395px;"
 	   data-options="
 	   idField:'doc_id',
 	   loader:Blank.list.loader,
@@ -392,12 +392,12 @@
 	   method:'get'">
 	<thead>
 	    <tr>
-		<th data-options="width:120,field:'company_name'">Компания</th>
-		<th data-options="width:30,field:'doc_type_icon',align:'center',formatter:App.datagrid.tooltip">Док</th>
+		<th data-options="width:110,field:'company_name'">Компания</th>
+		<th data-options="width:25,field:'doc_type_icon',align:'center',formatter:App.datagrid.tooltip">Док</th>
 		<th data-options="width:65,field:'doc_date'">Дата</th>
-		<th data-options="width:50,field:'doc_num',align:'right'">Номер</th>
-		<th data-options="width:160,field:'view_name'">Документ</th>
-		<th data-options="width:30,field:'saved',align:'center',formatter:App.datagrid.tooltip">Сохранен</th>
+		<th data-options="width:45,field:'doc_num',align:'right'">Номер</th>
+		<th data-options="width:120,field:'view_name'">Документ</th>
+		<th data-options="width:25,field:'saved',align:'center',formatter:App.datagrid.tooltip">Сохранен</th>
 	    </tr>
 	</thead>
     </table>
@@ -428,7 +428,7 @@
         background-color: #FF8;
     }
     #blank_avails{
-	width: 750px;
+	width: 740px;
     }
     #blank_avails div{
 	
@@ -450,7 +450,7 @@
 	padding: 5px 0px 5px 0px;
     }
     #blank_wrapper{
-	padding:10px;
+	padding:2px;
 	position: relative;
     }
 </style>

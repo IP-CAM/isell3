@@ -72,13 +72,13 @@
 	    if ( this.colsHidden ) {
 		$('#document_list_dg').datagrid('showColumn','doc_type_name');
 		$('#document_list_dg').datagrid('showColumn','views');
-		$('#document_list_dg').datagrid('resize',{width:650});
+		$('#document_list_dg').datagrid('resize',{width:610});
 		this.colsHidden = false;
 	    }
 	    else {
 		$('#document_list_dg').datagrid('hideColumn','doc_type_name');
 		$('#document_list_dg').datagrid('hideColumn','views');
-		$('#document_list_dg').datagrid('resize',{width:390});
+		$('#document_list_dg').datagrid('resize',{width:360});
 		this.colsHidden = true;
 	    }	    
 	},
@@ -113,8 +113,8 @@
 <div style="display: table-cell;">
     <div id="page_trade_document"></div>
 </div>
-<div style="display: table-cell;padding-left:3px;">
-    <table id="document_list_dg" class="easyui-datagrid" title="Список документов" style="width:650px;"
+<div style="display: table-cell;padding-left:1px;">
+    <table id="document_list_dg" class="easyui-datagrid" title="Список документов" style="width:610px;"
 	   data-options="
 	   idField:'doc_id',
 	   loader:DocList.list.loader,
@@ -128,15 +128,15 @@
 	   method:'get'">
 	<thead>
 	    <tr>
-		<th data-options="width:120,field:'company_name'">Компания</th>
-		<th data-options="width:30,field:'doc_type_icon',align:'center',formatter:App.datagrid.tooltip">Док</th>
+		<th data-options="width:110,field:'company_name'">Компания</th>
+		<th data-options="width:25,field:'doc_type_icon',align:'center',formatter:App.datagrid.tooltip">Док</th>
 		<th data-options="width:65,field:'doc_date'">Дата</th>
 		<th data-options="width:140,field:'doc_type_name'">Документ</th>
-		<th data-options="width:50,field:'doc_num',align:'right'">Номер</th>
+		<th data-options="width:45,field:'doc_num',align:'right'">Номер</th>
 		<th data-options="width:60,field:'amount',align:'right'">Сумма</th>
-		<th data-options="width:30,field:'commited',align:'center',formatter:App.datagrid.tooltip">Проведен</th>
-		<th data-options="width:30,field:'trans_status',align:'center',formatter:App.datagrid.tooltip">Оплачен</th>
-		<th data-options="width:120,field:'views'">Шаблоны печати</th>
+		<th data-options="width:25,field:'commited',align:'center',formatter:App.datagrid.tooltip">Проведен</th>
+		<th data-options="width:25,field:'trans_status',align:'center',formatter:App.datagrid.tooltip">Оплачен</th>
+		<th data-options="width:110,field:'views'">Шаблоны печати</th>
 	    </tr>
 	</thead>
     </table>
