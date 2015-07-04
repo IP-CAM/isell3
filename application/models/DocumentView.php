@@ -33,7 +33,12 @@ class DocumentView extends DocumentItems{
 	$Document2=$this->Base->bridgeLoad('Document');
 	return $Document2->updateView($doc_view_id, $field, $value, $is_extra);
     }
-    public function viewUpdate($doc_view_id, $field, $value, $is_extra) {
+    public function viewUpdate($doc_view_id, $is_extra, $field, $value='') {
+	$this->check($doc_view_id,'int');
+	$this->check($field,'string');
+	$this->check($value,'string');
+	$this->check($is_extra);
+	
 	if ( $this->isCommited() ){
 	    $this->Base->set_level(2);
 	}
@@ -41,11 +46,10 @@ class DocumentView extends DocumentItems{
 	    $this->Base->msg('Образ заморожен! Чтобы изменить снимите блокировку!');
 	    return false;
 	}
-	if ( $is_extra ) {
-	    $extra_fields_str = $this->gat_value("SELECT view_efield_values FROM document_view_list WHERE doc_view_id='$doc_view_id'");
+	if ( $is_extra==='extra' ) {
+	    $extra_fields_str = $this->get_value("SELECT view_efield_values FROM document_view_list WHERE doc_view_id='$doc_view_id'");
 	    $extra_fields = json_decode($extra_fields_str);
 	    $extra_fields->$field = $value;
-
 	    $field = 'view_efield_values';
 	    $value = addslashes(json_encode($extra_fields));
 	} else {

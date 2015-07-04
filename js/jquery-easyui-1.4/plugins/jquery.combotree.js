@@ -1,7 +1,7 @@
 /**
- * jQuery EasyUI 1.4
+ * jQuery EasyUI 1.4.2
  * 
- * Copyright (c) 2009-2014 www.jeasyui.com. All rights reserved.
+ * Copyright (c) 2009-2015 www.jeasyui.com. All rights reserved.
  *
  * Licensed under the GPL license: http://www.gnu.org/licenses/gpl.txt
  * To use it on other terms please contact us at info@jeasyui.com
@@ -35,138 +35,156 @@ _9.push(id);
 })();
 }
 }
-var _b=$(this).tree("options");
-var _c=_b.onCheck;
-var _d=_b.onSelect;
-_b.onCheck=_b.onSelect=function(){
-};
 $(_2).combotree("setValues",_9);
-_b.onCheck=_c;
-_b.onSelect=_d;
 _4.onLoadSuccess.call(this,_7,_8);
-},onClick:function(_e){
+},onClick:function(_b){
 if(_4.multiple){
-$(this).tree(_e.checked?"uncheck":"check",_e.target);
+$(this).tree(_b.checked?"uncheck":"check",_b.target);
 }else{
 $(_2).combo("hidePanel");
 }
-_11(_2);
-_4.onClick.call(this,_e);
-},onCheck:function(_f,_10){
-_11(_2);
-_4.onCheck.call(this,_f,_10);
+_e(_2);
+_4.onClick.call(this,_b);
+},onCheck:function(_c,_d){
+_e(_2);
+_4.onCheck.call(this,_c,_d);
 }}));
 };
-function _11(_12){
-var _13=$.data(_12,"combotree");
-var _14=_13.options;
-var _15=_13.tree;
+function _e(_f){
+var _10=$.data(_f,"combotree");
+var _11=_10.options;
+var _12=_10.tree;
 var vv=[],ss=[];
-if(_14.multiple){
-var _16=_15.tree("getChecked");
-for(var i=0;i<_16.length;i++){
-vv.push(_16[i].id);
-ss.push(_16[i].text);
+if(_11.multiple){
+var _13=_12.tree("getChecked");
+for(var i=0;i<_13.length;i++){
+vv.push(_13[i].id);
+ss.push(_13[i].text);
 }
 }else{
-var _17=_15.tree("getSelected");
-if(_17){
-vv.push(_17.id);
-ss.push(_17.text);
+var _14=_12.tree("getSelected");
+if(_14){
+vv.push(_14.id);
+ss.push(_14.text);
 }
 }
-$(_12).combo("setValues",vv).combo("setText",ss.join(_14.separator));
+$(_f).combo("setText",ss.join(_11.separator)).combo("setValues",_11.multiple?vv:(vv.length?vv:[""]));
 };
-function _18(_19,_1a){
-var _1b=$.data(_19,"combotree").options;
-var _1c=$.data(_19,"combotree").tree;
-_1c.find("span.tree-checkbox").addClass("tree-checkbox0").removeClass("tree-checkbox1 tree-checkbox2");
-var vv=[],ss=[];
-for(var i=0;i<_1a.length;i++){
-var v=_1a[i];
-var s=v;
-var _1d=_1c.tree("find",v);
-if(_1d){
-s=_1d.text;
-_1c.tree("check",_1d.target);
-_1c.tree("select",_1d.target);
-}
-vv.push(v);
-ss.push(s);
-}
-$(_19).combo("setValues",vv).combo("setText",ss.join(_1b.separator));
+function _15(_16,_17){
+var _18=$.data(_16,"combotree");
+var _19=_18.options;
+var _1a=_18.tree;
+var _1b=_1a.tree("options");
+var _1c=_1b.onCheck;
+var _1d=_1b.onSelect;
+_1b.onCheck=_1b.onSelect=function(){
 };
-$.fn.combotree=function(_1e,_1f){
-if(typeof _1e=="string"){
-var _20=$.fn.combotree.methods[_1e];
-if(_20){
-return _20(this,_1f);
+_1a.find("span.tree-checkbox").addClass("tree-checkbox0").removeClass("tree-checkbox1 tree-checkbox2");
+if(!$.isArray(_17)){
+_17=_17.split(_19.separator);
+}
+var vv=$.map(_17,function(_1e){
+return String(_1e);
+});
+var ss=[];
+$.map(vv,function(v){
+var _1f=_1a.tree("find",v);
+if(_1f){
+_1a.tree("check",_1f.target).tree("select",_1f.target);
+ss.push(_1f.text);
 }else{
-return this.combo(_1e,_1f);
+ss.push(v);
+}
+});
+if(_19.multiple){
+var _20=_1a.tree("getChecked");
+$.map(_20,function(_21){
+var id=String(_21.id);
+if($.inArray(id,vv)==-1){
+vv.push(id);
+ss.push(_21.text);
+}
+});
+}
+_1b.onCheck=_1c;
+_1b.onSelect=_1d;
+$(_16).combo("setText",ss.join(_19.separator)).combo("setValues",_19.multiple?vv:(vv.length?vv:[""]));
+};
+$.fn.combotree=function(_22,_23){
+if(typeof _22=="string"){
+var _24=$.fn.combotree.methods[_22];
+if(_24){
+return _24(this,_23);
+}else{
+return this.combo(_22,_23);
 }
 }
-_1e=_1e||{};
+_22=_22||{};
 return this.each(function(){
-var _21=$.data(this,"combotree");
-if(_21){
-$.extend(_21.options,_1e);
+var _25=$.data(this,"combotree");
+if(_25){
+$.extend(_25.options,_22);
 }else{
-$.data(this,"combotree",{options:$.extend({},$.fn.combotree.defaults,$.fn.combotree.parseOptions(this),_1e)});
+$.data(this,"combotree",{options:$.extend({},$.fn.combotree.defaults,$.fn.combotree.parseOptions(this),_22)});
 }
 _1(this);
 });
 };
 $.fn.combotree.methods={options:function(jq){
-var _22=jq.combo("options");
-return $.extend($.data(jq[0],"combotree").options,{width:_22.width,height:_22.height,originalValue:_22.originalValue,disabled:_22.disabled,readonly:_22.readonly});
+var _26=jq.combo("options");
+return $.extend($.data(jq[0],"combotree").options,{width:_26.width,height:_26.height,originalValue:_26.originalValue,disabled:_26.disabled,readonly:_26.readonly});
+},clone:function(jq,_27){
+var t=jq.combo("clone",_27);
+t.data("combotree",{options:$.extend(true,{},jq.combotree("options")),tree:jq.combotree("tree")});
+return t;
 },tree:function(jq){
 return $.data(jq[0],"combotree").tree;
-},loadData:function(jq,_23){
+},loadData:function(jq,_28){
 return jq.each(function(){
-var _24=$.data(this,"combotree").options;
-_24.data=_23;
-var _25=$.data(this,"combotree").tree;
-_25.tree("loadData",_23);
+var _29=$.data(this,"combotree").options;
+_29.data=_28;
+var _2a=$.data(this,"combotree").tree;
+_2a.tree("loadData",_28);
 });
 },reload:function(jq,url){
 return jq.each(function(){
-var _26=$.data(this,"combotree").options;
-var _27=$.data(this,"combotree").tree;
+var _2b=$.data(this,"combotree").options;
+var _2c=$.data(this,"combotree").tree;
 if(url){
-_26.url=url;
+_2b.url=url;
 }
-_27.tree({url:_26.url});
+_2c.tree({url:_2b.url});
 });
-},setValues:function(jq,_28){
+},setValues:function(jq,_2d){
 return jq.each(function(){
-_18(this,_28);
+_15(this,_2d);
 });
-},setValue:function(jq,_29){
+},setValue:function(jq,_2e){
 return jq.each(function(){
-_18(this,[_29]);
+_15(this,[_2e]);
 });
 },clear:function(jq){
 return jq.each(function(){
-var _2a=$.data(this,"combotree").tree;
-_2a.find("div.tree-node-selected").removeClass("tree-node-selected");
-var cc=_2a.tree("getChecked");
+var _2f=$.data(this,"combotree").tree;
+_2f.find("div.tree-node-selected").removeClass("tree-node-selected");
+var cc=_2f.tree("getChecked");
 for(var i=0;i<cc.length;i++){
-_2a.tree("uncheck",cc[i].target);
+_2f.tree("uncheck",cc[i].target);
 }
 $(this).combo("clear");
 });
 },reset:function(jq){
 return jq.each(function(){
-var _2b=$(this).combotree("options");
-if(_2b.multiple){
-$(this).combotree("setValues",_2b.originalValue);
+var _30=$(this).combotree("options");
+if(_30.multiple){
+$(this).combotree("setValues",_30.originalValue);
 }else{
-$(this).combotree("setValue",_2b.originalValue);
+$(this).combotree("setValue",_30.originalValue);
 }
 });
 }};
-$.fn.combotree.parseOptions=function(_2c){
-return $.extend({},$.fn.combo.parseOptions(_2c),$.fn.tree.parseOptions(_2c));
+$.fn.combotree.parseOptions=function(_31){
+return $.extend({},$.fn.combo.parseOptions(_31),$.fn.tree.parseOptions(_31));
 };
 $.fn.combotree.defaults=$.extend({},$.fn.combo.defaults,$.fn.tree.defaults,{editable:false});
 })(jQuery);

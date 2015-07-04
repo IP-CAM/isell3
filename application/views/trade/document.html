@@ -51,8 +51,8 @@
 	    $.get('DocumentItems/headGet/' + Doc.head.props.doc_id, function (xhr) {
 		Doc.head.props = App.json(xhr);
 		if( Doc.head.props ){
-		    Doc.entries.reload();
 		    Doc.head.setPropsForm(Doc.head.props);
+		    Doc.entries.reload();
 		    Doc.head.typeComboFormatterIcon(Doc.head.props.doc_type);
 		    Doc.setTitle();
 		    setTimeout(function(){

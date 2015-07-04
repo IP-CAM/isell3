@@ -2,6 +2,25 @@
 
 class Catalog extends CI_Model {
     public $min_level=1;
+    protected function check( &$var, $type='string' ){
+	switch( $type ){
+	    case 'int':
+		$var=(int) $var;
+		break;
+	    case 'double':
+		$var=(float) $var;
+		break;
+	    case 'bool':
+		$var=(bool) $var;
+		break;
+	    case 'string':
+		$var=  addslashes(rawurldecode($var));
+		break;
+	    default:
+		$var=$this->db->escape(rawurldecode($var));
+	}
+    }
+    
     ////////////////////////////////////////////////////
     // CORE LIST FUNCTIONS
     ////////////////////////////////////////////////////

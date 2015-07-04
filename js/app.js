@@ -331,6 +331,9 @@ $(document).ajaxError(function (event, xhr, settings) {
 $(document).ajaxSend(function () {
     $(document).css('cursor', 'wait');
 });
+$.fn.pagination.defaults.layout=['list','sep','first','prev','sep','links','sep','next','sep'];
+$.fn.pagination.defaults.displayMsg="{from}-{to}/{total}";
+
 $.fn.datebox.defaults.formatter = function (date) {
     return App.toDmy(date);
 };

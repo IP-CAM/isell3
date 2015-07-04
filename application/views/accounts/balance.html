@@ -81,7 +81,7 @@
 	},
 	loadBranch: function (param, success, error) {
 	    $.ajax({
-		url: 'Accounts/accountBalanceTreeFetch/' + App.uri((param['id'] || 0), App.toIso(App.page_accounts_balance.firstDay), App.toIso(App.page_accounts_balance.lastDay),App.page_accounts_balance.unused_shown*1),
+		url: 'AccountsCore/accountBalanceTreeFetch/' + App.uri((param['id'] || 0), App.toIso(App.page_accounts_balance.firstDay), App.toIso(App.page_accounts_balance.lastDay),App.page_accounts_balance.unused_shown*1),
 		success: function (xhr) {
 		    try{
 			var resp=JSON.parse(xhr);
@@ -114,7 +114,7 @@
     App.page_accounts_balance.CRUD = {
 	create: function (parent_id, label) {
 	    $.ajax({
-		url: 'Accounts/accountBalanceTreeCreate/' + App.uri(parent_id, label),
+		url: 'AccountsCore/accountBalanceTreeCreate/' + App.uri(parent_id, label),
 		complete: function (xhr) {
 		    if (xhr.responseText && xhr.responseText.split(',') && xhr.responseText.split(',')[0] * 1) {
 			var data = [{

@@ -130,6 +130,14 @@ button img{
 .tabs-header, .tabs-tool {
     background-color: rgba(224,236,255,0.85);
 }
+.datagrid-row-selected  .datagrid-cell{
+    white-space: normal;
+    word-wrap: normal;
+}
+.datagrid-cell{
+    font-family: "Trebuchet MS",Arial;
+}
+
 .transparent{
     opacity:0.5;
     transition-duration: 2s;
@@ -146,6 +154,7 @@ button img{
     font-size: 1px;
     height: 26px;
     width: 26px;
+    background-size: 24px 24px;
     line-height: 26px;
     margin-top: 0px;
 }
@@ -158,6 +167,9 @@ button img{
 }
 .icon-eye{
     background:url('../img/eye.png') no-repeat center center;
+}
+.icon-create{
+    background:url('../img/edit_add.png') no-repeat center center;
 }
 .icon-calc{
     background:url('../img/recalc.png') no-repeat center center;
@@ -193,6 +205,9 @@ button img{
     background:url('../img/Edit-24.png') no-repeat center center;
     background-size: 16px 16px;
 }
+.icon-print{
+    background:url('../img/print.png') no-repeat center center;
+}
 .icon-refresh{
     background:url('../img/reload.png') no-repeat center center;
 }
@@ -224,6 +239,9 @@ button img{
 }
 .icon-serviceout{
     background:url('../img/serviceout.png') no-repeat center center;
+}
+.icon-tablefilter {
+    background:url('../img/filter.png') no-repeat center center;
 }
 .covert{
     visibility: hidden;
