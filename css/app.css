@@ -137,6 +137,9 @@ button img{
 .datagrid-cell{
     font-family: "Trebuchet MS",Arial;
 }
+.slider-rule span{
+    border-color: #000;
+}
 
 .transparent{
     opacity:0.5;

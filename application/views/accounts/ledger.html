@@ -1,0 +1,212 @@
+<script type="text/javascript" src="js/jquery-easyui-1.4/datagridfilter/datagrid-filter.js"></script>
+<script type="text/javascript">
+    /* global App*/
+    Ledger = App.page_accounts_ledger = {
+	idate: null,
+	fdate: null,
+	current_acc_code: 361,
+	acc_props: {},
+	initAfter: function () {
+	    this.list.init();
+	    this.date.initRange();
+	},
+	date:{
+	    calendarChanged:function(newVal,which){
+		if( Ledger[which]!==newVal && /\d\d.\d\d.\d\d\d\d/.test(newVal) && !Ledger.date.suppress ){
+		    Ledger[which]=newVal;
+		    Ledger.date.suppress=true;
+		    this.dateToRange();
+		    Ledger.date.suppress=false;
+		    clearTimeout(Ledger.date.clock);
+		    Ledger.date.clock=setTimeout(function(){
+			$('#account_ledger_dg').datagrid('reload');
+		    },500);
+		}
+	    },
+	    dateToRange:function(){
+		var curr_month=(new Date()).getMonth()+1;
+		var imonth=Ledger.idate.split('.')[1];
+		var fmonth=Ledger.fdate.split('.')[1];
+		$("#account_ledger_range").slider('setValues',[imonth-curr_month+12,fmonth-curr_month+12]);
+	    },
+	    initRange:function(){
+		var months=["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
+		var curr_month=(new Date()).getMonth()+1;
+		var prev=months.slice( 0,curr_month );
+		var next=months.slice(curr_month);
+		months=next.concat(prev);
+		$("#account_ledger_range").slider({
+		    width:300,
+		    range: true,
+		    value: [10,12],
+		    step:1,
+		    min:1,
+		    max:12,
+		    rule: months,
+		    onChange:function(newVal){
+			Ledger.date.rangeToDate(newVal);
+		    }
+		});
+		Ledger.date.rangeToDate([10,12]);
+	    },
+	    rangeToDate:function( range ){
+		var now=new Date();
+		Ledger.idate=App.toDmy(new Date(now.getFullYear(), now.getMonth()-12+range[0], 1));
+		Ledger.fdate=App.toDmy(new Date(now.getFullYear(), now.getMonth()-12+range[1]+1, 0));
+		$("#account_ledger_idate").datebox('setValue',Ledger.idate);
+		$("#account_ledger_fdate").datebox('setValue',Ledger.fdate);
+		clearTimeout(Ledger.date.clock);
+		Ledger.date.clock=setTimeout(function(){
+		    $('#account_ledger_dg').datagrid('reload');
+		},500);
+	    }
+	},
+	
+	
+	
+	onListLoaded: function () {
+	    $("#account_ledger_ibal").html(App.formatNum(Ledger.sub_totals.ibal) + ' ' + Ledger.acc_props.curr_symbol);
+	    $("#account_ledger_fbal").html(App.formatNum(Ledger.sub_totals.fbal) + ' ' + Ledger.acc_props.curr_symbol);
+	},
+	list: {
+	    init: function () {
+		//$('#account_ledger_dg').datagrid('getPager').pagination({pageSize:30,pageList:[30,100,500]});
+		this.toggleFilter();
+	    },
+	    loader: function (param, success, error) {
+		if( !Ledger.idate || !Ledger.fdate ){
+		    return;
+		}
+		$.get(App.uri('AccountsCore', 'ledgerFetch', Ledger.current_acc_code, App.toIso(Ledger.idate), App.toIso(Ledger.fdate), param.page, param.rows), {filterRules: param.filterRules}, function (xhr) {
+		    var resp = App.json(xhr);
+		    if( resp.sub_totals ){
+			success(Ledger.list.addBalanceRows(resp));
+			Ledger.acc_props = resp.props;
+			Ledger.sub_totals = resp.sub_totals;
+			Ledger.onListLoaded();
+		    } else {
+			success([]);
+		    }
+		});
+	    },
+	    addBalanceRows: function (resp) {
+		var opening_row = {
+		    trans_date: App.toDmy(Ledger.idate),
+		    description: "Входящий остаток"
+		};
+		var sub_row = {
+		    trans_date: App.toDmy(Ledger.fdate),
+		    description: "Оборот за период",
+		    debit: resp.sub_totals.pdebit,
+		    credit: resp.sub_totals.pcredit
+		};
+		var closing_row = {
+		    trans_date: App.toDmy(Ledger.fdate),
+		    description: "Исходяший остаток"
+		};
+		if (resp.sub_totals.ibal > 0) {
+		    opening_row.debit = resp.sub_totals.ibal;
+		} else {
+		    opening_row.credit = -resp.sub_totals.ibal;
+		}
+		if (resp.sub_totals.fbal > 0) {
+		    closing_row.debit = resp.sub_totals.fbal;
+		} else {
+		    closing_row.credit = -resp.sub_totals.fbal;
+		}
+		resp.rows.unshift(closing_row, sub_row);
+		resp.rows.push(opening_row);
+		return resp;
+	    },
+	    onSelect: function (index, row) {
+		$('#account_ledger_dg').datagrid('resize');
+	    },
+	    toggleFilter: function () {
+		if (this.filterEnabled) {
+		    $('#account_ledger_dg').datagrid('disableFilter');
+		    this.filterEnabled = false;
+		}
+		else {
+		    $('#account_ledger_dg').datagrid('enableFilter');
+		    this.filterEnabled = true;
+		}
+	    },
+	    rowStyler: function (value, row, index) {
+		if (!row.trans_id) {
+		    return "background-color:rgba(255,255,255,.4);color:darkblue";
+		}
+	    },
+	    calculate: function (value, row) {
+		var positive = row.debit > 0 ? true : false;
+		positive = Ledger.acc_props.acc_type === 'A' ? positive : !positive;
+		value = App.formatNum(value, 'clear');
+		var color = 'darkblue';
+		if (row.trans_id > 0) {
+		    color = (positive > 0 ? 'green' : 'red');
+		}
+		return '<span style="color:' + color + ';font-weight:bold">' + value + '</span>';
+	    }
+	}
+    };
+</script>
+<div style="display: inline-block">
+
+    <div style="text-align: right;padding-bottom: 3px;color: white;font-weight: bold;">
+	<div style="display: inline-block;margin-right: 20px;font-family: monospace">
+	    <input id="account_ledger_range" />
+	</div>
+	<div style="display: inline-block;padding: 5px;border-radius: 5px;" class="grn_grad" title="Начало периода">
+	    <input id="account_ledger_idate" class="easyui-datebox" style="width:90px" data-options="
+		   onChange:function(newVal){
+			Ledger.date.calendarChanged(newVal,'idate');
+		   }" />
+	    <div id="account_ledger_ibal"></div>
+	</div>
+	<div style="display: inline-block;padding: 5px;border-radius: 5px;" class="blue_grad" title="Конец периода">
+	    <input id="account_ledger_fdate" class="easyui-datebox" style="width:90px" data-options="
+		   onChange:function(newVal){
+			Ledger.date.calendarChanged(newVal,'fdate');
+		   }" />
+	    <div id="account_ledger_fbal"></div>
+	</div>
+    </div>
+    <div>
+	<div style="float: left;font-weight: bold;padding-top: 8px;">
+	    <img src="img/table16.png" style="width:16px;height: 16px;"> Движения по счету
+	</div>
+	<div style="float: right">
+	    <span class="icon-24 icon-create" title="Добавить" onclick="Ledger.list.add();"> </span>
+	    <span class="icon-24 icon-change" title="Изменить" onclick="Ledger.list.edit();"> </span>
+	    <span class="icon-24 icon-delete" title="Удалить" onclick="Ledger.list.delete();"> </span>
+	    <span class="icon-24 icon-tablefilter" title="Фильтр таблицы" onclick="Ledger.list.toggleFilter()"> </span>
+	    <span class="icon-24 icon-refresh" title="Обновить" onclick="$('#account_ledger_dg').datagrid('reload')"> </span>
+	    <span class="icon-24 icon-print" title="Обновить" onclick="$('#account_ledger_dg').datagrid('reload')"> </span>
+	</div>
+    </div>
+    <table id="account_ledger_dg" class="easyui-datagrid" style="width:800px;"
+	   data-options="
+	   idField:'trans_id',
+	   loader:Ledger.list.loader,
+	   rowStyler:Ledger.list.rowStyler,
+	   pagination:true,
+	   pageSize:25,
+	   pageList:[25,50,100,500,1000],
+	   singleSelect:true,
+	   remoteFilter:true,
+	   onSelect:Ledger.list.onSelect,
+	   onLoadSuccess:function(){$('#account_ledger_dg').datagrid('resize');},
+	   method:'get'">
+	<thead>
+	    <tr>
+		<th data-options="width:25,field:'trans_status',align:'center',formatter:App.datagrid.tooltip"></th>
+		<th data-options="width:65,field:'trans_date'">Дата</th>
+		<th data-options="width:230,field:'company_name'">Компания</th>
+		<th data-options="width:250,field:'description'">Пояснение</th>
+		<th data-options="width:85,field:'debit',align:'right',formatter:Ledger.list.calculate">Дебит</th>
+		<th data-options="width:85,field:'credit',align:'right',formatter:Ledger.list.calculate">Кредит</th>
+		<th data-options="width:27,field:'trans_type'"></th>
+		<th data-options="width:30,field:'nick'"></th>
+	    </tr>
+	</thead>
+    </table>
+</div>

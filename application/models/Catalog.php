@@ -2,7 +2,7 @@
 
 class Catalog extends CI_Model {
     public $min_level=1;
-    protected function check( &$var, $type='string' ){
+    protected function check( &$var, $type=null ){
 	switch( $type ){
 	    case 'int':
 		$var=(int) $var;
@@ -13,11 +13,17 @@ class Catalog extends CI_Model {
 	    case 'bool':
 		$var=(bool) $var;
 		break;
-	    case 'string':
-		$var=  addslashes(rawurldecode($var));
+	    case 'escape':
+		$var=$this->db->escape(rawurldecode($var));
 		break;
 	    default:
-		$var=$this->db->escape(rawurldecode($var));
+		if( $type ){
+		    $matches=[];
+		    preg_match("/$type/u", $var, $matches);
+		    $var=  isset($matches[0])?$matches[0]:null;
+		} else {
+		    $var=  addslashes( rawurldecode($var) );
+		}
 	}
     }
     

@@ -140,6 +140,10 @@ App.toDmy = function (iso) {
     }
     return iso.replace(/^(\d\d\d\d)-(\d\d)-(\d\d)T?(\d\d:\d\d:\d\d)?Z?$/, "$3.$2.$1");
 };
+//App.relDate=function( dYear, dMonth, dDate ){
+//    var now=new Date();
+//    return new Date(now.getFullYear()+dYear, now.getMonth()+dMonth, now.getDate()+dDate);
+//};
 App.today = function () {
     return App.toDmy(new Date());
 };
