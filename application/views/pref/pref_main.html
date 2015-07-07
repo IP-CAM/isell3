@@ -1,347 +1,348 @@
 <script type="text/javascript">
     PrefJs = {};
     require(
-        [
-            "dojo/dom",
-            "dijit/registry",
-            "dojo/on"
-        ],
-        function (
-            dom,
-            registry,
-            on
-        ) {
-            PrefJs.init = function () {
-                Connector.addRequest({
-                    mod: 'Pref',
-                    rq: 'Details'
-                }, function (content) {
-                    PrefJs.suppress_update = true;
-                    registry.byId("pref_details_form").set('value', content, false);
-                    PrefJs.unlockUpdate();
-                    Acc.setSubTitle(content.company_name);
-                });
-                PrefJs.getUserList();
-                PrefJs.ratioGet()
-            };
-            PrefJs.focus = function () {
-                this.init();
-            };
-            PrefJs.unlockUpdate = function () {
-                setTimeout(function () {
-                    PrefJs.suppress_update = false;
-                }, 100);
-            };
-            PrefJs.update = function (field) {
-                if (PrefJs.suppress_update) return;
-                var request = {};
-                request.mod = 'Pref';
-                request.rq = 'DetailUpdate';
-                request.field_name = field.name;
-                request.field_value = field.value;
-                Connector.addRequest(request);
+	    [
+		"dojo/dom",
+		"dijit/registry",
+		"dojo/on"
+	    ],
+	    function (
+		    dom,
+		    registry,
+		    on
+		    ) {
+		PrefJs.init = function () {
+		    Connector.addRequest({
+			mod: 'Pref',
+			rq: 'Details'
+		    }, function (content) {
+			PrefJs.suppress_update = true;
+			registry.byId("pref_details_form").set('value', content, false);
+			PrefJs.unlockUpdate();
+			Acc.setSubTitle(content.company_name);
+		    });
+		    PrefJs.getUserList();
+		    PrefJs.ratioGet()
+		};
+		PrefJs.focus = function () {
+		    this.init();
+		};
+		PrefJs.unlockUpdate = function () {
+		    setTimeout(function () {
+			PrefJs.suppress_update = false;
+		    }, 100);
+		};
+		PrefJs.update = function (field) {
+		    if (PrefJs.suppress_update)
+			return;
+		    var request = {};
+		    request.mod = 'Pref';
+		    request.rq = 'DetailUpdate';
+		    request.field_name = field.name;
+		    request.field_value = field.value;
+		    Connector.addRequest(request);
 
-                if (field.name === 'company_name')
-                    Acc.setSubTitle(field.value);
-            };
+		    if (field.name === 'company_name')
+			Acc.setSubTitle(field.value);
+		};
 
 
-            PrefJs.getUserList = function () {
-                Connector.addRequest({
-                    mod: 'Pref',
-                    rq: 'UserListGet'
-                }, function (resp) {
-                    PrefJs.userList = resp;
-                    PrefJs.userSelect(0);
-                });
-            };
-            PrefJs.userSelect = function (index) {
-                PrefJs.userDetails = PrefJs.userList[index];
-                PrefJs.userDetails.index = index;
-                Acc.renderTpl('prefUserList', {
-                    users: PrefJs.userList,
-                    index: index
-                });
-                PrefJs.userDetails.user_only_assigned = PrefJs.userDetails.user_only_assigned == 1 ? true : false;
-                PrefJs.suppress_update = true;
-                registry.byId('prefUserDetails').set('value', PrefJs.userDetails, false);
-                PrefJs.unlockUpdate();
-            };
-            PrefJs.userUpdate = function (field) {
-                if (PrefJs.suppress_update) return;
-                Connector.addRequest({
-                    mod: 'Pref',
-                    rq: 'UserDetailUpdate',
-                    user_id: PrefJs.userDetails.user_id,
-                    field_name: field.name,
-                    field_value: field.value
-                }, function (ok) {
-                    if (ok) {
-                        PrefJs.userList[PrefJs.userDetails.index][field.name] = field.value;
-                    } else {
-                        //PrefJs.userSelect(PrefJs.userDetails.index);
-                    }
-                });
-            };
-            PrefJs.userAdd = function () {
-                Connector.addRequest({
-                    mod: 'Pref',
-                    rq: 'UserAdd'
-                }, function () {
-                    PrefJs.getUserList();
-                });
-            };
-            PrefJs.userDelete = function () {
-                Connector.addRequest({
-                    mod: 'Pref',
-                    rq: 'UserDelete',
-                    user_id: PrefJs.userDetails.user_id
-                }, function () {
-                    PrefJs.getUserList();
-                });
-            };
-            PrefJs.changePass = function () {
-                var fvalue = registry.byId('prefUserDetails').get('value');
-                if (fvalue.new_pass1 === fvalue.new_pass2 || fvalue.new_pass1 === '') {
-                    Connector.addRequest({
-                        mod: 'Pref',
-                        rq: 'UserChangePass',
-                        user_id: PrefJs.userDetails.user_id,
-                        curr_pass: fvalue.curr_pass,
-                        new_pass: fvalue.new_pass1
-                    }, function (ok) {
-                        if (ok)
-                            alert("Пароль изменен.");
-                        else
-                            alert("Пароль не был изменен!\nВозможно не совпадает текущий пароль.");
-                        PrefJs.getUserList();
-                    });
-                } else
-                    alert("Пароли Разные");
-            };
-            PrefJs.ratioGet = function () {
-                Connector.sendRequest({
-                    mod:'Pref',
-                    rq: 'PrefGet'
-                }, function (resp) {
-                    PrefJs.suppress_update = true;
-                    registry.byId('pref_ratio_form').set('value', resp);
-                    PrefJs.unlockUpdate();
-                });
-            }
-            PrefJs.prefUpdate = function (field) {
-                if (PrefJs.suppress_update) {
-                    return;
-                }
-                Connector.sendRequest({
-                    mod:'Pref',
-                    rq:'PrefUpdate',
-                    field: field.name,
-                    value: field.value
-                });
-            }
-        });
+		PrefJs.getUserList = function () {
+		    Connector.addRequest({
+			mod: 'Pref',
+			rq: 'UserListGet'
+		    }, function (resp) {
+			PrefJs.userList = resp;
+			PrefJs.userSelect(0);
+		    });
+		};
+		PrefJs.userSelect = function (index) {
+		    PrefJs.userDetails = PrefJs.userList[index];
+		    PrefJs.userDetails.index = index;
+		    Acc.renderTpl('prefUserList', {
+			users: PrefJs.userList,
+			index: index
+		    });
+		    PrefJs.userDetails.user_only_assigned = PrefJs.userDetails.user_only_assigned == 1 ? true : false;
+		    PrefJs.suppress_update = true;
+		    registry.byId('prefUserDetails').set('value', PrefJs.userDetails, false);
+		    PrefJs.unlockUpdate();
+		};
+		PrefJs.userUpdate = function (field) {
+		    if (PrefJs.suppress_update)
+			return;
+		    Connector.addRequest({
+			mod: 'Pref',
+			rq: 'UserDetailUpdate',
+			user_id: PrefJs.userDetails.user_id,
+			field_name: field.name,
+			field_value: field.value
+		    }, function (ok) {
+			if (ok) {
+			    PrefJs.userList[PrefJs.userDetails.index][field.name] = field.value;
+			} else {
+			    //PrefJs.userSelect(PrefJs.userDetails.index);
+			}
+		    });
+		};
+		PrefJs.userAdd = function () {
+		    Connector.addRequest({
+			mod: 'Pref',
+			rq: 'UserAdd'
+		    }, function () {
+			PrefJs.getUserList();
+		    });
+		};
+		PrefJs.userDelete = function () {
+		    Connector.addRequest({
+			mod: 'Pref',
+			rq: 'UserDelete',
+			user_id: PrefJs.userDetails.user_id
+		    }, function () {
+			PrefJs.getUserList();
+		    });
+		};
+		PrefJs.changePass = function () {
+		    var fvalue = registry.byId('prefUserDetails').get('value');
+		    if (fvalue.new_pass1 === fvalue.new_pass2 || fvalue.new_pass1 === '') {
+			Connector.addRequest({
+			    mod: 'Pref',
+			    rq: 'UserChangePass',
+			    user_id: PrefJs.userDetails.user_id,
+			    curr_pass: fvalue.curr_pass,
+			    new_pass: fvalue.new_pass1
+			}, function (ok) {
+			    if (ok)
+				alert("Пароль изменен.");
+			    else
+				alert("Пароль не был изменен!\nВозможно не совпадает текущий пароль.");
+			    PrefJs.getUserList();
+			});
+		    } else
+			alert("Пароли Разные");
+		};
+		PrefJs.ratioGet = function () {
+		    Connector.sendRequest({
+			mod: 'Pref',
+			rq: 'PrefGet'
+		    }, function (resp) {
+			PrefJs.suppress_update = true;
+			registry.byId('pref_ratio_form').set('value', resp);
+			PrefJs.unlockUpdate();
+		    });
+		}
+		PrefJs.prefUpdate = function (field) {
+		    if (PrefJs.suppress_update) {
+			return;
+		    }
+		    Connector.sendRequest({
+			mod: 'Pref',
+			rq: 'PrefUpdate',
+			field: field.name,
+			value: field.value
+		    });
+		}
+	    });
 </script>
 
-<div data-dojo-type="dijit/layout/TabContainer" data-dojo-props="controllerWidget:dijit.layout.TabController,doLayout:false">
-    <div data-dojo-type="dijit/layout/ContentPane" title="Реквизиты">
-        <form data-dojo-type="dijit/form/Form" id="pref_details_form">
-            <table>
-                <tr>
-                    <td width="120" align="right">Полное Название*:</td>
-                    <td colspan="3">
-                        <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_name" style="width:360px" />
-                    </td>
-                    <td width="120" align="right">&nbsp;</td>
-                    <td width="120">&nbsp;</td>
-                    <td>&nbsp;</td>
-                </tr>
-                <tr>
-                    <td width="120" align="right">Юр. адрес*:</td>
-                    <td colspan="3">
-                        <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_jaddress" style="width:360px" />
-                    </td>
-                    <td width="120" align="right">&nbsp;</td>
-                    <td width="120">&nbsp;</td>
-                    <td>&nbsp;</td>
-                </tr>
-                <tr>
-                    <td width="120" align="right">КОД:</td>
-                    <td width="120">
-                        <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_code" />
-                    </td>
-                    <td width="120" align="left">&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td width="120" height="10" align="right">НДС%:</td>
-                    <td width="120">
-                        <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_vat_rate" />
-                    </td>
-                    <td>&nbsp;</td>
-                </tr>
-                <tr>
-                    <td align="right">ИНН*:</td>
-                    <td width="120">
-                        <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_vat_id" />
-                    </td>
-                    <td width="120" align="left">&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td width="120" height="10" align="right">Код банка*:</td>
-                    <td width="120">
-                        <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_bank_id" />
-                    </td>
-                    <td>&nbsp;</td>
-                </tr>
-                <tr>
-                    <td width="120" height="10" align="right">Доп. Код:</td>
-                    <td width="120">
-                        <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_vat_licence_id" />
-                    </td>
-                    <td width="120" align="left">&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td height="10" align="right">Название банка*:</td>
-                    <td width="120">
-                        <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_bank_name" />
-                    </td>
-                    <td>&nbsp;</td>
-                </tr>
-                <tr>
-                    <td width="120" height="10" align="right">Телефон*:</td>
-                    <td width="120">
-                        <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_phone" />
-                    </td>
-                    <td width="120">&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td width="120" height="10" align="right">Номер счета*:</td>
-                    <td width="120">
-                        <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_bank_account" />
-                    </td>
-                    <td>&nbsp;</td>
-                </tr>
-            </table>
-            <br />
-            <hr size="1" color="#ccc" />
-            <br />
-            <table>
-                <tr>
-                    <td width="120" align="right">Короткое Название:</td>
-                    <td width="120">
-                        <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_tree_name" />
-                    </td>
-                    <td width="120" align="right">&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td width="120" align="right">Email:</td>
-                    <td width="120">
-                        <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_email" />
-                    </td>
-                </tr>
-                <tr>
-                    <td width="120" align="right">Директор:</td>
-                    <td>
-                        <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_director" />
-                    </td>
-                    <td width="120" align="right">&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td width="120" align="right">Web:</td>
-                    <td>
-                        <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_web" />
-                    </td>
-                </tr>
-                <tr>
-                    <td align="right">&nbsp;</td>
-                    <td colspan="3">&nbsp;</td>
-                    <td align="right">Контактное лицо:</td>
-                    <td>
-                        <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_person" />
-                    </td>
-                </tr>
-                <tr>
-                    <td width="120" align="right">Фактический адрес:</td>
-                    <td colspan="3">
-                        <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_address" style="width:360px" />
-                    </td>
-                    <td width="120" align="right">Моб. Телефон:</td>
-                    <td width="120">
-                        <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_mobile" />
-                    </td>
-                </tr>
-                <tr>
-                    <td align="right" valign="top">Информация</td>
-                    <td colspan="3" rowspan="2" valign="top">
-                        <textarea data-dojo-type="dijit/form/Textarea" onchange="PrefJs.update(this);" name="company_description" style="width:362px"></textarea>
-                    </td>
-                    <td width="120" align="right" valign="top">Факс:</td>
-                    <td valign="top">
-                        <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_fax" />
-                    </td>
-                </tr>
-                <tr>
-                    <td align="right">&nbsp;</td>
-                    <td align="right">Язык:</td>
-                    <td>
-                        <select data-dojo-type="dijit/form/Select" onchange="PrefJs.update(this);" name="language">
-                            <option value="ua">Українська</option>
-                            <option value="ru">Русский</option>
-                            <option value="en">English</option>
-                        </select>
-                    </td>
-                </tr>
-            </table>
-        </form>      
+<div data-dojo-type="dijit/layout/ContentPane">
+    <div data-dojo-type="dijit/TitlePane" data-dojo-props="open:1" title="Реквизиты нашего предприятия" style="width:820px;display: inline-block;vertical-align: top">
+	<form data-dojo-type="dijit/form/Form" id="pref_details_form">
+	    <table>
+		<tr>
+		    <td width="120" align="right">Полное Название*:</td>
+		    <td colspan="3">
+			<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_name" style="width:360px" />
+		    </td>
+		    <td width="120" align="right">&nbsp;</td>
+		    <td width="120">&nbsp;</td>
+		    <td>&nbsp;</td>
+		</tr>
+		<tr>
+		    <td width="120" align="right">Юр. адрес*:</td>
+		    <td colspan="3">
+			<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_jaddress" style="width:360px" />
+		    </td>
+		    <td width="120" align="right">&nbsp;</td>
+		    <td width="120">&nbsp;</td>
+		    <td>&nbsp;</td>
+		</tr>
+		<tr>
+		    <td width="120" align="right">КОД:</td>
+		    <td width="120">
+			<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_code" />
+		    </td>
+		    <td width="120" align="left">&nbsp;</td>
+		    <td>&nbsp;</td>
+		    <td width="120" height="10" align="right">НДС%:</td>
+		    <td width="120">
+			<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_vat_rate" />
+		    </td>
+		    <td>&nbsp;</td>
+		</tr>
+		<tr>
+		    <td align="right">ИНН*:</td>
+		    <td width="120">
+			<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_vat_id" />
+		    </td>
+		    <td width="120" align="left">&nbsp;</td>
+		    <td>&nbsp;</td>
+		    <td width="120" height="10" align="right">Код банка*:</td>
+		    <td width="120">
+			<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_bank_id" />
+		    </td>
+		    <td>&nbsp;</td>
+		</tr>
+		<tr>
+		    <td width="120" height="10" align="right">Доп. Код:</td>
+		    <td width="120">
+			<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_vat_licence_id" />
+		    </td>
+		    <td width="120" align="left">&nbsp;</td>
+		    <td>&nbsp;</td>
+		    <td height="10" align="right">Название банка*:</td>
+		    <td width="120">
+			<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_bank_name" />
+		    </td>
+		    <td>&nbsp;</td>
+		</tr>
+		<tr>
+		    <td width="120" height="10" align="right">Телефон*:</td>
+		    <td width="120">
+			<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_phone" />
+		    </td>
+		    <td width="120">&nbsp;</td>
+		    <td>&nbsp;</td>
+		    <td width="120" height="10" align="right">Номер счета*:</td>
+		    <td width="120">
+			<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_bank_account" />
+		    </td>
+		    <td>&nbsp;</td>
+		</tr>
+	    </table>
+	    <br />
+	    <hr size="1" color="#ccc" />
+	    <br />
+	    <table>
+		<tr>
+		    <td width="120" align="right">Короткое Название:</td>
+		    <td width="120">
+			<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_tree_name" />
+		    </td>
+		    <td width="120" align="right">&nbsp;</td>
+		    <td>&nbsp;</td>
+		    <td width="120" align="right">Email:</td>
+		    <td width="120">
+			<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_email" />
+		    </td>
+		</tr>
+		<tr>
+		    <td width="120" align="right">Директор:</td>
+		    <td>
+			<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_director" />
+		    </td>
+		    <td width="120" align="right">&nbsp;</td>
+		    <td>&nbsp;</td>
+		    <td width="120" align="right">Web:</td>
+		    <td>
+			<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_web" />
+		    </td>
+		</tr>
+		<tr>
+		    <td align="right">&nbsp;</td>
+		    <td colspan="3">&nbsp;</td>
+		    <td align="right">Контактное лицо:</td>
+		    <td>
+			<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_person" />
+		    </td>
+		</tr>
+		<tr>
+		    <td width="120" align="right">Фактический адрес:</td>
+		    <td colspan="3">
+			<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_address" style="width:360px" />
+		    </td>
+		    <td width="120" align="right">Моб. Телефон:</td>
+		    <td width="120">
+			<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_mobile" />
+		    </td>
+		</tr>
+		<tr>
+		    <td align="right" valign="top">Информация</td>
+		    <td colspan="3" rowspan="2" valign="top">
+			<textarea data-dojo-type="dijit/form/Textarea" onchange="PrefJs.update(this);" name="company_description" style="width:362px"></textarea>
+		    </td>
+		    <td width="120" align="right" valign="top">Факс:</td>
+		    <td valign="top">
+			<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.update(this);" name="company_fax" />
+		    </td>
+		</tr>
+		<tr>
+		    <td align="right">&nbsp;</td>
+		    <td align="right">Язык:</td>
+		    <td>
+			<select data-dojo-type="dijit/form/Select" onchange="PrefJs.update(this);" name="language">
+			    <option value="ua">Українська</option>
+			    <option value="ru">Русский</option>
+			    <option value="en">English</option>
+			</select>
+		    </td>
+		</tr>
+	    </table>
+	</form>   
     </div>
-    <div data-dojo-type="dijit/layout/ContentPane" title="Настройки">
-        <form data-dojo-type="dijit/form/Form" id="pref_ratio_form">
-            <div data-dojo-type="dijit/TitlePane" data-dojo-props="open:1" title="Курсы валют к основной валюте">
-                <table border="0">
-                    <tr>
-                        <td align="right">USD</td>
-                        <td>
-                            <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.prefUpdate(this);" style="width:50px" name="usd_ratio" />
-                        </td>
-                        <td>
-                            <iframe src="http://plustrade.com.ua/dollar.php" width="70" height="30" frameborder="0"></iframe>
-                        </td>
-                    </tr>
-                </table>
-            </div>
-            <div data-dojo-type="dijit/TitlePane" data-dojo-props="open:1" title="Дополнительные настройки">
-                <fieldset style="display: inline-block">
-                    <legend>Руководители</legend>
-		    <table border="0">
-			<tr>
-			    <td align="right">Директор:</td>
-			    <td>
-				<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.prefUpdate(this);" name="director_name" />
-			    </td>
-			    <td align="right">ИНН:</td>
-			    <td>
-				<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.prefUpdate(this);" name="director_tin" />
-			    </td>
-			</tr>
-			<tr>
-			    <td align="right">Гл. Бухгалтер:</td>
-			    <td>
-				<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.prefUpdate(this);" name="accountant_name" />
-			    </td>
-			    <td align="right">ИНН:</td>
-			    <td>
-				<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.prefUpdate(this);" name="accountant_tin" />
-			    </td>
-			</tr>
-		    </table>
-                </fieldset>
-                <fieldset style="display: inline-block">
-                    <legend>Настройки по умолчанию</legend>
-		    <table border="0">
-			<tr>
-			    <td align="right">Лимит долга по умолчанию:</td>
-			    <td>
-				<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.prefUpdate(this);" name="default_debt_limit" />
-			    </td>
-			</tr>
-		    </table>
-                </fieldset>
-                <fieldset>
-                    <legend>Клиент банк</legend>
+    <form data-dojo-type="dijit/form/Form" id="pref_ratio_form" style="width:550px;display: inline-block">
+	<div data-dojo-type="dijit/TitlePane" data-dojo-props="open:1" title="Курсы валют к основной валюте">
+	    <table border="0">
+		<tr>
+		    <td align="right">USD</td>
+		    <td>
+			<input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.prefUpdate(this);" style="width:50px" name="usd_ratio" />
+		    </td>
+		    <td>
+			<iframe src="http://plustrade.com.ua/dollar.php" width="70" height="30" frameborder="0"></iframe>
+		    </td>
+		</tr>
+	    </table>
+	</div>
+	<div data-dojo-type="dijit/TitlePane" data-dojo-props="open:1" title="Дополнительные настройки">
+	    <fieldset style="display: inline-block">
+		<legend>Руководители</legend>
+		<table border="0">
+		    <tr>
+			<td align="right">Директор:</td>
+			<td>
+			    <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.prefUpdate(this);" name="director_name" />
+			</td>
+			<td align="right">ИНН:</td>
+			<td>
+			    <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.prefUpdate(this);" name="director_tin" />
+			</td>
+		    </tr>
+		    <tr>
+			<td align="right">Гл. Бухгалтер:</td>
+			<td>
+			    <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.prefUpdate(this);" name="accountant_name" />
+			</td>
+			<td align="right">ИНН:</td>
+			<td>
+			    <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.prefUpdate(this);" name="accountant_tin" />
+			</td>
+		    </tr>
+		</table>
+	    </fieldset>
+	    <fieldset style="display: inline-block">
+		<legend>Настройки по умолчанию</legend>
+		<table border="0">
+		    <tr>
+			<td align="right">Лимит долга по умолчанию:</td>
+			<td>
+			    <input data-dojo-type="dijit/form/TextBox" onchange="PrefJs.prefUpdate(this);" name="default_debt_limit" />
+			</td>
+		    </tr>
+		</table>
+	    </fieldset>
+	    <fieldset>
+		<legend>Клиент банк</legend>
                 <table border="0">
                     <tr>
                         <td align="right">Поля в файле .csv клиент банка:</td>
@@ -350,11 +351,10 @@
                         </td>
                     </tr>
                 </table>
-                </fieldset>
-            </div>
-        </form>        
-    </div>
-    <div data-dojo-type="dijit/layout/ContentPane" title="Пользователи">
+	    </fieldset>
+	</div>
+    </form>        
+    <div data-dojo-type="dijit/TitlePane" data-dojo-props="open:1" title="Пользователи" style="width:820px;display: inline-block;vertical-align: top">
         <div data-dojo-type="dijit/form/Form" id="prefUserDetails" style="vertical-align: top;">
             <div id="prefUserList" style="display: inline-block;vertical-align: top;" class="hidden">
                 {%for user in users%}
