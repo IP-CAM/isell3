@@ -7,8 +7,11 @@
 	current_acc_code: 361,
 	acc_props: {},
 	initAfter: function () {
-	    this.list.init();
-	    this.date.initRange();
+	    //this.list.init();
+	    //this.date.initRange();
+	    
+	    
+	    App.loadWindow('page/accounts/trans_edit.html');
 	},
 	date:{
 	    calendarChanged:function(newVal,which){

@@ -2,7 +2,17 @@
     /* global App */
     Tedit = App.page_accounts_trans_edit = {
 	init: function () {
-
+	    this.node.window({
+		title: 'Свойства проводки',
+		width: 350,
+		height: 230,
+		onClose: function(){
+		    App.page_accounts_trans_edit.handler.notify('close',App.page_accounts_trans_edit.data);
+		    App.page_accounts_trans_edit.node.window('destroy');
+		    App.page_accounts_trans_edit.node.remove();
+		    delete App.page_accounts_trans_edit;
+		}
+	    });
 	},
 	pcompLoader: function (param, success, error) {
 	    $.get('Company/listFetch/selected_passive_if_empty', param, function (xhr) {
@@ -42,5 +52,5 @@
     <textarea title="Comment"></textarea>
     <button type="submit"><img src="img/apply24.png" /> Сохранить</button>
     <button type="button" onclick="cancelTrans()"><img src="img/cancel24.png" /> Отменить</button>
-    <button type="button" onclick="window.close()"><img src="img/close24.png" /> Закрыть</button>
+    <button type="button" onclick="Tedit.node.window('close')"><img src="img/close24.png" /> Закрыть</button>
 </form>
