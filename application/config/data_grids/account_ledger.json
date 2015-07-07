@@ -1,7 +1,7 @@
 {
 	"grid_name":"Список проводок",
 	"selectionMode":"extended",
-	"table_style":"min-width:700px;",
+	"table_style":"",
 	"extratools":{
 		"addtrans":{"img":"add.png","command":"addTrans()","tip":"Добавить проводку"}
 	},
