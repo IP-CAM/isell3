@@ -161,6 +161,8 @@ class DocumentCore extends DocumentUtils{
 	return true;
     }
     public function headUpdate( $field, $new_val ){
+        $this->check($field);
+        $this->check($new_val);
 	switch( $field ){
 	    case 'doc_ratio':
 		$field='ratio';

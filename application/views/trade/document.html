@@ -110,7 +110,7 @@
 	},
 	update:function( field, value, oldval ){
 	    if( Doc.head.loaded && value!==oldval ){
-		$.post('DocumentItems/headUpdate/'+field+'/'+value,function(ok){
+		$.post('DocumentItems/headUpdate/'+App.uri(field,value),function(ok){
 		    Doc.head.afterUpdate( ok, field, value, oldval );
 		});
 	    }
