@@ -657,18 +657,21 @@ class Document extends Data {
             
 	} else {
 	    $view_num = $this->doc('doc_num');
-            $pcomp_id=$this->Base->pcomp('company_id');
-            $last_efields = $this->Base->get_row("SELECT
+	    $efields = addslashes($this->getLastEfields($view_type_id));
+	}
+	$cstamp = $this->doc('cstamp');
+	$this->Base->query("INSERT INTO document_view_list SET doc_id='$doc_id', view_type_id='$view_type_id', view_efield_values='$efields', tstamp='$cstamp', view_num='$view_num'");
+	return mysql_insert_id();
+    }
+    
+    private function getLastEfields($view_type_id){
+        $pcomp_id=$this->Base->pcomp('company_id');
+        return $this->Base->get_row("SELECT
                     view_efield_values
                 FROM 
                     document_view_list dvl JOIN document_list USING(doc_id)
                 WHERE 
                     view_type_id='$view_type_id' AND passive_company_id='$pcomp_id' ORDER BY dvl.tstamp DESC",0);
-	    $efields = $last_efields;
-	}
-	$cstamp = $this->doc('cstamp');
-	$this->Base->query("INSERT INTO document_view_list SET doc_id='$doc_id', view_type_id='$view_type_id', view_efield_values='$efields', tstamp='$cstamp', view_num='$view_num'");
-	return mysql_insert_id();
     }
 /////////////////////////////////////////////////////////////////
 //DOCUMENT ALL
