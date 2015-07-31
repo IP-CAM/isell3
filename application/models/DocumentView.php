@@ -35,8 +35,8 @@ class DocumentView extends DocumentItems{
     }
     public function viewUpdate($doc_view_id, $is_extra, $field, $value='') {
 	$this->check($doc_view_id,'int');
-	$this->check($field,'string');
-	$this->check($value,'string');
+	$this->check($field);
+	$this->check($value);
 	$this->check($is_extra);
 	
 	if ( $this->isCommited() ){
@@ -48,7 +48,7 @@ class DocumentView extends DocumentItems{
 	}
 	if ( $is_extra==='extra' ) {
 	    $extra_fields_str = $this->get_value("SELECT view_efield_values FROM document_view_list WHERE doc_view_id='$doc_view_id'");
-	    $extra_fields = json_decode($extra_fields_str);
+            $extra_fields = json_decode($extra_fields_str);
 	    $extra_fields->$field = $value;
 	    $field = 'view_efield_values';
 	    $value = addslashes(json_encode($extra_fields));
