@@ -3,3 +3,4 @@ INSERT IGNORE INTO `document_view_types` (view_type_id,`doc_type`, `view_name`, 
 
 INSERT IGNORE INTO `document_view_types` (view_type_id,`doc_type`, `view_name`, `view_efield_labels`, `view_tpl`) VALUES (29,'1', 'Товарно-Транспортна Накладна', '{\"vehicle\":\"Автомобіль\",\"vehicle2\":\"Номер причіпа\",\"del_comp\":\"Перевізник\",\"del_driver\":\"Водій\",\"place_number\":\"Місць цифрами\",\"place_number2\":\"Місць словами\",\"weight\":\"Вага словами\"}', 'xlsx/UKR_TTN_2014.xlsx' );
 
+INSERT IGNORE INTO `document_view_types` (`view_type_id`, `doc_type`, `view_name`, `view_efield_labels`, `view_tpl`) VALUES ('31', '1', 'Епіцентр ТТН', '{\"reciever\":\"Вантажоодержувач\",\"reciever_city\":\"Пункт розв.\",\"recieved_by\":\"Отримав\",\"accountant\":\"Бухгалтер\",\"place_number2\":\"Місць словами\",\"weight\":\"Вага словами\",\"doc_list\":\"Документи\"}', 'xlsx/UKR_TTN_2014_Epic.xlsx');
