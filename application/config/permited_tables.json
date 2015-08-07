@@ -5,6 +5,7 @@
     {"table_name":"stat_annual_sellbuy","table_title":"Стат. годовые покупки-продажи","level":4},
     {"table_name":"stat_sell_analyse","table_title":"Стат. анализ продаж","level":4},
     {"table_name":"stat_brand_sold","table_title":"Стат. продажи брендов"},
+    {"table_name":"stat_brand_comp_sold","table_title":"Стат. продажи брендов, клиентов"},
 
     {"table_name":"event_list","hidden":1,"level":1},
     {"table_name":"user_list","hidden":1,"level":1},
