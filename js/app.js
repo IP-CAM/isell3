@@ -2,12 +2,12 @@
 
 var App = {
     tplcache:{},
-    //urlcache:{},
     handler:$.Deferred(),
     init: function () {
 	App.loadBg();
 	App.updaterInit();
         App.chatInit();
+	App.onReady && App.onReady();
     },
     flash:function (msg, type) {
 	if (type === 'error') {
@@ -103,27 +103,6 @@ App.json=function( text ){
 	return null;
     }
 };
-//App.xhr={
-//    wait:false,
-//    sequence:[],
-//    post:function( url, data, success, dataType ){
-//	this.sequence.push({url:url,data:data,success:success,dataType:dataType});
-//	this.next();
-//    },
-//    next:function(){
-//	if( this.wait ){
-//	    return;
-//	}
-//	this.send( this.sequence.shift() );
-//    },
-//    send:function( rq ){
-//	this.wait=true;
-//	$.post(rq.url,rq.data,rq.success.success,rq.dataType).always(function(){
-//	    App.xhr.wait=false;
-//	    App.xhr.next();
-//	});
-//    }
-//};
 App.uri = function () {
     var args = Array.prototype.slice.call(arguments);
     return args.map(encodeURIComponent).join('/');
@@ -140,10 +119,6 @@ App.toDmy = function (iso) {
     }
     return iso.replace(/^(\d\d\d\d)-(\d\d)-(\d\d)T?(\d\d:\d\d:\d\d)?Z?$/, "$3.$2.$1");
 };
-//App.relDate=function( dYear, dMonth, dDate ){
-//    var now=new Date();
-//    return new Date(now.getFullYear()+dYear, now.getMonth()+dMonth, now.getDate()+dDate);
-//};
 App.today = function () {
     return App.toDmy(new Date());
 };
@@ -278,26 +253,31 @@ App.updaterCheck=function ( skip_release_check ){
     return handler;
 };
 App.updaterInit=function(){
-    App.renderTpl('sync_panel',{updates:[]});
-    $('#sync_panel').click(function(){
-        App.updaterCheck( false ).progress(function(status,list){
-            App.loadWindow('page/dialog/updater',{updates:list});
-        });
-    });
-    setTimeout(App.updaterCheck,1000*5);
+    if( App.user.signedIn ){
+	App.renderTpl('sync_panel',{updates:[]});
+	$('#sync_panel').click(function(){
+	    App.updaterCheck( false ).progress(function(status,list){
+		App.loadWindow('page/dialog/updater',{updates:list});
+	    });
+	});
+	setTimeout(App.updaterCheck,1000*5);
+    } else {
+	setTimeout(App.updaterInit,1000*30);
+    }
 };
 App.chatCheck=function(){
-    $.get('Chat/checkNew',function(resp){
-	var count=resp*1;
-	App.renderTpl('chat_panel',{count:count});
-	if( count ){
-	    App.flash("У вас "+count+" новых сообщенией!");
-	}
-	setTimeout(App.chatCheck,1000*60);
-    });
+    if( App.user.signedIn ){
+	$.get('Chat/checkNew',function(resp){
+	    var count=resp*1;
+	    App.renderTpl('chat_panel',{count:count});
+	    if( count ){
+		App.flash("У вас "+count+" новых сообщенией!");
+	    }
+	});
+    }
+    setTimeout(App.chatCheck,1000*60);
 };
 App.chatInit=function(){
-    App.renderTpl('chat_panel',{count:0});
     setTimeout(App.chatCheck,1000*5);
 };
 //////////////////////////////////////////////////

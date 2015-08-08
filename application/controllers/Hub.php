@@ -49,7 +49,7 @@ class Hub extends HubBase{
     }
 }
 class HubBase extends CI_Controller{
-    protected $level_names=array("Нет доступа","Ограниченный","Менеджер","Бухгалтер","Администратор");
+    public $level_names=array("Нет доступа","Ограниченный","Менеджер","Бухгалтер","Администратор");
     private $rtype='OK';
     private $msg='';
     function HubBase(){

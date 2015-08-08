@@ -1,10 +1,11 @@
-Utils = function () {
+(Utils = function () {
     this.tpl_cache = new Array();
     this.title = '';
     this.subtitle = '';
     this.app_title = '';
     Utils.prototype.currentInstance = this;
-};
+})();
+
 require([
     "dojo/dom",
     "dijit/registry",
@@ -34,12 +35,15 @@ function (
     ready
 ) {
     ready(function () {
+	
+	
         if (Utils.prototype.currentInstance.appReady)
             Utils.prototype.currentInstance.appReady();
         window.dom=Utils.prototype.currentInstance.dom=dom;
         window.on=Utils.prototype.currentInstance.on=on;
         window.registry=Utils.prototype.currentInstance.registry=registry;
         window.query=Utils.prototype.currentInstance.query=query;
+	
     });
     ////////////////////////
     //HASH CONTROL
@@ -250,3 +254,4 @@ function (
         });
     };
 });
+

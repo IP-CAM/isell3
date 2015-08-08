@@ -1,132 +1,139 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <title>iSell 3.1</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <link rel="icon" type="image/png" href="favicon.png" />
-    <link rel="stylesheet" type="text/css" href="js/jquery-easyui-1.4/themes/default/easyui.css"/>
-    <link rel="stylesheet" type="text/css" href="js/jquery-easyui-1.4/themes/icon.css"/>
-    <link rel="stylesheet" type="text/css" href="js/jquery-easyui-1.4/themes/color.css"/>
-    <link rel="stylesheet" type="text/css" href="js/dijit/themes/claro/claro.css" />
-    <link href="css/app.css" rel="stylesheet" type="text/css" />
-    <link href="css/main.css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript" src="js/markup.min.js"></script>
-    <script type="text/javascript" src="js/dojo/dojo.js" data-dojo-config="parseOnLoad: true,locale: 'ru'"></script>
-    <script type="text/javascript" src="js/dojo/custom_layer.js"></script>
-    <script type="text/javascript" src="js/baycik/SeqConnector.js"></script>
-    <script type="text/javascript" src="js/baycik/Utils.js"></script>
-    <script type="text/javascript" src="js/dhtmlx/tree/dhtmlxcommon.js"></script>
-    <script type="text/javascript" src="js/dhtmlx/tree/dhtmlxtree.js"></script>
-    
-    <script type="text/javascript" src="js/dhtmlx/tree/ext/dhtmlxtree_json.js"></script>
-
-
-    <script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
-    <script type="text/javascript" src="js/jquery-easyui-1.4/jquery.easyui.min.js"></script>
-    <script type="text/javascript" src="js/jquery-easyui-1.4/locale/easyui-lang-ru.js"></script>
-    <script type="text/javascript" src="js/app.js"></script>
-
-    <script type="text/javascript">
-	Connector = new SeqConnector('./');
-	Acc = new Utils();
-	Acc.init = function () {
-	    $('#div_user_panel').show();
-	    Acc.renderTpl('div_user_panel', Acc.userData||'');
-	    Connector.addRequest({
-		mod: 'ModuleList'
-	    }, function (response) {
-		Acc.buildModuleDOM(response);
-		var hash = Acc.appGetState();
-		hash.mod = hash.mod ? hash.mod : response[0].name;
-		Acc.appSetState(hash);
-		Acc.loadModule(hash.mod);
-	    });
-	};
-	Acc.appReady = function () {
-	    this.topic.subscribe('/app/statechange', function (hash) {
-		Acc.loadModule(hash.mod);
-	    });
-	    Acc.get_user_data();
-	};
-	Acc.get_user_data = function () {
-	    Connector.addRequest({mod: 'Login',rq: 'UserData'}, function (resp) {
-		App.userData=Acc.userData = resp;
-		Acc.app_title = resp.active_company_name||'Not logged in!';
-		Acc.init();
-	    });
-	};
-	function logout() {
-	    Connector.addRequest({mod: 'Login',rq: 'UserLogout'}, Acc.get_user_data);
-	}
-	Acc.sendEmail = function (to, subject, text, fgenerator, doc_view_id, fext) {
-	    var fvalue = {
-		to: to,
-		subject: subject,
-		body: text,
-		file_name: subject + fext,
-		send_file: 1,
-		copy: 1
+    <head>
+	<title>iSell 3.2</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<link rel="icon" type="image/png" href="favicon.png" />
+	<link rel="stylesheet" type="text/css" href="js/jquery-easyui-1.4/themes/default/easyui.css"/>
+	<link rel="stylesheet" type="text/css" href="js/jquery-easyui-1.4/themes/icon.css"/>
+	<link rel="stylesheet" type="text/css" href="js/jquery-easyui-1.4/themes/color.css"/>
+	<link href="css/app.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="js/markup.min.js"></script>
+	<script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
+	<script type="text/javascript" src="js/jquery-easyui-1.4/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="js/jquery-easyui-1.4/locale/easyui-lang-ru.js"></script>
+	<script type="text/javascript" src="js/app.js"></script>
+	<script type="text/javascript">
+	    /* global App*/
+	    App.loadDojo=function(){
+		if( !this.dojoloaded ){
+		    $('#dojoloader').load('page/dojoloader.html');
+		    this.dojoloaded=true;
+		}
 	    };
-	    Acc.showPopup(fvalue, function (request) {
-		request.mod = 'Utils';
-		request.rq = 'SendEmail';
-		request.fgenerator = fgenerator;
-		request.doc_view_id = doc_view_id;
-		Connector.addRequest(request);
-	    }, {
-		tpl: 'sendemail.html'
-	    });
-	};
-    </script>
-    <style>
-    .dijitTabContainer {
-	overflow: hidden;
-    }
-    </style>
-</head>
-
-<body class=" claro ">
-    <div id="ApplicationBar" class="transparent">
-	<img src="img/plusLogo.png" style="vertical-align:top" />
-	<div style="color:#009;padding:8px;display: inline-block;font-size: 18px;" id="module_title">&nbsp;</div>
-	<div style="display: inline-block;float: right;">
-	    <div id="div_user_panel" style="display:none;background:#bAc5ff;margin:3px;" class="rounded hidden" align="center">
-                <div style="background:#DAE5F0;color:#FF0000;overflow: hidden;" class="rounded" align="center">
-                    {{user_level_name|default:''}} <span style="font-weight:bold;color:#000">{{user_login}}</span> 
-                    <a href="javascript:logout()">[выход]</a>
-                </div> 
+	    
+	    App.user = {
+		props: {},
+		signedIn:false,
+		getData: function () {
+		    $.get("User/getUserData", function (resp) {
+			App.user.setProps( App.json(resp) );
+		    });
+		},
+		setProps:function( userProps ){
+		    App.user.props=userProps;
+		    if( userProps && userProps.user_level>0 ){
+			$('#div_user_panel').show();
+			App.renderTpl('div_user_panel', App.user.props || '');
+			this.signedIn=true;
+			this.loginFormHide();
+		    } else {
+			this.signedIn=false;
+			this.loginFormShow();
+		    }
+		},
+		signIn: function () {
+		    var user_login=$("#user_login").val();
+		    var user_pass=$("#user_pass").val();
+		    $.post("User/SignIn",{login:user_login,pass:user_pass},function(resp){
+			App.user.setProps( App.json(resp) );
+		    });
+		},
+		signOut: function () {
+		    $.get("User/SignOut");
+		    this.setProps({});
+		},
+		loginFormShow: function () {
+		    $("#loginScreen,#loginOverlay").show();
+		},
+		loginFormHide: function () {
+		    $("#loginScreen,#loginOverlay").hide();
+		}
+	    };
+	    App.onReady = function () {
+		App.user.getData();
+	    };
+	</script>
+    </head>
+    <body class=" claro ">
+	<div id="ApplicationBar" class="transparent">
+	    <img src="img/plusLogo.png" style="vertical-align:top" />
+	    <div style="color:#009;padding:8px;display: inline-block;font-size: 18px;" id="module_title">&nbsp;</div>
+	    <div style="display: inline-block;float: right;">
+		<div id="div_user_panel" style="background:#bAc5ff;margin:3px;" class="rounded covert">
+		    <div style="background:#DAE5F0;color:#FF0000;overflow: hidden;" class="rounded">
+			{{user_level_name}} <span style="font-weight:bold;color:#000">{{user_login}}</span> 
+			<a href="javascript:App.user.signOut()">[выход]</a>
+		    </div> 
+		</div>
 	    </div>
-	</div>
-	<span id="chat_panel" class="covert" style="margin: 4px;cursor: pointer;float:right" onclick="App.loadWindow('page/dialog/chat')">
-	    {{if count|more>0}}
-	    <img src="img/chat_yes.png" style="vertical-align: middle" class="blink" title="Есть новые сообщения" />{{count}}
-	    {{else}}
-	    <img src="img/chat_no.png" style="vertical-align: middle" title="Новых сообщений нет" />
-	    {{/if}}	    
-	</span>
-	<span id="sync_panel" class="covert" style="margin: 4px;cursor: pointer;float:right">
-	    {{if updates}}
+	    <span id="chat_panel" class="covert" style="margin: 4px;cursor: pointer;float:right" onclick="App.loadWindow('page/dialog/chat')">
+		{{if count|more>0}}
+		<img src="img/chat_yes.png" style="vertical-align: middle" class="blink" title="Есть новые сообщения" />{{count}}
+		{{else}}
+		<img src="img/chat_no.png" style="vertical-align: middle" title="Новых сообщений нет" />
+		{{/if}}	    
+	    </span>
+	    <span id="sync_panel" class="covert" style="margin: 4px;cursor: pointer;float:right">
+		{{if updates}}
 		{{if is_release}}
 		<img src="img/update_yes.png" style="vertical-align: middle" class="blink" title="Есть обновления" />
 		{{else}}
 		<img src="img/update_no.png" style="vertical-align: middle" title="Есть обновления" />
 		{{/if}}
 		{{updates|length}}
-	    {{else}}
-	    <img src="img/update_no.png" style="vertical-align: middle" title="Обновлений нет" />
-	    {{/if}}
-	</span>
-    </div>
-    <div id="module_menu" class="hidden transparent" style="text-align: center;width:60px;vertical-align: top;float: left;">
-	<!--
-	{% for item in menuitems %}
-	<div class="ModuleButton" id="{{item.name}}Button" title="{{item.label}}"><a href="#mod={{item.name}}"><img src="img/Mods/{{item.icon}}" width="45" height="45" /></a></div>
-	{% endfor %}
-	-->
-	<img src="img/personalize-icon.png" style="width:48px;height:48px;cursor: pointer;" onclick="App.setBg()" title="Установить обои" />
-    </div>
-    <div id="ModuleContainer" style="margin: 3px;vertical-align: top;"></div>
-    <div id="appWindowContainer"></div>
-    <div id="appStatus"></div>
-</body>
+		{{else}}
+		<img src="img/update_no.png" style="vertical-align: middle" title="Обновлений нет" />
+		{{/if}}
+	    </span>
+	</div>
+	<div id="module_menu" class="hidden transparent" style="text-align: center;width:60px;vertical-align: top;float: left;">
+	    <!--
+	    {% for item in menuitems %}
+	    <div class="ModuleButton" id="{{item.name}}Button" title="{{item.label}}"><a href="#mod={{item.name}}"><img src="img/Mods/{{item.icon}}" width="45" height="45" /></a></div>
+	    {% endfor %}
+	    -->
+	    <img src="img/personalize-icon.png" style="width:48px;height:48px;cursor: pointer;" onclick="App.setBg()" title="Установить обои" />
+	</div>
+	<div id="ModuleContainer" style="margin: 3px;vertical-align: top;"></div>
+	<div id="appWindowContainer"></div>
+	<!--<div id="appStatus"></div>-->
+	<div id="dojoloader"></div>
+	<div id="loginScreen" class="rounded">
+	    <div style="color:#fff" id="SeqDialogMsg"></div>
+	    <div class="rounded" style="margin-left:auto;margin-right:auto;background: #def;">
+		<form action="User/SignIn" method="post" onsubmit="App.user.signIn();event.preventDefault();">
+		    <table width="200" border="0" align="center" cellspacing="1">
+			<tr>
+			    <td colspan="2" align="center">
+				<big>Авторизация</big>
+			    </td>
+			</tr>
+			<tr>
+			    <td><input type="text" id="user_login" name="user_login" style="width:100%;"  autofocus="autofocus" placeholder="Логин" /></td>
+			</tr>
+			<tr>
+			    <td><input type="password" id="user_pass" name="user_pass" style="width:100%;" placeholder="Пароль" /></td>
+			</tr>
+			<tr>
+			    <td colspan="2" align="center">
+				<button type="submit" value="Submit" id="submit_button"><img src="img/apply24.png" style="vertical-align: middle"/> Вход</button>
+			    </td>
+			</tr>
+		    </table>
+		</form>
+	    </div>
+	</div>    
+	<div id="loginOverlay"></div>
+    </body>
 </html>
