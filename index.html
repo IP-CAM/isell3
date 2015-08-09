@@ -34,7 +34,6 @@
 		setProps:function( userProps ){
 		    App.user.props=userProps;
 		    if( userProps && userProps.user_level>0 ){
-			$('#div_user_panel').show();
 			App.renderTpl('div_user_panel', App.user.props || '');	
 			App.renderTpl('div_module_list', App.user.props || '');
 			this.signedIn=true;
@@ -73,7 +72,7 @@
 		App.user.getData();
 	    };
 	    App.module={
-		legacy:["Companies","Accounts","Stock","Lists","Data","Pref","Home"],
+		legacy:["Companies","Stock","Lists","Data","Pref","Home"],//,"Accounts"
 		init:function(){
 		    $(window).bind( 'hashchange', function(e) {
 			App.module.load(location.hash.substring(1));
@@ -151,12 +150,12 @@
 	<div id="ApplicationBar" class="transparent">
 	    <img src="img/plusLogo.png" style="vertical-align:top" />
 	    <div style="color:#009;padding:8px;display: inline-block;font-size: 18px;" id="module_title">&nbsp;</div>
-	    <div style="display: inline-block;float: right;">
-		<div id="div_user_panel" style="background:#bAc5ff;margin:3px;" class="rounded covert">
-		    <div style="background:#DAE5F0;color:#FF0000;overflow: hidden;" class="rounded">
-			{{user_level_name}} <span style="font-weight:bold;color:#000">{{user_login}}</span> 
-			<a href="javascript:App.user.signOut()">[выход]</a>
-		    </div> 
+	    <div id="holder_user_panel">
+		<img src="img/user-32.png" style="margin: 4px;"/>
+		<div id="div_user_panel">
+		    <div style="color:red">{{user_level_name}}</div>
+		    <div style="font-weight:bold;color:#000">{{user_login}}</div> 
+		    <button onclick="App.user.signOut()"><img src="img/logout.png"/> Выход</button>
 		</div>
 	    </div>
 	    <span id="chat_panel" class="covert" style="margin: 4px;cursor: pointer;float:right" onclick="App.loadWindow('page/dialog/chat')">

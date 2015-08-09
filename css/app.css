@@ -113,6 +113,31 @@ button img{
     margin: 0 0 14px 0;
     padding: 14px 15px 10px 15px;
 }
+#holder_user_panel{
+    display: inline-block;
+    cursor: pointer;
+    float: right;
+    position: relative;
+    z-index: 100;
+}
+#holder_user_panel div{
+    padding: 5px;
+}
+#holder_user_panel:hover #div_user_panel{
+    display: block;
+}
+#div_user_panel{
+    position: absolute;
+    top:40px;
+    right: 0px;
+    width: 250px;
+    height: 90px;
+    background-color: rgba(255,255,255,0.70);
+    border-left: 1px solid #999;
+    border-bottom: 1px solid #999;
+    text-align: center;
+    display: none;
+}
 .tabs li a.tabs-inner{
     border-radius: 0px;
 }
@@ -134,11 +159,9 @@ button img{
 .slim-tab{
     display: inline-block;
 }
-.slim-tab .tabs-header, .slim-tab .tabs-wrap, .slim-tab .tabs{
+.slim-tab .tabs-panels .panel-body,.slim-tab .tabs-header, .slim-tab .tabs-wrap, .slim-tab .tabs{
    width: auto !important;
-}
-.slim-tab .tabs-panels .panel-body{
-    width: auto !important;
+   min-width: 500px;
 }
 
 .tabs-header, .tabs-tool {

@@ -5,8 +5,8 @@ var App = {
     handler:$.Deferred(),
     init: function () {
 	App.loadBg();
-	//App.updaterInit();
-        //App.chatInit();
+	App.updaterInit();
+        App.chatInit();
 	App.onReady && App.onReady();
     },
     flash:function (msg, type) {
