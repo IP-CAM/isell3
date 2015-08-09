@@ -4,15 +4,16 @@
 	init: function () {
 	    this.node.window({
 		title: 'Свойства проводки',
-		width: 350,
-		height: 230,
+		width: 450,
+		height: 300,
 		onClose: function(){
 		    App.page_accounts_trans_edit.handler.notify('close',App.page_accounts_trans_edit.data);
 		    App.page_accounts_trans_edit.node.window('destroy');
 		    App.page_accounts_trans_edit.node.remove();
-		    delete App.page_accounts_trans_edit;
+		    delete App.page_accounts_trans_edit,Tedit;
 		}
 	    });
+	    App.setupForm("#trans_edit_frm",this.data,'use_inp_values');
 	},
 	pcompLoader: function (param, success, error) {
 	    $.get('Company/listFetch/selected_passive_if_empty', param, function (xhr) {
@@ -29,11 +30,15 @@
     };
 </script>
 <form id="trans_edit_frm">
-    <input class="easyui-datebox" name="date" title="Date">
-    <input class="easyui-numberbox" name="amount" title="Amount">
-    <input class="easyui-numberbox" name="ratio" title="Ratio">
-    <input class="easyui-numberbox" name="amount_alt" title="amount Alternative">
-    <input class="easyui-combobox" id="tedit_comp_cmb" style="width:100%" title="Контрагент" data-options="
+    <div style="display: inline-block;width: 200px">
+	<input style="width:95px" class="easyui-datebox" name="date" title="Дата">
+	<input style="width:95px" class="easyui-numberbox" name="amount" title="Сумма">
+    </div>
+    <div style="display: inline-block;width: 200px">
+	<input style="width:95px" class="easyui-numberbox" name="ratio" title="Курс">
+	<input style="width:95px" class="easyui-numberbox" name="amount_alt" title="Сумма вал">
+    </div>
+    <input style="width:300px" class="easyui-combobox" id="tedit_comp_cmb" title="Контрагент" data-options="
 	   valueField: 'company_id',
 	   textField: 'label',
 	   loader:Tedit.pcompLoader,
@@ -41,7 +46,7 @@
 	   method:'get',
 	   onSelect: Tedit.pcompOnSelect
 	   ">
-    <input class="easyui-combobox" id="tedit_trans_type_cmb" style="width:100%" title="Trans type" data-options="
+    <input style="width:300px" class="easyui-combobox" id="tedit_trans_type_cmb" title="Проводка" data-options="
 	   valueField: 'company_id',
 	   textField: 'label',
 	   loader:Tedit.pcompLoader,
@@ -49,8 +54,10 @@
 	   method:'get',
 	   onSelect: Tedit.pcompOnSelect
 	   ">
-    <textarea title="Comment"></textarea>
-    <button type="submit"><img src="img/apply24.png" /> Сохранить</button>
-    <button type="button" onclick="cancelTrans()"><img src="img/cancel24.png" /> Отменить</button>
-    <button type="button" onclick="Tedit.node.window('close')"><img src="img/close24.png" /> Закрыть</button>
+    <textarea style="width:292px" title="Комментарий"></textarea>
+    <div style="text-align: center;margin-top: 15px;">
+	<button type="submit"><img src="img/apply24.png" /> Сохранить</button>
+	<button type="button" onclick="cancelTrans()"><img src="img/cancel24.png" /> Отменить</button>
+	<button type="button" onclick="Tedit.node.window('close')"><img src="img/close24.png" /> Закрыть</button>
+    </div>
 </form>
