@@ -17,11 +17,12 @@
 	    /* global App*/
 	    App.loadDojo=function(){
 		if( !this.dojoloaded ){
-		    $('#dojoloader').load('page/dojoloader.html');
+		    $('#dojoloader').load('page/dojoloader.html',function(){
+			App.handler.notify('dojoloaded');
+		    });
 		    this.dojoloaded=true;
 		}
 	    };
-	    
 	    App.user = {
 		props: {},
 		signedIn:false,
@@ -34,9 +35,11 @@
 		    App.user.props=userProps;
 		    if( userProps && userProps.user_level>0 ){
 			$('#div_user_panel').show();
-			App.renderTpl('div_user_panel', App.user.props || '');
+			App.renderTpl('div_user_panel', App.user.props || '');	
+			App.renderTpl('div_module_list', App.user.props || '');
 			this.signedIn=true;
 			this.loginFormHide();
+			App.module.init();
 		    } else {
 			this.signedIn=false;
 			this.loginFormShow();
@@ -46,7 +49,13 @@
 		    var user_login=$("#user_login").val();
 		    var user_pass=$("#user_pass").val();
 		    $.post("User/SignIn",{login:user_login,pass:user_pass},function(resp){
-			App.user.setProps( App.json(resp) );
+			var props=App.json(resp);
+			if( props ){
+			    $("#SeqDialogMsg").html("");
+			    App.user.setProps( props );
+			} else {
+			    $("#SeqDialogMsg").html("Логин или пароль не верны!").css('color','red').css('font-size','14px');
+			}
 		    });
 		},
 		signOut: function () {
@@ -62,6 +71,79 @@
 	    };
 	    App.onReady = function () {
 		App.user.getData();
+	    };
+	    App.module={
+		legacy:["Companies","Accounts","Stock","Lists","Data","Pref","Home"],
+		init:function(){
+		    $(window).bind( 'hashchange', function(e) {
+			App.module.load(location.hash.substring(1));
+		    });
+		    if( !location.hash ){
+			location.hash="#"+App.user.props.module_list[0].name;
+		    }
+		    App.module.load(location.hash.substring(1));
+		},
+		load:function(name){
+		    if( this.current === name ){
+			return false;
+		    }
+		    $("#holder"+this.current).hide();
+		    this.current=name;
+		    var holder=$("#holder"+this.current);
+		    if( !holder.length ){
+			$("#ModuleContainer").append('<div id="holder' + this.current + '"></div>');
+			holder=$("#holder"+this.current);
+		    }
+		    holder.show();
+		    this.loadHTML(holder);
+		    this.findTitle();
+		    this.selectButton();
+		},
+		loadHTML:function(holder){
+		    var url="Proc"+this.current;
+		    if( !holder.html() ){
+			if( $.inArray(this.current,this.legacy)>-1 ){
+			    App.loadDojo();
+			    App.handler.progress(function(event){
+				if( event==='dojoloaded' ){
+				    holder.load(url,function(){
+					App.module.initHTML();
+				    });
+				}
+			    });
+			} else {
+			    holder.load(url,function(){
+				App.module.initHTML();
+			    });
+			}	    
+		    }	
+		},
+		initHTML:function(){
+		    setTimeout(function(){
+			App.module.parseHTML();
+			$("#holder"+this.current).find("script").each(function() { eval(this.text);} );
+		    },0);
+		},
+		parseHTML:function(){
+		    if( App.dojoloaded ){
+			dojo.require('dojo.parser');
+			dojo.parser.parse("holder"+App.module.current);
+		    }
+		    $.parser.parse("#holder"+App.module.current);//for easy ui   
+		    window[App.module.current + 'Js'] && window[App.module.current + 'Js'].init && window[App.module.current + 'Js'].init(); 		    
+		},
+		findTitle:function(){
+		    App.user.props.module_list.forEach(function(item){
+			if( item.name===App.module.current ){
+			    App.setTitle(item.label);
+			    return false;
+			}
+		    });
+		},
+		selectButton:function(){
+		    $(".ModuleButtonSelected").removeClass("ModuleButtonSelected");
+		    $("#"+this.current+"Button").addClass("ModuleButtonSelected");
+		}
 	    };
 	</script>
     </head>
@@ -97,18 +179,16 @@
 		{{/if}}
 	    </span>
 	</div>
-	<div id="module_menu" class="hidden transparent" style="text-align: center;width:60px;vertical-align: top;float: left;">
-	    <!--
-	    {% for item in menuitems %}
-	    <div class="ModuleButton" id="{{item.name}}Button" title="{{item.label}}"><a href="#mod={{item.name}}"><img src="img/Mods/{{item.icon}}" width="45" height="45" /></a></div>
-	    {% endfor %}
-	    -->
+	<div id="div_module_list" class="covert transparent" style="text-align: center;width:60px;vertical-align: top;float: left;">
+	    {{module_list}}
+		<div class="ModuleButton" id="{{name}}Button" title="{{label}}"><a href="#{{name}}"><img src="img/Mods/{{icon}}" width="45" height="45" /></a></div>
+	    {{/module_list}}
 	    <img src="img/personalize-icon.png" style="width:48px;height:48px;cursor: pointer;" onclick="App.setBg()" title="Установить обои" />
 	</div>
-	<div id="ModuleContainer" style="margin: 3px;vertical-align: top;"></div>
+	<div id="ModuleContainer" style="margin: 3px;vertical-align: top;width:calc(100% - 60px)"></div>
 	<div id="appWindowContainer"></div>
-	<!--<div id="appStatus"></div>-->
 	<div id="dojoloader"></div>
+	<div id="appStatus"></div>
 	<div id="loginScreen" class="rounded">
 	    <div style="color:#fff" id="SeqDialogMsg"></div>
 	    <div class="rounded" style="margin-left:auto;margin-right:auto;background: #def;">

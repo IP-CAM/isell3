@@ -5,8 +5,8 @@ var App = {
     handler:$.Deferred(),
     init: function () {
 	App.loadBg();
-	App.updaterInit();
-        App.chatInit();
+	//App.updaterInit();
+        //App.chatInit();
 	App.onReady && App.onReady();
     },
     flash:function (msg, type) {
@@ -30,6 +30,11 @@ var App = {
 	    }, 300);
 	    App.msg = (App.msg || '') + msg + '<br>';
 	}
+    },
+    setTitle:function( title ){
+        this.title = title;
+        $("#module_title").html('<span style="color:#b09"><b>' + App.user.props.active_company_name + '</b></span> - ' + this.title);
+        document.title = this.title + ' / ' +  App.user.props.active_company_name;
     },
     initTabs: function (tab_id) {
 	$('#' + tab_id).tabs({
@@ -300,8 +305,9 @@ $(document).ajaxComplete(function (event, xhr, settings) {
 		App.flash(msg);
 	    }
 	}
-	else if (!type || type.indexOf('OK') === -1) {
-	    App.flash("<h3>url: " + settings.url + "</h3>" + xhr.responseText, 'error');
+	else if (!type || type.indexOf('error') > -1) {
+	    //alert( xhr.responseText );
+	    App.flash("<h3>url: " + settings.url + "</h3><big>" + xhr.responseText+"</big>", 'error');
 	}
     }
 });

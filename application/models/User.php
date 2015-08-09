@@ -8,12 +8,13 @@ class User extends Catalog {
 	$pass=$this->input->post('pass');
 	$this->check($login,'^[a-zA-Z_0-9]*$');
 	$this->check($pass,'^[a-zA-Z_0-9]*$');
-	if( !$login || !$pass ){
-	    $this->Base->kick_out();
-	}
+	//if( !$login || !$pass ){
+	    //allow empty pass
+	    //$this->Base->kick_out();
+	//}
 	$pass_hash = md5($pass);
 	$user_data = $this->get_row("SELECT * FROM " . BAY_DB_MAIN . ".user_list WHERE user_login='$login' AND user_pass='$pass_hash'");
-	if ($user_data->user_id) {
+	if ($user_data && $user_data->user_id) {
 	    $this->Base->svar('user_id', $user_data->user_id);
 	    $this->Base->svar('user_level', $user_data->user_level);
 	    $this->Base->svar('user_level_name', $this->Base->level_names[$user_data->user_level]);
@@ -44,13 +45,20 @@ class User extends Catalog {
 	];
     }
     private function getModuleList(){
-	$mods=json_decode(file_get_contents('config/modules.json',true));
+	$mods=json_decode(file_get_contents('application/config/modules.json',true));
+	//not very reliable way to check, modules can be loaded anyway by hand
 	$alowed=array();
 	foreach( $mods as $mod ){
-	    if( $this->svar('user_level')>=$mod->level && strpos(BAY_ACTIVE_MODULES, "/{$mod->name}/")!==false ){
+	    if( $this->Base->svar('user_level')>=$mod->level && strpos(BAY_ACTIVE_MODULES, "/{$mod->name}/")!==false ){
 		$alowed[]=$mod;
 	    }
 	}
 	return $alowed;
+    }
+    private function initLoggedUser($user_data){
+	$Company=$this->Base->load_model("Company");
+	$Company->selectActiveCompany($user_data->company_id);
+        $this->Base->svar('user_assigned_stat',$user_data->user_assigned_stat);
+        $this->Base->svar('user_assigned_path',$user_data->user_assigned_path);
     }
 }

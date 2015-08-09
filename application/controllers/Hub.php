@@ -64,8 +64,7 @@ class HubBase extends CI_Controller{
     
     public function acomp($name){
 	$acomp=$this->svar('acomp');
-
-	return isset($acomp[$name])?$acomp[$name]:NULL;
+	return isset($acomp->$name)?$acomp->$name:NULL;
     }
     
     public function pcomp($name){

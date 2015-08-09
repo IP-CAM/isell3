@@ -28,7 +28,7 @@ class iSellBase extends ProcessorBase{
         $this->_acomp=$_SESSION['acomp']= $acomp_data;
     }
     public function selectPassiveCompany( $passive_company_id ){
-        if( $this->_acomp['company_id'] === $passive_company_id )
+        if( $this->acomp('company_id') === $passive_company_id )
             return;
         if( !$this->checkAssignedPassiveCompany( $passive_company_id ) )
             return;

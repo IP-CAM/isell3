@@ -1,5 +1,5 @@
 <script type="text/javascript">
-require(["dojo/ready", "dojo/dom", "dojo/on", "dijit/registry", "dijit/Tooltip", "baycik/grid/DataGrid"],
+require(["dojo/ready", "dojo/dom", "dojo/on", "dijit/registry", "dijit/Tooltip", "baycik/grid/DataGrid","dojo/domReady!"],
 function (ready, dom, on, registry, Tooltip, DataGrid) {
     HomeJs = {};
     HomeJs.init = function () {
@@ -98,7 +98,9 @@ function (ready, dom, on, registry, Tooltip, DataGrid) {
 	    }
 	});
     };
-    ready(HomeJs.init);
+    ready(function(){
+	setTimeout(HomeJs.init,10);
+    });
 });
 </script>
 <style type="text/css">
@@ -163,15 +165,15 @@ function (ready, dom, on, registry, Tooltip, DataGrid) {
 	    <table>
 		<tr>
 		    <td>Начало периода</td>
-		    <td>{{sdate}}</td>
+		    <td>{{sdate|default:''}}</td>
 		</tr>
 		<tr>
 		    <td>Конец периода</td>
-		    <td>{{fdate}}</td>
+		    <td>{{fdate|default:''}}</td>
 		</tr>
 		<tr>
 		    <td>Поступило оплат</td>
-		    <td>{{scredit}}</td>
+		    <td>{{scredit|default:''}}</td>
 		</tr>
 	    </table>
 	</div>

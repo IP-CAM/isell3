@@ -52,6 +52,8 @@ class Company extends Catalog{
 		companies_list cl
 	    LEFT JOIN
 		companies_tree USING(branch_id)
+	    LEFT JOIN 
+		curr_list USING(curr_code)
 	    WHERE
 		(path LIKE '$assigned_path%' OR path IS NULL)
 		    AND
@@ -85,6 +87,11 @@ class Company extends Catalog{
     public function selectPassiveCompany( $company_id ){
 	$company=$this->companyGet( $company_id );
 	$this->Base->svar('pcomp',$company);
+	return $company;
+    }
+    public function selectActiveCompany( $company_id ){
+	$company=$this->companyGet( $company_id );
+	$this->Base->svar('acomp',$company);
 	return $company;
     }
     
