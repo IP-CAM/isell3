@@ -13,10 +13,12 @@ class Company extends Catalog{
 	$level=$this->Base->svar('user_level');
 	return $this->treeFetch($table, $parent_id, 'top', $assigned_path, $level);
     }
+    
     public function listFetch( $mode='' ){
 	$q = $this->input->get('q') or $q = 0;
 	$assigned_path=$this->Base->svar('user_assigned_path');
 	$level=$this->Base->svar('user_level');
+	$companies=[['company_id'=>0,'label'=>'-']];
 	if( $q ){
 	    $sql="SELECT 
 		    company_id,
@@ -35,12 +37,15 @@ class Company extends Catalog{
 			AND
 		    level<=$level
 		    ";
-	    return $this->get_list( $sql );
+	    $companies+=$this->get_list( $sql );
 	}
 	else if( $mode=='selected_passive_if_empty' ){
-	    return array($this->Base->svar('pcomp'));    
+	    array_push($companies,$this->Base->svar('pcomp'));
 	}
-	return array();
+	if( $mode=='with_active' ){
+	    array_push($companies,['company_id'=>$this->Base->acomp('company_id'),'label'=>$this->Base->acomp('company_name')]);
+	}
+	return $companies;
     }
 
     public function companyGet( $company_id=0 ){

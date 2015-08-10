@@ -7,7 +7,24 @@
  */
 include 'Catalog.php';
 class AccountsCore extends Catalog{
-    public $min_level=3;
+    public $min_level=1;
+    public function transNameListFetch($selected_acc){
+	$this->check($selected_acc);
+	$user_level = $this->Base->svar('user_level');
+	$sql="SELECT
+		CONCAT(acc_debit_code,'-',acc_credit_code) trans_type,
+		trans_name,
+		user_level
+	    FROM 
+		acc_trans_names 
+	    WHERE 
+		user_level<='$user_level' AND (acc_debit_code='$selected_acc' OR acc_credit_code='$selected_acc')
+	    ORDER BY trans_name";
+	return $this->get_list($sql);
+    }
+    
+    
+    
     private function getAccountProperties( $acc_code ) {
         $sql="SELECT
             * 
@@ -149,6 +166,7 @@ class AccountsCore extends Catalog{
 	return $balance?$balance:array();
     }
     public function accountBalanceTreeCreate( $parent_id, $label ){
+	$this->Base->set_level(3);
 	$this->treeUpdate('acc_tree',$parent_id,'is_leaf',0);
 	$new_code=  $this->accountCodeAssign( $parent_id );
 	$branch_id= $this->treeCreate('acc_tree','leaf',$parent_id,$label);
@@ -165,4 +183,6 @@ class AccountsCore extends Catalog{
 	}
 	return $acc_code;
     }
+    
+    
 }

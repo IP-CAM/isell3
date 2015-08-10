@@ -15,17 +15,25 @@
 	    });
 	    App.setupForm("#trans_edit_frm",this.data,'use_inp_values');
 	},
+	initAfter:function(){
+	    $('#page_accounts_trans_edit .validatebox-text').on('focus', function() {
+		this.select();
+	    });	    
+	},
 	pcompLoader: function (param, success, error) {
-	    $.get('Company/listFetch/selected_passive_if_empty', param, function (xhr) {
+	    $.get('Company/listFetch/with_active', param, function (xhr) {
 		var resp = App.json(xhr);
 		success(resp[0] ? resp : []);
-		if (!param.q && resp[0]) {//selected_passive_if_empty
-		    $('#tedit_comp_cmb').combobox('select', resp[0].company_id);
-		}
 	    });
 	},
 	pcompOnSelect: function () {
 
+	},
+	transnameLoader: function (param, success, error) {
+	    $.get('AccountsCore/transNameListFetch/311', param, function (xhr) {
+		var resp = App.json(xhr);
+		success(resp[0] ? resp : []);
+	    });
 	}
     };
 </script>
@@ -38,7 +46,7 @@
 	<input style="width:95px" class="easyui-numberbox" name="ratio" title="Курс">
 	<input style="width:95px" class="easyui-numberbox" name="amount_alt" title="Сумма вал">
     </div>
-    <input style="width:300px" class="easyui-combobox" id="tedit_comp_cmb" title="Контрагент" data-options="
+    <input style="width:300px" class="easyui-combobox" id="tedit_comp_cmb" title="Контрагент" onclick="alert(66)" data-options="
 	   valueField: 'company_id',
 	   textField: 'label',
 	   loader:Tedit.pcompLoader,
@@ -47,12 +55,11 @@
 	   onSelect: Tedit.pcompOnSelect
 	   ">
     <input style="width:300px" class="easyui-combobox" id="tedit_trans_type_cmb" title="Проводка" data-options="
-	   valueField: 'company_id',
-	   textField: 'label',
-	   loader:Tedit.pcompLoader,
-	   mode: 'remote',
-	   method:'get',
-	   onSelect: Tedit.pcompOnSelect
+	   valueField: 'trans_type',
+	   textField: 'trans_name',
+	   url:'AccountsCore/transNameListFetch',
+	   loader:Tedit.transnameLoader,
+	   method:'get'
 	   ">
     <textarea style="width:292px" title="Комментарий"></textarea>
     <div style="text-align: center;margin-top: 15px;">
