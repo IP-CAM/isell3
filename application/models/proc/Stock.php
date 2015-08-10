@@ -46,10 +46,10 @@ class Stock extends Data {
             $sql = "UPDATE
                     stock_entries
                 SET
-                    product_wrn_quantity={$this->stockEntry->product_wrn_quantity},
-                    vat_quantity={$this->stockEntry->vat_quantity},
-                    self_price={$this->stockEntry->self_price},
-                    parent_id={$this->stockEntry->parent_id},
+                    product_wrn_quantity='{$this->stockEntry->product_wrn_quantity}',
+                    vat_quantity='{$this->stockEntry->vat_quantity}',
+                    self_price='{$this->stockEntry->self_price}',
+                    parent_id='{$this->stockEntry->parent_id}',
                     party_label='{$this->stockEntry->party_label}'
                 WHERE
                     product_code='{$this->productCode}'";
@@ -63,6 +63,7 @@ class Stock extends Data {
     }
 
     private function stockEntryQtyAlter($action = 'increase', $product_code, $amount, $description = NULL, $self_price = NULL) {
+        $product_code=  addslashes($product_code);//bugfix if special characters are used like \ 
         $this->stockEntryLoad($product_code);
         switch ($action) {
             case 'increase':
