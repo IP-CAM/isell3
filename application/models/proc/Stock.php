@@ -7,7 +7,7 @@ class Stock extends Data {
     private $stockEntry, $productCode;
 
     private function stockEntryLoad($product_code) {
-        $this->productCode = $product_code;
+        $this->productCode = addslashes($product_code);//bugfix if special characters are used like \ 
         $sql = "SELECT 
                 product_wrn_quantity,
 		(SELECT product_quantity FROM " . BAY_DB_MAIN . ".stock_entries WHERE product_code='{$this->productCode}') product_quantity,
@@ -63,7 +63,6 @@ class Stock extends Data {
     }
 
     private function stockEntryQtyAlter($action = 'increase', $product_code, $amount, $description = NULL, $self_price = NULL) {
-        $product_code=  addslashes($product_code);//bugfix if special characters are used like \ 
         $this->stockEntryLoad($product_code);
         switch ($action) {
             case 'increase':
