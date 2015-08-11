@@ -72,7 +72,7 @@
 		App.user.getData();
 	    };
 	    App.module={
-		legacy:["Companies","Stock","Lists","Data","Pref","Home"],//,"Accounts"
+		legacy:["Companies","Accounts","Stock","Lists","Data","Pref","Home"],//
 		init:function(){
 		    $(window).bind( 'hashchange', function(e) {
 			App.module.load(location.hash.substring(1));

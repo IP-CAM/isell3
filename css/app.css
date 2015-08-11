@@ -133,8 +133,7 @@ button img{
     width: 250px;
     height: 90px;
     background-color: rgba(255,255,255,0.70);
-    border-left: 1px solid #999;
-    border-bottom: 1px solid #999;
+    border: 1px solid #999;
     text-align: center;
     display: none;
 }
@@ -180,11 +179,11 @@ button img{
 
 .transparent{
     opacity:0.5;
-    transition-duration: 2s;
+    transition-duration: 3s;
 }
 .transparent:hover{
     opacity: 1;
-    transition-duration: 1s;
+    transition-duration: 0.7s;
 }
 .transp60{
     background-color: rgba(255,255,255,.6);
@@ -321,15 +320,7 @@ img{
     margin-top:-50px;
 }
 #ApplicationBar {
-    -background-image: url(img/topbar.png);
     background-color: #fff;
-    background-repeat: repeat-x;
-    background-position:top;
-    border-top: solid 1px #ddd;
-    border-right-style: none;
-    border-bottom-style: none;
-    border-left-style: none;
-    padding: 0px;
     vertical-align: middle;
 }
 .ModuleButton{
