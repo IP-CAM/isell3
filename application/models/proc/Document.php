@@ -1126,6 +1126,7 @@ class Document extends Data {
     }
 
     public function getRawProductPrice($product_code, $curr_correction) {
+        $product_code=  addslashes($product_code);//bugfix if special characters are used like \ 
 	$def_curr_code = $this->Base->acomp('curr_code');
 	return $this->Base->get_row("SELECT 
             sell/{$this->vat_rate}*IF(curr_code<>'$def_curr_code',$curr_correction,1) sell,
@@ -1146,7 +1147,4 @@ class Document extends Data {
                 WHERE
                     doc_id = '$doc_id';");
     }
-
 }
-
-?>

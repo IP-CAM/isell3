@@ -7,7 +7,7 @@ class Stock extends Data {
     private $stockEntry, $productCode;
 
     private function stockEntryLoad($product_code) {
-        $this->productCode = $product_code;
+        $this->productCode = addslashes($product_code);//bugfix if special characters are used like \ 
         $sql = "SELECT 
                 product_wrn_quantity,
 		(SELECT product_quantity FROM " . BAY_DB_MAIN . ".stock_entries WHERE product_code='{$this->productCode}') product_quantity,
@@ -46,10 +46,10 @@ class Stock extends Data {
             $sql = "UPDATE
                     stock_entries
                 SET
-                    product_wrn_quantity={$this->stockEntry->product_wrn_quantity},
-                    vat_quantity={$this->stockEntry->vat_quantity},
-                    self_price={$this->stockEntry->self_price},
-                    parent_id={$this->stockEntry->parent_id},
+                    product_wrn_quantity='{$this->stockEntry->product_wrn_quantity}',
+                    vat_quantity='{$this->stockEntry->vat_quantity}',
+                    self_price='{$this->stockEntry->self_price}',
+                    parent_id='{$this->stockEntry->parent_id}',
                     party_label='{$this->stockEntry->party_label}'
                 WHERE
                     product_code='{$this->productCode}'";
