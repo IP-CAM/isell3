@@ -364,7 +364,7 @@ class Accounts extends Data {
         if ($out_type == 'print') {
             $file_name = '.print';
             $this->Base->FileEngine->show_controls = true;
-            $this->Base->FileEngine->user_data = array(title => "Виписка з рахунку", msg => 'Доброго дня', email => $view[p][company_email], doc_view_id => $doc_view_id);
+            $this->Base->FileEngine->user_data = array(title => "Виписка з рахунку", msg => 'Доброго дня', email => $view[p]->company_email, doc_view_id => $doc_view_id);
         }
         return $this->Base->FileEngine->fetch($file_name);
     }
