@@ -169,7 +169,7 @@ class Catalog extends CI_Model {
     // EASYUI DATAGRID FUNCTIONS
     ////////////////////////////////////////////////////    
     protected function decodeFilterRules(){
-	$raw=$this->input->get('filterRules');
+	$raw=$this->input->get_post('filterRules');
 	$filter=json_decode($raw);
 	if( !is_array($filter) || count($filter)===0 ){
 	    return 1;

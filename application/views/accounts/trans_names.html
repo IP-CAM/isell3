@@ -1,0 +1,73 @@
+<script type="text/javascript">
+    /* global App */
+    Tnames = App.page_accounts_trans_names = {
+	init: function () {
+	    this.node.window({
+		title: 'Редактирование типа проводки',
+		width: 350,
+		height: 'auto',
+		onClose: function(){
+		    Tnames.handler.notify('close',App.page_accounts_trans_names.data);
+		    Tnames.node.window('destroy');
+		    Tnames.node.remove();
+		    delete App.page_accounts_trans_names,Tnames;
+		}
+	    });
+	    App.setupForm('#Tnames_frm',this.data);
+	},
+	initAfter:function(){
+	    $('#Tedit_acc_debit_code').combobox('textbox').change(function(){
+		alert(textbox.val());
+	    });
+	    
+	},
+	formChanged:function(field,value,title){
+	    $.post(App.uri("AccountsData","transNameUpdate",this.data.trans_type,field,value),function(ok){
+		if(ok*1){
+		    App.flash("Сохранено: "+title);
+		    if( field==='acc_debit_code' ){
+			var parts=Tnames.data.trans_type.split('_');
+			Tnames.data.trans_type=value+'_'+parts[1];
+		    }
+		    if( field==='acc_credit_code' ){
+			var parts=Tnames.data.trans_type.split('_');
+			Tnames.data.trans_type=parts[0]+'_'+value;
+		    }
+		} else {
+		    App.flash("Несохранено: "+title);
+		}
+	    });
+	}
+    };
+</script>
+<div style="display: table-cell;vertical-align: top;">
+    <form id="Tnames_frm">
+	<input class="easyui-combotree" id="Tedit_acc_debit_code" name="acc_debit_code" title="Дебет"  data-options="
+	       method:'get',
+	       url:'AccountsData/accountTreeFetch',
+	       textField:'acc_code',
+	       valueField:'acc_code',
+	       editable:true,
+	       onChange:function(newVal){Tnames.formChanged('acc_debit_code',newVal,'Дебет');}"/>
+	<input class="easyui-combotree" name="acc_credit_code" title="Кредит"  data-options="
+	       method:'get',
+	       url:'AccountsData/accountTreeFetch',
+	       textField:'acc_code',
+	       valueField:'acc_code',
+	       editable:true,
+	       onChange:function(newVal){Tnames.formChanged('acc_credit_code',newVal,'Кредит');}"/>
+	<select class="easyui-combobox" name="user_level" title="Доступ" data-options="
+		panelHeight:'auto',
+		editable:false,
+		onChange:function(newVal){Tnames.formChanged('user_level',newVal,'Доступ');}">
+	    <option value="2">Менеджер</option>
+	    <option value="3">Бухгалтер</option>
+	    <option value="4">Администратор</option>
+	</select>
+	<textarea name="trans_name" title="Название" onchange="Tnames.formChanged('trans_name',this.value,'Название')"></textarea>
+    </form>
+    <div style="text-align: center;margin: 5px;">
+	<button onclick="Tnames.node.window('close')"><img src="img/Save-24.png"> Сохранить</button>
+	<button onclick=""><img src="img/edit_add.png"> Создать новую</button>
+    </div>
+</div>

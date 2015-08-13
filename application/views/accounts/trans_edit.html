@@ -18,7 +18,28 @@
 	initAfter:function(){
 	    $('#page_accounts_trans_edit .validatebox-text').on('focus', function() {
 		this.select();
-	    });	    
+	    });
+	    $('#tedit_trans_type_cmb').combobox({
+		icons: [{
+		    iconCls:'icon-settings16',
+		    handler: function(e){
+			Tedit.editTransName();
+		    }
+		}]
+	    });
+	},
+	editTransName:function(){
+	    var rows=$('#tedit_trans_type_cmb').combobox('getData');
+	    var trans_type=$('#tedit_trans_type_cmb').combobox('getValue');
+	    for(var i in rows){
+		if( rows[i].trans_type === trans_type ){
+		    App.loadWindow('page/accounts/trans_names',rows[i]).progress(function(status){
+			if( status==='close' ){
+			    $('#tedit_trans_type_cmb').combobox('reload');
+			}
+		    });
+		}
+	    }
 	},
 	pcompLoader: function (param, success, error) {
 	    $.get('Company/listFetch/with_active', param, function (xhr) {
@@ -30,9 +51,13 @@
 
 	},
 	transnameLoader: function (param, success, error) {
-	    $.get('AccountsCore/transNameListFetch/311', param, function (xhr) {
+	    $.get('AccountsData/transNameListFetch/311', param, function (xhr) {
 		var resp = App.json(xhr);
 		success(resp[0] ? resp : []);
+		if( !Tedit.data.trans_type && resp[0] ){
+		    $('#tedit_trans_type_cmb').combobox('select',resp[0].trans_type);
+		}
+		Tedit.editTransName();
 	    });
 	}
     };

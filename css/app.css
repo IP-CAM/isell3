@@ -245,6 +245,9 @@ button img{
 .icon-utils{
     background:url('../img/utils.png') no-repeat center center;
 }
+.icon-settings16{
+    background:url('../img/settings.png') no-repeat center center;
+}
 .icon-sell{
     background:url('../img/sell.png') no-repeat center center;
 }

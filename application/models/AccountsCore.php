@@ -8,20 +8,6 @@
 include 'Catalog.php';
 class AccountsCore extends Catalog{
     public $min_level=1;
-    public function transNameListFetch($selected_acc){
-	$this->check($selected_acc);
-	$user_level = $this->Base->svar('user_level');
-	$sql="SELECT
-		CONCAT(acc_debit_code,'-',acc_credit_code) trans_type,
-		trans_name,
-		user_level
-	    FROM 
-		acc_trans_names 
-	    WHERE 
-		user_level<='$user_level' AND (acc_debit_code='$selected_acc' OR acc_credit_code='$selected_acc')
-	    ORDER BY trans_name";
-	return $this->get_list($sql);
-    }
     
     
     

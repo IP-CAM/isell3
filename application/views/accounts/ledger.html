@@ -1,4 +1,3 @@
-<script type="text/javascript" src="js/jquery-easyui-1.4/datagridfilter/datagrid-filter.js"></script>
 <script type="text/javascript">
     /* global App*/
     Ledger = App.page_accounts_ledger = {
@@ -11,7 +10,8 @@
 	    //this.date.initRange();
 	    
 	    
-	    App.loadWindow('page/accounts/trans_edit');
+	    App.loadWindow('page/accounts/trans_edit',{});
+	    //App.loadWindow('page/accounts/trans_names');
 	},
 	date:{
 	    calendarChanged:function(newVal,which){
@@ -186,7 +186,7 @@
 	    <span class="icon-24 icon-print" title="Обновить" onclick="$('#account_ledger_dg').datagrid('reload')"> </span>
 	</div>
     </div>
-    <table id="account_ledger_dg" class="easyui-datagrid" style="width:800px;"
+    <table id="account_ledger_dg" class="easyui-datagrid" style="width:740px;"
 	   data-options="
 	   idField:'trans_id',
 	   loader:Ledger.list.loader,
@@ -203,8 +203,8 @@
 	    <tr>
 		<th data-options="width:25,field:'trans_status',align:'center',formatter:App.datagrid.tooltip"></th>
 		<th data-options="width:65,field:'trans_date'">Дата</th>
-		<th data-options="width:230,field:'company_name'">Компания</th>
-		<th data-options="width:250,field:'description'">Пояснение</th>
+		<th data-options="width:200,field:'company_name'">Компания</th>
+		<th data-options="width:220,field:'description'">Пояснение</th>
 		<th data-options="width:85,field:'debit',align:'right',formatter:Ledger.list.calculate">Дебит</th>
 		<th data-options="width:85,field:'credit',align:'right',formatter:Ledger.list.calculate">Кредит</th>
 		<th data-options="width:27,field:'trans_type'"></th>
