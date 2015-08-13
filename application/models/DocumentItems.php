@@ -94,6 +94,9 @@ class DocumentItems extends DocumentCore{
 		return $Document2->updateEntry($doc_entry_id, $value, NULL);
 	    case 'product_price':
 		return $Document2->updateEntry($doc_entry_id, NULL, $value);
+	    case 'party_label':
+                $this->query("UPDATE document_entries SET party_label='$value' WHERE doc_entry_id='$doc_entry_id'");
+		return true;
 	}
     }
     public function entryDelete( $ids ){

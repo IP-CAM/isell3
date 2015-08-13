@@ -70,6 +70,9 @@
         <input type="text" value="{{product_uktzet}}" title="УКТ ЗЕД" disabled="disabled">
     </div>
     <div>
+    <input class="easyui-textbox" name="party_label" title="Партия" data-options="
+	   onChange:function(val){DocEntEd.change('party_label',val)}
+	   ">
     <input class="easyui-numberspinner" name="product_quantity" title="Кол-во" data-options="
 	   precision:0,
 	   suffix:'шт',
