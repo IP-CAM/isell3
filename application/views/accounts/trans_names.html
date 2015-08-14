@@ -6,6 +6,7 @@
 		title: 'Редактирование типа проводки',
 		width: 350,
 		height: 'auto',
+		modal:true,
 		onClose: function(){
 		    Tnames.handler.notify('close',App.page_accounts_trans_names.data);
 		    Tnames.node.window('destroy');
@@ -16,15 +17,21 @@
 	    App.setupForm('#Tnames_frm',this.data);
 	},
 	initAfter:function(){
-	    $('#Tedit_acc_debit_code').combobox('textbox').change(function(){
-		alert(textbox.val());
+	    $("#Tnames_acc_debit_code").textbox('textbox').bind('keydown', function(e){
+		if (e.keyCode == 13){	// when press ENTER key, accept the inputed value.
+		    Tnames.node.window('close');
+		}
 	    });
-	    
+	    $("#Tnames_acc_credit_code").textbox('textbox').bind('keydown', function(e){
+		if (e.keyCode == 13){	// when press ENTER key, accept the inputed value.
+		    Tnames.node.window('close');
+		}
+	    });
 	},
 	formChanged:function(field,value,title){
 	    $.post(App.uri("AccountsData","transNameUpdate",this.data.trans_type,field,value),function(ok){
 		if(ok*1){
-		    App.flash("Сохранено: "+title);
+		    App.flash("Сохранено: "+title+" "+value);
 		    if( field==='acc_debit_code' ){
 			var parts=Tnames.data.trans_type.split('_');
 			Tnames.data.trans_type=value+'_'+parts[1];
@@ -37,25 +44,44 @@
 		    App.flash("Несохранено: "+title);
 		}
 	    });
+	},
+	showTree:function( field ){
+	    App.loadWindow('page/accounts/acc_tree',{}).progress(function(status,data){
+		if( status==='select' ){
+		    $("#Tnames_"+field).textbox('setValue',data.acc_code);
+		}
+	    });
+	},
+	reset:function(){
+	    this.data={
+		trans_type:'0_0',
+		acc_debit_code:'',
+		acc_credit_code:'',
+		user_level:3,
+		trans_name:''
+	    };
+	    App.setupForm('#Tnames_frm',this.data);
 	}
     };
 </script>
 <div style="display: table-cell;vertical-align: top;">
     <form id="Tnames_frm">
-	<input class="easyui-combotree" id="Tedit_acc_debit_code" name="acc_debit_code" title="Дебет"  data-options="
-	       method:'get',
-	       url:'AccountsData/accountTreeFetch',
-	       textField:'acc_code',
-	       valueField:'acc_code',
-	       editable:true,
-	       onChange:function(newVal){Tnames.formChanged('acc_debit_code',newVal,'Дебет');}"/>
-	<input class="easyui-combotree" name="acc_credit_code" title="Кредит"  data-options="
-	       method:'get',
-	       url:'AccountsData/accountTreeFetch',
-	       textField:'acc_code',
-	       valueField:'acc_code',
-	       editable:true,
-	       onChange:function(newVal){Tnames.formChanged('acc_credit_code',newVal,'Кредит');}"/>
+	<input class="easyui-textbox" id="Tnames_acc_debit_code" name="acc_debit_code" title="Дебет" data-options="
+	       icons: [{
+		    iconCls:'icon-settings16',
+		    handler: function(e){
+			Tnames.showTree('acc_debit_code');
+		    }
+		}],
+		onChange:function(newVal){Tnames.formChanged('acc_debit_code',newVal,'Дебет');}" />
+	<input class="easyui-textbox" id="Tnames_acc_credit_code" name="acc_credit_code" title="Кредит" data-options="
+	       icons: [{
+		    iconCls:'icon-settings16',
+		    handler: function(e){
+			Tnames.showTree('acc_credit_code');
+		    }
+		}],
+		onChange:function(newVal){Tnames.formChanged('acc_credit_code',newVal,'Кредит');}" />
 	<select class="easyui-combobox" name="user_level" title="Доступ" data-options="
 		panelHeight:'auto',
 		editable:false,
@@ -68,6 +94,6 @@
     </form>
     <div style="text-align: center;margin: 5px;">
 	<button onclick="Tnames.node.window('close')"><img src="img/Save-24.png"> Сохранить</button>
-	<button onclick=""><img src="img/edit_add.png"> Создать новую</button>
+	<button onclick="Tnames.reset()"><img src="img/edit_add.png"> Создать новую</button>
     </div>
 </div>
