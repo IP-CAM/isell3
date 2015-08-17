@@ -29,6 +29,13 @@
 	    });
 	},
 	formChanged:function(field,value,title){
+	    if( this.suppressUpdate ){
+		return;
+	    }
+	    if( this.data.trans_type==='0_0' ){
+		this.checkNewModified();
+		return;
+	    }
 	    $.post(App.uri("AccountsData","transNameUpdate",this.data.trans_type,field,value),function(ok){
 		if(ok*1){
 		    App.flash("Сохранено: "+title+" "+value);
@@ -45,6 +52,25 @@
 		}
 	    });
 	},
+	checkNewModified:function(){
+	    var debit_code=$("#Tnames_acc_debit_code").textbox("getValue");
+	    var credit_code=$("#Tnames_acc_credit_code").textbox("getValue");
+	    if( debit_code && credit_code ){
+		$.post("AccountsData/transNameCreate/"+debit_code+'/'+credit_code,function(ok){
+		    if( ok*1 ){
+			Tnames.data.trans_type=debit_code+'_'+credit_code;
+			$("#Tnames_user_level").combobox('enable',true);
+			$("#Tnames_trans_name").prop('disabled',false);
+			$("#Tnames_ok").prop('disabled',false);
+			$("#Tnames_delete").prop('disabled',false);
+			$("#Tnames_create").prop('disabled',false);
+			$.messager.alert('',"Тип проводки добавлен. \nВведите название",'info');
+		    } else {
+			alert("Добавление типа проводки не удалось!\nПроверьте правильность счетов дебит и кредита.")
+		    }
+		});
+	    }
+	},
 	showTree:function( field ){
 	    App.loadWindow('page/accounts/acc_tree',{}).progress(function(status,data){
 		if( status==='select' ){
@@ -52,7 +78,7 @@
 		}
 	    });
 	},
-	reset:function(){
+	create:function(){
 	    this.data={
 		trans_type:'0_0',
 		acc_debit_code:'',
@@ -60,7 +86,28 @@
 		user_level:3,
 		trans_name:''
 	    };
-	    App.setupForm('#Tnames_frm',this.data);
+	    this.suppressUpdate=true;
+	    $("#Tnames_frm").form('load',this.data);
+	    $("#Tnames_user_level").combobox('disable',true);
+	    $("#Tnames_trans_name").prop('disabled',true);
+	    $("#Tnames_ok").prop('disabled',true);
+	    $("#Tnames_delete").prop('disabled',true);
+	    $("#Tnames_create").prop('disabled',true);
+	    this.suppressUpdate=false;
+	    $("#Tnames_acc_debit_code").textbox('textbox').focus();
+	},
+	delete:function(){
+	    if( !confirm("Удалить этот тип проводки?") ){
+		return;
+	    }
+	    $.post("AccountsData/transNameDelete/"+this.data.trans_type,function(ok){
+		if(ok*1){
+		    $.messager.alert('',"Тип проводки удален!",'info');
+		    Tnames.node.window('close');
+		} else {
+		    $.messager.alert('',"Не удалось удалить тип проводки!",'error');
+		}
+	    });
 	}
     };
 </script>
@@ -73,6 +120,7 @@
 			Tnames.showTree('acc_debit_code');
 		    }
 		}],
+		required:true,
 		onChange:function(newVal){Tnames.formChanged('acc_debit_code',newVal,'Дебет');}" />
 	<input class="easyui-textbox" id="Tnames_acc_credit_code" name="acc_credit_code" title="Кредит" data-options="
 	       icons: [{
@@ -81,19 +129,22 @@
 			Tnames.showTree('acc_credit_code');
 		    }
 		}],
+		required:true,
 		onChange:function(newVal){Tnames.formChanged('acc_credit_code',newVal,'Кредит');}" />
-	<select class="easyui-combobox" name="user_level" title="Доступ" data-options="
+	<select class="easyui-combobox" id="Tnames_user_level" name="user_level" title="Доступ" data-options="
 		panelHeight:'auto',
 		editable:false,
+		required:true,
 		onChange:function(newVal){Tnames.formChanged('user_level',newVal,'Доступ');}">
 	    <option value="2">Менеджер</option>
 	    <option value="3">Бухгалтер</option>
 	    <option value="4">Администратор</option>
 	</select>
-	<textarea name="trans_name" title="Название" onchange="Tnames.formChanged('trans_name',this.value,'Название')"></textarea>
+	<textarea name="trans_name" id="Tnames_trans_name" required="required"  title="Название" onchange="Tnames.formChanged('trans_name',this.value,'Название')"></textarea>
     </form>
     <div style="text-align: center;margin: 5px;">
-	<button onclick="Tnames.node.window('close')"><img src="img/Save-24.png"> Сохранить</button>
-	<button onclick="Tnames.reset()"><img src="img/edit_add.png"> Создать новую</button>
+	<button onclick="Tnames.node.window('close')" id="Tnames_ok"><img src="img/apply24.png"> Ок</button> | 
+	<button onclick="Tnames.create()" id="Tnames_create"><img src="img/edit_add.png"> Создать</button>
+	<button onclick="Tnames.delete()" id="Tnames_delete"><img src="img/delete.png"> Удалить</button>
     </div>
 </div>

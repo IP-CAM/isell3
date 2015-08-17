@@ -19,13 +19,26 @@
 	    $('#page_accounts_trans_edit .validatebox-text').on('focus', function() {
 		this.select();
 	    });
-	    $('#tedit_trans_type_cmb').combobox({
-		icons: [{
-		    iconCls:'icon-settings16',
-		    handler: function(e){
-			Tedit.editTransName();
-		    }
-		}]
+	},
+	pcompLoader: function (param, success, error) {
+	    $.get('Company/listFetch/with_active', param, function (xhr) {
+		var resp = App.json(xhr);
+		success(resp[0] ? resp : []);
+	    });
+	},
+	pcompOnSelect: function () {
+
+	},
+	pcompTree:function(){
+	    
+	},
+	transnameLoader: function (param, success, error) {
+	    $.get('AccountsData/transNameListFetch/311', param, function (xhr) {
+		var resp = App.json(xhr);
+		success(resp[0] ? resp : []);
+		if( !Tedit.data.trans_type && resp[0] ){
+		    $('#tedit_trans_type_cmb').combobox('select',resp[0].trans_type);
+		}
 	    });
 	},
 	editTransName:function(){
@@ -40,24 +53,6 @@
 		    });
 		}
 	    }
-	},
-	pcompLoader: function (param, success, error) {
-	    $.get('Company/listFetch/with_active', param, function (xhr) {
-		var resp = App.json(xhr);
-		success(resp[0] ? resp : []);
-	    });
-	},
-	pcompOnSelect: function () {
-
-	},
-	transnameLoader: function (param, success, error) {
-	    $.get('AccountsData/transNameListFetch/311', param, function (xhr) {
-		var resp = App.json(xhr);
-		success(resp[0] ? resp : []);
-		if( !Tedit.data.trans_type && resp[0] ){
-		    $('#tedit_trans_type_cmb').combobox('select',resp[0].trans_type);
-		}
-	    });
 	}
     };
 </script>
@@ -76,14 +71,26 @@
 	   loader:Tedit.pcompLoader,
 	   mode: 'remote',
 	   method:'get',
-	   onSelect: Tedit.pcompOnSelect
+	   onSelect: Tedit.pcompOnSelect,
+	   icons: [{
+		    iconCls:'icon-settings16',
+		    handler: function(e){
+			Tedit.pcompTree();
+		    }
+		}]
 	   ">
     <input style="width:300px" class="easyui-combobox" id="tedit_trans_type_cmb" title="Проводка" data-options="
 	   valueField: 'trans_type',
 	   textField: 'trans_name',
 	   url:'AccountsCore/transNameListFetch',
 	   loader:Tedit.transnameLoader,
-	   method:'get'
+	   method:'get',
+	   icons: [{
+		    iconCls:'icon-settings16',
+		    handler: function(e){
+			Tedit.editTransName();
+		    }
+		}]
 	   ">
     <textarea style="width:292px" title="Комментарий"></textarea>
     <div style="text-align: center;margin-top: 15px;">
