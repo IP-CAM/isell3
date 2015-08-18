@@ -66,7 +66,7 @@
 	};
 	ListsJs.events.data_grid.onDblClick = function (e) {
 	    var fvalue = this.getSelected()[0];
-	    fvalue.event_user_id = App.userData.user_id;
+	    fvalue.event_user_id = App.user.props.user_id;
 	    App.loadWindow('page/dialog/event', fvalue).progress(function (status, fvalue) {
 		if (status === 'update' || status === 'create' || status === 'delete') {
 		    ListsJs.events.selectedLabel = fvalue.event_label || ListsJs.events.selectedLabel;
@@ -90,7 +90,7 @@
     };
     ListsJs.events.addEvent = function () {
 	var fvalue = {
-	    event_user_id: App.userData.user_id,
+	    event_user_id: App.user.props.user_id,
 	    event_label: ListsJs.events.selectedLabel,
 	    event_date: ListsJs.events.selectedDay
 	};

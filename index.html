@@ -180,7 +180,11 @@
 	</div>
 	<div id="div_module_list" class="covert transparent" style="text-align: center;width:60px;vertical-align: top;float: left;">
 	    {{module_list}}
-		<div class="ModuleButton" id="{{name}}Button" title="{{label}}"><a href="#{{name}}"><img src="img/Mods/{{icon}}" width="45" height="45" /></a></div>
+		<div class="ModuleButton" id="{{name}}Button" title="{{label}}">
+                    <a href="#{{name}}">
+                        <!--<img src="img/Mods/{{icon}}" width="45" height="45" />-->
+                    </a>
+                </div>
 	    {{/module_list}}
 	    <img src="img/personalize-icon.png" style="width:48px;height:48px;cursor: pointer;" onclick="App.setBg()" title="Установить обои" />
 	</div>
