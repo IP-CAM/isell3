@@ -92,7 +92,7 @@ var App = {
 	if (!$('#' + id).length) {
 	    $('#appWindowContainer').append('<div id="' + id + '" class="app_window"></div>');
 	}
-	return App.loadModule(path, data);
+	return App.loadModule(path, data || {});
     }
 };
 $(App.init);

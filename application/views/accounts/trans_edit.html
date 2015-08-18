@@ -30,7 +30,11 @@
 
 	},
 	pcompTree:function(){
-	    
+	    App.loadWindow('page/company/tree',{}).progress(function(status,comp){
+		if( status==='select' ){
+		    alert(comp.toSource());
+		}
+	    });
 	},
 	transnameLoader: function (param, success, error) {
 	    $.get('AccountsData/transNameListFetch/311', param, function (xhr) {
@@ -41,7 +45,7 @@
 		}
 	    });
 	},
-	editTransName:function(){
+	transnameEdit:function(){
 	    var rows=$('#tedit_trans_type_cmb').combobox('getData');
 	    var trans_type=$('#tedit_trans_type_cmb').combobox('getValue');
 	    for(var i in rows){
@@ -51,6 +55,7 @@
 			    $('#tedit_trans_type_cmb').combobox('reload');
 			}
 		    });
+		    break;
 		}
 	    }
 	}
@@ -88,7 +93,7 @@
 	   icons: [{
 		    iconCls:'icon-settings16',
 		    handler: function(e){
-			Tedit.editTransName();
+			Tedit.transnameEdit();
 		    }
 		}]
 	   ">

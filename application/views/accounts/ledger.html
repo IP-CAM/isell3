@@ -10,8 +10,13 @@
 	    //this.date.initRange();
 	    
 	    
-	    App.loadWindow('page/accounts/trans_edit',{});
-	    //App.loadWindow('page/accounts/trans_names');
+	    //App.loadWindow('page/accounts/trans_edit',{});
+	    App.loadWindow('page/company/tree').progress(function(status,data){
+		//alert(status+data.toSource());
+		if( status==='close' ){
+		    setTimeout(function(){App.page_accounts_ledger.initAfter(); },100);
+		}
+	    });
 	},
 	date:{
 	    calendarChanged:function(newVal,which){
