@@ -385,7 +385,10 @@ class Document extends Data {
 	    $this->Base->response_wrn("Артикул '$product_code' не существует!");
 	}
 	$doc_entry_id = mysql_insert_id();
-	$invoice_price = $this->getProductInvoicePrice($product_code);
+        /*
+         *bugfix getInvoicePrice accepts stripslashed product_code
+         */
+	$invoice_price = $this->getProductInvoicePrice( stripslashes($product_code) );
 	if (!$this->alterEntry('update', $doc_entry_id, $product_quantity, $invoice_price)) {//update not ok
 	    $this->Base->query("DELETE FROM document_entries WHERE doc_entry_id=$doc_entry_id");
 	    $this->Base->query("ROLLBACK");
