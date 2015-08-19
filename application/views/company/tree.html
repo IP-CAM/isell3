@@ -30,8 +30,53 @@
 	    var company=$('#Ctree_tree').tree('getSelected');
 	    Ctree.handler.notify('select', company);
 	},
-	edit:function(node){
+	create:function( branch_type ){
+	    var node=$('#Ctree_tree').tree('getSelected');
+	    var parent_id=node.is_leaf?node.parent_id:node.branch_id;
+	    if( branch_type === 'folder' ){
+		this.createFolder( branch_type, parent_id );
+	    } else {
+		var newlabel=prompt("Введите Короткое название новой компании",'Новая компания');
+	    }
+
+	},
+	createFolder:function( branch_type, parent_id ){
+	    var newlabel=prompt("Введите название новой группы",'Новая группа');
+	    $.post('Catalog/treeCreate/companies_tree/'+App.uri(branch_type,parent_id,newlabel),function(branch_id){
+		var parent=$('#Ctree_tree').tree('find', parent_id);
+		$('#Ctree_tree').tree('append', {
+		    parent: parent.target,
+		    data:[
+			{id: branch_id,text: newlabel}
+		    ]});
+	    });	    
+	},
+	update:function(){
+	    var node=$('#Ctree_tree').tree('getSelected');
+	    if( node.company_id ){
+		App.loadWindow('page/company/details',node).progress(function(status){
+		    Ctree.reload();
+		});
+	    } else {
+		var newlabel=prompt("Введите новое название группы: "+node.label,node.label);
+		if( newlabel ){
+		    $.post('Catalog/treeUpdate/companies_tree/'+App.uri(node.branch_id,'label',newlabel),function(ok){
+			if( ok*1 ){
+			    App.flash("Сохранено: название папки");
+			    $('#Ctree_tree').tree('update', {target: node.target,text: newlabel});
+			} else {
+			    App.flash("Сохраненние не удалось: название папки");
+			}
+		    });
+		}
+	    }
+	},
+	delete:function(node){
 	    alert(node.toSource());
+	},
+	reload:function(){
+	    $('#Ctree_tree').tree('reload');
+	    Ctree.node.find('.ok,.folder').prop('disabled',true);
 	}
     };
 </script>
@@ -57,24 +102,16 @@
 		Ctree.enableButtons(1);
 	    }
 	},
-	onDblClick:Ctree.select,
+	onDblClick:Ctree.update,
 	animate:true,
 	dnd:true">
     </ul>
 </div>
-<style>
-    #page_company_tree button span{
-	display: none;
-    }
-    #page_company_tree button:hover span{
-	display: inline;
-    }
-</style>
 <div style="text-align: center">
-    <button onclick="Ctree.select()" class="ok" disabled="disabled"><img src="img/apply24.png"> Выбрать</button> | 
-    <button onclick="Ctree.select()" class="folder" disabled="disabled" title="Добавить компанию"><img src="img/edit_add.png"></button>
-    <button onclick="Ctree.select()" class="folder" disabled="disabled" title="Добавить папку"><img src="img/FolderAdd-24.png"></button>
-    <button onclick="Ctree.edit()" class="folder" disabled="disabled" title="Редактировать"><img src="img/Edit-24.png"></button>
-    <button onclick="Ctree.delete()" class="folder" disabled="disabled" title="Удалить"><img src="img/delete.png"></button>
-    <button onclick="Ctree.delete()" title="Обновить"><img src="img/reload.png"></button>
+    <button class="ok" disabled="disabled" onclick="Ctree.select()"><img src="img/apply24.png"> Выбрать</button> | 
+    <button class="folder" disabled="disabled" onclick="Ctree.create('leaf')" title="Добавить компанию"><img src="img/edit_add.png"></button>
+    <button class="folder" disabled="disabled" onclick="Ctree.create('folder')" title="Добавить папку"><img src="img/FolderAdd-24.png"></button>
+    <button class="folder" disabled="disabled" onclick="Ctree.update()" title="Редактировать"><img src="img/Edit-24.png"></button>
+    <button class="folder" disabled="disabled" onclick="Ctree.delete()" title="Удалить"><img src="img/delete.png"></button>
+    <button onclick="Ctree.reload()" title="Обновить"><img src="img/reload.png"></button>
 </div>

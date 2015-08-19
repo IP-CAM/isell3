@@ -69,7 +69,7 @@ class Company extends Catalog{
     
     public function companyCreate($parent_id){
     }
-    public function companyUpdate($company_id, $field, $value) {
+    public function companyUpdate($company_id, $field, $value='') {
 	$value=  rawurldecode($value);
 	$fields="company_name/company_jaddress/company_vat_id/company_code/company_vat_licence_id/company_phone/company_agreement_num/
 		 company_agreement_date/company_bank_account/company_bank_id/company_bank_name/label/company_person/company_director/

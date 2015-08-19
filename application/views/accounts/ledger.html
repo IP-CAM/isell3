@@ -12,9 +12,11 @@
 	    
 	    //App.loadWindow('page/accounts/trans_edit',{});
 	    App.loadWindow('page/company/tree').progress(function(status,data){
-		//alert(status+data.toSource());
+		//
 		if( status==='close' ){
 		    setTimeout(function(){App.page_accounts_ledger.initAfter(); },100);
+		} else {
+		    alert(status+data.toSource());
 		}
 	    });
 	},
