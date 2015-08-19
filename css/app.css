@@ -3,9 +3,7 @@ body{
     padding:0px;
     font-family: 'Trebuchet MS',Arial;
     font-size: 12px;
-    background-image: url(../img/bg.jpg);
-    background-repeat: no-repeat;
-    background-attachment:  fixed;
+    background: url(../img/bg.jpg) repeat-x;
 }
 .app_window{
     background: url(../img/window-bg.png) repeat-x;
@@ -178,7 +176,7 @@ button img{
 }
 
 .transparent{
-    opacity:0.5;
+    opacity:0.6;
     transition-duration: 3s;
 }
 .transparent:hover{
