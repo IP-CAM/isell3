@@ -30,36 +30,27 @@
 	    var company=$('#Ctree_tree').tree('getSelected');
 	    Ctree.handler.notify('select', company);
 	},
-	create:function( branch_type ){
-	    var node=$('#Ctree_tree').tree('getSelected');
-	    var parent_id=node.is_leaf?node.parent_id:node.branch_id;
-	    if( branch_type === 'folder' ){
-		this.createFolder( branch_type, parent_id );
-	    } else {
-		var newlabel=prompt("Введите Короткое название новой компании",'Новая компания');
+	create:function( new_branch_type ){
+	    var selected=$('#Ctree_tree').tree('getSelected');
+	    var parent_id=selected.is_leaf*1?selected.parent_id:selected.branch_id;
+	    var parent=parent_id>0?$('#Ctree_tree').tree('find', parent_id):$('#Ctree_tree').tree('getRoot');
+	    var newlabel=(new_branch_type === 'leaf')?prompt("Введите Короткое название новой компании",'Новая компания'):prompt("Введите название новой группы",'Новая группа');
+	    if( newlabel ){
+		$.post('Company/companyCreateBranch/'+App.uri(parent_id,newlabel,new_branch_type),function(company_id){
+		    if(new_branch_type === 'leaf'){
+			Ctree.updateDetails(company_id,parent);
+		    }
+		    $('#Ctree_tree').tree('reload',parent.target);
+		});
 	    }
-
-	},
-	createFolder:function( branch_type, parent_id ){
-	    var newlabel=prompt("Введите название новой группы",'Новая группа');
-	    $.post('Catalog/treeCreate/companies_tree/'+App.uri(branch_type,parent_id,newlabel),function(branch_id){
-		var parent=$('#Ctree_tree').tree('find', parent_id);
-		$('#Ctree_tree').tree('append', {
-		    parent: parent.target,
-		    data:[
-			{id: branch_id,text: newlabel}
-		    ]});
-	    });	    
 	},
 	update:function(){
 	    var node=$('#Ctree_tree').tree('getSelected');
 	    if( node.company_id ){
-		App.loadWindow('page/company/details',node).progress(function(status){
-		    Ctree.reload();
-		});
+		Ctree.updateDetails(node.company_id,node);
 	    } else {
 		var newlabel=prompt("Введите новое название группы: "+node.label,node.label);
-		if( newlabel ){
+		if( newlabel && newlabel!==node.label ){
 		    $.post('Catalog/treeUpdate/companies_tree/'+App.uri(node.branch_id,'label',newlabel),function(ok){
 			if( ok*1 ){
 			    App.flash("Сохранено: название папки");
@@ -71,7 +62,18 @@
 		}
 	    }
 	},
-	delete:function(node){
+	updateDetails:function(company_id,parent){
+	    App.loadWindow('page/company/details',{company_id:company_id,autoselect_label:true}).progress(function(status){
+		if( status==='label_changed' ){
+		    $('#Ctree_tree').tree('reload',parent.target);
+		}
+	    });
+	},
+	delete:function(){
+	    var node=$('#Ctree_tree').tree('getSelected');
+	    if( node && confirm() ){
+		
+	    }
 	    alert(node.toSource());
 	},
 	reload:function(){

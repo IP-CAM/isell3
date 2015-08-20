@@ -108,7 +108,7 @@ class Catalog extends CI_Model {
 	$res->free_result();
 	return $branches;
     }
-    public function treeCreate($table,$type,$parent_id,$label=''){
+    protected function treeCreate($table,$type,$parent_id,$label=''){
 	if( $this->treeisLeaf($table,$parent_id) || !$label ){
 	    return false;
 	}

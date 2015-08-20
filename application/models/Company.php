@@ -49,7 +49,7 @@ class Company extends Catalog{
     }
 
     public function companyGet( $company_id=0 ){
-	$company_id=(int) $company_id;
+	$this->check($company_id,'int');
 	$assigned_path=$this->Base->svar('user_assigned_path');
 	$sql="SELECT
 		*
@@ -67,10 +67,20 @@ class Company extends Catalog{
     }
     
     
-    public function companyCreate($parent_id){
+    public function companyCreateBranch($parent_id,$label,$branch_type){
+	$this->Base->set_level(2);
+	$this->check($parent_id,'int');
+	$this->check($label);
+	$branch_id=$this->treeCreate('companies_tree', $branch_type, $parent_id,$label);
+	if( $branch_type=='leaf' ){
+	    $this->query("INSERT INTO companies_list SET branch_id=$branch_id,company_name='$label'");
+	    return $this->db->insert_id();
+	}
+	return 0;
     }
     public function companyUpdate($company_id, $field, $value='') {
-	$value=  rawurldecode($value);
+	$this->Base->set_level(2);
+	$this->check($value);
 	$fields="company_name/company_jaddress/company_vat_id/company_code/company_vat_licence_id/company_phone/company_agreement_num/
 		 company_agreement_date/company_bank_account/company_bank_id/company_bank_name/label/company_person/company_director/
 		 company_mobile/company_address/company_email/company_web/company_description";
@@ -80,8 +90,9 @@ class Company extends Catalog{
 	return false;
     }
     public function companyDelete($company_id){
-	$company_id=(int) $company_id;
-	$row = $this->db->query("SELECT branch_id FROM companies_list WHERE company_id='$company_id'")->row();
+	$this->Base->set_level(2);
+	$this->check($company_id,'int');
+	$row = $this->get_row("SELECT branch_id FROM companies_list WHERE company_id='$company_id'");
 	if( $row && $row->branch_id ){
 	    // don't forget delete from companies_list
 	    return $this->treeDelete('companies_tree', $row->branch_id);
