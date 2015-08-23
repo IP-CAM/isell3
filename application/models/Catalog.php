@@ -145,20 +145,26 @@ class Catalog extends CI_Model {
 		WHERE
 		    IF(@old_path,path LIKE CONCAT(@old_path, '%'),branch_id=$branch_id)");
     }
-    public function treeDelete($table,$branch_id){
-	$branch = $this->db->get_where($table, array('branch_id'=>$branch_id))->row();
-	if( $branch && $branch->path ){
-	    $this->db->query("START TRANSACTION");
-	    $this->db->query("DELETE FROM $table WHERE path LIKE '{$branch->path}%'");
-	    $this->db->_error_number()?$this->Base->db_msg():'';
-	    $deleted=$this->db->affected_rows();
-	    $this->db->query("COMMIT");
-	    return $deleted;
-	}
-	$this->Base->msg("iSell: Such branch is not found or path is not set!");
-	return false;
+    protected function treeDelete($table,$branch_id){
+	$branch_ids=$this->treeGetSub($table, $branch_id);
+	$in=implode(',', $branch_ids);
+	$this->query("START TRANSACTION");
+	$this->query("DELETE FROM $table WHERE branch_id IN ($in)");
+	$deleted=$this->db->affected_rows();
+	$this->query("COMMIT");
+	return $deleted;
     }
-   private function treeisLeaf($table,$branch_id){
+    protected function treeGetSub($table_name, $branch_id) {
+        $branch_ids = [$branch_id];
+	$result=$this->query("SELECT branch_id FROM $table_name WHERE parent_id='$branch_id'");
+	foreach( $result->result() as $row ){
+	    $sub_branch_ids = $this->treeGetSub($table_name, $row->branch_id);
+	    $branch_ids=array_merge($branch_ids, $sub_branch_ids);
+	}
+	$result->free_result();
+	return $branch_ids;
+    }
+    private function treeisLeaf($table,$branch_id){
 	$row = $this->db->get_where($table, array('branch_id' => $branch_id))->row();
 	if ( $row && $row->is_leaf) {
 	    return true;

@@ -3,7 +3,7 @@
     Ctree = App.page_company_tree = {
 	properties: {
 	    title: 'Дерево компаний',
-	    width: 470,
+	    width: 300,
 	    height: 440,
 	    modal: true,
 	    onClose: function () {
@@ -29,6 +29,7 @@
 	select: function () {
 	    var company=$('#Ctree_tree').tree('getSelected');
 	    Ctree.handler.notify('select', company);
+	    this.node.window('close');
 	},
 	create:function( new_branch_type ){
 	    var selected=$('#Ctree_tree').tree('getSelected');
@@ -36,8 +37,8 @@
 	    var parent=parent_id>0?$('#Ctree_tree').tree('find', parent_id):$('#Ctree_tree').tree('getRoot');
 	    var newlabel=(new_branch_type === 'leaf')?prompt("Введите Короткое название новой компании",'Новая компания'):prompt("Введите название новой группы",'Новая группа');
 	    if( newlabel ){
-		$.post('Company/companyCreateBranch/'+App.uri(parent_id,newlabel,new_branch_type),function(company_id){
-		    if(new_branch_type === 'leaf'){
+		$.post('Company/companyTreeCreate/'+App.uri(parent_id,newlabel,new_branch_type),function(company_id){
+		    if(new_branch_type === 'leaf' && confirm("Компания '"+newlabel+"' создана.\n\nВвести реквизиты сейчас?\n\n")){
 			Ctree.updateDetails(company_id,parent);
 		    }
 		    $('#Ctree_tree').tree('reload',parent.target);
@@ -71,10 +72,16 @@
 	},
 	delete:function(){
 	    var node=$('#Ctree_tree').tree('getSelected');
-	    if( node && confirm() ){
-		
+	    if( node && confirm("Удалить выделенные компании?")  && confirm("ВНИМАНИЕ ЭТОТ ПРОЦЕСС НЕ ОБРАТИМ!\n\nБУДУТ УДАЛЕНЫ ВСЕ ДОКУМЕНТЫ, ШАБЛОНЫ ПЕЧАТИ, ПРОВОДКИ, ОПЛАТЫ\nА ТАК ЖЕ ВСЯ ИНФОРМАЦИЯ СВЯЗАННАЯ С КОМПАНИЯМИ!\n\n") ){
+		$.post("Company/companyTreeDelete/"+node.branch_id,function(ok){
+		    if( ok*1 ){
+			App.flash("Удалено: "+node.label);
+			$('#Ctree_tree').tree('remove', node.target);
+		    } else {
+			App.flash("Удаление не удалось!");
+		    }
+		});
 	    }
-	    alert(node.toSource());
 	},
 	reload:function(){
 	    $('#Ctree_tree').tree('reload');
@@ -82,7 +89,7 @@
 	}
     };
 </script>
-<div style="width:450px;height: 360px;overflow: auto">
+<div style="width:100%;height: calc(100% - 70px);overflow: auto">
     <ul class="easyui-tree" id="Ctree_tree" data-options="
 	url:'Company/branchFetch/',
 	method:'get',
@@ -109,11 +116,23 @@
 	dnd:true">
     </ul>
 </div>
-<div style="text-align: center">
-    <button class="ok" disabled="disabled" onclick="Ctree.select()"><img src="img/apply24.png"> Выбрать</button> | 
+<style>
+    .tiny_button button{
+	padding: 0px;
+	border-radius: 0px;
+    }
+    .tiny_button button img{
+	width:16px;
+	height: 16px;
+    }
+</style>
+<div style="text-align: left;padding: 2px;" class="tiny_button">
     <button class="folder" disabled="disabled" onclick="Ctree.create('leaf')" title="Добавить компанию"><img src="img/edit_add.png"></button>
     <button class="folder" disabled="disabled" onclick="Ctree.create('folder')" title="Добавить папку"><img src="img/FolderAdd-24.png"></button>
     <button class="folder" disabled="disabled" onclick="Ctree.update()" title="Редактировать"><img src="img/Edit-24.png"></button>
     <button class="folder" disabled="disabled" onclick="Ctree.delete()" title="Удалить"><img src="img/delete.png"></button>
     <button onclick="Ctree.reload()" title="Обновить"><img src="img/reload.png"></button>
+</div>
+<div style="text-align: center;margin-top: 5px;">
+    <button class="ok" disabled="disabled" onclick="Ctree.select()"><img src="img/apply24.png"> Выбрать</button>
 </div>

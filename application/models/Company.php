@@ -67,7 +67,7 @@ class Company extends Catalog{
     }
     
     
-    public function companyCreateBranch($parent_id,$label,$branch_type){
+    public function companyTreeCreate($parent_id,$label,$branch_type){
 	$this->Base->set_level(2);
 	$this->check($parent_id,'int');
 	$this->check($label);
@@ -89,15 +89,17 @@ class Company extends Catalog{
 	}
 	return false;
     }
-    public function companyDelete($company_id){
-	$this->Base->set_level(2);
-	$this->check($company_id,'int');
-	$row = $this->get_row("SELECT branch_id FROM companies_list WHERE company_id='$company_id'");
-	if( $row && $row->branch_id ){
-	    // don't forget delete from companies_list
-	    return $this->treeDelete('companies_tree', $row->branch_id);
-	}
-	return false;
+    public function companyTreeDelete( $branch_id ){
+	$this->Base->set_level(4);
+	$this->check($branch_id,'int');
+	$sub_ids=$this->treeGetSub('companies_tree', $branch_id);
+	$in=implode(',', $sub_ids);
+	$this->query("START TRANSACTION");
+	$this->query("DELETE FROM companies_tree WHERE branch_id IN ($in)");
+	$this->query("DELETE FROM companies_list WHERE branch_id IN ($in)");
+	$deleted=$this->db->affected_rows();
+	$this->query("COMMIT");
+	return $deleted;
     }
 
     public function selectPassiveCompany( $company_id ){
