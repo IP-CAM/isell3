@@ -32,7 +32,9 @@
 	pcompTree:function(){
 	    App.loadWindow('page/company/tree',{}).progress(function(status,comp){
 		if( status==='select' ){
-		    alert(comp.toSource());
+		    $("#tedit_comp_cmb").combobox('setValue',comp.company_id);
+		    $("#tedit_comp_cmb").combobox('setText',comp.label);
+		    //alert(comp.toSource());
 		}
 	    });
 	},
@@ -70,7 +72,7 @@
 	<input style="width:95px" class="easyui-numberbox" name="ratio" title="Курс">
 	<input style="width:95px" class="easyui-numberbox" name="amount_alt" title="Сумма вал">
     </div>
-    <input style="width:300px" class="easyui-combobox" id="tedit_comp_cmb" title="Контрагент" onclick="alert(66)" data-options="
+    <input style="width:300px" class="easyui-combobox" id="tedit_comp_cmb" title="Контрагент" data-options="
 	   valueField: 'company_id',
 	   textField: 'label',
 	   loader:Tedit.pcompLoader,

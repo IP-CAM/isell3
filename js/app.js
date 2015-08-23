@@ -5,7 +5,7 @@ var App = {
     handler:$.Deferred(),
     init: function () {
 	App.loadBg();
-	//App.updaterInit();
+	App.updaterInit();
         //App.chatInit();
 	App.onReady && App.onReady();
     },

@@ -29,7 +29,7 @@
 	select: function () {
 	    var company=$('#Ctree_tree').tree('getSelected');
 	    Ctree.handler.notify('select', company);
-	    this.node.window('close');
+	    Ctree.node.window('close');
 	},
 	create:function( new_branch_type ){
 	    var selected=$('#Ctree_tree').tree('getSelected');
@@ -138,7 +138,7 @@
 	onDragOver:function(target,source){
 	    return !$(this).tree('isLeaf',target);
 	},
-	onDblClick:Ctree.update,
+	onDblClick:Ctree.select,
 	animate:true,
 	dnd:true">
     </ul>
