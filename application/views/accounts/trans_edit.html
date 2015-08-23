@@ -60,17 +60,51 @@
 		    break;
 		}
 	    }
+	},
+	parser:function( text ){
+	    var result=eval(text.toString().replace(',','.').match( /[\(\d\.\)\*\/\+-]*/ ).toString()) || 0;
+	    if( $(this).textbox('options').precision ){
+		result=Tedit.round(result,$(this).textbox('options').precision);
+	    };
+	    $(this).textbox('setValue',result);
+	},
+	round:function(num,precision){
+	    return Math.round(num*Math.pow(10,precision))/Math.pow(10,precision);
 	}
     };
 </script>
 <form id="trans_edit_frm">
     <div style="display: inline-block;width: 200px">
 	<input style="width:95px" class="easyui-datebox" name="date" title="Дата">
-	<input style="width:95px" class="easyui-numberbox" name="amount" title="Сумма">
+	<input style="width:95px" class="easyui-textbox" name="amount" data-precision="2" title="Сумма" data-options="
+	       onChange:Tedit.parser,
+	       precision:2,
+	       icons: [{
+		    iconCls:'icon-calc16',
+		    handler: function(e){
+			Tedit.transnameEdit();
+		    }
+		}]">
     </div>
     <div style="display: inline-block;width: 200px">
-	<input style="width:95px" class="easyui-numberbox" name="ratio" title="Курс">
-	<input style="width:95px" class="easyui-numberbox" name="amount_alt" title="Сумма вал">
+	<input style="width:95px" class="easyui-textbox" name="ratio" title="Курс" data-options="
+	       onChange:Tedit.parser,
+	       precision:5,
+	       icons: [{
+		    iconCls:'icon-calc16',
+		    handler: function(e){
+			Tedit.transnameEdit();
+		    }
+		}]">
+	<input style="width:95px" class="easyui-textbox" name="amount_alt" title="Сумма вал" data-options="
+	       onChange:Tedit.parser,
+	       precision:2,
+	       icons: [{
+		    iconCls:'icon-calc16',
+		    handler: function(e){
+			Tedit.transnameEdit();
+		    }
+		}]">
     </div>
     <input style="width:300px" class="easyui-combobox" id="tedit_comp_cmb" title="Контрагент" data-options="
 	   valueField: 'company_id',
@@ -99,7 +133,10 @@
 		    }
 		}]
 	   ">
-    <textarea style="width:292px" title="Комментарий"></textarea>
+    <input style="width:300px" class="easyui-textbox" title="Комментарий" data-options="
+	   multiline:true,
+	   height:66
+	   ">
     <div style="text-align: center;margin-top: 15px;">
 	<button type="submit"><img src="img/apply24.png" /> Сохранить</button>
 	<button type="button" onclick="cancelTrans()"><img src="img/cancel24.png" /> Отменить</button>

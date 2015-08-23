@@ -6,11 +6,20 @@
 	current_acc_code: 361,
 	acc_props: {},
 	initAfter: function () {
-	    this.list.init();
-	    this.date.initRange();
+	    //this.list.init();
+	    //this.date.initRange();
 	    
 	    
-	    App.loadWindow('page/accounts/trans_edit',{});
+
+	    App.loadWindow('page/accounts/trans_edit').progress(function(status,data){
+		//
+		if( status==='close' ){
+		    setTimeout(function(){App.page_accounts_ledger.initAfter(); },100);
+		} else {
+		    alert(status+data.toSource());
+		}
+	    });
+
 	},
 	date:{
 	    calendarChanged:function(newVal,which){
