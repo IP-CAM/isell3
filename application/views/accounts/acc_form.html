@@ -13,7 +13,7 @@
 	    });
 	    App.setupForm("#page_accounts_acc_form_frm", App.page_accounts_acc_form.data).change(function () {
 		var node=this;
-		$.post('Catalog/treeUpdate/acc_tree/'+App.uri(data.branch_id,node.name,App.val(node)),function(ok){
+		$.post('AccountsData/accountTreeUpdate/'+App.uri(data.branch_id,node.name,App.val(node)),function(ok){
 		    if( ok*1 ){
 			App.page_accounts_acc_form.data[node.name]=App.val(node);
 			App.flash("Сохранено: " + node.title);

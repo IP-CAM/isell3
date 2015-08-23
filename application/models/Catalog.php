@@ -120,8 +120,7 @@ class Catalog extends CI_Model {
 	$this->treeUpdate($table, $branch_id, 'label', $label);
 	return $branch_id;
     }
-    public function treeUpdate($table,$branch_id,$field,$value) {
-	$value=  rawurldecode($value);
+    protected function treeUpdate($table,$branch_id,$field,$value) {
 	if( $field=='parent_id' && $this->treeisLeaf($table,$value) || $field=='label' && !$value ){
 	    /*parent must be not leaf and label should not be empty*/
 	    return false;

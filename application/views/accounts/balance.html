@@ -153,7 +153,7 @@
 	},
 	update: function (branch_id, field, value) {
 	    $.ajax({
-		url: 'Catalog/treeUpdate/acc_tree/' + App.uri(branch_id, field, value),
+		url: 'AccountsData/accountTreeUpdate/' + App.uri(branch_id, field, value),
 		complete: function (xhr) {
 		    if (xhr.responseText > 0) {
 			var data = {id: branch_id, row: {}};

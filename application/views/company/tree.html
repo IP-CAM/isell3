@@ -52,7 +52,7 @@
 	    } else {
 		var newlabel=prompt("Введите новое название группы: "+node.label,node.label);
 		if( newlabel && newlabel!==node.label ){
-		    $.post('Catalog/treeUpdate/companies_tree/'+App.uri(node.branch_id,'label',newlabel),function(ok){
+		    $.post('Company/companyTreeUpdate/'+App.uri(node.branch_id,'label',newlabel),function(ok){
 			if( ok*1 ){
 			    App.flash("Сохранено: название папки");
 			    $('#Ctree_tree').tree('update', {target: node.target,text: newlabel});
@@ -69,6 +69,29 @@
 		    $('#Ctree_tree').tree('reload',parent.target);
 		}
 	    });
+	},
+	drop:function(target,source,point){
+	    var target_node=$("#Ctree_tree").tree('getNode',target);
+	    $.post('Company/companyTreeUpdate/'+App.uri(source.branch_id,'parent_id',target_node.branch_id),function(ok){
+		if( ok*1 ){
+		    App.flash(source.label + " перемещен в " + target_node.label);
+		} else {
+		    App.flash("Перемещение не удалось");
+		}
+	    });
+	},
+	up:function(){
+	    if( confirm("Переместить выделенный элемент в корень дерева?") ){
+		var node=$('#Ctree_tree').tree('getSelected');
+		$.post('Company/companyTreeUpdate/'+App.uri(node.branch_id,'parent_id',0),function(ok){
+		    if( ok*1 ){
+			App.flash(node.label + " перемещен в корень");
+		    } else {
+			App.flash("Перемещение не удалось");
+		    }
+		});
+		Ctree.reload();
+	    }
 	},
 	delete:function(){
 	    var node=$('#Ctree_tree').tree('getSelected');
@@ -111,6 +134,10 @@
 		Ctree.enableButtons(1);
 	    }
 	},
+	onBeforeDrop:Ctree.drop,
+	onDragOver:function(target,source){
+	    return !$(this).tree('isLeaf',target);
+	},
 	onDblClick:Ctree.update,
 	animate:true,
 	dnd:true">
@@ -131,6 +158,7 @@
     <button class="folder" disabled="disabled" onclick="Ctree.create('folder')" title="Добавить папку"><img src="img/FolderAdd-24.png"></button>
     <button class="folder" disabled="disabled" onclick="Ctree.update()" title="Редактировать"><img src="img/Edit-24.png"></button>
     <button class="folder" disabled="disabled" onclick="Ctree.delete()" title="Удалить"><img src="img/delete.png"></button>
+    <button class="folder" disabled="disabled" onclick="Ctree.up()" title="Переместить в корень"><img src="img/up.png"></button>
     <button onclick="Ctree.reload()" title="Обновить"><img src="img/reload.png"></button>
 </div>
 <div style="text-align: center;margin-top: 5px;">

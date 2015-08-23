@@ -89,6 +89,13 @@ class Company extends Catalog{
 	}
 	return false;
     }
+    public function companyTreeUpdate($branch_id,$field,$value) {
+	$this->Base->set_level(2);
+	$this->check($branch_id,'int');
+	$this->check($field);
+	$this->check($value);
+	return $this->treeUpdate('companies_tree', $branch_id, $field, $value);
+    }
     public function companyTreeDelete( $branch_id ){
 	$this->Base->set_level(4);
 	$this->check($branch_id,'int');

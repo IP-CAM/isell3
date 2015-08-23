@@ -54,6 +54,12 @@ class AccountsData extends AccountsCore{
 	$res->free_result();
 	return $branches;
     }
+    public function accountTreeUpdate($branch_id,$field,$value) {
+	$this->check($branch_id,'int');
+	$this->check($field);
+	$this->check($value);
+	return $this->treeUpdate('acc_tree', $branch_id, $field, $value);
+    }
     public function balanceTreeDelete( $branch_id ){
 	return $this->treeDelete('acc_tree',$branch_id);
     }
