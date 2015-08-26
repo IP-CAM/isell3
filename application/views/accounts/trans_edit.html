@@ -19,6 +19,7 @@
 	    $('#page_accounts_trans_edit .validatebox-text').on('focus', function() {
 		this.select();
 	    });
+	    this.calc();
 	},
 	pcompLoader: function (param, success, error) {
 	    $.get('Company/listFetch/with_active', param, function (xhr) {
@@ -61,50 +62,63 @@
 		}
 	    }
 	},
-	parser:function( text ){
+	parser:function( node, text ){
 	    var result=eval(text.toString().replace(',','.').match( /[\(\d\.\)\*\/\+-]*/ ).toString()) || 0;
-	    if( $(this).textbox('options').precision ){
-		result=Tedit.round(result,$(this).textbox('options').precision);
+	    if( $(node).textbox('options').precision ){
+		result=Tedit.round(result,$(node).textbox('options').precision);
 	    };
-	    $(this).textbox('setValue',result);
+	    $(node).textbox('setValue',result);
 	},
 	round:function(num,precision){
-	    return Math.round(num*Math.pow(10,precision))/Math.pow(10,precision);
+	    return Math.round(num*Math.pow(10,precision))/Math.pow(10,precision) || 0;
+	},
+	calc:function( field ){
+	    if( this.suppressUpdate ){
+		return;
+	    }
+	    this.suppressUpdate=true;
+	    var amount=$("#Tedit_amount").textbox('getValue');
+	    var ratio=$("#Tedit_ratio").textbox('getValue');
+	    var amount_alt=$("#Tedit_amount_alt").textbox('getValue');
+	    if( field==='amount' ){
+		if( ratio ){
+		    $("#Tedit_amount_alt").textbox('setValue',this.round(amount/ratio,2));
+		} else {
+		    $("#Tedit_ratio").textbox('setValue',this.round(amount/amount_alt,5));
+		}
+	    }
+	    if( field==='amount_alt' ){
+		if( ratio ){
+		    $("#Tedit_amount").textbox('setValue',this.round(amount_alt*ratio,2));
+		} else {
+		    $("#Tedit_ratio").textbox('setValue',this.round(amount/amount_alt,5));
+		}
+	    }
+	    if( field==='ratio' ){
+		if( amount ){
+		    $("#Tedit_amount_alt").textbox('setValue',this.round(amount/ratio,2));
+		} else {
+		    $("#Tedit_amount").textbox('setValue',this.round(amount_alt*ratio,2));
+		}
+	    }
+	    this.suppressUpdate=false;
 	}
     };
 </script>
 <form id="trans_edit_frm">
     <div style="display: inline-block;width: 200px">
 	<input style="width:95px" class="easyui-datebox" name="date" title="Дата">
-	<input style="width:95px" class="easyui-textbox" name="amount" data-precision="2" title="Сумма" data-options="
-	       onChange:Tedit.parser,
-	       precision:2,
-	       icons: [{
-		    iconCls:'icon-calc16',
-		    handler: function(e){
-			Tedit.transnameEdit();
-		    }
-		}]">
+	<input style="width:95px" class="easyui-textbox" name="amount" id="Tedit_amount" title="Сумма" data-options="
+	       onChange:function(text){Tedit.parser(this,text);Tedit.calc('amount');},
+	       precision:2">
     </div>
     <div style="display: inline-block;width: 200px">
-	<input style="width:95px" class="easyui-textbox" name="ratio" title="Курс" data-options="
-	       onChange:Tedit.parser,
-	       precision:5,
-	       icons: [{
-		    iconCls:'icon-calc16',
-		    handler: function(e){
-			Tedit.transnameEdit();
-		    }
-		}]">
-	<input style="width:95px" class="easyui-textbox" name="amount_alt" title="Сумма вал" data-options="
-	       onChange:Tedit.parser,
-	       precision:2,
-	       icons: [{
-		    iconCls:'icon-calc16',
-		    handler: function(e){
-			Tedit.transnameEdit();
-		    }
-		}]">
+	<input style="width:95px" class="easyui-textbox" name="ratio" id="Tedit_ratio" title="Курс" data-options="
+	       onChange:function(text){Tedit.parser(this,text);Tedit.calc('ratio');},
+	       precision:5">
+	<input style="width:95px" class="easyui-textbox" name="amount_alt" id="Tedit_amount_alt" title="Сумма вал" data-options="
+	       onChange:function(text){Tedit.parser(this,text);Tedit.calc('amount_alt');},
+	       precision:2">
     </div>
     <input style="width:300px" class="easyui-combobox" id="tedit_comp_cmb" title="Контрагент" data-options="
 	   valueField: 'company_id',
