@@ -210,7 +210,7 @@ class Companies extends Data {
             $this->Base->FileEngine->user_data = array(
                 title => "$view[view_name] №$view[view_num]",
                 msg => $msg,
-                email => $view[p][company_email]
+                email => $view['p']['company_email']
             );
         }
         if ($view['freezed']) {
