@@ -113,6 +113,22 @@ button img{
     margin: 0 0 14px 0;
     padding: 14px 15px 10px 15px;
 }
+.blue_grad{
+    background: #0099FF;
+    border: 1px solid #4066FF;
+    background: linear-gradient(180deg, 
+	#BBCFFF 0%,
+	#0099FF 40%,
+	#5577FF 100%);
+}
+.grn_grad{
+    background: #13D713;
+    border: 1px solid #00A400;
+    background: linear-gradient(180deg, 
+	#9CF59C 0%,
+	#13D713 40%,
+	#00A400 100%);
+}
 .tabs li a.tabs-inner{
     border-radius: 0px;
 }
@@ -261,7 +277,7 @@ button img{
     background:url('../img/serviceout.png') no-repeat center center;
 }
 .icon-tablefilter {
-    background:url('../img/filter.png') no-repeat center center;
+    background:url('../img/Search.png') no-repeat center center;
 }
 .covert{
     visibility: hidden;

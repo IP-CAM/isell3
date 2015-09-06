@@ -128,7 +128,7 @@ App.today = function () {
     return App.toDmy(new Date());
 };
 App.formatNum = function (num, mode) {
-    if (num === undefined || mode === 'clear' && num * 1 === 0) {
+    if (num === undefined || num === null || mode === 'clear' && num * 1 === 0) {
 	return '';
     }
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
@@ -337,23 +337,5 @@ $.fn.datebox.defaults.parser = function (input) {
 	var date=new Date(Date.parse(parts));
 	$(this).datebox('setValue',date);
 	return date;
-    }
-};
-
-
-
-$.fn.datebox.defaults.parser1 = function (input) {
-    if (input instanceof Date) {
-	return input;
-    }
-    if (!input) {
-	return new Date("12/31/2999");
-    }
-    var date = input.replace(/[^\d]/g, '').replace(/^[\d]{4}(\d\d)$/, "20$1").replace(/^(\d\d)(\d\d)(\d\d\d\d)$/, "$2/$1/$3");
-    var t = Date.parse(date);
-    if (!isNaN(t)) {
-	return new Date(t);
-    } else {
-	return new Date();
     }
 };

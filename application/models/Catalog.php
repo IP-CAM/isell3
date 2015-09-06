@@ -14,7 +14,7 @@ class Catalog extends CI_Model {
 		$var=(bool) $var;
 		break;
 	    case 'escape':
-		$var=$this->db->escape(rawurldecode($var));
+		$var=$this->db->escape($var);
 		break;
 	    default:
 		if( $type ){
@@ -22,7 +22,7 @@ class Catalog extends CI_Model {
 		    preg_match("/$type/u", $var, $matches);
 		    $var=  isset($matches[0])?$matches[0]:null;
 		} else {
-		    $var=  addslashes( rawurldecode($var) );
+		    $var=  addslashes( $var );
 		}
 	}
     }
@@ -59,25 +59,29 @@ class Catalog extends CI_Model {
 	return null;
     }
     protected function get_value( $query ){
-	foreach( $this->get_row( $query ) as $value ){
-	    return $value;
+	$row = $this->query($query)->row_array();
+	if( $row ){
+	    foreach( $row as $value ){
+		return $value;
+	    }
 	}
+	return null;
     }
     
     protected function get( $table, $key ){
 	return $this->db->get_where( $table, $key )->row();
     }
-    private function create($table,$data) {
+    protected function create($table,$data) {
 	$this->db->insert($table, $data);
 	$this->db->_error_number()?$this->Base->db_msg():'';
 	return $this->db->insert_id();
     }
-    private function update($table, $data, $key) {
+    protected function update($table, $data, $key) {
 	$ok=$this->db->update($table, $data, $key);
 	$this->db->_error_number()?$this->Base->db_msg():'';
 	return $ok;
     }
-    private function delete($table, $key) {
+    protected function delete($table, $key) {
 	$ok=$this->db->delete($table, $key);
 	$this->db->_error_number()?$this->Base->db_msg():'';
 	return $ok;
@@ -194,10 +198,14 @@ class Catalog extends CI_Model {
 	$key=array($key_field=>$id);
 	return $this->get( $table, $key );
     }
-    public function rowCreate( $table, $field, $value ){
-	$data=array($field=>$value);
-	return $this->create( $table, $data );
-    }
+//    public function rowCreate( $table, $field, $value ){
+//	$data=array($field=>$value);
+//	return $this->create( $table, $data );
+//    }
+//    
+//    
+//    
+    //bellow is a shame used in  event_list
     public function rowDelete( $table, $key_field, $id ){
 	$key=array($key_field=>$id);
 	$this->delete($table, $key);
@@ -210,6 +218,7 @@ class Catalog extends CI_Model {
 	$data=array($field=>$value);
 	return $this->update($table,$data,$key);
     }
+    
     public function rowCreateSet( $table ){
 	$json=$this->input->post('row_data');
 	$data=  json_decode($json);
