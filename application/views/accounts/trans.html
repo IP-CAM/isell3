@@ -278,14 +278,29 @@ function(
 });
 </script>
 <div style="" id="accounts_trans_divv">
-
-    <div id="acc_favorite_list" class="hidden" style="float:left;width: 215px;text-align: left;">
-            <!--{%for item in items%}-->
-            <div class="light_grad" style="margin:3px;padding:3px;cursor:pointer;width:200px;display: inline-block" onclick="AccountsJs.trans.ledger_grid.loadByAccCode('{{item.acc_code}}');">
-            <img src="img/star.png" align="absmiddle">{{item.acc_code}} {{item.label}} 
-            </div>
-            <!--{%endfor%}-->
-        </div>
+    <div style="display: table-cell;width: 215px;text-align: left;">
+	<div id="acc_favorite_list" class="hidden">
+	    Избранные счета
+	    <!--{%for item in items%}-->
+	    <div class="light_grad" style="margin:3px;padding:3px;cursor:pointer;width:200px;display: inline-block" onclick="AccountsJs.trans.ledger_grid.loadByAccCode('{{item.acc_code}}');">
+	    <img src="img/star.png" align="absmiddle">{{item.acc_code}} {{item.label}} 
+	    </div>
+	    <!--{%endfor%}-->
+	</div>
+	<div id="acc_sugg_trans_container"  style="vertical-align:top;min-height: 200px;">
+		Проводки по счету
+		<!--{%for item in items%}-->
+		<div class="light_grad" style="margin:3px;padding:3px;cursor:pointer;width:200px;"
+		    onclick="AccountsJs.trans.addTransaction({trans_type:' {{item.trans_type}} ',description:' {{item.trans_name}} ',passive_company_id:1})">
+		<img src="img/edit_add.png" align="absmiddle"> {{item.trans_name}} 
+		<img src="img/Edit-24.png" style="display:none;" align="absmiddle" 
+		    onclick="AccountsJs.trans.updateTransName(' {{item.trans_type}} ',' {{item.trans_name}} ',' {{item.user_level}} ');event.stopPropagation()">
+		</div>
+		<!--{%endfor%}-->
+	    <a href="javascript:AccountsJs.trans.addTransName()" title="Добавить"><img src="img/edit_add.png"></a>
+	    <a href="javascript:AccountsJs.trans.showPencilTransName()" title="Редактировать"><img src="img/Edit-24.png"></a>
+	</div>
+    </div>
 
     <div id="acc_container">
         <div id="accounts_content_pane" style="display:none;padding:0px 2px 0px 0px;">
@@ -320,20 +335,7 @@ function(
         <div class="trigger month" id="acc_month_11">Ноябрь</div>
         <div class="trigger month" id="acc_month_12">Декабрь</div>
     </div>
-    <div id="acc_sugg_trans_container"  style="display: table-cell;vertical-align:top;min-height: 200px;">
-	<div title="Проводки по счету">
-	    <!--{%for item in items%}-->
-	    <div class="light_grad" style="margin:3px;padding:3px;cursor:pointer;width:90%"
-		onclick="AccountsJs.trans.addTransaction({trans_type:' {{item.trans_type}} ',description:' {{item.trans_name}} ',passive_company_id:1})">
-	    <img src="img/edit_add.png" align="absmiddle"> {{item.trans_name}} 
-	    <img src="img/Edit-24.png" style="display:none;" align="absmiddle" 
-		onclick="AccountsJs.trans.updateTransName(' {{item.trans_type}} ',' {{item.trans_name}} ',' {{item.user_level}} ');event.stopPropagation()">
-	    </div>
-	    <!--{%endfor%}-->
-	</div>
-	<a href="javascript:AccountsJs.trans.addTransName()" title="Добавить"><img src="img/edit_add.png"></a>
-	<a href="javascript:AccountsJs.trans.showPencilTransName()" title="Редактировать"><img src="img/Edit-24.png"></a>
-    </div>
+
 </div>
 <style type="text/css">
 	#acc_container{

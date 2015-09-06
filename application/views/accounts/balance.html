@@ -1,5 +1,6 @@
 <table id="page_accounts_balance_dg" class="easyui-treegrid" 
        data-options="
+       width:870,
        fitColums:true,
        singleSelect:true,
        toolbar:'#toolbar',
@@ -17,14 +18,14 @@
 	<tr>
 	    <th data-options="field:'acc_code',width:30,align:'right'">Код</th>
 	    <th data-options="field:'label',width:350">Название</th>
-	    <th data-options="field:'open_bal',width:100,align:'right',formatter:App.page_accounts_balance.formatNum">Вх. остаток</th>
-	    <th data-options="field:'period_d',width:100,align:'right',formatter:App.page_accounts_balance.formatNum">Оборот дебит</th>
-	    <th data-options="field:'period_c',width:100,align:'right',formatter:App.page_accounts_balance.formatNum">Оборот кредит</th>
-	    <th data-options="field:'close_bal',width:100,align:'right',formatter:App.page_accounts_balance.formatNum">Исх. остаток</th>
-	    <th data-options="field:'curr_symbol',width:40,align:'center'">Валюта</th>
-	    <th data-options="field:'acc_type',width:40,align:'center'">Тип</th>
-	    <th data-options="field:'is_favorite',width:40,align:'center',formatter:App.page_accounts_balance.formatBool">Избранный</th>
-	    <th data-options="field:'use_clientbank',width:40,align:'center',formatter:App.page_accounts_balance.formatBool">Клиент банк</th>
+	    <th data-options="field:'open_bal',width:90,align:'right',formatter:App.page_accounts_balance.formatNum">Вх. остаток</th>
+	    <th data-options="field:'period_d',width:90,align:'right',formatter:App.page_accounts_balance.formatNum">Оборот дебит</th>
+	    <th data-options="field:'period_c',width:90,align:'right',formatter:App.page_accounts_balance.formatNum">Оборот кредит</th>
+	    <th data-options="field:'close_bal',width:90,align:'right',formatter:App.page_accounts_balance.formatNum">Исх. остаток</th>
+	    <th data-options="field:'curr_symbol',width:30,align:'center'">Валюта</th>
+	    <th data-options="field:'acc_type',width:30,align:'center'">Тип</th>
+	    <th data-options="field:'is_favorite',width:30,align:'center',formatter:App.page_accounts_balance.formatBool">Избранный</th>
+	    <th data-options="field:'use_clientbank',width:30,align:'center',formatter:App.page_accounts_balance.formatBool">Клиент банк</th>
 	</tr>
     </thead>
 </table>
