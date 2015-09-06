@@ -14,7 +14,7 @@ class Catalog extends CI_Model {
 		$var=(bool) $var;
 		break;
 	    case 'escape':
-		$var=$this->db->escape(rawurldecode($var));
+		$var=$this->db->escape($var);
 		break;
 	    default:
 		if( $type ){
@@ -22,7 +22,7 @@ class Catalog extends CI_Model {
 		    preg_match("/$type/u", $var, $matches);
 		    $var=  isset($matches[0])?$matches[0]:null;
 		} else {
-		    $var=  addslashes( rawurldecode($var) );
+		    $var=  addslashes( $var );
 		}
 	}
     }
@@ -59,25 +59,29 @@ class Catalog extends CI_Model {
 	return null;
     }
     protected function get_value( $query ){
-	foreach( $this->get_row( $query ) as $value ){
-	    return $value;
+	$row = $this->query($query)->row_array();
+	if( $row ){
+	    foreach( $row as $value ){
+		return $value;
+	    }
 	}
+	return null;
     }
     
     protected function get( $table, $key ){
 	return $this->db->get_where( $table, $key )->row();
     }
-    private function create($table,$data) {
+    protected function create($table,$data) {
 	$this->db->insert($table, $data);
 	$this->db->_error_number()?$this->Base->db_msg():'';
 	return $this->db->insert_id();
     }
-    private function update($table, $data, $key) {
+    protected function update($table, $data, $key) {
 	$ok=$this->db->update($table, $data, $key);
 	$this->db->_error_number()?$this->Base->db_msg():'';
 	return $ok;
     }
-    private function delete($table, $key) {
+    protected function delete($table, $key) {
 	$ok=$this->db->delete($table, $key);
 	$this->db->_error_number()?$this->Base->db_msg():'';
 	return $ok;
@@ -108,7 +112,7 @@ class Catalog extends CI_Model {
 	$res->free_result();
 	return $branches;
     }
-    public function treeCreate($table,$type,$parent_id,$label=''){
+    protected function treeCreate($table,$type,$parent_id,$label=''){
 	if( $this->treeisLeaf($table,$parent_id) || !$label ){
 	    return false;
 	}
@@ -120,8 +124,7 @@ class Catalog extends CI_Model {
 	$this->treeUpdate($table, $branch_id, 'label', $label);
 	return $branch_id;
     }
-    public function treeUpdate($table,$branch_id,$field,$value) {
-	$value=  rawurldecode($value);
+    protected function treeUpdate($table,$branch_id,$field,$value) {
 	if( $field=='parent_id' && $this->treeisLeaf($table,$value) || $field=='label' && !$value ){
 	    /*parent must be not leaf and label should not be empty*/
 	    return false;
@@ -145,20 +148,26 @@ class Catalog extends CI_Model {
 		WHERE
 		    IF(@old_path,path LIKE CONCAT(@old_path, '%'),branch_id=$branch_id)");
     }
-    public function treeDelete($table,$branch_id){
-	$branch = $this->db->get_where($table, array('branch_id'=>$branch_id))->row();
-	if( $branch && $branch->path ){
-	    $this->db->query("START TRANSACTION");
-	    $this->db->query("DELETE FROM $table WHERE path LIKE '{$branch->path}%'");
-	    $this->db->_error_number()?$this->Base->db_msg():'';
-	    $deleted=$this->db->affected_rows();
-	    $this->db->query("COMMIT");
-	    return $deleted;
-	}
-	$this->Base->msg("iSell: Such branch is not found or path is not set!");
-	return false;
+    protected function treeDelete($table,$branch_id){
+	$branch_ids=$this->treeGetSub($table, $branch_id);
+	$in=implode(',', $branch_ids);
+	$this->query("START TRANSACTION");
+	$this->query("DELETE FROM $table WHERE branch_id IN ($in)");
+	$deleted=$this->db->affected_rows();
+	$this->query("COMMIT");
+	return $deleted;
     }
-   private function treeisLeaf($table,$branch_id){
+    protected function treeGetSub($table_name, $branch_id) {
+        $branch_ids = [$branch_id];
+	$result=$this->query("SELECT branch_id FROM $table_name WHERE parent_id='$branch_id'");
+	foreach( $result->result() as $row ){
+	    $sub_branch_ids = $this->treeGetSub($table_name, $row->branch_id);
+	    $branch_ids=array_merge($branch_ids, $sub_branch_ids);
+	}
+	$result->free_result();
+	return $branch_ids;
+    }
+    private function treeisLeaf($table,$branch_id){
 	$row = $this->db->get_where($table, array('branch_id' => $branch_id))->row();
 	if ( $row && $row->is_leaf) {
 	    return true;
@@ -169,7 +178,7 @@ class Catalog extends CI_Model {
     // EASYUI DATAGRID FUNCTIONS
     ////////////////////////////////////////////////////    
     protected function decodeFilterRules(){
-	$raw=$this->input->get('filterRules');
+	$raw=$this->input->get_post('filterRules');
 	$filter=json_decode($raw);
 	if( !is_array($filter) || count($filter)===0 ){
 	    return 1;
@@ -189,10 +198,14 @@ class Catalog extends CI_Model {
 	$key=array($key_field=>$id);
 	return $this->get( $table, $key );
     }
-    public function rowCreate( $table, $field, $value ){
-	$data=array($field=>$value);
-	return $this->create( $table, $data );
-    }
+//    public function rowCreate( $table, $field, $value ){
+//	$data=array($field=>$value);
+//	return $this->create( $table, $data );
+//    }
+//    
+//    
+//    
+    //bellow is a shame used in  event_list
     public function rowDelete( $table, $key_field, $id ){
 	$key=array($key_field=>$id);
 	$this->delete($table, $key);
@@ -205,6 +218,7 @@ class Catalog extends CI_Model {
 	$data=array($field=>$value);
 	return $this->update($table,$data,$key);
     }
+    
     public function rowCreateSet( $table ){
 	$json=$this->input->post('row_data');
 	$data=  json_decode($json);

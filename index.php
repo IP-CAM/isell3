@@ -24,7 +24,7 @@ elseif( isset($_REQUEST['tpl']) ){
     $uri_explode[3]=$_REQUEST['tpl'];
 }
 $_SERVER['REQUEST_URI']= implode('/',$uri_explode);
-header("X-isell-URI: ".$_SERVER['REQUEST_URI']);
+//header("X-isell-URI: ".$_SERVER['REQUEST_URI']);
 
 /*
  * ---------------------------------------------------------------

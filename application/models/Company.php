@@ -13,10 +13,12 @@ class Company extends Catalog{
 	$level=$this->Base->svar('user_level');
 	return $this->treeFetch($table, $parent_id, 'top', $assigned_path, $level);
     }
+    
     public function listFetch( $mode='' ){
 	$q = $this->input->get('q') or $q = 0;
 	$assigned_path=$this->Base->svar('user_assigned_path');
 	$level=$this->Base->svar('user_level');
+	$companies=[['company_id'=>0,'label'=>'-','path'=>'']];
 	if( $q ){
 	    $sql="SELECT 
 		    company_id,
@@ -33,18 +35,20 @@ class Company extends Catalog{
 			AND
 		    path LIKE '$assigned_path%'
 			AND
-		    level<=$level
-		    ";
-	    return $this->get_list( $sql );
+		    level<=$level";
+	    $companies=array_merge($companies,$this->get_list( $sql ));
 	}
 	else if( $mode=='selected_passive_if_empty' ){
-	    return array($this->Base->svar('pcomp'));    
+	    array_push($companies,['company_id'=>$this->Base->pcomp('company_id'),'label'=>$this->Base->pcomp('company_name'),'path'=>$this->Base->pcomp('path')]);
 	}
-	return array();
+	if( $mode=='with_active' ){
+	    array_push($companies,['company_id'=>$this->Base->acomp('company_id'),'label'=>$this->Base->acomp('company_name'),'path'=>'']);
+	}
+	return $companies;
     }
 
     public function companyGet( $company_id=0 ){
-	$company_id=(int) $company_id;
+	$this->check($company_id,'int');
 	$assigned_path=$this->Base->svar('user_assigned_path');
 	$sql="SELECT
 		*
@@ -62,10 +66,20 @@ class Company extends Catalog{
     }
     
     
-    public function companyCreate($parent_id){
+    public function companyTreeCreate($parent_id,$label,$branch_type){
+	$this->Base->set_level(2);
+	$this->check($parent_id,'int');
+	$this->check($label);
+	$branch_id=$this->treeCreate('companies_tree', $branch_type, $parent_id,$label);
+	if( $branch_type=='leaf' ){
+	    $this->query("INSERT INTO companies_list SET branch_id=$branch_id,company_name='$label'");
+	    return $this->db->insert_id();
+	}
+	return 0;
     }
-    public function companyUpdate($company_id, $field, $value) {
-	$value=  rawurldecode($value);
+    public function companyUpdate($company_id, $field, $value='') {
+	$this->Base->set_level(2);
+	$this->check($value);
 	$fields="company_name/company_jaddress/company_vat_id/company_code/company_vat_licence_id/company_phone/company_agreement_num/
 		 company_agreement_date/company_bank_account/company_bank_id/company_bank_name/label/company_person/company_director/
 		 company_mobile/company_address/company_email/company_web/company_description";
@@ -74,14 +88,24 @@ class Company extends Catalog{
 	}
 	return false;
     }
-    public function companyDelete($company_id){
-	$company_id=(int) $company_id;
-	$row = $this->db->query("SELECT branch_id FROM companies_list WHERE company_id='$company_id'")->row();
-	if( $row && $row->branch_id ){
-	    // don't forget delete from companies_list
-	    return $this->treeDelete('companies_tree', $row->branch_id);
-	}
-	return false;
+    public function companyTreeUpdate($branch_id,$field,$value) {
+	$this->Base->set_level(2);
+	$this->check($branch_id,'int');
+	$this->check($field);
+	$this->check($value);
+	return $this->treeUpdate('companies_tree', $branch_id, $field, $value);
+    }
+    public function companyTreeDelete( $branch_id ){
+	$this->Base->set_level(4);
+	$this->check($branch_id,'int');
+	$sub_ids=$this->treeGetSub('companies_tree', $branch_id);
+	$in=implode(',', $sub_ids);
+	$this->query("START TRANSACTION");
+	$this->query("DELETE FROM companies_tree WHERE branch_id IN ($in)");
+	$this->query("DELETE FROM companies_list WHERE branch_id IN ($in)");
+	$deleted=$this->db->affected_rows();
+	$this->query("COMMIT");
+	return $deleted;
     }
 
     public function selectPassiveCompany( $company_id ){

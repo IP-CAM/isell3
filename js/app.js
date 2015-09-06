@@ -92,7 +92,7 @@ var App = {
 	if (!$('#' + id).length) {
 	    $('#appWindowContainer').append('<div id="' + id + '" class="app_window"></div>');
 	}
-	return App.loadModule(path, data);
+	return App.loadModule(path, data || {});
     }
 };
 $(App.init);
@@ -128,7 +128,7 @@ App.today = function () {
     return App.toDmy(new Date());
 };
 App.formatNum = function (num, mode) {
-    if (num === undefined || mode === 'clear' && num * 1 === 0) {
+    if (num === undefined || num === null || mode === 'clear' && num * 1 === 0) {
 	return '';
     }
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
@@ -331,14 +331,11 @@ $.fn.datebox.defaults.parser = function (input) {
     if (input instanceof Date) {
 	return input;
     }
-    if (!input) {
-	return new Date("12/31/2999");
-    }
-    var date = input.replace(/[^\d]/g, '').replace(/^[\d]{4}(\d\d)$/, "20$1").replace(/^(\d\d)(\d\d)(\d\d\d\d)$/, "$2/$1/$3");
-    var t = Date.parse(date);
-    if (!isNaN(t)) {
-	return new Date(t);
-    } else {
-	return new Date();
+    var parts=input.replace(/[^\d]/g, '').replace(/^(\d\d)(\d\d)(\d\d\d\d)$/, "$2/$1/$3").substr(0,10);
+    var date=Date.parse(parts);
+    if( parts.length===10 && !isNaN(Date.parse(parts)) ){
+	var date=new Date(Date.parse(parts));
+	$(this).datebox('setValue',date);
+	return date;
     }
 };

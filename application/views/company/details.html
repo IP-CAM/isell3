@@ -7,28 +7,35 @@
 	    height: 'auto',
 	    onClose: function(){
 		App.page_company_details.handler.notify('close',App.page_company_details.data);
-		App.page_company_details.destroy();
+		App.page_company_details.node.window('destroy');
+		App.page_company_details.node.remove();
+		delete App.page_company_details;
 	    }
 	},
 	init:function () {
-	    if( this.data.inline ){
-		this.node.panel(App.page_company_details.properties);
-	    } else {
-		this.node.window(App.page_company_details.properties);
-	    }
-	    App.page_company_details.setup();
+	    var props=App.page_company_details.properties;
+	    this.data.inline?this.node.panel(props):this.node.window(props);
 	    App.handler.progress(function(status){
 		if( status==="passiveCompanySelected" ){
 		    this.data=App.pcomp;
 		    App.page_company_details.load( App.pcomp.company_id );
 		}
 	    });
+	    this.autoselect_label=this.data.autoselect_label;
+	    this.load(this.data.company_id);
+	    
+	    
+	    
+	    
+	    
+	    /*
+	    App.page_company_details.setup();
 	    App.setupForm("#page_company_details_frm");
 	    App.formElements("#page_company_details_frm").change(function () {
 		var node=this;
 		App.page_company_details.updateField(node.name,node.value,node.title);
-	    });
-	    //this.load(this.data.company_id);
+	    });*/
+	    //
 	},
 	focus:function(){
 	    this.load(this.data.company_id);
@@ -48,18 +55,22 @@
 		if( ok*1 ){
 		    App.page_company_details.data[field]=value;
 		    App.flash("Сохранено: " + title);
+		    if( field==='label' ){
+			App.page_company_details.handler.notify('label_changed');
+		    }
 		} else {
 		    App.flash("Сохраненние не удалось: " + title);
 		}
 	    });
 	},
 	setup:function(){
-	    App.setupForm("#page_company_details_frm", App.page_company_details.data);
-	},
-	destroy:function () {
-	    this.node.window('destroy');
-	    this.node.remove();
-	    delete App.page_company_details;
+	    App.setupForm("#page_company_details_frm", App.page_company_details.data).change(function () {
+		var node=this;
+		App.page_company_details.updateField(node.name,node.value,node.title);
+	    });
+	    if( this.autoselect_label ){
+		this.node.find('input[name=label]').select();
+	    }
 	}
     };
 </script>
@@ -82,7 +93,7 @@
     </div>
     <div class="inp_rule"></div>
     <div class="inp_group" style="width:340px;">
-	<input type="text" name="label" title="Короткое название"/>
+	<input type="text" name="label" title="Короткое название" style="font-weight: bold"/>
 	<input type="text" name="company_address" title="Фактический Адрес"/>
 	<input type="text" name="company_person" title="Контактное лицо"/>
 	<input type="text" name="company_director" title="Директор"/>

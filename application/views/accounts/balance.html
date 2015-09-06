@@ -153,7 +153,7 @@
 	},
 	update: function (branch_id, field, value) {
 	    $.ajax({
-		url: 'Catalog/treeUpdate/acc_tree/' + App.uri(branch_id, field, value),
+		url: 'AccountsData/accountTreeUpdate/' + App.uri(branch_id, field, value),
 		complete: function (xhr) {
 		    if (xhr.responseText > 0) {
 			var data = {id: branch_id, row: {}};
@@ -192,16 +192,13 @@
 	    return true;
 	},
 	delete: function (branch_id, label) {
-	    $.ajax({
-		url: 'Catalog/treeDelete/acc_tree/' + branch_id,
-		complete: function (xhr) {
-		    if (xhr.responseText > 0) {
-			$('#page_accounts_balance_dg').treegrid('remove', branch_id);
-			App.flash("Удалено: " + xhr.responseText + " записей " + label);
-		    }
-		    else {
-			App.flash("Удаление не удалось", 'alert');
-		    }
+	    $.get('AccountsData/balanceTreeDelete/' + branch_id,function (resp) {
+		if ( resp > 0 ) {
+		    $('#page_accounts_balance_dg').treegrid('remove', branch_id);
+		    App.flash("Удалено: " + resp + " записей " + label);
+		}
+		else {
+		    App.flash("Удаление не удалось", 'alert');
 		}
 	    });
 	},

@@ -7,11 +7,11 @@ class Hub extends HubBase{
     }
     
     public function on( $model, $method ){
-	$method_args = array_slice(func_get_args(), 2);
 	if( $model ){
 	    $this->load_model($model);
-	    if( method_exists($this->{$model},$method) ){
+	    if( method_exists($this->{$model},$method) ){// && stripos($method,'core')===false
 		$this->{$model}->Base=$this;
+		$method_args = array_map("rawurldecode",array_slice(func_get_args(), 2));
 		$response=call_user_func_array(array($this->{$model}, $method),$method_args);
 		$this->response($response);
 	    }
@@ -111,6 +111,9 @@ class HubBase extends CI_Controller{
 	switch( $this->db->_error_number() ){
 	    case 1451:
 		$this->msg('Элемент ипользуется, поэтому не может быть изменен или удален!');
+		break;
+	    case 1062:
+		$this->msg('Запись с таким ключем уже есть!');
 		break;
 	    default:
 		header("X-isell-type:error");
