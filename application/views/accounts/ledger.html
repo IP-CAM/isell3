@@ -207,6 +207,10 @@
 		    return "background-color:rgba(255,255,255,.4);color:darkblue";
 		}
 	    },
+	    rowTooltip:function(value, row){
+		value=value==='0'?'document':'';
+		return App.datagrid.tooltip(value, row);
+	    },
 	    calculate: function (value, row) {
 		var positive = row.debit > 0 ? true : false;
 		positive = Ledger.acc_props.acc_type === 'A' ? positive : !positive;
@@ -296,7 +300,7 @@
 	    <span class="icon-24 icon-print" title="Обновить" onclick="$('#account_ledger_dg').datagrid('reload')"> </span>
 	</div>
     </div>
-    <table id="account_ledger_dg" class="easyui-datagrid" style="width:740px;"
+    <table id="account_ledger_dg" class="easyui-datagrid" style="width:765px;"
 	   data-options="
 	   idField:'trans_id',
 	   loader:Ledger.list.loader,
@@ -312,6 +316,7 @@
 	   method:'get'">
 	<thead>
 	    <tr>
+		<th data-options="width:25,field:'editable',align:'center',formatter:Ledger.list.rowTooltip"></th>
 		<th data-options="width:25,field:'trans_status',align:'center',formatter:App.datagrid.tooltip"></th>
 		<th data-options="width:65,field:'trans_date'">Дата</th>
 		<th data-options="width:200,field:'company_name'">Компания</th>
