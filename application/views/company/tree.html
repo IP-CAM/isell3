@@ -143,23 +143,13 @@
 	dnd:true">
     </ul>
 </div>
-<style>
-    .tiny_button button{
-	padding: 0px;
-	border-radius: 0px;
-    }
-    .tiny_button button img{
-	width:16px;
-	height: 16px;
-    }
-</style>
 <div style="text-align: left;padding: 2px;" class="tiny_button">
-    <button class="folder" disabled="disabled" onclick="Ctree.create('leaf')" title="Добавить компанию"><img src="img/edit_add.png"></button>
-    <button class="folder" disabled="disabled" onclick="Ctree.create('folder')" title="Добавить папку"><img src="img/FolderAdd-24.png"></button>
-    <button class="folder" disabled="disabled" onclick="Ctree.update()" title="Редактировать"><img src="img/Edit-24.png"></button>
-    <button class="folder" disabled="disabled" onclick="Ctree.delete()" title="Удалить"><img src="img/delete.png"></button>
-    <button class="folder" disabled="disabled" onclick="Ctree.up()" title="Переместить в корень"><img src="img/up.png"></button>
-    <button onclick="Ctree.reload()" title="Обновить"><img src="img/reload.png"></button>
+    <button class="folder tiny_button" disabled="disabled" onclick="Ctree.create('leaf')" title="Добавить компанию"><img src="img/edit_add.png"></button>
+    <button class="folder tiny_button" disabled="disabled" onclick="Ctree.create('folder')" title="Добавить папку"><img src="img/FolderAdd-24.png"></button>
+    <button class="folder tiny_button" disabled="disabled" onclick="Ctree.update()" title="Редактировать"><img src="img/Edit-24.png"></button>
+    <button class="folder tiny_button" disabled="disabled" onclick="Ctree.delete()" title="Удалить"><img src="img/delete.png"></button>
+    <button class="folder tiny_button" disabled="disabled" onclick="Ctree.up()" title="Переместить в корень"><img src="img/up.png"></button>
+    <button class="tiny_button" onclick="Ctree.reload()" title="Обновить"><img src="img/reload.png"></button>
 </div>
 <div style="text-align: center;margin-top: 5px;">
     <button class="ok" disabled="disabled" onclick="Ctree.select()"><img src="img/apply24.png"> Выбрать</button>

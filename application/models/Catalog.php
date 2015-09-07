@@ -77,12 +77,14 @@ class Catalog extends CI_Model {
 	return $this->db->insert_id();
     }
     protected function update($table, $data, $key) {
-	$ok=$this->db->update($table, $data, $key);
+	$this->db->update($table, $data, $key);
+	$ok=$this->db->affected_rows();
 	$this->db->_error_number()?$this->Base->db_msg():'';
 	return $ok;
     }
     protected function delete($table, $key) {
-	$ok=$this->db->delete($table, $key);
+	$this->db->delete($table, $key);
+	$ok=$this->db->affected_rows();
 	$this->db->_error_number()?$this->Base->db_msg():'';
 	return $ok;
     }

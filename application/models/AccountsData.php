@@ -47,7 +47,7 @@ class AccountsData extends AccountsCore{
 	$this->check($trans_type);
 	$dc=  explode('_', $trans_type);
 	$this->query("DELETE FROM acc_trans_names WHERE acc_debit_code='$dc[0]' AND acc_credit_code='$dc[1]'");
-	return $this->db->affected_rows();
+	return $this->db->affected_rows()>0;
     }
     public function accountTreeFetch( $parent_id = null ) {
 	if( $parent_id == null ){
@@ -63,6 +63,7 @@ class AccountsData extends AccountsCore{
 	return $branches;
     }
     public function accountTreeUpdate($branch_id,$field,$value) {
+	$this->Base->set_level(3);
 	$this->check($branch_id,'int');
 	$this->check($field);
 	$this->check($value);
@@ -80,6 +81,11 @@ class AccountsData extends AccountsCore{
 	    WHERE 
 		is_favorite=1";
 	return $this->get_list($sql);
+    }
+    public function accountFavoritesToggle( $acc_code, $is_favorite ){
+	$this->check($acc_code);
+	$this->check($is_favorite,'bool');
+	return $this->update('acc_tree',['is_favorite'=>$is_favorite],['acc_code'=>$acc_code]);
     }
 //    public function accountPropsGet( $acc_code ){
 //	$this->check($acc_code);

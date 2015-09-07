@@ -97,6 +97,14 @@ button:disabled{
 button img{
     vertical-align: middle;
 }
+.tiny_button{
+    padding: 0px;
+    border-radius: 0px;
+}
+.tiny_button img{
+    width:16px;
+    height: 16px;
+}
 #error{
     margin: 10px;
     border: 1px solid #D0D0D0;
