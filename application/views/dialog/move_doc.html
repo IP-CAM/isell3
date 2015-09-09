@@ -1,40 +1,47 @@
 <script type="text/javascript">
-    App.page_dialog_move_doc.init = function (data, handler) {
-	$('#page_dialog_move_doc').window({
-	    title: 'Переместить документ',
-	    width: 300,
-	    height: 150
-	});
-	if( data.disabledMove ){
-	    $('button[name="moveDoc"]').attr('disabled',true);
-	}
-    };
-    App.page_dialog_move_doc.destroy=function(){
-	$('#page_dialog_move_doc').window('close');
-	$('#page_dialog_move_doc').remove();
-	delete this;
-    };
-    App.page_dialog_move_doc.data_loader = function (param, success, error) {
-	var q = param.q || '';
-	if (q.length <= 2) {
-	     return false;
-	}
-	$.ajax({
-	    url: 'ProcCompanies/onCompaniesList/',
-	    data: {
-		label: q
-	    },
-	    success: function (xhr) {
-		var data=JSON.parse(xhr);
-		if( data.items ){
-		    data.items.shift();
-		    success(data.items);
+    /* global App */
+    App.page_dialog_move_doc={
+        init:function (data, handler) {
+            this.node.window({
+                title: 'Переместить документ',
+                width: 300,
+                height: 150,
+                onClose:function(){
+		    App.page_dialog_move_doc.handler.notify('close',App.page_dialog_move_doc.data);
+		    App.page_dialog_move_doc.destroy();
 		}
-	    },
-	    error: function () {
-		error.apply(this, arguments);
-	    }
-	});
+            });
+            if( data.disabledMove ){
+                $('button[name="moveDoc"]').attr('disabled',true);
+            }
+        },
+        destroy:function(){
+            this.node.window('destroy');
+	    this.node.remove();
+	    delete App.page_dialog_move_doc;
+        },
+        data_loader:function (param, success, error) {
+            var q = param.q || '';
+            if (q.length <= 2) {
+                 return false;
+            }
+            $.ajax({
+                url: 'ProcCompanies/onCompaniesList/',
+                data: {
+                    label: q
+                },
+                success: function (xhr) {
+                    var data=JSON.parse(xhr);
+                    if( data.items ){
+                        data.items.shift();
+                        success(data.items);
+                    }
+                },
+                error: function () {
+                    error.apply(this, arguments);
+                }
+            });
+        }
     };
     $('#page_dialog_move_doc_frm').submit(function(event){
 	event.preventDefault();
