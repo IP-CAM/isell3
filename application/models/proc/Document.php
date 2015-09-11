@@ -84,6 +84,7 @@ class Document extends Data {
 	    $copy[] = "product_code='$row[product_code]'";
 	    $copy[] = "product_quantity=$row[product_quantity]";
 	    $copy[] = "self_price=$row[self_price]";
+	    $copy[] = "party_label='$row[party_label]'";
 	    $copy[] = "invoice_price=$row[invoice_price]";
 	    $copy = implode(',', $copy);
 	    $this->Base->query("INSERT INTO document_entries SET doc_id=$new_doc_id, $copy");
