@@ -110,7 +110,9 @@ App.json=function( text ){
 };
 App.uri = function () {
     var args = Array.prototype.slice.call(arguments);
-    return args.map(encodeURIComponent).join('/');
+    return args.map(function(text){
+	return encodeURIComponent(String(text).replace(/\n/g," "));
+    }).join('/');
 };
 App.toIso = function (dmY) {
     if (dmY instanceof Date) {

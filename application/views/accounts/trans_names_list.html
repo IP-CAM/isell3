@@ -3,7 +3,7 @@
     Tnames_list = App.page_accounts_trans_names_list = {
 	init: function () {
 	    this.node.window({
-		title: 'Бухгалтерские проводки',
+		title: 'Операции по счету',
 		width: 470,
 		height: 420,
 		modal:true,
@@ -42,6 +42,7 @@
 	create:function(){
 	    App.loadWindow('page/accounts/trans_names',{trans_type:'0_0'}).progress(function(status){
 		if( status==='close' ){
+		    Tnames_list.handler.notify('create');
 		    $('#Tnames_list_dg').datagrid('reload');
 		}
 	    });
@@ -54,6 +55,7 @@
 	    $.post("AccountsData/transNameDelete/"+row.trans_type,function(ok){
 		if(ok*1){
 		    App.flash("Тип проводки удален!");
+		    Tnames_list.handler.notify('delete');
 		    $('#Tnames_list_dg').datagrid('reload');
 		} else {
 		    App.flash("Не удалось удалить тип проводки!");
@@ -65,7 +67,12 @@
 	    if( row ){
 		Tnames_list.handler.notify('ok',row);
 		Tnames_list.node.window('close');
+	    } else {
+		Tnames_list.node.find('button').prop('disabled',true);
 	    }
+	},
+	enableOkButton:function(){
+	    Tnames_list.node.find('button').prop('disabled',false);
 	}
     };
 </script>
@@ -81,6 +88,7 @@
      width:450,
      singleSelect:true,
      onDblClickRow:Tnames_list.ok,
+     onSelect:Tnames_list.enableOkButton,
      enableFilter:true">
     <thead>
 	<tr>
@@ -92,5 +100,5 @@
     </thead>
 </table>
 <div style="text-align: center;padding-top: 15px">
-    <button onclick="Tnames_list.ok()"><img src="img/apply24.png"> Ок</button>
+    <button onclick="Tnames_list.ok()" disabled="disabled"><img src="img/apply24.png"> Ок</button>
 </div>

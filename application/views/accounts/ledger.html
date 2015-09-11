@@ -13,6 +13,7 @@
 	load:function( acc_code ){
 	    Ledger.current_acc_code=acc_code;
 	    $('#account_ledger_dg').datagrid('reload');
+	    Ledger.tnames.init();
 	},
 	showTree:function( field ){
 	    App.loadWindow('page/accounts/acc_tree',{}).progress(function(status,data){
@@ -56,10 +57,11 @@
 		$.get("AccountsData/transNameListFetch/"+Ledger.current_acc_code,function(resp){
 		    App.renderTpl('ledger_tnames',{tnames:App.json(resp)});
 		});
-		this.show();
 	    },
 	    show:function(){
-		App.loadWindow('page/accounts/trans_names_list',{trans_type:Ledger.current_acc_code});
+		App.loadWindow('page/accounts/trans_names_list',{trans_type:Ledger.current_acc_code}).progress(function(status){
+		    Ledger.tnames.init();
+		});
 	    }
 	},
 	documentOpen:function( doc_id ){
@@ -290,8 +292,11 @@
 	float:left;
 	border-right: 1px #999 solid;
     }
-    .ledger_tnames_tool{
-	text-align: right;
+    #ledger_tnames a{
+	display: none;
+    }
+    #ledger_tnames:hover a{
+	display: inline;
     }
 </style>
 <div style="width:150px;display: inline-block;vertical-align: top;">
@@ -306,15 +311,14 @@
 	{{tnames}}
 	<button style="text-align: left;margin-bottom: 3px;width: 147px" onclick="Ledger.addTransaction('{{trans_type}}')"><div class="tag">{{trans_type}}</div><br>{{trans_name}}</button>
 	{{/tnames}}
-	<div><a href="javascript:Ledger.tnames.show()"><img src="img/edit-16.png"> Изменить</a></div>
-	
+	<div><a href="javascript:Ledger.tnames.show()"><img src="img/edit-16.png"> Изменить список</a></div>
     </div>
 </div>
 
 <div style="display: inline-block;border-left:1px solid #999;margin-left:-4px;padding-left:3px">
     <div id="Ledger_acc_props" class="covert">
 	<div class="tag" style="font-size: 2.2em;float: left;margin-right: 2px;cursor: pointer" onclick="Ledger.showTree()" title="Выбрать другой счет">{{acc_code}}</div><span style="font-size: 1.2em;">{{label}}</span>
-	<div style="clear: both">
+	<div style="clear: both;padding-top: 2px;">
 	    <button onclick="Ledger.fav.toggle()" title="{{if is_favorite}}Счет избранный{{else}}Добавить в избранное{{/if}}" class="{{if is_favorite}}{{else}}transparent{{/if}}"><img src="img/heart2.png" style="width:16px;height:16px"></button>
 	    <button onclick="Ledger.showAccForm()" title="Свойства счета"><img src="img/edit-16.png"></button>
 	    <button onclick="Ledger.showTree()" title="Выбрать другой счет"><img src="img/settings.png"></button>

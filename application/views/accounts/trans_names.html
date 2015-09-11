@@ -53,9 +53,10 @@
 		    if( ok*1 ){
 			Tnames.data.trans_type=debit_code+'_'+credit_code;
 			$("#Tnames_user_level").combobox('enable',true);
-			$("#Tnames_trans_name").prop('disabled',false);
+			$("#Tnames_trans_name").textbox('enable',true);
 			$("#Tnames_ok").prop('disabled',false);
 			alert("Тип проводки добавлен. \nВведите название");
+			$("#Tnames_trans_name").textbox('textbox').select();
 		    } else {
 			alert("Добавление типа проводки не удалось!\nПроверьте правильность счетов дебит и кредита.")
 		    }
@@ -80,7 +81,7 @@
 	    this.suppressUpdate=true;
 	    $("#Tnames_frm").form('load',this.data);
 	    $("#Tnames_user_level").combobox('disable',true);
-	    $("#Tnames_trans_name").prop('disabled',true);
+	    $("#Tnames_trans_name").textbox('disable',true);
 	    $("#Tnames_ok").prop('disabled',true);
 	    this.suppressUpdate=false;
 	    $("#Tnames_acc_debit_code").textbox('textbox').focus();
@@ -116,7 +117,11 @@
 	    <option value="3">Бухгалтер</option>
 	    <option value="4">Администратор</option>
 	</select>
-	<textarea name="trans_name" id="Tnames_trans_name" required="required"  title="Название" onchange="Tnames.formChanged('trans_name',this.value,'Название')"></textarea>
+	<input class="easyui-textbox" name="trans_name" id="Tnames_trans_name" title="Название" data-options="
+		required:true,
+		multiline:true,
+		height:50,
+		onChange:function(newVal){Tnames.formChanged('trans_name',newVal,'Название');}" />
     </form>
     <div style="text-align: center;margin: 5px;">
 	<button onclick="Tnames.node.window('close')" id="Tnames_ok"><img src="img/apply24.png"> Ок</button>

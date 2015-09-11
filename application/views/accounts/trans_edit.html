@@ -116,26 +116,12 @@
 	    }
 	},
 	transnameEdit:function(){
-	    var trans_type=$('#tedit_trans_type_cmb').combobox('getValue');
-	    App.loadWindow('page/accounts/trans_names_list',{trans_type:trans_type}).progress(function(status){
-		if( status==='close' ){
-		    $('#tedit_trans_type_cmb').combobox('reload');
+	    App.loadWindow('page/accounts/trans_names_list',{trans_type:Tedit.data.current_acc_code}).progress(function(status,data){
+		if( status==='ok' ){
+		    $('#tedit_trans_type_cmb').combobox('loadData',[data]);
+		    $('#tedit_trans_type_cmb').combobox('setValue',data.trans_type);
 		}
 	    });
-	    
-	    
-	    return;
-	    var rows=$('#tedit_trans_type_cmb').combobox('getData');
-	    for(var i in rows){
-		if( rows[i].trans_type === trans_type ){
-		    App.loadWindow('page/accounts/trans_names',rows[i]).progress(function(status){
-			if( status==='close' ){
-			    $('#tedit_trans_type_cmb').combobox('reload');
-			}
-		    });
-		    break;
-		}
-	    }
 	},
 	transDelete:function(){
 	    if( !confirm("Удалить проводку?") ){
