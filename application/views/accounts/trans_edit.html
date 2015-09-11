@@ -50,7 +50,7 @@
 	    this.altCurrencyToggle();
 	},
 	altCurrencyToggle:function(){
-	    if( Tedit.data.amount_alt*1 || Tedit.data.use_alt_currency*1 ){
+	    if( Tedit.data.amount_alt*1 || Tedit.data.using_alt_currency*1 ){
 		$("#Tedit_alt_currency").show();
 	    } else {
 		$("#Tedit_alt_currency").hide();
@@ -116,8 +116,16 @@
 	    }
 	},
 	transnameEdit:function(){
-	    var rows=$('#tedit_trans_type_cmb').combobox('getData');
 	    var trans_type=$('#tedit_trans_type_cmb').combobox('getValue');
+	    App.loadWindow('page/accounts/trans_names_list',{trans_type:trans_type}).progress(function(status){
+		if( status==='close' ){
+		    $('#tedit_trans_type_cmb').combobox('reload');
+		}
+	    });
+	    
+	    
+	    return;
+	    var rows=$('#tedit_trans_type_cmb').combobox('getData');
 	    for(var i in rows){
 		if( rows[i].trans_type === trans_type ){
 		    App.loadWindow('page/accounts/trans_names',rows[i]).progress(function(status){
@@ -163,14 +171,14 @@
 	    var amount_alt=$("#Tedit_amount_alt").textbox('getValue');
 	    switch(field){
 		case 'ratio':
-		    if( amount ){
+		    if( amount*1 ){
 			$("#Tedit_amount_alt").textbox('setValue',this.round(amount/ratio,2));
 		    } else {
 			$("#Tedit_amount").textbox('setValue',this.round(amount_alt*ratio,2));
 		    }
 		    break;
 		case 'amount_alt':
-		    if( ratio ){
+		    if( ratio*1 ){
 			$("#Tedit_amount").textbox('setValue',this.round(amount_alt*ratio,2));
 		    } else {
 			$("#Tedit_ratio").textbox('setValue',this.round(amount/amount_alt,5));
@@ -178,7 +186,7 @@
 		    break;
 		case 'amount':
 		default:
-		    if( ratio ){
+		    if( ratio*1 ){
 			$("#Tedit_amount_alt").textbox('setValue',this.round(amount/ratio,2));
 		    } else {
 			$("#Tedit_ratio").textbox('setValue',this.round(amount/amount_alt,5));

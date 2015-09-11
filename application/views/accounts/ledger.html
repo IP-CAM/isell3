@@ -29,6 +29,9 @@
 		}
 	    });
 	},
+	addTransaction:function( trans_type ){
+	    this.list.rowCreate(trans_type);
+	},
 	fav:{
 	    init:function(){
 		$.get("AccountsData/accountFavoritesFetch",function(resp){
@@ -52,7 +55,11 @@
 	    init:function(){
 		$.get("AccountsData/transNameListFetch/"+Ledger.current_acc_code,function(resp){
 		    App.renderTpl('ledger_tnames',{tnames:App.json(resp)});
-		});		
+		});
+		this.show();
+	    },
+	    show:function(){
+		App.loadWindow('page/accounts/trans_names_list',{trans_type:Ledger.current_acc_code});
 	    }
 	},
 	documentOpen:function( doc_id ){
@@ -127,6 +134,7 @@
 			    success(Ledger.list.addBalanceRows(resp));
 			    Ledger.sub_totals = resp.sub_totals;
 			    Ledger.acc_props = resp.props;
+			    Ledger.using_alt_currency=resp.using_alt_currency;
 			    Ledger.onListLoaded();
 			} else {
 			    success([]);
@@ -182,7 +190,10 @@
 		var data={
 		    trans_id:0,
 		    trans_date:App.today(),
-		    current_acc_code:Ledger.current_acc_code
+		    trans_type:trans_type||'',
+		    passive_company_id:App.pcomp?App.pcomp.company_id:0,
+		    current_acc_code:Ledger.current_acc_code,
+		    using_alt_currency:Ledger.using_alt_currency
 		};
 		if(App.pcomp){
 		    data.passive_company_id=App.pcomp.company_id || 0;
@@ -199,6 +210,7 @@
 		if( row.editable*1 ){
 		    var data=row;
 		    data.current_acc_code=Ledger.current_acc_code;
+		    data.using_alt_currency=Ledger.using_alt_currency;
 		    App.loadWindow('page/accounts/trans_edit',data).progress(function(status,data){
 			if( status==='save' || status==='delete' ){
 			    $('#account_ledger_dg').datagrid('reload');
@@ -278,6 +290,9 @@
 	float:left;
 	border-right: 1px #999 solid;
     }
+    .ledger_tnames_tool{
+	text-align: right;
+    }
 </style>
 <div style="width:150px;display: inline-block;vertical-align: top;">
     <div id="ledger_favorites">
@@ -287,10 +302,12 @@
 	{{/favs}}
     </div>
     <div id="ledger_tnames">
-	Операции по счету
+	<img src="img/edit_add.png" style="width:16px;height:16px;margin-bottom: 2px;" class="transparent"> Операции по счету
 	{{tnames}}
-	<button style="text-align: left;margin-bottom: 3px;width: 147px"><div class="tag">{{trans_type}}</div><br>{{trans_name}}</button>
+	<button style="text-align: left;margin-bottom: 3px;width: 147px" onclick="Ledger.addTransaction('{{trans_type}}')"><div class="tag">{{trans_type}}</div><br>{{trans_name}}</button>
 	{{/tnames}}
+	<div><a href="javascript:Ledger.tnames.show()"><img src="img/edit-16.png"> Изменить</a></div>
+	
     </div>
 </div>
 

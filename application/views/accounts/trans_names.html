@@ -17,16 +17,9 @@
 	    App.setupForm('#Tnames_frm',this.data);
 	},
 	initAfter:function(){
-	    $("#Tnames_acc_debit_code").textbox('textbox').bind('keydown', function(e){
-		if (e.keyCode == 13){	// when press ENTER key, accept the inputed value.
-		    Tnames.node.window('close');
-		}
-	    });
-	    $("#Tnames_acc_credit_code").textbox('textbox').bind('keydown', function(e){
-		if (e.keyCode == 13){	// when press ENTER key, accept the inputed value.
-		    Tnames.node.window('close');
-		}
-	    });
+	    if( this.data.trans_type=='0_0' ){
+		Tnames.create();
+	    }
 	},
 	formChanged:function(field,value,title){
 	    if( this.suppressUpdate ){
@@ -62,9 +55,7 @@
 			$("#Tnames_user_level").combobox('enable',true);
 			$("#Tnames_trans_name").prop('disabled',false);
 			$("#Tnames_ok").prop('disabled',false);
-			$("#Tnames_delete").prop('disabled',false);
-			$("#Tnames_create").prop('disabled',false);
-			$.messager.alert('',"Тип проводки добавлен. \nВведите название",'info');
+			alert("Тип проводки добавлен. \nВведите название");
 		    } else {
 			alert("Добавление типа проводки не удалось!\nПроверьте правильность счетов дебит и кредита.")
 		    }
@@ -91,23 +82,8 @@
 	    $("#Tnames_user_level").combobox('disable',true);
 	    $("#Tnames_trans_name").prop('disabled',true);
 	    $("#Tnames_ok").prop('disabled',true);
-	    $("#Tnames_delete").prop('disabled',true);
-	    $("#Tnames_create").prop('disabled',true);
 	    this.suppressUpdate=false;
 	    $("#Tnames_acc_debit_code").textbox('textbox').focus();
-	},
-	delete:function(){
-	    if( !confirm("Удалить этот тип проводки?") ){
-		return;
-	    }
-	    $.post("AccountsData/transNameDelete/"+this.data.trans_type,function(ok){
-		if(ok*1){
-		    $.messager.alert('',"Тип проводки удален!",'info');
-		    Tnames.node.window('close');
-		} else {
-		    $.messager.alert('',"Не удалось удалить тип проводки!",'error');
-		}
-	    });
 	}
     };
 </script>
@@ -143,8 +119,6 @@
 	<textarea name="trans_name" id="Tnames_trans_name" required="required"  title="Название" onchange="Tnames.formChanged('trans_name',this.value,'Название')"></textarea>
     </form>
     <div style="text-align: center;margin: 5px;">
-	<button onclick="Tnames.node.window('close')" id="Tnames_ok"><img src="img/apply24.png"> Ок</button> | 
-	<button onclick="Tnames.create()" id="Tnames_create"><img src="img/edit_add.png"> Создать</button>
-	<button onclick="Tnames.delete()" id="Tnames_delete"><img src="img/delete.png"> Удалить</button>
+	<button onclick="Tnames.node.window('close')" id="Tnames_ok"><img src="img/apply24.png"> Ок</button>
     </div>
 </div>
