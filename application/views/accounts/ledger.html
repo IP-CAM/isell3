@@ -25,8 +25,9 @@
 	showAccForm:function(){
 	    App.loadWindow('page/accounts/acc_form',Ledger.acc_props).progress(function(status,data){
 		if( status==='change' ){
-		    App.renderTpl('Ledger_acc_props',data);
 		    $('#account_ledger_dg').datagrid('reload');
+		    App.renderTpl('Ledger_acc_props',data);
+		    Ledger.fav.init();
 		}
 	    });
 	},
