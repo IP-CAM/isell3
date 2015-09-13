@@ -17,7 +17,9 @@
 	<script type="text/javascript">
 	    /* global App*/
 	    App.loadDojo=function(){
-		if( !this.dojoloaded ){
+		if( this.dojoloaded ){
+		    App.handler.notify('dojoloaded');
+		} else {
 		    $('#dojoloader').load('page/dojoloader.html',function(){
 			App.handler.notify('dojoloaded');
 		    });
