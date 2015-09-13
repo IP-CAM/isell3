@@ -269,7 +269,7 @@ App.updaterInit=function(){
 	});
 	setTimeout(App.updaterCheck,1000*5);
     } else {
-	setTimeout(App.updaterInit,1000*30);
+	setTimeout(App.updaterInit,1000*10);
     }
 };
 App.chatCheck=function(){
