@@ -128,24 +128,17 @@ class Maintain extends CI_Model {
     }
     public function getDbBackup(){
         $this->Base->set_level(4);
-        
+        $path_to_backup_folder="/ISELL-DB-BACKUP/";
         $path_to_mysql=$this->db->query("SHOW VARIABLES LIKE 'basedir'")->row()->Value;
-
-        //header('Content-type: application/force-download');
-        //header('Content-Disposition: attachment; filename="dbbackup.sql.gz"');
-        
-        //echo "mysqldump --user=".BAY_DB_USER." --host=".BAY_DB_HOST." --password=".BAY_DB_PASS." ".BAY_DB_NAME." | gzip";
-        
-        //passthru("mysqldump --user=".BAY_DB_USER." --host=".BAY_DB_HOST." --password=".BAY_DB_PASS." ".BAY_DB_NAME." | gzip");
-        
-        $filename=date('Y-m-d').'-iSell_backup.sql';
-
-        echo $result=exec("$path_to_mysql/bin/mysqldump --user=".BAY_DB_USER." --password=".BAY_DB_PASS." --single-transaction  ".BAY_DB_NAME." /".$filename,$output);
-
-        print_r($output);
-        
-        
-        if($output==''){/* no output is good */}
-        else {/* we have something to log the output here*/}
+	if( !file_exists ($path_to_backup_folder) ){
+	    mkdir($path_to_backup_folder);
+	}
+        $filename=$path_to_backup_folder.date('Y-m-d_H-i-s').'-ISELL-DB-BACKUP.sql';
+        exec("$path_to_mysql/bin/mysqldump --user=".BAY_DB_USER." --password=".BAY_DB_PASS." --single-transaction  ".BAY_DB_NAME." >".$filename,$output);
+        if( count($output) ){
+            file_put_contents($filename.'.log', implode( "\n", $output ));
+            return false;
+        }
+        return $filename;
     }
 }
