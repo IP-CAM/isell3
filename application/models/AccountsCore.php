@@ -209,8 +209,10 @@ class AccountsCore extends Catalog{
 	$sql="SELECT 1 FROM acc_trans_names WHERE CONCAT(acc_debit_code,'_',acc_credit_code)='$trans_type' AND user_level<='$user_level'";
 	return $this->get_value($sql);
     }
-    public function transCreateUpdate( $trans_id, $passive_company_id, $trans_type, $trans_date=null, $amount=null, $amount_alt=null, $description=null ){
+    public function transCreateUpdate( $trans_id, $passive_company_id, $trans_type, $trans_date=null, $amount=null, $amount_alt=null ){
 	$this->Base->set_level(2);
+	$description=$this->input->post('description');
+	
 	$this->check($trans_id,'int');
 	$this->check($trans_type);
 	$this->check($trans_date,'\d\d\d\d-\d\d-\d\d');

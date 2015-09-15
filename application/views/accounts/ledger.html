@@ -31,8 +31,8 @@
 		}
 	    });
 	},
-	addTransaction:function( trans_type ){
-	    this.list.rowCreate(trans_type);
+	addTransaction:function( trans_type, trans_name ){
+	    this.list.rowCreate(trans_type, trans_name);
 	},
 	fav:{
 	    init:function(){
@@ -189,11 +189,12 @@
 		    this.filterEnabled = true;
 		}
 	    },
-	    rowCreate:function( trans_type ){
+	    rowCreate:function( trans_type, trans_name ){
 		var data={
 		    trans_id:0,
 		    trans_date:App.today(),
 		    trans_type:trans_type||'',
+		    description:trans_name||'',
 		    passive_company_id:App.pcomp?App.pcomp.company_id:0,
 		    current_acc_code:Ledger.current_acc_code,
 		    using_alt_currency:Ledger.using_alt_currency
@@ -300,7 +301,7 @@
 	display: inline;
     }
 </style>
-<div style="width:150px;display: inline-block;vertical-align: top;">
+<div style="width:180px;display: inline-block;vertical-align: top;">
     <div id="ledger_favorites">
 	<img src="img/heart2.png" style="width:16px;height:16px;margin-bottom: 2px;" class="transparent"> Избранные счета
 	{{favs}}
@@ -310,7 +311,7 @@
     <div id="ledger_tnames">
 	<img src="img/edit_add.png" style="width:16px;height:16px;margin-bottom: 2px;" class="transparent"> Операции по счету
 	{{tnames}}
-	<button style="text-align: left;margin-bottom: 3px;width: 147px" onclick="Ledger.addTransaction('{{trans_type}}')"><div class="tag">{{trans_type}}</div><br>{{trans_name}}</button>
+	<button style="text-align: left;margin-bottom: 3px;width: 177px" onclick="Ledger.addTransaction('{{trans_type}}','{{trans_name}}')"><div class="tag">{{trans_type}}</div><br>{{trans_name}}</button>
 	{{/tnames}}
 	<div><a href="javascript:Ledger.tnames.show()"><img src="img/edit-16.png"> Изменить список</a></div>
     </div>
