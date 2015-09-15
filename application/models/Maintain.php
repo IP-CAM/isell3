@@ -141,8 +141,9 @@ class Maintain extends CI_Model {
         }
         return true;
     }
-    public function backupImport( $file ){
+    public function backupImport(){
 	$this->Base->set_level(4);
+        $file=$this->input->post('filename');
         $path_to_mysql=$this->db->query("SHOW VARIABLES LIKE 'basedir'")->row()->Value;
 	if( file_exists($this->path_to_backup_folder.$file) ){
 	    exec("$path_to_mysql/bin/mysql --user=".BAY_DB_USER." --password=".BAY_DB_PASS);
@@ -185,8 +186,9 @@ class Maintain extends CI_Model {
 	    return move_uploaded_file ( $_FILES['upload_file']["tmp_name"] , $this->path_to_backup_folder.$_FILES['upload_file']['name'] );
 	}
     }
-    public function backupDelete( $file ){
+    public function backupDelete(){
 	$this->Base->set_level(4);
+        $file=$this->input->post('filename');
 	return unlink($this->path_to_backup_folder.$file);
     }
 }
