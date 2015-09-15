@@ -145,12 +145,15 @@ class Maintain extends CI_Model {
 	$this->Base->set_level(4);
         $path_to_mysql=$this->db->query("SHOW VARIABLES LIKE 'basedir'")->row()->Value;
 	if( file_exists($this->path_to_backup_folder.$file) ){
-	    //echo "$path_to_mysql/bin/mysql --user=".BAY_DB_USER." --password=".BAY_DB_PASS." --single-transaction ".BAY_DB_NAME." <".$this->path_to_backup_folder.$file;
-	    exec("$path_to_mysql/bin/mysql --user=".BAY_DB_USER." --password=".BAY_DB_PASS." ".BAY_DB_NAME." <".$this->path_to_backup_folder.$file." 2>&1",$output);
+	    exec("$path_to_mysql/bin/mysql --user=".BAY_DB_USER." --password=".BAY_DB_PASS);
+	    exec("$path_to_mysql/bin/mysql --user=".BAY_DB_USER." ".BAY_DB_NAME." <".$this->path_to_backup_folder.$file." 2>&1",$output);
 	    if( count($output) ){
 		file_put_contents($this->path_to_backup_folder.date('Y-m-d_H-i-s').'-IMPORT.log', implode( "\n", $output ));
+                return false;
 	    }
+            return true;
 	}
+        return false;
     }
     public function backupList(){
 	$this->Base->set_level(4);
