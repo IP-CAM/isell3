@@ -46,7 +46,7 @@ class AccountsCore extends Catalog{
 		companies_list ON company_id = passive_company_id
 		    JOIN
 		acc_trans_status USING (trans_status)
-		    JOIN
+		    LEFT JOIN
 		user_list ON user_id = modified_by
 	    WHERE
 		@acc_code = acc_debit_code
