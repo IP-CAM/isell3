@@ -1,66 +1,72 @@
 <script type="text/javascript">
     /* global App */
     TradeJs = {
-	init:function(){
-	    App.initTabs('trade_main_tabs');
-	},
-	selectCompany:function(company){
-	    if( !company.company_id ){
-		return false;
-	    }
-	    $.post('Company/selectPassiveCompany/' + company.company_id,function(xhr){
-		App.pcomp=App.json(xhr);
-		App.handler.notify('passiveCompanySelected');
-	    });	    
-	},
-	comboLoader:function(param,success,error){
-	    $.get('Company/listFetch/selected_passive_if_empty',param,function(xhr){
-		var resp=App.json(xhr);
-		success(resp[0]?resp:[]);
-		if( !param.q && resp[0] ){//selected_passive_if_empty
-		    $('#trade_comp_cmb').combobox('select',resp[0].company_id);
-		}
-	    });
-	}
+        init: function () {
+            App.initTabs('trade_main_tabs');
+        },
+        selectCompany: function (company) {
+            if (!company.company_id) {
+                return false;
+            }
+            $.post('Company/selectPassiveCompany/' + company.company_id, function (xhr) {
+                App.pcomp = App.json(xhr);
+                App.handler.notify('passiveCompanySelected');
+            });
+        },
+        comboLoader: function (param, success, error) {
+            $.get('Company/listFetch/selected_passive_if_empty', param, function (xhr) {
+                var resp = App.json(xhr);
+                success(resp[0] ? resp : []);
+                if (!param.q && resp[0]) {//selected_passive_if_empty
+                    $('#trade_comp_cmb').combobox('select', resp[0].company_id);
+                }
+            });
+        }
     };
 </script>
-<div style="float:left;padding-right: 2px;vertical-align: top">
-    <div class="transp60" style="width:200px;padding-left:2px;">
-	<input class="easyui-combobox" id="trade_comp_cmb" style="width:100%" data-options="
-	    valueField: 'company_id',
-	    textField: 'label',
-	    loader:TradeJs.comboLoader,
-	    mode: 'remote',
-	    method:'get',
-	    onSelect: TradeJs.selectCompany
-	    ">
-	<ul class="easyui-tree " data-options="
-	    url:'Company/branchFetch/',
-	    method:'get',
-	    loadFilter:function(data){
-		for(var i in data){
-		    data[i].id=data[i].branch_id;
-		    data[i].text=data[i].label;
-		    if(data[i].level!=0){
-			data[i].iconCls='icon-lock';
-		    }
-		}
-		return data;
-	    },
-	    onSelect:function(node){
-		if(node.state=='closed')
-		    $(this).tree('expand',node.target);
-		else
-		    TradeJs.selectCompany(node);
-	    },
-	    animate:true,
-	    dnd:true">
-	</ul>
-    </div>
-</div>
-<div id="trade_main_tabs" class="slim-tab">
-    <div title="Документы" href="page/trade/document_list.html" style="min-height: 500px;"></div>
-    <div title="Настройки" href="page/company/prefs.html" style="min-height: 500px;"></div>
-    <div title="Реквизиты" href="page/company/details.html" style="min-height: 500px;"></div>
-    <div title="Бланки" href="page/trade/blank.html" style="min-height: 500px;"></div>
-</div>
+<table style="border-spacing: 0px;border-collapse: separate;">
+    <tr>
+        <td style="vertical-align: top;padding: 0px;">
+            <div class="transp60" style="width:170px;overflow: auto;">
+                <input class="easyui-combobox" id="trade_comp_cmb" style="width:100%" data-options="
+                       valueField: 'company_id',
+                       textField: 'label',
+                       loader:TradeJs.comboLoader,
+                       mode: 'remote',
+                       method:'get',
+                       onSelect: TradeJs.selectCompany
+                       ">
+                <ul class="easyui-tree " data-options="
+                    url:'Company/branchFetch/',
+                    method:'get',
+                    loadFilter:function(data){
+                        for(var i in data){
+                            data[i].id=data[i].branch_id;
+                            data[i].text=data[i].label;
+                            if(data[i].level!=0){
+                                data[i].iconCls='icon-lock';
+                            }
+                        }
+                        return data;
+                    },
+                    onSelect:function(node){
+                        if(node.state=='closed')
+                            $(this).tree('expand',node.target);
+                        else
+                            TradeJs.selectCompany(node);
+                    },
+                    animate:true,
+                    dnd:true">
+                </ul>
+            </div>
+        </td>
+        <td style="vertical-align: top;padding: 0px;">
+            <div id="trade_main_tabs" class="slim-tab">
+                <div title="Документы" href="page/trade/document_list.html" style="min-height: 500px;"></div>
+                <div title="Настройки" href="page/company/prefs.html" style="min-height: 500px;"></div>
+                <div title="Реквизиты" href="page/company/details.html" style="min-height: 500px;"></div>
+                <div title="Бланки" href="page/trade/blank.html" style="min-height: 500px;"></div>
+            </div>
+        </td>
+    </tr>
+</table>
