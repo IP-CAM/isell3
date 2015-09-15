@@ -84,10 +84,11 @@
 		xhr.open("POST", url, true);
 		xhr.onreadystatechange = function() {
 		    if (xhr.readyState == 4 && xhr.status == 200) {
-			if( xhr.responseText*1 ){
+			if( xhr.responseText=='uploaded1' ){
 			    $('#page_dialog_backup_dg').datagrid('reload');
+                            App.flash("Файл загружен.");
 			} else {
-			    App.flash("Не удалось загрузить");
+			    App.flash("Не удалось загрузить "+xhr.responseText);
 			}
                         App.page_dialog_backup.throbber(0);
 		    }

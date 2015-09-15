@@ -182,9 +182,13 @@ class Maintain extends CI_Model {
 	}
     }
     public function backupUp(){
-	if( $_FILES['upload_file'] ){
-	    return move_uploaded_file ( $_FILES['upload_file']["tmp_name"] , $this->path_to_backup_folder.$_FILES['upload_file']['name'] );
+	if( !file_exists ($this->path_to_backup_folder) ){
+	    mkdir($this->path_to_backup_folder);
 	}
+	if( $_FILES['upload_file'] && !$_FILES['upload_file']['error'] ){
+	    return 'uploaded'.move_uploaded_file( $_FILES['upload_file']["tmp_name"] , $this->path_to_backup_folder.$_FILES['upload_file']['name'] );
+	}
+        return 'error'.$_FILES['upload_file']['error'];
     }
     public function backupDelete(){
 	$this->Base->set_level(4);
