@@ -317,7 +317,7 @@ $(document).ajaxError(function (event, xhr, settings) {
     if (type && type.indexOf('OK') > -1 || settings.crossDomain===true) {
 	return;
     }
-    App.flash("<h3>error url: " + settings.url + "</h3>" + xhr.responseText, 'error');
+    App.flash("<h3>error url: " + settings.url + "</h3>" + xhr.responseText);
 });
 $(document).ajaxSend(function () {
     $(document).css('cursor', 'wait');
