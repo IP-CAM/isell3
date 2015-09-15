@@ -174,10 +174,11 @@
 	},
 	blankCalendarRender:function(){
 	    $('#blank_wrapper .blank_calendar').each(function(){
+                var date=$(this).html();
 		var dbox=$(this).html('<span></span>').find('span');
-		dbox.datebox({
+                dbox.datebox({
 		    width:'90px',
-		    value:$(this).html()
+		    value:date
 		});
 		Blank.parser.dateBoxes.push(dbox);
 	    });
@@ -309,7 +310,6 @@
 	    $('#blank_list_dg').datagrid('enableFilter');
 	},
 	loader:function(param,success,error){
-	    //alert(33333);
 	    $.get(App.uri('DocumentBlank','listFetch',param.page,param.rows),{filterRules:param.filterRules},function(xhr){
 		var resp=App.json(xhr);
 		if( resp.rows ){
@@ -349,12 +349,13 @@
 		$('#blank_edit').panel('expand');
 		Blank.load();
 	    }
+            $('#blank_list_dg').datagrid('resize');
 	}
     };
 </script>
 
 <div style="display: table-cell;">
-    <div class="easyui-panel" title="Создать новый бланк" id="blank_avails" data-options="collapsible:true,iconCls:'icon-document16'">
+    <div class="easyui-panel covert" title="Создать новый бланк" id="blank_avails" data-options="collapsible:true,iconCls:'icon-document16'">
 	{{avails}}
 	{{if avail_views}}
 	<div class="blank_group">
@@ -379,7 +380,7 @@
     </div>
 </div>
 <div style="display: table-cell;padding-left:1px;">
-    <table id="blank_list_dg" class="easyui-datagrid" title="Список бланков" style="width:395px;"
+    <table id="blank_list_dg" class="easyui-datagrid" title="Список бланков" style="width:375px;"
 	   data-options="
 	   idField:'doc_id',
 	   loader:Blank.list.loader,
@@ -396,7 +397,7 @@
 		<th data-options="width:25,field:'doc_type_icon',align:'center',formatter:App.datagrid.tooltip">Док</th>
 		<th data-options="width:65,field:'doc_date'">Дата</th>
 		<th data-options="width:45,field:'doc_num',align:'right'">Номер</th>
-		<th data-options="width:120,field:'view_name'">Документ</th>
+		<th data-options="width:100,field:'view_name'">Документ</th>
 		<th data-options="width:25,field:'saved',align:'center',formatter:App.datagrid.tooltip">Сохранен</th>
 	    </tr>
 	</thead>

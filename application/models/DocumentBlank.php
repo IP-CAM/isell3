@@ -100,8 +100,8 @@ class DocumentBlank extends DocumentCore {
         if ($doc_view_id) {
 	    $View=$this->Base->load_model('DocumentView');
             $View->unfreezeView($doc_view_id);
-            $View->viewUpdate($doc_view_id, 'view_num', $num, false);
-            $View->viewUpdate($doc_view_id, 'view_date', $date, false);
+            $View->viewUpdate($doc_view_id, false, 'view_num', $num);
+            $View->viewUpdate($doc_view_id, false, 'view_date', $date);
             $View->freezeView($doc_view_id, $html);
 	    return true;
         }
