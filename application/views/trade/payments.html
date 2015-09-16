@@ -1,0 +1,35 @@
+<script>
+    /* global App,LedgerPayment */
+    App.page_trade_payments={
+	searchfor:'ledger',
+	suffix:'_payment',
+	init:function(){
+	    this.getLedger();
+	},
+	getLedger:function(){
+	    $.get('page/accounts/ledger.html',function(html){
+		html=App.page_trade_payments.scan(html);
+		App.page_trade_payments.setHtml(html);
+		App.page_trade_payments.initPayments();
+	    });
+	},
+	scan:function(text){
+	    return text.replace(/(ledger)/ig,"$1Payment");
+	},
+	setHtml:function(html){
+	    $("#payment_holder").html(html);
+	    $("#payment_holder").find("script").each(function() { eval(this.text);} );
+	},
+	initPayments:function(){
+	    $.parser.parse("#payment_holder");//for easy ui
+	    LedgerPayment.data={passive_filter:true};
+	    LedgerPayment.initAfter();
+	}
+    };
+    App.handler.progress(function(status){
+	if( status==="passiveCompanySelected" ){
+	    //LedgerPayment && LedgerPayment.initAfter();
+	}
+    });
+</script>
+<div id="payment_holder"></div>

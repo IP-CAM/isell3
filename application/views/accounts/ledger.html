@@ -1,14 +1,12 @@
 <script type="text/javascript">
-    /* global App*/
+    /* global App,Mark*/
     Ledger = App.page_accounts_ledger = {
 	idate: null,
 	fdate: null,
 	acc_props: {},
 	initAfter: function () {
-	    this.load(361);
 	    this.date.initRange();
 	    this.fav.init();
-	    this.tnames.init();
 	},
 	load:function( acc_code ){
 	    Ledger.current_acc_code=acc_code;
@@ -36,8 +34,14 @@
 	},
 	fav:{
 	    init:function(){
-		$.get("AccountsData/accountFavoritesFetch",function(resp){
-		    App.renderTpl('ledger_favorites',{favs:App.json(resp)});
+		$.get("AccountsData/accountFavoritesFetch/"+(Ledger.data.passive_filter?1:0),function(resp){
+		    var favs=App.json(resp);
+		    if( favs ){
+			if( !Ledger.current_acc_code ){
+			    Ledger.load(favs[0].acc_code);
+			}
+			App.renderTpl('ledger_favorites',{favs:favs});	    
+		    }
 		});
 	    },
 	    select:function(node){
@@ -106,21 +110,23 @@
 		    max:12,
 		    rule: months,
 		    onChange:function(newVal){
-			Ledger.date.rangeToDate(newVal);
+			Ledger.date.rangeToDate(newVal,'reload_ledger');
 		    }
 		});
 		Ledger.date.rangeToDate([10,12]);
 	    },
-	    rangeToDate:function( range ){
+	    rangeToDate:function( range, mode ){
 		var now=new Date();
 		Ledger.idate=App.toDmy(new Date(now.getFullYear(), now.getMonth()-12+range[0], 1));
 		Ledger.fdate=App.toDmy(new Date(now.getFullYear(), now.getMonth()-12+range[1]+1, 0));
 		$("#account_ledger_idate").datebox('setValue',Ledger.idate);
 		$("#account_ledger_fdate").datebox('setValue',Ledger.fdate);
-		clearTimeout(Ledger.date.clock);
-		Ledger.date.clock=setTimeout(function(){
-		    $('#account_ledger_dg').datagrid('reload');
-		},500);
+		if( mode==='reload_ledger' ){
+		    clearTimeout(Ledger.date.clock);
+		    Ledger.date.clock=setTimeout(function(){
+			$('#account_ledger_dg').datagrid('reload');
+		    },500);
+		}
 	    }
 	},
 	onListLoaded: function () {
@@ -303,13 +309,13 @@
 </style>
 <div style="width:180px;display: inline-block;vertical-align: top;">
     <div id="ledger_favorites">
-	<img src="img/heart2.png" style="width:16px;height:16px;margin-bottom: 2px;" class="transparent"> Избранные счета
+	<img src="img/heart2.png" style="width:16px;height:16px;margin-bottom: 2px;"> Избранные счета
 	{{favs}}
-	<div class="left_label" onclick="Ledger.fav.select(this)" data-code="{{acc_code}}"><div class="tag">{{acc_code}}</div> {{label}}</div>
+	<div class="left_label" onclick="Ledger.fav.select(this)" data-code="{{acc_code}}"><div class="tag">{{acc_code}}</div> {{label}} <br><span style="color:#058">{{balance|blank|format}}</span></div>
 	{{/favs}}
     </div>
     <div id="ledger_tnames">
-	<img src="img/edit_add.png" style="width:16px;height:16px;margin-bottom: 2px;" class="transparent"> Операции по счету
+	<img src="img/edit_add.png" style="width:16px;height:16px;margin-bottom: 2px;"> Операции по счету
 	{{tnames}}
 	<button style="text-align: left;margin-bottom: 3px;width: 177px" onclick="Ledger.addTransaction('{{trans_type}}','{{trans_name}}')"><div class="tag">{{trans_type}}</div><br>{{trans_name}}</button>
 	{{/tnames}}

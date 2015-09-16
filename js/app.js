@@ -340,3 +340,8 @@ $.fn.datebox.defaults.parser = function (input) {
 	return date;
     }
 };
+
+
+Mark.pipes.format = function (str) {
+    return App.formatNum(str);
+};
