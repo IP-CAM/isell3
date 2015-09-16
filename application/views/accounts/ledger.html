@@ -36,11 +36,14 @@
 	    init:function(){
 		$.get("AccountsData/accountFavoritesFetch/"+(Ledger.data.passive_filter?1:0),function(resp){
 		    var favs=App.json(resp);
-		    if( favs ){
+		    if( favs[0] ){
 			if( !Ledger.current_acc_code ){
 			    Ledger.load(favs[0].acc_code);
 			}
 			App.renderTpl('ledger_favorites',{favs:favs});	    
+		    } else if(!Ledger.current_acc_code){
+			alert("Нет избранных счетов. Выберите счет из диалога.");
+			Ledger.showTree();
 		    }
 		});
 	    },
@@ -51,7 +54,7 @@
 	    },
 	    toggle:function(){
 		Ledger.acc_props.is_favorite=Ledger.acc_props.is_favorite?0:1;
-		$.post("AccountsData/accountFavoritesToggle/"+App.uri(Ledger.acc_props.acc_code,Ledger.acc_props.is_favorite),function(ok){
+		$.post("AccountsData/accountFavoritesToggle/"+App.uri(Ledger.acc_props.acc_code,Ledger.acc_props.is_favorite,Ledger.data.passive_filter?1:0),function(ok){
 		    Ledger.fav.init();
 		    App.renderTpl('Ledger_acc_props',Ledger.acc_props);
 		});
@@ -308,13 +311,13 @@
     }
 </style>
 <div style="width:180px;display: inline-block;vertical-align: top;">
-    <div id="ledger_favorites">
+    <div id="ledger_favorites" class="covert">
 	<img src="img/heart2.png" style="width:16px;height:16px;margin-bottom: 2px;"> Избранные счета
 	{{favs}}
 	<div class="left_label" onclick="Ledger.fav.select(this)" data-code="{{acc_code}}"><div class="tag">{{acc_code}}</div> {{label}} <br><span style="color:#058">{{balance|blank|format}}</span></div>
 	{{/favs}}
     </div>
-    <div id="ledger_tnames">
+    <div id="ledger_tnames" class="covert">
 	<img src="img/edit_add.png" style="width:16px;height:16px;margin-bottom: 2px;"> Операции по счету
 	{{tnames}}
 	<button style="text-align: left;margin-bottom: 3px;width: 177px" onclick="Ledger.addTransaction('{{trans_type}}','{{trans_name}}')"><div class="tag">{{trans_type}}</div><br>{{trans_name}}</button>

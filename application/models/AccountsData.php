@@ -87,10 +87,27 @@ class AccountsData extends AccountsCore{
 	}
 	return $favs;
    }
-    public function accountFavoritesToggle( $acc_code, $is_favorite ){
+    public function accountFavoritesToggle( $acc_code, $is_favorite, $use_passive_filter=false ){
 	$this->check($acc_code);
 	$this->check($is_favorite,'bool');
-	return $this->update('acc_tree',['is_favorite'=>$is_favorite],['acc_code'=>$acc_code]);
+	$this->check($use_passive_filter,'bool');
+	if( $use_passive_filter ){
+	    $passive_company_id=$this->Base->pcomp('company_id');
+	    $acc_list=$this->Base->pcomp('company_acc_list');
+	    $accs=explode(',',$acc_list);
+	    $accs=array_diff($accs,['']);
+	    
+	    $is_favorite?$accs[]=$acc_code:$accs=array_diff($accs,[$acc_code]);
+	    
+	    $new_acc_list=  implode(',', array_unique($accs));
+	    $this->Base->load_model('Company');
+	    $ok=$this->Base->Company->companyUpdate($passive_company_id,'company_acc_list',$new_acc_list);
+	    $this->Base->Company->selectPassiveCompany($passive_company_id);
+	    
+	    return $ok;
+	} else {
+	    return $this->update('acc_tree',['is_favorite'=>$is_favorite],['acc_code'=>$acc_code]);
+	}
     }
 //    public function accountPropsGet( $acc_code ){
 //	$this->check($acc_code);
