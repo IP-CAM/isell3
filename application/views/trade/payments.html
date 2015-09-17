@@ -6,6 +6,9 @@
 	init:function(){
 	    this.getLedger();
 	},
+	focus:function(){
+	    LedgerPayment && LedgerPayment.reload();
+	},
 	getLedger:function(){
 	    $.get('page/accounts/ledger.html',function(html){
 		html=App.page_trade_payments.scan(html);
@@ -24,12 +27,13 @@
 	    $.parser.parse("#payment_holder");//for easy ui
 	    LedgerPayment.data={passive_filter:true};
 	    LedgerPayment.initAfter();
+	    App.handler.progress(function(status){
+		if( status==="passiveCompanySelected" ){
+		    LedgerPayment.fav.init();
+		    LedgerPayment.reload();
+		}
+	    });
 	}
     };
-    App.handler.progress(function(status){
-	if( status==="passiveCompanySelected" ){
-	    //LedgerPayment && LedgerPayment.initAfter();
-	}
-    });
 </script>
 <div id="payment_holder"></div>

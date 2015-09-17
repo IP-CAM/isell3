@@ -8,6 +8,9 @@
 	    this.date.initRange();
 	    this.fav.init();
 	},
+	reload:function(){
+	    this.load(Ledger.current_acc_code);
+	},
 	load:function( acc_code ){
 	    Ledger.current_acc_code=acc_code;
 	    $('#account_ledger_dg').datagrid('reload');
@@ -133,8 +136,8 @@
 	    }
 	},
 	onListLoaded: function () {
-	    $("#account_ledger_ibal").html(App.formatNum(Ledger.sub_totals.ibal) + ' ' + Ledger.acc_props.curr_symbol);
-	    $("#account_ledger_fbal").html(App.formatNum(Ledger.sub_totals.fbal) + ' ' + Ledger.acc_props.curr_symbol);
+	    $("#account_ledger_ibal").html(App.formatNum(Ledger.sub_totals.ibal||'-') + ' ' + Ledger.acc_props.curr_symbol);
+	    $("#account_ledger_fbal").html(App.formatNum(Ledger.sub_totals.fbal||'-') + ' ' + Ledger.acc_props.curr_symbol);
 	    App.renderTpl('Ledger_acc_props',Ledger.acc_props);
 	},
 	list: {
