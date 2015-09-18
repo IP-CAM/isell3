@@ -87,11 +87,11 @@ class Maintain extends CI_Model {
 	    && file_exists($this->dirUnpack . $this->zipSubFolder)
 	    && file_exists($this->dirUnpack)){
 	    
-	    $this->delTree($this->dirBackup);
-	    
+	    rename($this->dirBackup, $this->dirBackup.'_old');
 	    rename($this->dirWork, $this->dirBackup);
 	    rename($this->dirUnpack . $this->zipSubFolder, $this->dirWork);
 	    $this->delTree($this->dirUnpack);
+	    $this->delTree($this->dirBackup.'_old');
 	    return true;
 	}
 	return false;
