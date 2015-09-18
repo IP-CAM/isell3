@@ -17,14 +17,16 @@
 	<script type="text/javascript">
 	    /* global App*/
 	    App.loadDojo=function(){
+		var dojodef=$.Deferred();
 		if( this.dojoloaded ){
-		    App.handler.notify('dojoloaded');
+		    dojodef.notify('dojoloaded');
 		} else {
 		    $('#dojoloader').load('page/dojoloader.html',function(){
-			App.handler.notify('dojoloaded');
+			dojodef.notify('dojoloaded');
 		    });
 		    this.dojoloaded=true;
 		}
+		return dojodef.promise();
 	    };
 	    App.user = {
 		props: {},
@@ -105,8 +107,7 @@
 		    var url="Proc"+this.current;
 		    if( !holder.html() ){
 			if( $.inArray(this.current,this.legacy)>-1 ){
-			    App.loadDojo();
-			    App.handler.progress(function(event){
+			    App.loadDojo().progress(function(event){
 				if( event==='dojoloaded' ){
 				    holder.load(url,function(){
 					App.module.initHTML();

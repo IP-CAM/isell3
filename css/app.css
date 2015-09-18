@@ -3,7 +3,7 @@ body{
     padding:0px;
     font-family: 'Trebuchet MS',Arial;
     font-size: 12px;
-    background: url(../img/bg.jpg) repeat-x;
+    background: url(../img/bg.jpg) repeat-x fixed;
 }
 .app_window{
     background: url(../img/window-bg.png) repeat-x;
