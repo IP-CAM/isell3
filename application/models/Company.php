@@ -39,7 +39,7 @@ class Company extends Catalog{
 	    $companies=array_merge($companies,$this->get_list( $sql ));
 	}
 	else if( $mode=='selected_passive_if_empty' ){
-	    array_push($companies,['company_id'=>$this->Base->pcomp('company_id'),'label'=>$this->Base->pcomp('company_name'),'path'=>$this->Base->pcomp('path')]);
+	    $companies[0]=['company_id'=>$this->Base->pcomp('company_id'),'label'=>$this->Base->pcomp('company_name'),'path'=>$this->Base->pcomp('path')];
 	}
 	if( $mode=='with_active' ){
 	    array_push($companies,['company_id'=>$this->Base->acomp('company_id'),'label'=>$this->Base->acomp('company_name'),'path'=>'']);
@@ -82,7 +82,7 @@ class Company extends Catalog{
 	$this->check($value);
 	$fields="company_name/company_jaddress/company_vat_id/company_code/company_vat_licence_id/company_phone/company_agreement_num/
 		 company_agreement_date/company_bank_account/company_bank_id/company_bank_name/label/company_person/company_director/
-		 company_mobile/company_address/company_email/company_web/company_description";
+		 company_mobile/company_address/company_email/company_web/company_description/company_acc_list";
 	if( strpos($fields, $field)!==false ){
 	    return $this->db->query("UPDATE companies_tree LEFT JOIN companies_list USING(branch_id) SET $field='$value' WHERE company_id=$company_id");
 	}

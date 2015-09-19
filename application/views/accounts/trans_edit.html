@@ -62,7 +62,7 @@
 	    }
 	    Tedit.waitingForResponse=true;
 	    var t=Tedit.data;
-	    $.post("AccountsCore/transCreateUpdate/"+App.uri(t.trans_id,t.passive_company_id,t.trans_type,App.toIso(t.trans_date),t.amount||0,t.amount_alt||0,t.description),function(trans_id){
+	    $.post("AccountsCore/transCreateUpdate/"+App.uri(t.trans_id,t.passive_company_id,t.trans_type,App.toIso(t.trans_date),t.amount||0,t.amount_alt||0),{description:t.description},function(trans_id){
 		Tedit.waitingForResponse=false;
 		if( trans_id*1 ){
 		    Tedit.data.trans_id=trans_id;
@@ -102,6 +102,10 @@
 		    if( !Tedit.data.trans_type && resp[0] ){
 			$('#tedit_trans_type_cmb').combobox('select',resp[0].trans_type);
 			Tedit.data.trans_type=resp[0].trans_type;
+			
+			if( !Tedit.data.description ){
+			    $('#tedit_description_txt').textbox('setValue',resp[0].trans_name);
+			}
 		    }
 		});
 	    } else {
@@ -231,7 +235,7 @@
 		    }
 		}]
 	   ">
-    <input style="width:300px" class="easyui-textbox" name="description" title="Комментарий" data-options="
+    <input style="width:300px" class="easyui-textbox" name="description" id="tedit_description_txt" title="Комментарий" data-options="
 	   multiline:true,
 	   height:66,
 	   required:true

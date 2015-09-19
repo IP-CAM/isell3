@@ -1,5 +1,6 @@
 <?php
 //include 'HubBase.php';
+date_default_timezone_set('Europe/Kiev');
 class Hub extends HubBase{
 
     public function index(){

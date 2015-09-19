@@ -17,14 +17,16 @@
 	<script type="text/javascript">
 	    /* global App*/
 	    App.loadDojo=function(){
+		var dojodef=$.Deferred();
 		if( this.dojoloaded ){
-		    App.handler.notify('dojoloaded');
+		    dojodef.notify('dojoloaded');
 		} else {
 		    $('#dojoloader').load('page/dojoloader.html',function(){
-			App.handler.notify('dojoloaded');
+			dojodef.notify('dojoloaded');
 		    });
 		    this.dojoloaded=true;
 		}
+		return dojodef.promise();
 	    };
 	    App.user = {
 		props: {},
@@ -105,8 +107,7 @@
 		    var url="Proc"+this.current;
 		    if( !holder.html() ){
 			if( $.inArray(this.current,this.legacy)>-1 ){
-			    App.loadDojo();
-			    App.handler.progress(function(event){
+			    App.loadDojo().progress(function(event){
 				if( event==='dojoloaded' ){
 				    holder.load(url,function(){
 					App.module.initHTML();
@@ -181,17 +182,25 @@
 		{{/if}}	    
 	    </span>
 	</div>
-	<div id="div_module_list" class="covert transparent" style="text-align: center;width:60px;vertical-align: top;float: left;">
-	    {{module_list}}
-		<div class="ModuleButton" id="{{name}}Button" title="{{label}}">
-                    <a href="#{{name}}">
-                        <!--<img src="img/Mods/{{icon}}" width="45" height="45" />-->
-                    </a>
-                </div>
-	    {{/module_list}}
-	    <img src="img/personalize-icon.png" style="width:48px;height:48px;cursor: pointer;" onclick="App.setBg()" title="Установить обои" />
-	</div>
-	<div id="ModuleContainer" style="margin: 3px;vertical-align: top;"></div>
+	<table style="border-spacing: 0px;border-collapse: separate;">
+	    <tr>
+		<td style="width:60px;vertical-align: top;padding: 0px;">
+		    <div id="div_module_list" class="covert transparent">
+			{{module_list}}
+			    <div class="ModuleButton" id="{{name}}Button" title="{{label}}">
+				<a href="#{{name}}">
+				    <!--<img src="img/Mods/{{icon}}" width="45" height="45" />-->
+				</a>
+			    </div>
+			{{/module_list}}
+			<img src="img/personalize-icon.png" style="width:48px;height:48px;cursor: pointer;" onclick="App.setBg()" title="Установить обои" />
+		    </div>
+		</td>
+		<td style="vertical-align: top;padding: 0px;">
+		    <div id="ModuleContainer" style="margin: 1px;vertical-align: top;"></div>
+		</td>
+	    </tr>
+	</table>
 	<div id="appWindowContainer"></div>
 	<div id="dojoloader"></div>
 	<div id="appStatus"></div>

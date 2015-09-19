@@ -87,11 +87,11 @@ class Maintain extends CI_Model {
 	    && file_exists($this->dirUnpack . $this->zipSubFolder)
 	    && file_exists($this->dirUnpack)){
 	    
-	    $this->delTree($this->dirBackup);
-	    
+	    rename($this->dirBackup, $this->dirBackup.'_old');
 	    rename($this->dirWork, $this->dirBackup);
 	    rename($this->dirUnpack . $this->zipSubFolder, $this->dirWork);
 	    $this->delTree($this->dirUnpack);
+	    $this->delTree($this->dirBackup.'_old');
 	    return true;
 	}
 	return false;
@@ -126,26 +126,73 @@ class Maintain extends CI_Model {
 	}
 	return date ("Y-m-d\TH:i:s\Z", filemtime($this->dirWork));
     }
-    public function getDbBackup(){
+    private $path_to_backup_folder="/ISELL-DB-BACKUP/";
+    public function backupDump(){
         $this->Base->set_level(4);
-        
         $path_to_mysql=$this->db->query("SHOW VARIABLES LIKE 'basedir'")->row()->Value;
-
-        //header('Content-type: application/force-download');
-        //header('Content-Disposition: attachment; filename="dbbackup.sql.gz"');
-        
-        //echo "mysqldump --user=".BAY_DB_USER." --host=".BAY_DB_HOST." --password=".BAY_DB_PASS." ".BAY_DB_NAME." | gzip";
-        
-        //passthru("mysqldump --user=".BAY_DB_USER." --host=".BAY_DB_HOST." --password=".BAY_DB_PASS." ".BAY_DB_NAME." | gzip");
-        
-        $filename=date('Y-m-d').'-iSell_backup.sql';
-
-        echo $result=exec("$path_to_mysql/bin/mysqldump --user=".BAY_DB_USER." --password=".BAY_DB_PASS." --single-transaction  ".BAY_DB_NAME." /".$filename,$output);
-
-        print_r($output);
-        
-        
-        if($output==''){/* no output is good */}
-        else {/* we have something to log the output here*/}
+	if( !file_exists ($this->path_to_backup_folder) ){
+	    mkdir($this->path_to_backup_folder);
+	}
+        $filename=$this->path_to_backup_folder.date('Y-m-d_H-i-s')."-".BAY_DB_NAME.'-ISELL-DB-BACKUP.sql';
+        exec("$path_to_mysql/bin/mysqldump --user=".BAY_DB_USER." --password=".BAY_DB_PASS."  --default-character-set=utf8 --single-transaction=TRUE --routines --events  ".BAY_DB_NAME." >".$filename,$output);
+        if( count($output) ){
+            file_put_contents($filename.'.log', implode( "\n", $output ));
+            return false;
+        }
+        return true;
+    }
+    public function backupImport(){
+	$this->Base->set_level(4);
+        $file=$this->input->post('filename');
+        $path_to_mysql=$this->db->query("SHOW VARIABLES LIKE 'basedir'")->row()->Value;
+	if( file_exists($this->path_to_backup_folder.$file) ){
+	    exec("$path_to_mysql/bin/mysql --user=".BAY_DB_USER." --password=".BAY_DB_PASS);
+	    exec("$path_to_mysql/bin/mysql --user=".BAY_DB_USER." ".BAY_DB_NAME." <".$this->path_to_backup_folder.$file." 2>&1",$output);
+	    if( count($output) ){
+		file_put_contents($this->path_to_backup_folder.date('Y-m-d_H-i-s').'-IMPORT.log', implode( "\n", $output ));
+                return false;
+	    }
+            return true;
+	}
+        return false;
+    }
+    public function backupList(){
+	$this->Base->set_level(4);
+	$files = array_diff(scandir($this->path_to_backup_folder), array('.', '..'));
+	arsort($files);
+	return array_values ($files);
+    }
+    public function backupListNamed(){
+	$this->Base->set_level(4);
+	$named=[];
+	$list=$this->backupList();
+	foreach($list as $file){
+	    $named[]=['file'=>$file];
+	}
+	return $named;
+    }
+    public function backupDown( $file ){
+	$this->Base->set_level(4);
+	if( file_exists ($this->path_to_backup_folder.$file) ){
+	    header('Content-type: application/force-download');
+	    header('Content-Disposition: attachment; filename="'.$file.'"');
+	    echo file_get_contents($this->path_to_backup_folder.$file);
+	} else {
+	    show_error('X-isell-error: File not found!'.$this->path_to_backup_folder.$file, 404);
+	}
+    }
+    public function backupUp(){
+	if( !file_exists ($this->path_to_backup_folder) ){
+	    mkdir($this->path_to_backup_folder);
+	}
+	if( $_FILES['upload_file'] && !$_FILES['upload_file']['error'] ){
+	    return 'uploaded'.move_uploaded_file( $_FILES['upload_file']["tmp_name"] , $this->path_to_backup_folder.$_FILES['upload_file']['name'] );
+	}
+        return 'error'.$_FILES['upload_file']['error'];
+    }
+    public function backupDelete(){
+	$this->Base->set_level(4);
+        $file=$this->input->post('filename');
+	return unlink($this->path_to_backup_folder.$file);
     }
 }

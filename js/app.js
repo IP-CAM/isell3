@@ -1,5 +1,4 @@
 /* global Mark, encodeURIComponent */
-
 var App = {
     tplcache:{},
     handler:$.Deferred(),
@@ -124,7 +123,7 @@ App.toDmy = function (iso) {
     if (iso instanceof Date) {
 	return String("0" + iso.getDate()).slice(-2) + '.' + String("0" + (iso.getMonth() + 1)).slice(-2) + '.' + iso.getFullYear();
     }
-    return iso.replace(/^(\d\d\d\d)-(\d\d)-(\d\d)T?(\d\d:\d\d:\d\d)?Z?$/, "$3.$2.$1");
+    return iso?iso.replace(/^(\d\d\d\d)-(\d\d)-(\d\d)T?(\d\d:\d\d:\d\d)?Z?$/, "$3.$2.$1"):null;
 };
 App.today = function () {
     return App.toDmy(new Date());
@@ -318,7 +317,7 @@ $(document).ajaxError(function (event, xhr, settings) {
     if (type && type.indexOf('OK') > -1 || settings.crossDomain===true) {
 	return;
     }
-    App.flash("<h3>error url: " + settings.url + "</h3>" + xhr.responseText, 'error');
+    App.flash("<h3>error url: " + settings.url + "</h3>" + xhr.responseText);
 });
 $(document).ajaxSend(function () {
     $(document).css('cursor', 'wait');
@@ -340,4 +339,9 @@ $.fn.datebox.defaults.parser = function (input) {
 	$(this).datebox('setValue',date);
 	return date;
     }
+};
+
+
+Mark.pipes.format = function (str) {
+    return App.formatNum(str);
 };

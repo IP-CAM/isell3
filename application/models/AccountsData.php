@@ -72,20 +72,42 @@ class AccountsData extends AccountsCore{
     public function balanceTreeDelete( $branch_id ){
 	return $this->treeDelete('acc_tree',$branch_id);
     }
-    public function accountFavoritesFetch(){
-	$sql="SELECT 
-		acc_code,
-		label
-	    FROM
-		acc_tree
-	    WHERE 
-		is_favorite=1";
-	return $this->get_list($sql);
-    }
-    public function accountFavoritesToggle( $acc_code, $is_favorite ){
+    public function accountFavoritesFetch( $use_passive_filter=false ){
+	if( $use_passive_filter ){
+	    $acc_list=$this->Base->pcomp('company_acc_list');
+	} else {
+	    $acc_list= $this->get_value("SELECT GROUP_CONCAT(acc_code SEPARATOR ',') FROM acc_tree WHERE is_favorite=1");
+	}
+	$accs=explode(',',$acc_list);
+	$favs=[];
+	if( count($accs) ){
+	    foreach( $accs as $acc_code ){
+		$favs[]=$this->getAccountProperties($acc_code, true, $use_passive_filter);
+	    }
+	}
+	return $favs;
+   }
+    public function accountFavoritesToggle( $acc_code, $is_favorite, $use_passive_filter=false ){
 	$this->check($acc_code);
 	$this->check($is_favorite,'bool');
-	return $this->update('acc_tree',['is_favorite'=>$is_favorite],['acc_code'=>$acc_code]);
+	$this->check($use_passive_filter,'bool');
+	if( $use_passive_filter ){
+	    $passive_company_id=$this->Base->pcomp('company_id');
+	    $acc_list=$this->Base->pcomp('company_acc_list');
+	    $accs=explode(',',$acc_list);
+	    $accs=array_diff($accs,['']);
+	    
+	    $is_favorite?$accs[]=$acc_code:$accs=array_diff($accs,[$acc_code]);
+	    
+	    $new_acc_list=  implode(',', array_unique($accs));
+	    $this->Base->load_model('Company');
+	    $ok=$this->Base->Company->companyUpdate($passive_company_id,'company_acc_list',$new_acc_list);
+	    $this->Base->Company->selectPassiveCompany($passive_company_id);
+	    
+	    return $ok;
+	} else {
+	    return $this->update('acc_tree',['is_favorite'=>$is_favorite],['acc_code'=>$acc_code]);
+	}
     }
 //    public function accountPropsGet( $acc_code ){
 //	$this->check($acc_code);

@@ -8,17 +8,35 @@
 include 'Catalog.php';
 class AccountsCore extends Catalog{
     public $min_level=1;
-    private function getAccountProperties( $acc_code ) {
+    protected function getAccountProperties( $acc_code, $calc_balance=false, $use_passive_filter=false ) {
+	$balance='';
+	if( $calc_balance ){
+	    $passive_filter="";
+	    if( $use_passive_filter ){
+		$passive_filter=" AND passive_company_id='".$this->Base->pcomp('company_id')."'";
+	    }
+	    $balance=",(
+		SELECT 
+		    SUM(ROUND(IF(at.acc_code=acc_debit_code,amount,-amount),2))
+		FROM acc_trans
+		WHERE (acc_debit_code=at.acc_code OR acc_credit_code=at.acc_code) $passive_filter) balance";
+	}
         $sql="SELECT
-            * 
-            FROM acc_tree at
-            JOIN curr_list cl ON IF(at.curr_id,cl.curr_id=at.curr_id,cl.curr_id=1)
+		* $balance
+	    FROM 
+		acc_tree at
+		    JOIN curr_list cl ON IF(at.curr_id,cl.curr_id=at.curr_id,cl.curr_id=1)
             WHERE acc_code='$acc_code'";
         return $this->get_row($sql);
     }
-    private function ledgerCreate( $acc_code, $use_alt_amount=false ){
+    private function ledgerCreate( $acc_code, $use_alt_amount=false, $use_passive_filter=false ){
 	$this->check($acc_code);
 	$this->check($use_alt_amount,'bool');
+	
+	$passive_filter="";
+	if( $use_passive_filter ){
+	    $passive_filter=" AND passive_company_id='".$this->Base->pcomp('company_id')."'";
+	}
 	
 	$this->db->query("SET @acc_code:=?, @use_alt_amount=?;",[$acc_code,$use_alt_amount]);
 	$this->db->query("DROP TEMPORARY TABLE IF EXISTS tmp_ledger;");
@@ -46,11 +64,12 @@ class AccountsCore extends Catalog{
 		companies_list ON company_id = passive_company_id
 		    JOIN
 		acc_trans_status USING (trans_status)
-		    JOIN
+		    LEFT JOIN
 		user_list ON user_id = modified_by
 	    WHERE
-		@acc_code = acc_debit_code
-		    OR @acc_code = acc_credit_code)";
+		(@acc_code = acc_debit_code
+		    OR @acc_code = acc_credit_code)
+		    $passive_filter)";
 	$this->query($sql);
     }
     private function ledgerGetSubtotals( $idate, $fdate ){
@@ -62,8 +81,12 @@ class AccountsCore extends Catalog{
 		FROM tmp_ledger";
 	return $this->get_row($sql);
     }
-    public function ledgerFetch( $acc_code, $idate='', $fdate='', $page=1, $rows=30 ){
-	$this->Base->set_level(3);
+    public function ledgerFetch( $acc_code, $idate='', $fdate='', $page=1, $rows=30, $use_passive_filter=false ){
+	if( $use_passive_filter ){
+	    $this->Base->set_level(1);
+	} else {
+	    $this->Base->set_level(3);
+	}
 	$this->check($idate,'\d\d\d\d-\d\d-\d\d');
 	$this->check($fdate,'\d\d\d\d-\d\d-\d\d');
 	$this->check($acc_code,'int');
@@ -81,7 +104,7 @@ class AccountsCore extends Catalog{
 	$props=$this->getAccountProperties( $acc_code );
 	$default_curr_id=$this->Base->acomp('curr_id');
 	$using_alt_currency=$default_curr_id!=$props->curr_id;
-	$this->ledgerCreate($acc_code, $using_alt_currency );
+	$this->ledgerCreate($acc_code, $using_alt_currency, $use_passive_filter );
 	$sql="SELECT * FROM tmp_ledger 
 		WHERE '$idate'<cstamp AND cstamp<='$fdate'
 		HAVING $having
@@ -92,6 +115,9 @@ class AccountsCore extends Catalog{
 	
 	$sub_totals=$this->ledgerGetSubtotals($idate, $fdate);
 	return ['rows'=>$result_rows,'total'=>$total_estimate,'props'=>$props,'sub_totals'=>$sub_totals,'using_alt_currency'=>$using_alt_currency];
+    }
+    public function ledgerPaymentFetch( $acc_code, $idate='', $fdate='', $page=1, $rows=30 ){
+	return $this->ledgerFetch($acc_code, $idate, $fdate, $page, $rows, true);
     }
     public function accountBalanceTreeFetch( $parent_id=0, $idate='', $fdate='', $show_unused=0 ){
 	$this->Base->set_level(3);
@@ -209,8 +235,10 @@ class AccountsCore extends Catalog{
 	$sql="SELECT 1 FROM acc_trans_names WHERE CONCAT(acc_debit_code,'_',acc_credit_code)='$trans_type' AND user_level<='$user_level'";
 	return $this->get_value($sql);
     }
-    public function transCreateUpdate( $trans_id, $passive_company_id, $trans_type, $trans_date=null, $amount=null, $amount_alt=null, $description=null ){
+    public function transCreateUpdate( $trans_id, $passive_company_id, $trans_type, $trans_date=null, $amount=null, $amount_alt=null ){
 	$this->Base->set_level(2);
+	$description=$this->input->post('description');
+	
 	$this->check($trans_id,'int');
 	$this->check($trans_type);
 	$this->check($trans_date,'\d\d\d\d-\d\d-\d\d');
