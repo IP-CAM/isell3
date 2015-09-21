@@ -15,7 +15,7 @@
 	<script type="text/javascript" src="js/jquery-easyui-1.4/datagridfilter/datagrid-filter.js"></script>
 	<script type="text/javascript" src="js/app.js"></script>
 	<script type="text/javascript">
-	    /* global App*/
+	    /* global App,dojo*/
 	    App.loadDojo=function(){
 		var dojodef=$.Deferred();
 		if( this.dojoloaded ){
@@ -128,7 +128,7 @@
 		    },0);
 		},
 		parseHTML:function(){
-		    if( App.dojoloaded ){
+		    if( App.dojoloaded && $.inArray(this.current,this.legacy)>-1 ){
 			dojo.require('dojo.parser');
 			dojo.parser.parse("holder"+App.module.current);
 		    }
