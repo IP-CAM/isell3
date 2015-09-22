@@ -6,6 +6,7 @@
             $('#holderTrade .validatebox-text').on('focus', function() {
                 this.select();
             });
+	    this.ctreeInlineInit();
         },
         selectCompany: function (company) {
             if ( !company.company_id || App.pcomp && App.pcomp.company_id===company.company_id ) {
@@ -22,6 +23,7 @@
             });
         },
         comboLoader: function (param, success, error) {
+	    return ;
             $.get('Company/listFetch/selected_passive_if_empty', param, function (xhr) {
                 var resp = App.json(xhr);
                 success(resp[0] ? resp : []);
@@ -29,14 +31,25 @@
                     $('#trade_comp_cmb').combobox('select', resp[0].company_id);
                 }
             });
-        }
+        },
+	ctreeInlineInit:function(){
+	    App.loadModule('page/company/tree',{inline:true,clickselect:true},'CtreeInline',/(Ctree|page_company_tree)([^\w]|_)/g,"CtreeInline$2").progress(function(status,company){
+		console.log(status,company);
+	    });
+	}
     };
 
 </script>
 <table style="border-spacing: 0px;border-collapse: separate;">
     <tr>
         <td style="vertical-align: top;padding: 0px;">
-            <div class="transp60" style="width:170px;overflow: auto;">
+	    <div class="transp60" style="margin-right: 1px;" id="CtreeInline"></div>
+	    
+	    
+	    
+	    
+	    
+            <div class="transp60" style="width:170px;overflow: auto;display: none">
                 <input class="easyui-combobox" id="trade_comp_cmb" style="width:100%" data-options="
                        valueField: 'company_id',
                        textField: 'label',

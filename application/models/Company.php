@@ -18,7 +18,7 @@ class Company extends Catalog{
 	$q = $this->input->get('q') or $q = 0;
 	$assigned_path=$this->Base->svar('user_assigned_path');
 	$level=$this->Base->svar('user_level');
-	$companies=[['company_id'=>0,'label'=>'-','path'=>'']];
+	$companies=[];
 	if( $q ){
 	    $sql="SELECT 
 		    company_id,
@@ -36,10 +36,12 @@ class Company extends Catalog{
 		    path LIKE '$assigned_path%'
 			AND
 		    level<=$level";
-	    $companies=array_merge($companies,$this->get_list( $sql ));
+	    $companies=$this->get_list( $sql );
 	}
 	else if( $mode=='selected_passive_if_empty' ){
-	    $companies[0]=['company_id'=>$this->Base->pcomp('company_id'),'label'=>$this->Base->pcomp('company_name'),'path'=>$this->Base->pcomp('path')];
+	    array_push($companies,['company_id'=>$this->Base->pcomp('company_id'),'label'=>$this->Base->pcomp('company_name'),'path'=>$this->Base->pcomp('path')]);
+	} else {
+	    array_push($companies,['company_id'=>0,'label'=>'-','path'=>'']);
 	}
 	if( $mode=='with_active' ){
 	    array_push($companies,['company_id'=>$this->Base->acomp('company_id'),'label'=>$this->Base->acomp('company_name'),'path'=>'']);

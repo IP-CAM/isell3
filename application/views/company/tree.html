@@ -14,10 +14,21 @@
 	    }
 	},
 	init: function () {
-	    if (this.data.inline) {
-		this.node.panel(Ctree.properties);
-	    } else {
+	    if (!this.data.inline) {
 		this.node.window(Ctree.properties);
+	    }
+	    if( this.data.clickselect ){
+		this.node.find('button.ok').hide();
+	    }
+	},
+	initAfter:function(){
+	    this.node.find('.validatebox-text').on('focus', function() {
+                this.select();
+            });
+	},
+	close:function(){
+	    if (!this.data.inline) {
+		this.node.window('close');
 	    }
 	},
 	enableButtons:function( leaf ){
@@ -26,22 +37,47 @@
 	    }
 	    Ctree.node.find('.folder').prop('disabled',false);
 	},
-	select: function () {
+	click:function(node){
+	    if( node.state==='closed' ) {
+		$(this).tree('expand',node.target);
+		Ctree.enableButtons(0);
+	    } else {
+		Ctree.enableButtons(1);
+	    }
+	    if( Ctree.data.clickselect ){
+		Ctree.selectTree();
+	    }
+	},
+	selectTree: function () {
 	    var company=$('#Ctree_tree').tree('getSelected');
-	    Ctree.handler.notify('select', company);
-	    Ctree.node.window('close');
+	    if( company.company_id ){
+		Ctree.handler.notify('select', company);
+		Ctree.unselectCombo();
+	    }
+	},
+	unselectTree:function(){
+	    this.node.find('.tree-node-selected').removeClass('tree-node-selected');
+	},
+	selectCombo:function(company,oldVal){
+	    if( company.company_id ){
+		Ctree.handler.notify('select', company);
+		Ctree.unselectTree();
+	    }
+	},
+	unselectCombo:function(){
+	    $('#Ctree_combo').combobox('setText','');
 	},
 	create:function( new_branch_type ){
 	    var selected=$('#Ctree_tree').tree('getSelected');
 	    var parent_id=selected.is_leaf*1?selected.parent_id:selected.branch_id;
-	    var parent=parent_id>0?$('#Ctree_tree').tree('find', parent_id):$('#Ctree_tree').tree('getRoot');
+	    var parent_target=parent_id>0?$('#Ctree_tree').tree('find', parent_id).target:null;
 	    var newlabel=(new_branch_type === 'leaf')?prompt("Введите Короткое название новой компании",'Новая компания'):prompt("Введите название новой группы",'Новая группа');
 	    if( newlabel ){
 		$.post('Company/companyTreeCreate/'+App.uri(parent_id,newlabel,new_branch_type),function(company_id){
 		    if(new_branch_type === 'leaf' && confirm("Компания '"+newlabel+"' создана.\n\nВвести реквизиты сейчас?\n\n")){
-			Ctree.updateDetails(company_id,parent);
+			Ctree.updateDetails(company_id,parent_target);
 		    }
-		    $('#Ctree_tree').tree('reload',parent.target);
+		    $('#Ctree_tree').tree('reload',parent_target);
 		});
 	    }
 	},
@@ -63,10 +99,10 @@
 		}
 	    }
 	},
-	updateDetails:function(company_id,parent){
+	updateDetails:function(company_id,parent_target){
 	    App.loadWindow('page/company/details',{company_id:company_id,autoselect_label:true}).progress(function(status){
 		if( status==='label_changed' ){
-		    $('#Ctree_tree').tree('reload',parent.target);
+		    $('#Ctree_tree').tree('reload',parent_target);
 		}
 	    });
 	},
@@ -113,6 +149,17 @@
     };
 </script>
 <div style="width:100%;height: calc(100% - 70px);overflow: auto">
+    <input class="easyui-combobox" id="Ctree_combo" style="width:100%" data-options="
+       valueField: 'company_id',
+       textField: 'label',
+       url:'Company/listFetch/',
+       hasDownArrow:false,
+       panelHeight:'auto',
+       selectOnNavigation:false,
+       mode: 'remote',
+       method:'get',
+       onSelect: Ctree.selectCombo
+       ">
     <ul class="easyui-tree" id="Ctree_tree" data-options="
 	url:'Company/branchFetch/',
 	method:'get',
@@ -126,19 +173,12 @@
 	    }
 	    return data;
 	},
-	onSelect:function(node){
-	    if(node.state=='closed') {
-		$(this).tree('expand',node.target);
-		Ctree.enableButtons(0);
-	    } else {
-		Ctree.enableButtons(1);
-	    }
-	},
+	onSelect:Ctree.click,
 	onBeforeDrop:Ctree.drop,
 	onDragOver:function(target,source){
 	    return !$(this).tree('isLeaf',target);
 	},
-	onDblClick:Ctree.select,
+	onDblClick:Ctree.selectTree,
 	animate:true,
 	dnd:true">
     </ul>
@@ -152,5 +192,5 @@
     <button class="tiny_button" onclick="Ctree.reload()" title="Обновить"><img src="img/reload.png"></button>
 </div>
 <div style="text-align: center;margin-top: 5px;">
-    <button class="ok" disabled="disabled" onclick="Ctree.select()"><img src="img/apply24.png"> Выбрать</button>
+    <button class="ok" disabled="disabled" onclick="Ctree.select();Ctree.close();"><img src="img/apply24.png"> Выбрать</button>
 </div>
