@@ -110,7 +110,7 @@ class DocumentCore extends DocumentUtils{
 	$total_estimate=$offset+(count($result_rows)==$rows?$rows+1:count($result_rows));
 	return array('rows'=>$result_rows,'total'=>$total_estimate);
     }
-    public function createDoc(){
+    public function createDocument(){
 	$pcomp_id=$this->Base->pcomp('company_id');
 	if( $pcomp_id ){
 	    $Document2=$this->Base->bridgeLoad('Document');
