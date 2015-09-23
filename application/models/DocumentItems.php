@@ -84,6 +84,9 @@ class DocumentItems extends DocumentCore{
 	return $this->get_list($sql);
     }
     public function entryAdd( $code, $quantity ){
+        if( !$this->doc('doc_id') ){
+            $this->createDoc();
+        }
 	$Document2=$this->Base->bridgeLoad('Document');
 	return $Document2->addEntry( $code, $quantity );
     }

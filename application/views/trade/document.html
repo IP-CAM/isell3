@@ -57,7 +57,7 @@
 		    Doc.head.typeComboFormatterIcon(Doc.head.props.doc_type);
 		    Doc.setTitle();
 		    setTimeout(function(){
-			Doc.view.loadTile()
+			Doc.view.loadTile();
 			$("#Doc_pci").combobox('reload');
 		    },200);
 		    App.renderTpl('Doc_owners',Doc.head.props);
@@ -221,7 +221,7 @@
 	    $('#Doc_entry_dg').datagrid('reload');
 	},
 	loader: function (param, success, error) {
-	    if( Doc.head.loaded ){
+	    if( Doc.head.loaded && Doc.head.props.doc_id ){
 		$.post("DocumentItems/entryDocumentGet/", function ( xhr ) {
 		    var resp = App.json(xhr);
 		    success(resp.entries ? resp.entries : []);
@@ -230,6 +230,7 @@
 	    }
 	    else{
 		success([]);
+                Doc.entries.renderFooter( {} );
 	    }
 	},
 	add:function( code, qty ){
@@ -237,6 +238,9 @@
 		$.post(App.uri("DocumentItems","entryAdd",code,qty),function(ok){
 		    if( ok*1 ){
 			Doc.entries.reload();
+                        if( !Doc.head.props.doc_id ){
+                            //if this added entry is the first in new doc then reload head of new created doc
+                        }
 		    }
 		    else{
 			App.flash("Строка не добавлена!");
@@ -372,10 +376,12 @@
 	loadTile:function(){
 	    var _this=this;
 	    var doc_id=Doc.data.doc_id;
-	    $.get('DocumentView/listFetch/' + doc_id, function (xhr) {
-		_this.views = _this.compile(App.json(xhr));
-		App.renderTpl('Doc_view_tile',{views:_this.views});
-	    });
+            if( doc_id ){
+                $.get('DocumentView/listFetch/', function (xhr) {
+                    _this.views = _this.compile(App.json(xhr));
+                    App.renderTpl('Doc_view_tile',{views:_this.views});
+                });
+            }
 	},
 	compile:function( views ){
 	    for( var i in views ){
@@ -602,7 +608,7 @@
 	    </div>
 	</div>
 	<!-- DOCUMENT VIEWS -->
-	<div id="Doc_view_tile" style="clear:both;vertical-align: top;">
+        <div id="Doc_view_tile" style="clear:both;vertical-align: top;" class="covert">
 	    {{if views}}
 		{{views}}
 		<div class="view_button {{if view_hidden|equals>1}}view_is_hidden{{/if}}" 

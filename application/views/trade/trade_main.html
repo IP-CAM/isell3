@@ -1,94 +1,47 @@
 <script type="text/javascript">
     /* global App */
+    App.pcomp={};
     TradeJs = {
         init: function () {
             App.initTabs('trade_main_tabs');
-            $('#holderTrade .validatebox-text').on('focus', function() {
-                this.select();
-            });
 	    this.ctreeInlineInit();
         },
-        selectCompany: function (company) {
-            if ( !company.company_id || App.pcomp && App.pcomp.company_id===company.company_id ) {
-                return false;
+        selectPassiveCompany: function ( company ) {
+            if ( company.company_id && company.company_id!==App.pcomp.company_id ) {
+                $.post('Company/selectPassiveCompany/' + company.company_id, function (xhr) {
+                    App.pcomp = App.json(xhr);
+                    App.handler.notify('passiveCompanySelected');
+                });
             }
-            $.post('Company/selectPassiveCompany/' + company.company_id, function (xhr) {
-		if( App.pcomp ){
-		    App.handler.notify('passiveCompanySelected');
-		} else {
-		    App.handler.notify('firstPassiveCompanySelected');
-		}
-                App.pcomp = App.json(xhr);
-                
-            });
-        },
-        comboLoader: function (param, success, error) {
-	    return ;
-            $.get('Company/listFetch/selected_passive_if_empty', param, function (xhr) {
-                var resp = App.json(xhr);
-                success(resp[0] ? resp : []);
-                if (!param.q && resp[0]) {//selected_passive_if_empty
-                    $('#trade_comp_cmb').combobox('select', resp[0].company_id);
-                }
-            });
         },
 	ctreeInlineInit:function(){
 	    App.loadModule('page/company/tree',{inline:true,clickselect:true},'CtreeInline',/(Ctree|page_company_tree)([^\w]|_)/g,"CtreeInline$2").progress(function(status,company){
-		console.log(status,company);
+                if( status==='select' ){
+                    $("#trade_main_tabs_info").hide();
+                    $("#trade_main_tabs_content").css('visibility','visible');
+                    TradeJs.selectPassiveCompany(company);
+                }
 	    });
 	}
     };
-
 </script>
 <table style="border-spacing: 0px;border-collapse: separate;">
     <tr>
         <td style="vertical-align: top;padding: 0px;">
-	    <div class="transp60" style="margin-right: 1px;" id="CtreeInline"></div>
-	    
-	    
-	    
-	    
-	    
-            <div class="transp60" style="width:170px;overflow: auto;display: none">
-                <input class="easyui-combobox" id="trade_comp_cmb" style="width:100%" data-options="
-                       valueField: 'company_id',
-                       textField: 'label',
-                       loader:TradeJs.comboLoader,
-                       mode: 'remote',
-                       method:'get',
-                       onSelect: TradeJs.selectCompany
-                       ">
-                <ul class="easyui-tree " data-options="
-                    url:'Company/branchFetch/',
-                    method:'get',
-                    loadFilter:function(data){
-                        for(var i in data){
-                            data[i].id=data[i].branch_id;
-                            data[i].text=data[i].label;
-                            if(data[i].level!=0){
-                                data[i].iconCls='icon-lock';
-                            }
-                        }
-                        return data;
-                    },
-                    onSelect:function(node){
-                        if(node.state=='closed')
-                            $(this).tree('expand',node.target);
-                        else
-                            TradeJs.selectCompany(node);
-                    },
-                    animate:true,
-                    dnd:true">
-                </ul>
-            </div>
+	    <div class="transp60" style="margin-right: 1px;min-width:180px;" id="CtreeInline"></div>
         </td>
         <td style="vertical-align: top;padding: 0px;">
-            <div id="trade_main_tabs" class="slim-tab">
-                <div title="Документы" href="page/trade/document_list.html" style="min-height: 500px;"></div>
-                <div title="Взаиморасчет БЕТА" href="page/trade/payments.html" style="min-height: 500px;"></div>
-                <div title="Настройки" href="page/company/prefs.html" style="min-height: 500px;"></div>
-                <div title="Реквизиты" href="page/company/details.html" style="min-height: 500px;"></div>
-                <div title="Бланки" href="page/trade/blank.html" style="min-height: 500px;"></div>
+            <div id="trade_main_tabs_info">
+                <h1><<< Выберите клиента для начала работы</h1>
+            </div>
+            <div id="trade_main_tabs_content" style="visibility: hidden">
+                <div id="trade_main_tabs" class="slim-tab">
+                    <div title="Документы" href="page/trade/document_list.html" style="min-height: 500px;"></div>
+                    <div title="Взаиморасчет БЕТА" href="page/trade/payments.html" style="min-height: 500px;"></div>
+                    <div title="Настройки" href="page/company/prefs.html" style="min-height: 500px;"></div>
+                    <div title="Реквизиты" href="page/company/details.html" style="min-height: 500px;"></div>
+                    <div title="Бланки" href="page/trade/blank.html" style="min-height: 500px;"></div>
+                </div>
             </div>
         </td>
     </tr>

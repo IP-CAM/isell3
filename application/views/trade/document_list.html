@@ -1,12 +1,16 @@
 <script type="text/javascript">
-    /* global App,DocList,DocEmbedded */
-    //
-		    //
+    /* global App,DocList */
     DocList = App.page_trade_document_list = {
 	show_only_pcomp_docs: false,
 	init: function () {
 	},
 	initAfter: function () {
+            App.handler.progress(function(status){
+                if( status==='passiveCompanySelected' ){
+                    $('#document_list_dg').datagrid('reload');
+                    DocList.doc.load(0);
+                }
+            });
 	},
 	doc:{
 	    doc_id:0,
@@ -36,28 +40,32 @@
 	init: function () {
 	},
 	loader: function (param, success, error) {
-	    $.get(App.uri('DocumentCore', 'listFetch', param.page, param.rows, DocList.show_only_pcomp_docs ? 'show_only_pcomp_docs' : ''), {filterRules: param.filterRules}, function (xhr) {
-		var resp = App.json(xhr);
-		if (resp.rows) {
-		    resp.rows.unshift(DocList.list.getNewDocRow());
-		    success(resp);
-		    if (DocList.list.selectedDocId) {
-			$('#document_list_dg').datagrid('selectRecord', DocList.list.selectedDocId);
-		    }
-		}
-		else {
-		    success({
-			rows: [DocList.list.getNewDocRow()],
-			total: 1
-		    });
-		}
-	    });
+            if( App.pcomp.company_id ){
+                $.get(App.uri('DocumentCore', 'listFetch', param.page, param.rows, 'show_only_pcomp_docs'), {filterRules: param.filterRules}, function (xhr) {
+                    var resp = App.json(xhr);
+                    if (resp.rows) {
+                        resp.rows.unshift(DocList.list.getNewDocRow());
+                        success(resp);
+                        if (DocList.list.selectedDocId) {
+                            $('#document_list_dg').datagrid('selectRecord', DocList.list.selectedDocId);
+                        }
+                    }
+                    else {
+                        success({
+                            rows: [DocList.list.getNewDocRow()],
+                            total: 1
+                        });
+                    }
+                    $('#document_list_dg').datagrid('mergeCells', {index: 0,field: 'doc_num',colspan: 5});
+                });
+            } else {
+                success({rows: [],total: 1});
+            }
 	},
 	getNewDocRow: function () {
 	    return {
 		doc_id: 0,
-		doc_type_name: 'Новый документ',
-		doc_date: '',
+		doc_num: 'Создать новый документ',
 		doc_type_icon: "new Новый документ"
 	    };
 	},
@@ -73,8 +81,8 @@
 	},
 	onSelect: function (index, row) {
 	    if (row.doc_id === 0) {
-		DocList.list.createDoc();
-		return;
+		//DocList.list.createDoc();
+		//return;
 	    }
 	    DocList.doc.load(row.doc_id);
 	},
@@ -104,9 +112,8 @@
 		    <span class="icon-24 icon-refresh" title="Обновить" onclick="$('#document_list_dg').datagrid('reload')"> </span> 
 		</div>
 	    </div>
-	    <table id="document_list_dg" class="easyui-datagrid" style="width:250px"
+	    <table id="document_list_dg" class="easyui-datagrid" style="width:255px"
 		   data-options="
-		   width:250,
 		   idField:'doc_id',
 		   loader:DocList.list.loader,
 		   pagination:true,
@@ -115,15 +122,14 @@
 		   singleSelect:true,
 		   remoteFilter:true,
 		   onSelect:DocList.list.onSelect,
-		   url:'DocumentCore/listFetch',
 		   onLoadSuccess:function(){$('#document_list_dg').datagrid('resize');},
 		   method:'get'">
 		<thead>
 		    <tr>
-			<th data-options="width:25,field:'doc_type_icon',align:'center',formatter:App.datagrid.tooltip">Док</th>
-			<th data-options="width:55,field:'doc_num',align:'right'">Номер</th>
+			<th data-options="width:25,field:'doc_type_icon',align:'center',formatter:App.datagrid.tooltip">Тип</th>
+			<th data-options="width:45,field:'doc_num',align:'left'">Номер</th>
 			<th data-options="width:65,field:'doc_date'">Дата</th>
-			<th data-options="width:55,field:'amount',align:'right'">Сумма</th>
+			<th data-options="width:70,field:'amount',align:'right',formatter:function(num){ return isNaN(num*1)?'':App.formatNum( (num*1).toFixed(2)); }">Сумма</th>
 			<th data-options="width:25,field:'commited',align:'center',formatter:App.datagrid.tooltip"></th>
 			<th data-options="width:25,field:'trans_status',align:'center',formatter:App.datagrid.tooltip"></th>
 		    </tr>
