@@ -39,6 +39,20 @@
 	},
 	close:function(){
 	    Doc.data.open_in==='panel'?Doc.node.panel('close'):Doc.node.window('close');
+	},
+	create:function(){
+	    
+	},
+	createThenAddEntry:function ( code, qty ){
+	    $.post('DocumentItems/createDocument',function(doc_id){
+		if( doc_id*1 ){
+		     Doc.head.load(doc_id);
+		     Doc.entries.add( code, qty );
+		     Doc.handler.notify('created',doc_id);
+		} else {
+		    App.flash("Не удалось создать документ");
+		}
+	    });
 	}
     };
     /////////////////////////////////////////////
@@ -69,8 +83,9 @@
 		}
 	    });
 	},
-	create:function(){
-	    
+	reload:function(){
+	    Doc.head.loaded=false;
+	    Doc.head.load(Doc.head.doc_id);
 	},
 	setPropsForm:function(props){
 	    Doc.head.loaded=false;
@@ -202,13 +217,18 @@
 	    });
 	},
 	uncommit:function(){
-	    if( Doc.head.props.is_commited*1===0 && !confirm("Удалить документ?") ){
+	    var action=Doc.head.props.is_commited*1?'uncommit':'delete';
+	    if( action==='delete' && !confirm("Удалить документ?") ){
 		return;
 	    }
-	    $.post("DocumentItems/entryDocumentUncommit/", function ( xhr ) {
-		if( xhr*1 ){
-		    Doc.head.loaded=false;
-		    Doc.head.load(Doc.head.doc_id);
+	    $.post("DocumentItems/entryDocumentUncommit/", function ( ok ) {
+		if( ok*1 ){
+		    if( action==='uncommit' ){
+			Doc.head.reload();
+		    } else {
+			Doc.head.load(0);
+		    }
+		    
 		}
 	    });
 	}
@@ -235,17 +255,18 @@
 	},
 	add:function( code, qty ){
 	    if( code && qty ){
-		$.post(App.uri("DocumentItems","entryAdd",code,qty),function(ok){
-		    if( ok*1 ){
-			Doc.entries.reload();
-                        if( !Doc.head.props.doc_id ){
-                            //if this added entry is the first in new doc then reload head of new created doc
-                        }
-		    }
-		    else{
-			App.flash("Строка не добавлена!");
-		    }
-		});
+		if( Doc.head.props.doc_id ){
+		    $.post(App.uri("DocumentItems","entryAdd",code,qty),function(ok){
+			if( ok*1 ){
+			    Doc.entries.reload();
+			}
+			else{
+			    App.flash("Строка не добавлена!");
+			}
+		    });
+		} else {//if this added entry is the first in new doc then reload head of new created doc
+		    Doc.createThenAddEntry(code, qty);
+		}
 	    }
 	},
 	edit:function(){
@@ -374,12 +395,10 @@
     /////////////////////////////////////////////
     Doc.view={
 	loadTile:function(){
-	    var _this=this;
-	    var doc_id=Doc.data.doc_id;
-            if( doc_id ){
-                $.get('DocumentView/listFetch/', function (xhr) {
-                    _this.views = _this.compile(App.json(xhr));
-                    App.renderTpl('Doc_view_tile',{views:_this.views});
+            if( Doc.head.props.doc_id*1 ){
+                $.get('DocumentView/listFetch/'+Doc.head.props.doc_id, function (xhr) {
+                    Doc.view.views = Doc.view.compile(App.json(xhr));
+                    App.renderTpl('Doc_view_tile',{views:Doc.view.views});
                 });
             }
 	},

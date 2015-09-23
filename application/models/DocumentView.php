@@ -2,32 +2,38 @@
 require_once 'DocumentItems.php';
 class DocumentView extends DocumentItems{
     public $min_level=1;
-    public function listFetch(){
-	$doc_id=$this->doc('doc_id');
-	$doc_type=$this->doc('doc_type');
-	$sql="SELECT 
-		    doc_view_id,
-		    view_num,
-		    view_name,
-		    DATE_FORMAT(tstamp, '%d.%m.%Y') AS view_date,
-		    dvt.view_type_id,
-		    view_efield_values,
-		    view_efield_labels,
-		    view_file,
-		    freezed,
-		    IF(view_hidden AND doc_view_id IS NULL,1,0) view_hidden
-		FROM
-		    document_view_types dvt
-			LEFT JOIN 
-		    document_view_list dvl ON dvl.view_type_id=dvt.view_type_id AND doc_id = '$doc_id'
-		WHERE
-		    doc_type=$doc_type
-		GROUP BY 
-		    view_type_id
-		ORDER BY
-		    view_hidden
-		";
-	return $this->get_list($sql);
+    public function listFetch( $doc_id ){
+	$this->check($doc_id);
+	if( $doc_id ){
+	    $this->selectDoc($doc_id);
+	    $doc_type=$this->doc('doc_type');
+	    $sql="SELECT 
+			doc_view_id,
+			view_num,
+			view_name,
+			DATE_FORMAT(tstamp, '%d.%m.%Y') AS view_date,
+			dvt.view_type_id,
+			view_efield_values,
+			view_efield_labels,
+			view_file,
+			freezed,
+			IF(view_hidden AND doc_view_id IS NULL,1,0) view_hidden
+		    FROM
+			document_view_types dvt
+			    LEFT JOIN 
+			document_view_list dvl ON dvl.view_type_id=dvt.view_type_id AND doc_id = '$doc_id'
+		    WHERE
+			doc_type=$doc_type
+		    GROUP BY 
+			view_type_id
+		    ORDER BY
+			view_hidden
+		    ";
+	    return $this->get_list($sql);	    
+	} else {
+	    return [];
+	}
+
     }
     public function viewUpdate2222( $doc_view_id, $field, $value, $is_extra=0 ){
 	$Document2=$this->Base->bridgeLoad('Document');
