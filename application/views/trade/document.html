@@ -1,6 +1,7 @@
 <script type="text/javascript">
     /* global App */
     Doc=App.page_trade_document = {
+	isCreated:false,
 	properties:{
 	    title: 'Документ',
 	    iconCls:'icon-document16',
@@ -27,6 +28,7 @@
 	    else{
 		this.node.window(this.properties);
 	    }
+	    App.setupForm("#Doc_head_frm", {},'use_inp_values');
 	    this.head.load(this.data.doc_id);
 	},
 	initAfter:function(){
@@ -60,38 +62,29 @@
     /////////////////////////////////////////////
     Doc.head = {
 	props:{},
-	load: function (doc_id) {
+	load: function (doc_id,load_only_head) {
 	    Doc.head.props.doc_id=doc_id;
-	    App.setupForm("#Doc_head_frm", {},'use_inp_values');
+	    Doc.isCreated=!!doc_id;
 	    $.get('DocumentItems/headGet/' + Doc.head.props.doc_id, function (xhr) {
 		Doc.head.props = App.json(xhr);
-		if( Doc.head.props ){
-		    Doc.head.setPropsForm(Doc.head.props);
+		Doc.head.setPropsForm(Doc.head.props);
+		Doc.setTitle();
+		App.renderTpl('Doc_owners',Doc.head.props);
+		if( !load_only_head ){
 		    Doc.entries.reload();
-		    Doc.head.typeComboFormatterIcon(Doc.head.props.doc_type);
-		    Doc.setTitle();
-		    setTimeout(function(){
-			Doc.view.loadTile();
-			$("#Doc_pci").combobox('reload');
-		    },200);
-		    App.renderTpl('Doc_owners',Doc.head.props);
-		}
-		else{
-		    App.flash("Документ удален");
-		    Doc.handler.notify('deleted');
-		    Doc.close();
+		    Doc.view.loadTile();
 		}
 	    });
 	},
 	reload:function(){
-	    Doc.head.loaded=false;
-	    Doc.head.load(Doc.head.doc_id);
+	    Doc.head.load(Doc.head.props.doc_id,true);
 	},
 	setPropsForm:function(props){
-	    Doc.head.loaded=false;
+	    Doc.head.allowUpdate=false;
 	    $('#Doc_head_frm').form('load', props);
-	    Doc.head.loaded=true;
+	    Doc.head.allowUpdate=true;
 	    Doc.head.hightlightCommited();
+	    Doc.head.typeComboFormatterIcon(Doc.head.props.doc_type);
 	},
 	hightlightCommited:function(){
 	    $('#Doc_commit_btn').css('visibility',(Doc.head.props.is_commited*1?"hidden":"visible"));
@@ -125,7 +118,11 @@
 	    }
 	},
 	update:function( field, value, oldval ){
-	    if( Doc.head.loaded && value!==oldval ){
+	    if( Doc.head.allowUpdate && value!==oldval ){
+		if( !Doc.isCreated ){
+		    App.flash("Не возможно изменить настройки. Документ пуст.");
+		    return;
+		}
 		$.post('DocumentItems/headUpdate/'+App.uri(field,value),function(ok){
 		    Doc.head.afterUpdate( ok, field, value, oldval );
 		});
@@ -186,7 +183,24 @@
 	    }
 	    return label;
 	},
+	pcompTree:function(){
+	    if( !Doc.isCreated ){
+		App.flash("Не возможно изменить настройки. Документ пуст.");
+		return;
+	    }
+	    App.loadWindow('page/company/tree',{}).progress(function(status,comp){
+		if( status==='select' ){
+		    $("#Doc_pci").combobox('setValue',comp.company_id);
+		    $("#Doc_pci").combobox('setText',comp.label);
+		    Doc.head.update( 'passive_company_id', comp.company_id);
+		}
+	    });
+	},
 	sendSms:function(){
+	    if( !Doc.isCreated ){
+		App.flash("Документ пуст.");
+		return;
+	    }
 	    $.get("Company/companyGet/"+Doc.head.props.passive_company_id, function ( xhr ) {
 		var passive_data=App.json(xhr);
 		var data={to:passive_data.company_mobile,body:Doc.head.props.doc_data};
@@ -194,6 +208,10 @@
 	    });
 	},
 	addEvent:function(){
+	    if( !Doc.isCreated ){
+		App.flash("Документ пуст.");
+		return;
+	    }
 	    $.get("Company/companyGet/"+Doc.head.props.passive_company_id, function ( xhr ) {
 		var passive_data=App.json(xhr);
 		var fvalue={
@@ -209,24 +227,35 @@
 	    });
 	},
 	commit:function(){
-	    $.post("DocumentItems/entryDocumentCommit/", function ( xhr ) {
-		if( xhr*1 ){
-		    Doc.head.loaded=false;
-		    Doc.head.load(Doc.head.doc_id);
-		}
-	    });
+	    if( Doc.isCreated ){
+		$.post("DocumentItems/entryDocumentCommit/"+Doc.head.props.doc_id, function ( ok ) {
+		    if( ok*1 ){
+			Doc.head.allowUpdate=false;
+			Doc.head.reload();
+			Doc.handler.notify('commit');
+		    }
+		});
+	    } else {
+		App.flash("Документ пуст.");
+	    }
 	},
 	uncommit:function(){
+	    if( !Doc.isCreated ){
+		App.flash("Документ пуст.");
+		return;
+	    }
 	    var action=Doc.head.props.is_commited*1?'uncommit':'delete';
 	    if( action==='delete' && !confirm("Удалить документ?") ){
 		return;
 	    }
-	    $.post("DocumentItems/entryDocumentUncommit/", function ( ok ) {
+	    $.post("DocumentItems/entryDocumentUncommit/"+Doc.head.props.doc_id, function ( ok ) {
 		if( ok*1 ){
 		    if( action==='uncommit' ){
 			Doc.head.reload();
+			Doc.handler.notify('uncommit');
 		    } else {
 			Doc.head.load(0);
+			Doc.handler.notify('deleted');
 		    }
 		    
 		}
@@ -241,8 +270,8 @@
 	    $('#Doc_entry_dg').datagrid('reload');
 	},
 	loader: function (param, success, error) {
-	    if( Doc.head.loaded && Doc.head.props.doc_id ){
-		$.post("DocumentItems/entryDocumentGet/", function ( xhr ) {
+	    if( Doc.isCreated ){
+		$.post("DocumentItems/entryDocumentGet/"+Doc.head.props.doc_id, function ( xhr ) {
 		    var resp = App.json(xhr);
 		    success(resp.entries ? resp.entries : []);
 		    Doc.entries.renderFooter( resp.footer );
@@ -255,8 +284,8 @@
 	},
 	add:function( code, qty ){
 	    if( code && qty ){
-		if( Doc.head.props.doc_id ){
-		    $.post(App.uri("DocumentItems","entryAdd",code,qty),function(ok){
+		if( Doc.isCreated ){
+		    $.post(App.uri("DocumentItems","entryAdd",Doc.head.props.doc_id,code,qty),function(ok){
 			if( ok*1 ){
 			    Doc.entries.reload();
 			}
@@ -395,12 +424,14 @@
     /////////////////////////////////////////////
     Doc.view={
 	loadTile:function(){
-            if( Doc.head.props.doc_id*1 ){
+            if( Doc.isCreated ){
                 $.get('DocumentView/listFetch/'+Doc.head.props.doc_id, function (xhr) {
                     Doc.view.views = Doc.view.compile(App.json(xhr));
                     App.renderTpl('Doc_view_tile',{views:Doc.view.views});
                 });
-            }
+            } else {
+		$('#Doc_view_tile').addClass('covert');
+	    }
 	},
 	compile:function( views ){
 	    for( var i in views ){
@@ -450,19 +481,10 @@
 	}
     };
 </script>
-<form id="Doc_head_frm" onsubmit="return false;" style="-moz-user-select:none;">
+<form id="Doc_head_frm" onsubmit="return false;" style="user-select:none;">
     <!-- DOCUMENT HEADER -->
     <div style="width: 658px;margin: auto;padding-top: 10px;">
 	<div>
-	    <input class="easyui-combobox" name="passive_company_id" id="Doc_pci" title="Контрагент" data-options="
-		    valueField: 'company_id',
-		    textField: 'label',
-		    url: 'Company/listFetch/selected_passive_if_empty',
-		    mode: 'remote',
-		    method:'get',
-		    formatter:Doc.head.companyListFrm,
-		    onSelect: function(company){Doc.head.update('passive_company_id',company.company_id)}
-		    ">
 	    <select class="easyui-combobox" id="Doc_type_cmb" name="Doc_type" title="Вид" data-options="
 		    editable:false,
 		    buttonText:'<img src=img/sell.png>',
@@ -486,6 +508,22 @@
 		   precision:2,
 		   onChange:function(val,old){Doc.head.update('doc_ratio',val,old)}
 		   ">
+	    <input class="easyui-combobox" name="passive_company_id" id="Doc_pci" title="Контрагент" data-options="
+		    valueField: 'company_id',
+		    textField: 'label',
+		    url: 'Company/listFetch/selected_passive_if_empty',
+		    mode: 'remote',
+		    method:'get',
+		    hasDownArrow:false,
+		    formatter:Doc.head.companyListFrm,
+		    onSelect: function(company){Doc.head.update('passive_company_id',company.company_id)},
+		    icons: [{
+			     iconCls:'icon-settings16',
+			     handler: function(e){
+				 Doc.head.pcompTree();
+			     }
+			 }]
+		    ">
 	    <input type="text" name="signs_after_dot" class="easyui-numberspinner" title="Точность" data-options="
 		   min:0,
 		   max:5,
@@ -571,6 +609,7 @@
 	       rownumbers:true,
 	       noheader:true,
 	       ctrlSelect:true,
+	       autoRowHeight:false,
 	       loader:Doc.entries.loader,
 	       method:'get',
 	       onDblClickRow:Doc.entries.edit,
@@ -621,10 +660,10 @@
 		    <td>Всего с НДС:</td><td style="font-weight: bold;">{{total}} {{curr_symbol}}</td>
 		</tr>
 	    </table>
-	    <div id="Doc_owners" class="transparent" style="clear: left">
-		<img src="img/add-16.png" title="Создано пользователем" style="vertical-align: middle"> {{created_by}} 
-		<img src="img/edit-16.png" title="Изменено пользователем" style="vertical-align: middle"> {{modified_by}}
-	    </div>
+	</div>
+	<div id="Doc_owners" class="transparent covert" style="clear: left">
+	    <img src="img/add-16.png" title="Создано пользователем" style="vertical-align: middle"> {{created_by}} 
+	    <img src="img/edit-16.png" title="Изменено пользователем" style="vertical-align: middle"> {{modified_by}}
 	</div>
 	<!-- DOCUMENT VIEWS -->
         <div id="Doc_view_tile" style="clear:both;vertical-align: top;" class="covert">

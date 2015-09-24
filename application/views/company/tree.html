@@ -178,7 +178,10 @@
 	onDragOver:function(target,source){
 	    return !$(this).tree('isLeaf',target);
 	},
-	onDblClick:Ctree.selectTree,
+	onDblClick:function(){
+	    Ctree.selectTree();
+	    Ctree.close();
+	},
 	animate:true,
 	dnd:true">
     </ul>
@@ -192,5 +195,5 @@
     <button class="tiny_button" onclick="Ctree.reload()" title="Обновить"><img src="img/reload.png"></button>
 </div>
 <div style="text-align: center;margin-top: 5px;">
-    <button class="ok" disabled="disabled" onclick="Ctree.select();Ctree.close();"><img src="img/apply24.png"> Выбрать</button>
+    <button class="ok" disabled="disabled" onclick="Ctree.selectTree();Ctree.close();"><img src="img/apply24.png"> Выбрать</button>
 </div>

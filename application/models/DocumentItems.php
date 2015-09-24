@@ -57,7 +57,7 @@ class DocumentItems extends DocumentCore{
 		WHERE doc_id='$doc_id') t";
 	return $this->get_row($sql);
     }
-    public function entriesFetch(){
+    private function entriesFetch(){
 	$doc_id=$this->doc('doc_id');
 	$this->calcCorrections();
 	$company_lang = $this->Base->pcomp('language');
@@ -83,14 +83,15 @@ class DocumentItems extends DocumentCore{
             ORDER BY pl.product_code";
 	return $this->get_list($sql);
     }
-    public function entryAdd( $code, $quantity ){
-//        if( !$this->doc('doc_id') ){
-//            $this->createDoc();
-//        }
+    public function entryAdd( $doc_id, $code, $quantity ){
+	$this->check($doc_id,'int');
+	$this->selectDoc($doc_id);
 	$Document2=$this->Base->bridgeLoad('Document');
 	return $Document2->addEntry( $code, $quantity );
     }
-    public function entryUpdate( $doc_entry_id, $name, $value ){
+    public function entryUpdate( $doc_id, $doc_entry_id, $name, $value ){
+	$this->check($doc_id,'int');
+	$this->selectDoc($doc_id);
 	$Document2=$this->Base->bridgeLoad('Document');
 	switch( $name ){
 	    case 'product_quantity':
@@ -102,17 +103,24 @@ class DocumentItems extends DocumentCore{
 		return true;
 	}
     }
-    public function entryDelete( $ids ){
+    public function entryDelete( $doc_id, $ids ){
+	$this->check($doc_id,'int');
+	$this->selectDoc($doc_id);
 	$ids_arr=  json_decode('[['.str_replace(',', '],[', rawurldecode($ids)).']]');
 	$Document2=$this->Base->bridgeLoad('Document');
 	return $Document2->deleteEntry($ids_arr);
     }
-    public function entryStatsGet( $product_code ){
+    public function entryStatsGet( $doc_id, $product_code ){
+	$this->check($doc_id,'int');
+	$this->selectDoc($doc_id);
 	$curr=$this->get_row("SELECT curr_symbol FROM curr_list WHERE curr_code='".$this->Base->pcomp('curr_code')."'");
 	$sql="SELECT 
-	    product_quantity
+	    product_quantity,
+	    product_spack
 	FROM 
 	    stock_entries
+		JOIN
+	    prod_list USING(product_code)
 	WHERE
 	    product_code='$product_code'";
 	$stats=$this->get_row($sql);
@@ -129,21 +137,29 @@ class DocumentItems extends DocumentCore{
 	}
 	return round($invoice,$this->doc('signs_after_dot'));
     }
-    public function entryDocumentGet(){
+    public function entryDocumentGet( $doc_id ){
+	$this->check($doc_id,'int');
+	$this->selectDoc($doc_id);
 	$document=array();
 	$document['entries']=$this->entriesFetch();
 	$document['footer']=$this->footerGet();
 	return $document;
     }
-    public function entryDocumentCommit(){
+    public function entryDocumentCommit( $doc_id ){
+	$this->check($doc_id,'int');
+	$this->selectDoc($doc_id);
 	$Document2=$this->Base->bridgeLoad('Document');
 	return $Document2->commit();
     }
-    public function entryDocumentUncommit(){
+    public function entryDocumentUncommit( $doc_id ){
+	$this->check($doc_id,'int');
+	$this->selectDoc($doc_id);
 	$Document2=$this->Base->bridgeLoad('Document');
 	return $Document2->uncommit();
     }
-    public function recalc( $proc=0 ){
+    public function recalc( $doc_id, $proc=0 ){
+	$this->check($doc_id,'int');
+	$this->selectDoc($doc_id);
 	$Document2=$this->Base->bridgeLoad('Document');
 	$Document2->recalc($proc);
     }

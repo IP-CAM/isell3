@@ -56,6 +56,9 @@ class DocumentUtils extends Catalog{
 }
 class DocumentCore extends DocumentUtils{
     public function listFetch( $page=1, $rows=30, $mode='' ){
+	$this->check($page,'int');
+	$this->check($rows,'int');
+	$this->check($mode);
 	$offset=($page-1)*$rows;
 	if( $offset<0 ){
 	    $offset=0;
@@ -122,6 +125,7 @@ class DocumentCore extends DocumentUtils{
         $this->selectDoc(0);
 	$passive_company_id = $this->Base->pcomp('company_id');
         $def_head=[
+	    'doc_id'=>0,
             'doc_date'=>date('d.m.Y'),
             'doc_num'=>0,
             'doc_ratio'=>'',
@@ -147,6 +151,7 @@ class DocumentCore extends DocumentUtils{
 	$this->selectDoc($doc_id);
 	$sql="
 	    SELECT
+		doc_id,
 		passive_company_id,
 		IF(is_reclamation,-doc_type,doc_type) doc_type,
 		is_reclamation,

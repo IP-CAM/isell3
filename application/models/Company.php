@@ -39,7 +39,7 @@ class Company extends Catalog{
 	    $companies=$this->get_list( $sql );
 	}
 	else if( $mode=='selected_passive_if_empty' ){
-	    array_push($companies,['company_id'=>$this->Base->pcomp('company_id'),'label'=>$this->Base->pcomp('company_name'),'path'=>$this->Base->pcomp('path')]);
+	    array_push($companies,['company_id'=>$this->Base->pcomp('company_id'),'label'=>$this->Base->pcomp('label'),'path'=>$this->Base->pcomp('path')]);
 	} else {
 	    array_push($companies,['company_id'=>0,'label'=>'-','path'=>'']);
 	}

@@ -21,10 +21,14 @@
 			    $('#document_list_dg').datagrid('unselectAll');
 			    break;
 			case 'deleted':
+			case 'uncommit':
+			case 'commit':
+			    DocList.list.suppressOnSelect=true;
 			    $('#document_list_dg').datagrid('reload');
 			    break;
 			case 'created':
 			    DocList.list.selectedDocId=param;
+			    DocList.list.suppressOnSelect=true;
 			    $('#document_list_dg').datagrid('reload');
 			    break;
 		    }
@@ -86,9 +90,9 @@
 	    }
 	},
 	onSelect: function (index, row) {
-	    if (row.doc_id === 0) {
-		//DocList.list.createDoc();
-		//return;
+	    if ( DocList.list.suppressOnSelect ) {
+		DocList.list.suppressOnSelect=false;
+		return;
 	    }
 	    DocList.doc.load(row.doc_id);
 	}
@@ -124,8 +128,8 @@
 		   idField:'doc_id',
 		   loader:DocList.list.loader,
 		   pagination:true,
-		   pageSize:25,
-		   pageList:[25,50,100,500,1000],
+		   pageSize:50,
+		   pageList:[50,100,500,1000],
 		   singleSelect:true,
 		   remoteFilter:true,
 		   onSelect:DocList.list.onSelect,
