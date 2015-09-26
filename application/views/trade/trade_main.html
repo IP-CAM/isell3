@@ -4,10 +4,10 @@
     TradeJs = {
         init: function () {
             App.initTabs('trade_main_tabs');
-	    //this.ctreeInlineInit();
-	    this.selectPassiveCompany({company_id:115});
-                    $("#trade_main_tabs_info").hide();
-                    $("#trade_main_tabs_content").css('visibility','visible');
+	    this.ctreeInlineInit();
+	    //this.selectPassiveCompany({company_id:115});
+            //        $("#trade_main_tabs_info").hide();
+            //        $("#trade_main_tabs_content").css('visibility','visible');
 	},
         selectPassiveCompany: function ( company ) {
             if ( company.company_id && company.company_id!==App.pcomp.company_id ) {

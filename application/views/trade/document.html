@@ -33,6 +33,7 @@
 	},
 	initAfter:function(){
 	    this.suggest.init();
+	    this.entries.setupShortcuts();
 	},
 	setTitle:function(){
 	    var type=$('#Doc_type_cmb').combobox('getText');
@@ -309,6 +310,9 @@
 		if(state==='change'){
 		    Doc.entries.reload();
 		}
+		if( state==='close' ){
+		    $('#Doc_entry_dg').datagrid('getPanel').panel('panel').focus();
+		}
 	    });
 	},
 	delete:function(){
@@ -322,7 +326,7 @@
 		rows.forEach(function(row){
 		    ids.push(row.doc_entry_id);
 		});
-		$.post(App.uri('DocumentItems','entryDelete',ids.join(',')), function () {
+		$.post(App.uri('DocumentItems','entryDelete',Doc.head.props.doc_id,ids.join(',')), function () {
 		    Doc.entries.reload();
 		});		
 	    }
@@ -354,6 +358,40 @@
 		    });
 		}
 	    });
+	},
+	setupShortcuts:function(){
+	    $('#Doc_entry_dg').datagrid('getPanel').panel('panel').attr('tabindex',1).bind('keydown',function(e){
+		var selected = $('#Doc_entry_dg').datagrid('getSelected');
+		var index = $('#Doc_entry_dg').datagrid('getRowIndex', selected);
+		switch(e.keyCode){
+		    case 13:
+			if (selected){
+			    Doc.entries.edit();
+			}
+			break;
+		    
+		    case 38:	// up
+			e.preventDefault();
+			if (selected){
+			    $('#Doc_entry_dg').datagrid('unselectAll');
+			    $('#Doc_entry_dg').datagrid('selectRow', index-1);
+			} else {
+			    $('#Doc_entry_dg').datagrid('unselectAll');
+			    $('#Doc_entry_dg').datagrid('selectRow', 0);
+			}
+			break;
+		    case 40:	// down
+			e.preventDefault();
+			if (selected){
+			    $('#Doc_entry_dg').datagrid('unselectAll');
+			    $('#Doc_entry_dg').datagrid('selectRow', index+1);
+			} else {
+			    $('#Doc_entry_dg').datagrid('unselectAll');
+			    $('#Doc_entry_dg').datagrid('selectRow', 0);
+			}
+			break;
+		}
+	});
 	}
     };
     /////////////////////////////////////////////
