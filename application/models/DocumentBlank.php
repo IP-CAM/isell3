@@ -1,11 +1,23 @@
 <?php
 require_once 'DocumentCore.php';
 class DocumentBlank extends DocumentCore {
-    public function listFetch( $page=1, $rows=30) {
+    public function listFetch( $page=1, $rows=30, $mode='' ) {
+	$this->check($page,'int');
+	$this->check($rows,'int');
+	$this->check($mode);
 	$having=$this->decodeFilterRules();
 	$offset=($page-1)*$rows;
 	if( $offset<0 ){
 	    $offset=0;
+	}
+	$andwhere='';
+	if( $mode==='show_only_pcomp_docs' ){
+	    $pcomp_id=$this->Base->pcomp('company_id');
+	    $andwhere.=" AND passive_company_id=$pcomp_id";
+	}
+	$assigned_path=  $this->Base->svar('user_assigned_path');
+	if( $assigned_path ){
+	    $andwhere.=" AND path LIKE '$assigned_path%'";
 	}
         $sql = "SELECT 
                     doc_id,
@@ -31,6 +43,7 @@ class DocumentBlank extends DocumentCore {
                 WHERE
                     dl.doc_type > 9
                         AND dl.active_company_id = '" . $this->Base->acomp('company_id') . "'
+			    $andwhere
 		HAVING $having
                 ORDER BY html>'',cstamp , doc_num
 		LIMIT $rows OFFSET $offset";

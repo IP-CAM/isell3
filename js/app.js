@@ -72,17 +72,21 @@ var App = {
 	    App[id].parsed=true;
 	}
 	App[id].initAfter ? App[id].initAfter(data, handler) : '';
+	handler.notify('inited',App[id]);
     },
-    loadModule: function (path, data) {
-	var id = path.replace(/\//g, '_');
+    loadModule: function (path, data, id_new, id_search, id_replace) {
+	var id = id_new?id_new:path.replace(/\//g, '_');
 	var handler = $.Deferred();
 	if( App[id] ){
 	    App.initModule(id,data,handler);
 	} else {
 	    App[id] = {};
-	    $("#" + id).load(path + '.html', function () {
+	    $.get(path + '.html',function(html){
+		html=id_search?html.replace(id_search,id_replace):html;
+		//console.log(html);
+		App.setHTML("#"+id,html);
 		App.initModule(id,data,handler);
-	    });	    
+	    });   
 	}
 	return handler.promise();	
     },
@@ -231,6 +235,10 @@ App.renderTpl=function( id, data, mode ){
     }
     $('#'+id).html( Mark.up(App.tplcache[id], data) );
     $('#'+id).removeClass('covert');
+};
+App.setHTML=function( query, html ){
+    $(query).html(html);
+    $(query).find("script").each(function() { eval(this.text);} );
 };
 App.updaterCheck=function ( skip_release_check ){ 
     var handler=$.Deferred();

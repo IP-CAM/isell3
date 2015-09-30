@@ -18,9 +18,13 @@ class DocumentUtils extends Catalog{
 	}
     }
     private function loadDoc($doc_id) {
-	$this->_doc = $this->get_row("SELECT *, DATE_FORMAT(cstamp,'%d.%m.%Y') AS doc_date FROM document_list WHERE doc_id='$doc_id'");
-	$this->_doc->vat_ratio=1 + $this->_doc->vat_rate / 100;
-	$this->checkPassiveLoad();
+        if( $doc_id ){
+            $this->_doc = $this->get_row("SELECT *, DATE_FORMAT(cstamp,'%d.%m.%Y') AS doc_date FROM document_list WHERE doc_id='$doc_id'");
+            $this->_doc->vat_ratio=1 + $this->_doc->vat_rate / 100;
+            $this->checkPassiveLoad();
+        } else {
+            $this->_doc=$this->headDefGet();
+        }
     }
     protected function updateProps( $props ){
 	$doc_id = $this->doc('doc_id');
@@ -52,6 +56,9 @@ class DocumentUtils extends Catalog{
 }
 class DocumentCore extends DocumentUtils{
     public function listFetch( $page=1, $rows=30, $mode='' ){
+	$this->check($page,'int');
+	$this->check($rows,'int');
+	$this->check($mode);
 	$offset=($page-1)*$rows;
 	if( $offset<0 ){
 	    $offset=0;
@@ -96,7 +103,7 @@ class DocumentCore extends DocumentUtils{
 		document_view_list dv USING(doc_id)
 		    LEFT JOIN
 		document_view_types dvt USING(view_type_id)
-	    WHERE dl.doc_type<10 $andwhere
+	    WHERE dl.doc_type<10 AND dl.active_company_id = '" . $this->Base->acomp('company_id') . "' $andwhere
 	    GROUP BY doc_id
 	    HAVING $having
 	    ORDER BY dl.is_commited,dl.cstamp DESC
@@ -106,7 +113,7 @@ class DocumentCore extends DocumentUtils{
 	$total_estimate=$offset+(count($result_rows)==$rows?$rows+1:count($result_rows));
 	return array('rows'=>$result_rows,'total'=>$total_estimate);
     }
-    public function createDoc(){
+    public function createDocument(){
 	$pcomp_id=$this->Base->pcomp('company_id');
 	if( $pcomp_id ){
 	    $Document2=$this->Base->bridgeLoad('Document');
@@ -114,14 +121,37 @@ class DocumentCore extends DocumentUtils{
 	}
 	return 0;
     }
+    protected function headDefGet() {
+        $this->selectDoc(0);
+	$passive_company_id = $this->Base->pcomp('company_id');
+        $def_head=[
+	    'doc_id'=>0,
+            'doc_date'=>date('d.m.Y'),
+            'doc_num'=>0,
+            'doc_ratio'=>'',
+            'passive_company_id'=>$passive_company_id,
+            'curr_code'=>$this->Base->pcomp('curr_code'),
+            'vat_rate'=>$this->Base->acomp('company_vat_rate'),
+            'doc_type'=>1,
+            'signs_after_dot'=>3
+        ];
+	$prev_doc = $this->get_row("SELECT doc_type,signs_after_dot FROM document_list WHERE passive_company_id='$passive_company_id' AND doc_type<10 AND is_commited=1 ORDER BY cstamp DESC LIMIT 1");
+        if( $prev_doc ){
+            $def_head['doc_type']=$prev_doc->doc_type;
+            $def_head['signs_after_dot']=$prev_doc->signs_after_dot;
+        }
+        $def_head['doc_num']=$this->getNextDocNum($def_head['doc_type']);
+        return $def_head;
+    }
     public function headGet( $doc_id ){
-        $doc_id=(int) $doc_id;
-//	if( $doc_id==0 ){
-//	    $doc_id=$this->createDoc();
-//	}
+        $this->check($doc_id,'int');
+	if( $doc_id==0 ){
+	    return $this->headDefGet();
+	}
 	$this->selectDoc($doc_id);
 	$sql="
 	    SELECT
+		doc_id,
 		passive_company_id,
 		IF(is_reclamation,-doc_type,doc_type) doc_type,
 		is_reclamation,
@@ -138,7 +168,7 @@ class DocumentCore extends DocumentUtils{
 		(SELECT last_name FROM user_list WHERE user_id=modified_by) modified_by
 	    FROM
 		document_list
-	    WHERE doc_id=".(int) $doc_id
+	    WHERE doc_id=$doc_id"
 	;
 	return $this->get_row($sql);
     }

@@ -1,43 +1,61 @@
 <script type="text/javascript">
     /* global App */
-    var Doc=App.page_trade_document = {
+    Doc=App.page_trade_document = {
+	isCreated:false,
 	properties:{
 	    title: 'Документ',
 	    iconCls:'icon-document16',
 	    closable:true,
 	    collapsible:true,
+	    shadow:false,
 	    width: 700,
 	    height: 'auto',
 	    top: 50,
 	    onClose: function () {
 		if( Doc.data.open_in==='panel' ){
-		    Doc.node.panel('clear');
+		    //Doc.node.panel('clear');
 		}
 		Doc.handler.notify('close');
-		delete Doc;
-		delete App.page_trade_document;
+		//delete Doc,App.page_trade_document;
 	    }
 	},
 	init: function () {
 	    if( this.data.open_in==='panel' ){
+		this.properties.closable=false;
 		this.node.panel(this.properties);
 		Doc.node.panel('open');
 	    }
 	    else{
 		this.node.window(this.properties);
 	    }
+	    App.setupForm("#Doc_head_frm", {},'use_inp_values');
 	    this.head.load(this.data.doc_id);
 	},
 	initAfter:function(){
 	    this.suggest.init();
+	    this.entries.setupShortcuts();
 	},
 	setTitle:function(){
-	    var type=$('#document_type_cmb').combobox('getText');
+	    var type=$('#Doc_type_cmb').combobox('getText');
 	    var status=Doc.head.props.is_commited*1?"Проведен":"Не проведен";
-	    $('#page_trade_document').window('setTitle','Документ - '+type+' ('+status+')' );
+	    Doc.node.window('setTitle','Документ - '+type+' ('+status+')' );
 	},
 	close:function(){
 	    Doc.data.open_in==='panel'?Doc.node.panel('close'):Doc.node.window('close');
+	},
+	create:function(){
+	    
+	},
+	createThenAddEntry:function ( code, qty ){
+	    $.post('DocumentItems/createDocument',function(doc_id){
+		if( doc_id*1 ){
+		     Doc.head.load(doc_id);
+		     Doc.entries.add( code, qty );
+		     Doc.handler.notify('created',doc_id);
+		} else {
+		    App.flash("Не удалось создать документ");
+		}
+	    });
 	}
     };
     /////////////////////////////////////////////
@@ -45,41 +63,34 @@
     /////////////////////////////////////////////
     Doc.head = {
 	props:{},
-	load: function (doc_id) {
+	load: function (doc_id,load_only_head) {
 	    Doc.head.props.doc_id=doc_id;
-	    App.setupForm("#document_head_frm", {},'use_inp_values');
+	    Doc.isCreated=!!doc_id;
 	    $.get('DocumentItems/headGet/' + Doc.head.props.doc_id, function (xhr) {
 		Doc.head.props = App.json(xhr);
-		if( Doc.head.props ){
-		    Doc.head.setPropsForm(Doc.head.props);
+		Doc.head.setPropsForm(Doc.head.props);
+		Doc.setTitle();
+		App.renderTpl('Doc_owners',Doc.head.props);
+		if( !load_only_head ){
 		    Doc.entries.reload();
-		    Doc.head.typeComboFormatterIcon(Doc.head.props.doc_type);
-		    Doc.setTitle();
-		    setTimeout(function(){
-			Doc.view.loadTile();
-			$("#document_pci").combobox('reload');
-		    },200);
-		    App.renderTpl('document_owners',Doc.head.props);
-		}
-		else{
-		    App.flash("Документ удален");
-		    Doc.handler.notify('deleted');
-		    Doc.close();
+		    Doc.view.loadTile();
 		}
 	    });
 	},
-	create:function(){
-	    
+	reload:function(){
+	    Doc.head.load(Doc.head.props.doc_id,true);
 	},
 	setPropsForm:function(props){
-	    Doc.head.loaded=false;
-	    $('#document_head_frm').form('load', props);
-	    Doc.head.loaded=true;
+	    Doc.head.allowUpdate=false;
+	    $('#Doc_head_frm').form('load', props);
+	    $('#Doc_pci').combobox('reload');
+	    Doc.head.allowUpdate=true;
 	    Doc.head.hightlightCommited();
+	    Doc.head.typeComboFormatterIcon(Doc.head.props.doc_type);
 	},
 	hightlightCommited:function(){
-	    $('#doc_commit_btn').css('visibility',(Doc.head.props.is_commited*1?"hidden":"visible"));
-	    $('#document_type_cmb,#document_notcount_cmb,#document_pci').combobox(Doc.head.props.is_commited*1?'disable':'enable');
+	    $('#Doc_commit_btn').css('visibility',(Doc.head.props.is_commited*1?"hidden":"visible"));
+	    $('#Doc_type_cmb,#Doc_notcount_cmb,#Doc_pci').combobox(Doc.head.props.is_commited*1?'disable':'enable');
 	    var color='';
 	    if( Doc.head.props.is_commited*1 ){
 		var doc_type=Math.abs(Doc.head.props.doc_type);
@@ -94,22 +105,26 @@
 			break;
 		}
 	    }
-	    $('#document_tool_bar').css('background-color',color);
+	    $('#Doc_tool_bar').css('background-color',color);
 	    if( Doc.head.props.notcount*1 ){
-		$('#document_utils').show();
-		$('#document_notcount_cmb').combobox('textbox').css('background-color','#ffb');
+		$('#Doc_utils').show();
+		$('#Doc_notcount_cmb').combobox('textbox').css('background-color','#ffb');
 	    } else {
-		$('#document_notcount_cmb').combobox('textbox').css('background-color','');
+		$('#Doc_notcount_cmb').combobox('textbox').css('background-color','');
 	    }
 	    if( Doc.head.props.use_vatless_price*1 ){
-		$('#document_utils').show();
-		$('#document_use_vatless_price_cmb').combobox('textbox').css('background-color','#ffb');
+		$('#Doc_utils').show();
+		$('#Doc_use_vatless_price_cmb').combobox('textbox').css('background-color','#ffb');
 	    } else{
-		$('#document_use_vatless_price_cmb').combobox('textbox').css('background-color','');
+		$('#Doc_use_vatless_price_cmb').combobox('textbox').css('background-color','');
 	    }
 	},
 	update:function( field, value, oldval ){
-	    if( Doc.head.loaded && value!==oldval ){
+	    if( Doc.head.allowUpdate && value!==oldval ){
+		if( !Doc.isCreated ){
+		    App.flash("Не возможно изменить настройки. Документ пуст.");
+		    return;
+		}
 		$.post('DocumentItems/headUpdate/'+App.uri(field,value),function(ok){
 		    Doc.head.afterUpdate( ok, field, value, oldval );
 		});
@@ -126,7 +141,7 @@
 		case 'passive_company_id':
 		    if( !ok ){
 			App.flash("Сменить контрагента можно только у не проведенного документа.",'alert');
-			$("#document_pci").combobox('reload');
+			$("#Doc_pci").combobox('reload');
 		    }
 		    break;
 		case 'doc_type':
@@ -160,14 +175,34 @@
 	},
 	typeComboFormatterIcon:function(newVal){
 	    var icon=Doc.head.typeComboFormatter({value:newVal,text:''});
-	    $('#document_type_cmb').next().find(".l-btn-text").html( icon );
+	    $('#Doc_type_cmb').next().find(".l-btn-text").html( icon );
 	},
 	companyListFrm:function(row){
-	    var path_chunks=row.path.split('>');
-	    var label=path_chunks.slice(path_chunks.length-2).reverse().join('/ ');
+	    var label=row.label;
+	    if( row.path ){
+		var path_chunks=row.path.split('>');
+		var label=path_chunks.slice(path_chunks.length-2).reverse().join('/ ');
+	    }
 	    return label;
 	},
+	pcompTree:function(){
+	    if( !Doc.isCreated ){
+		App.flash("Не возможно изменить настройки. Документ пуст.");
+		return;
+	    }
+	    App.loadWindow('page/company/tree',{}).progress(function(status,comp){
+		if( status==='select' ){
+		    $("#Doc_pci").combobox('setValue',comp.company_id);
+		    $("#Doc_pci").combobox('setText',comp.label);
+		    Doc.head.update( 'passive_company_id', comp.company_id);
+		}
+	    });
+	},
 	sendSms:function(){
+	    if( !Doc.isCreated ){
+		App.flash("Документ пуст.");
+		return;
+	    }
 	    $.get("Company/companyGet/"+Doc.head.props.passive_company_id, function ( xhr ) {
 		var passive_data=App.json(xhr);
 		var data={to:passive_data.company_mobile,body:Doc.head.props.doc_data};
@@ -175,6 +210,10 @@
 	    });
 	},
 	addEvent:function(){
+	    if( !Doc.isCreated ){
+		App.flash("Документ пуст.");
+		return;
+	    }
 	    $.get("Company/companyGet/"+Doc.head.props.passive_company_id, function ( xhr ) {
 		var passive_data=App.json(xhr);
 		var fvalue={
@@ -190,21 +229,37 @@
 	    });
 	},
 	commit:function(){
-	    $.post("DocumentItems/entryDocumentCommit/", function ( xhr ) {
-		if( xhr*1 ){
-		    Doc.head.loaded=false;
-		    Doc.head.load(Doc.head.doc_id);
-		}
-	    });
+	    if( Doc.isCreated ){
+		$.post("DocumentItems/entryDocumentCommit/"+Doc.head.props.doc_id, function ( ok ) {
+		    if( ok*1 ){
+			Doc.head.allowUpdate=false;
+			Doc.head.reload();
+			Doc.handler.notify('commit');
+		    }
+		});
+	    } else {
+		App.flash("Документ пуст.");
+	    }
 	},
 	uncommit:function(){
-	    if( Doc.head.props.is_commited*1===0 && !confirm("Удалить документ?") ){
+	    if( !Doc.isCreated ){
+		App.flash("Документ пуст.");
 		return;
 	    }
-	    $.post("DocumentItems/entryDocumentUncommit/", function ( xhr ) {
-		if( xhr*1 ){
-		    Doc.head.loaded=false;
-		    Doc.head.load(Doc.head.doc_id);
+	    var action=Doc.head.props.is_commited*1?'uncommit':'delete';
+	    if( action==='delete' && !confirm("Удалить документ?") ){
+		return;
+	    }
+	    $.post("DocumentItems/entryDocumentUncommit/"+Doc.head.props.doc_id, function ( ok ) {
+		if( ok*1 ){
+		    if( action==='uncommit' ){
+			Doc.head.reload();
+			Doc.handler.notify('uncommit');
+		    } else {
+			Doc.head.load(0);
+			Doc.handler.notify('deleted');
+		    }
+		    
 		}
 	    });
 	}
@@ -214,11 +269,11 @@
     /////////////////////////////////////////////
     Doc.entries = {
 	reload:function(){
-	    $('#document_entry_dg').datagrid('reload');
+	    $('#Doc_entry_dg').datagrid('reload');
 	},
 	loader: function (param, success, error) {
-	    if( Doc.head.loaded ){
-		$.post("DocumentItems/entryDocumentGet/", function ( xhr ) {
+	    if( Doc.isCreated ){
+		$.post("DocumentItems/entryDocumentGet/"+Doc.head.props.doc_id, function ( xhr ) {
 		    var resp = App.json(xhr);
 		    success(resp.entries ? resp.entries : []);
 		    Doc.entries.renderFooter( resp.footer );
@@ -226,22 +281,27 @@
 	    }
 	    else{
 		success([]);
+                Doc.entries.renderFooter( {} );
 	    }
 	},
 	add:function( code, qty ){
 	    if( code && qty ){
-		$.post(App.uri("DocumentItems","entryAdd",code,qty),function(ok){
-		    if( ok*1 ){
-			Doc.entries.reload();
-		    }
-		    else{
-			App.flash("Строка не добавлена!");
-		    }
-		});
+		if( Doc.isCreated ){
+		    $.post(App.uri("DocumentItems","entryAdd",Doc.head.props.doc_id,code,qty),function(ok){
+			if( ok*1 ){
+			    Doc.entries.reload();
+			}
+			else{
+			    App.flash("Строка не добавлена!");
+			}
+		    });
+		} else {//if this added entry is the first in new doc then reload head of new created doc
+		    Doc.createThenAddEntry(code, qty);
+		}
 	    }
 	},
 	edit:function(){
-	    var row=$("#document_entry_dg").datagrid('getSelected');
+	    var row=$("#Doc_entry_dg").datagrid('getSelected');
 	    if( !row ){
 		App.flash("Строка не выбрана!");
 		return;
@@ -251,10 +311,13 @@
 		if(state==='change'){
 		    Doc.entries.reload();
 		}
+		if( state==='close' ){
+		    $('#Doc_entry_dg').datagrid('getPanel').panel('panel').focus();
+		}
 	    });
 	},
 	delete:function(){
-	    var rows=$("#document_entry_dg").datagrid('getSelections');
+	    var rows=$("#Doc_entry_dg").datagrid('getSelections');
 	    if( !rows.length ){
 		App.flash("Ни одна строка не выбрана!");
 		return;
@@ -264,18 +327,18 @@
 		rows.forEach(function(row){
 		    ids.push(row.doc_entry_id);
 		});
-		$.post(App.uri('DocumentItems','entryDelete',ids.join(',')), function () {
+		$.post(App.uri('DocumentItems','entryDelete',Doc.head.props.doc_id,ids.join(',')), function () {
 		    Doc.entries.reload();
 		});		
 	    }
 	},
 	onRowContextMenu: function (e, row) {
 	    e.preventDefault();
-	    var selected_rows=$('#document_entry_dg').datagrid('getSelected');
+	    var selected_rows=$('#Doc_entry_dg').datagrid('getSelected');
 	    if( !selected_rows ){
-		$('#document_entry_dg').datagrid('selectRow', row);
+		$('#Doc_entry_dg').datagrid('selectRow', row);
 	    }
-	    $('#document_entry_menu').menu('show', {
+	    $('#Doc_entry_menu').menu('show', {
 		left: e.pageX,
 		top: e.pageY
 	    });
@@ -286,7 +349,7 @@
 	    data.vatless=data.vatless||0;
 	    data.vat=data.vat||0;
 	    data.total=data.total||0;
-	    App.renderTpl('document_footer',data);
+	    App.renderTpl('Doc_footer',data);
 	},
 	initRecalculate:function(){
 	    App.loadWindow('page/trade/document_recalculate').progress(function(state,data){
@@ -296,6 +359,40 @@
 		    });
 		}
 	    });
+	},
+	setupShortcuts:function(){
+	    $('#Doc_entry_dg').datagrid('getPanel').panel('panel').attr('tabindex',1).bind('keydown',function(e){
+		var selected = $('#Doc_entry_dg').datagrid('getSelected');
+		var index = $('#Doc_entry_dg').datagrid('getRowIndex', selected);
+		switch(e.keyCode){
+		    case 13:
+			if (selected){
+			    Doc.entries.edit();
+			}
+			break;
+		    
+		    case 38:	// up
+			e.preventDefault();
+			if (selected){
+			    $('#Doc_entry_dg').datagrid('unselectAll');
+			    $('#Doc_entry_dg').datagrid('selectRow', index-1);
+			} else {
+			    $('#Doc_entry_dg').datagrid('unselectAll');
+			    $('#Doc_entry_dg').datagrid('selectRow', 0);
+			}
+			break;
+		    case 40:	// down
+			e.preventDefault();
+			if (selected){
+			    $('#Doc_entry_dg').datagrid('unselectAll');
+			    $('#Doc_entry_dg').datagrid('selectRow', index+1);
+			} else {
+			    $('#Doc_entry_dg').datagrid('unselectAll');
+			    $('#Doc_entry_dg').datagrid('selectRow', 0);
+			}
+			break;
+		}
+	});
 	}
     };
     /////////////////////////////////////////////
@@ -304,12 +401,12 @@
     Doc.suggest={
 	prevCode:'',
 	init:function(){
-	    var qty = $('#document_sugg_qty').textbox('textbox');
-	    var cmb=$('#document_suggest_cmb').combobox('textbox');
+	    var qty = $('#Doc_sugg_qty').textbox('textbox');
+	    var cmb=$('#Doc_suggest_cmb').combobox('textbox');
 	    cmb.bind( 'keydown', function(e){
-		var query=$('#document_suggest_cmb').combobox('getValue');
+		var query=$('#Doc_suggest_cmb').combobox('getValue');
 		if( e.keyCode===38 && query==='' ){
-		    $('#document_suggest_cmb').combobox('setValue',Doc.suggest.prevCode);
+		    $('#Doc_suggest_cmb').combobox('setValue',Doc.suggest.prevCode);
 		}
 		else if( e.keyCode===13 ){
 		    qty.select();
@@ -323,9 +420,9 @@
 	    cmb.select();
 	},
 	qtySubmit:function(){
-	    var qty = $('#document_sugg_qty').textbox('textbox');
-	    var cmb=$('#document_suggest_cmb').combobox('textbox');
-	    var code=$('#document_suggest_cmb').combobox('getValue');
+	    var qty = $('#Doc_sugg_qty').textbox('textbox');
+	    var cmb=$('#Doc_suggest_cmb').combobox('textbox');
+	    var code=$('#Doc_suggest_cmb').combobox('getValue');
 	    var quantity=$(qty).val();
 	    if( quantity*1>0 ){
 		Doc.entries.add(code,quantity);
@@ -355,10 +452,10 @@
 	    }
 	},
 	select:function(){
-	    var code=Doc.suggest.prevCode=$('#document_suggest_cmb').combobox('getValue');
+	    var code=Doc.suggest.prevCode=$('#Doc_suggest_cmb').combobox('getValue');
 	    var spack=Doc.suggest.findSPack(code);
-	    $('#document_sugg_qty').textbox('setValue',spack);
-	    $('#document_sugg_qty').textbox('textbox').select();
+	    $('#Doc_sugg_qty').textbox('setValue',spack);
+	    $('#Doc_sugg_qty').textbox('textbox').select();
 	}
     };
     /////////////////////////////////////////////
@@ -366,12 +463,14 @@
     /////////////////////////////////////////////
     Doc.view={
 	loadTile:function(){
-	    var _this=this;
-	    var doc_id=Doc.data.doc_id;
-	    $.get('DocumentView/listFetch/' + doc_id, function (xhr) {
-		_this.views = _this.compile(App.json(xhr));
-		App.renderTpl('document_view_tile',{views:_this.views});
-	    });
+            if( Doc.isCreated ){
+                $.get('DocumentView/listFetch/'+Doc.head.props.doc_id, function (xhr) {
+                    Doc.view.views = Doc.view.compile(App.json(xhr));
+                    App.renderTpl('Doc_view_tile',{views:Doc.view.views});
+                });
+            } else {
+		$('#Doc_view_tile').addClass('covert');
+	    }
 	},
 	compile:function( views ){
 	    for( var i in views ){
@@ -416,25 +515,16 @@
 	showhidden:false,
 	togglehidden:function(){
 	    this.showhidden=!this.showhidden;
-	    $('#document_view_arrow').attr('src','img/arrow'+(this.showhidden?'left':'right')+'.png');
+	    $('#Doc_view_arrow').attr('src','img/arrow'+(this.showhidden?'left':'right')+'.png');
 	    $('.view_is_hidden').css('display',(this.showhidden?'inline-block':'none'));
 	}
     };
 </script>
-<form id="document_head_frm" onsubmit="return false;" style="-moz-user-select:none;">
+<form id="Doc_head_frm" onsubmit="return false;" style="user-select:none;">
     <!-- DOCUMENT HEADER -->
     <div style="width: 658px;margin: auto;padding-top: 10px;">
 	<div>
-	    <input class="easyui-combobox" name="passive_company_id" id="document_pci" title="Контрагент" data-options="
-		    valueField: 'company_id',
-		    textField: 'label',
-		    url: 'Company/listFetch/selected_passive_if_empty',
-		    mode: 'remote',
-		    method:'get',
-		    formatter:Doc.head.companyListFrm,
-		    onSelect: function(company){Doc.head.update('passive_company_id',company.company_id)}
-		    ">
-	    <select class="easyui-combobox" id="document_type_cmb" name="doc_type" title="Вид" data-options="
+	    <select class="easyui-combobox" id="Doc_type_cmb" name="Doc_type" title="Вид" data-options="
 		    editable:false,
 		    buttonText:'<img src=img/sell.png>',
 		    buttonAlign:'left',
@@ -457,6 +547,22 @@
 		   precision:2,
 		   onChange:function(val,old){Doc.head.update('doc_ratio',val,old)}
 		   ">
+	    <input class="easyui-combobox" name="passive_company_id" id="Doc_pci" title="Контрагент" data-options="
+		    valueField: 'company_id',
+		    textField: 'label',
+		    url: 'Company/listFetch/selected_passive_if_empty',
+		    mode: 'remote',
+		    method:'get',
+		    hasDownArrow:false,
+		    formatter:Doc.head.companyListFrm,
+		    onSelect: function(company){Doc.head.update('passive_company_id',company.company_id)},
+		    icons: [{
+			     iconCls:'icon-settings16',
+			     handler: function(e){
+				 Doc.head.pcompTree();
+			     }
+			 }]
+		    ">
 	    <input type="text" name="signs_after_dot" class="easyui-numberspinner" title="Точность" data-options="
 		   min:0,
 		   max:5,
@@ -474,9 +580,9 @@
 		   onChange:function(val,old){Doc.head.update('doc_num',val,old)}
 		   ">
 	</div>
-	<div id="document_utils" style="display: none">
+	<div id="Doc_utils" style="display: none">
 	    <div class="inp_rule"></div>
-	    <select class="easyui-combobox" name="notcount" id="document_notcount_cmb" title="На складе" data-options="
+	    <select class="easyui-combobox" name="notcount" id="Doc_notcount_cmb" title="На складе" data-options="
 		    editable:false,
 		    panelHeight:'auto',
 		    onChange:function(val,old){Doc.head.update('notcount',val,old)}
@@ -484,7 +590,7 @@
 		<option value="0">Учитывать</option>
 		<option value="1">Неучитывать</option>
 	    </select>
-	    <select class="easyui-combobox" name="use_vatless_price" id="document_use_vatless_price_cmb" title="Цена" data-options="
+	    <select class="easyui-combobox" name="use_vatless_price" id="Doc_use_vatless_price_cmb" title="Цена" data-options="
 		    editable:false,
 		    panelHeight:'auto',
 		    onChange:function(val,old){Doc.head.update('use_vatless_price',val,old)}
@@ -499,9 +605,9 @@
 		   ">
 	</div>
 	<div>
-	    <div id="document_tool_bar" class="" style="padding:1px;text-align: right;border-top:1px #fff solid;">
+	    <div id="Doc_tool_bar" class="" style="padding:1px;text-align: right;border-top:1px #fff solid;">
 		<div style="float:left;" title="↑ для вывода предыдущего кода">
-		    <input class="easyui-combobox" id="document_suggest_cmb" style="width:190px;" data-options="
+		    <input class="easyui-combobox" id="Doc_suggest_cmb" style="width:190px;" data-options="
 			   valueField: 'product_code',
 			   textField: 'product_code',
 			   formatter:Doc.suggest.formatter,
@@ -517,10 +623,10 @@
 			   prompt:'код, название или штрихкод',
 			   onSelect: Doc.suggest.select
 			   ">
-		    <input type="text" class="easyui-numberbox" id="document_sugg_qty" style="width:50px;" data-options="min:1,precision:0,prompt:'Кол-во'">
+		    <input type="text" class="easyui-numberbox" id="Doc_sugg_qty" style="width:50px;" data-options="min:1,precision:0,prompt:'Кол-во'">
 		    <button type="button" title="Добавить строку в документ" style="margin:4px;padding: 0px;" onclick="Doc.suggest.qtySubmit();">+</button>
 		</div>
-		<span class="icon-24 icon-commit" title="Провести документ" id="doc_commit_btn" onclick="Doc.head.commit();"> </span>
+		<span class="icon-24 icon-commit" title="Провести документ" id="Doc_commit_btn" onclick="Doc.head.commit();"> </span>
 		<span class="icon-24 icon-uncommit" title="Отменить документ" onclick="Doc.head.uncommit();"> </span>
 		<span style="display: inline-block;width:26px"> </span>
 		<span class="icon-24 icon-lorry" title="Добавить в распорядок" onclick="Doc.head.addEvent();"> </span>
@@ -529,7 +635,7 @@
 		<span class="icon-24 icon-change" title="Изменить строку" onclick="Doc.entries.edit();"> </span>
 		<span class="icon-24 icon-delete" title="Удалить строку" onclick="Doc.entries.delete();"> </span>
 		<span class="icon-24 icon-refresh" title="Обновить" onclick="Doc.entries.reload();"> </span>
-		<span class="icon-24 icon-utils" title="Дополнительные свойства" onclick="$('#document_utils').toggle('slow')"> </span>
+		<span class="icon-24 icon-utils" title="Дополнительные свойства" onclick="$('#Doc_utils').toggle('slow')"> </span>
 	    </div>
 	</div>
 	<!-- 
@@ -537,11 +643,12 @@
 	DOCUMENT ENTRIES 
 	----------------------------
 	-->
-	<table class="easyui-datagrid" id="document_entry_dg" style="width:660px;"
+	<table class="easyui-datagrid" id="Doc_entry_dg" style="width:660px;"
 	       data-options="
 	       rownumbers:true,
 	       noheader:true,
 	       ctrlSelect:true,
+	       autoRowHeight:false,
 	       loader:Doc.entries.loader,
 	       method:'get',
 	       onDblClickRow:Doc.entries.edit,
@@ -560,10 +667,10 @@
 	    </thead>
 	</table>
 	<!-- CONTEXT MENU -->
-	<div id="document_entry_menu" class="easyui-menu" style="width:170px;">
+	<div id="Doc_entry_menu" class="easyui-menu" style="width:170px;">
 	    <div data-options="iconCls:'icon-change16'" onclick="Doc.entries.edit()">Изменить</div>
 	    <div data-options="iconCls:'icon-delete16'" onclick="Doc.entries.delete()">Удалить</div>
-	    <div onclick="$('#document_entry_dg').datagrid('selectAll')">Выделить все</div>
+	    <div onclick="$('#Doc_entry_dg').datagrid('selectAll')">Выделить все</div>
 	    <div class="menu-sep"></div>
 	    <div data-options="iconCls:'icon-lorry16'" onclick="Doc.head.addEvent();">В распорядок</div>
 	    <div data-options="iconCls:'icon-sms16'" onclick="Doc.head.sendSms()">Отправить СМС</div>
@@ -571,7 +678,7 @@
 	    <div data-options="iconCls:'icon-refresh16'" onclick="Doc.entries.reload();">Обновить</div>
 	</div>
         <!-- DOCUMENT FOOTER -->
-	<div id="document_footer">
+	<div id="Doc_footer">
 	    <table style="float:left" class="footer_table">
 		<tr>
 		    <td>Вес:</td><td style="font-weight: bold;">{{total_weight}} кг</td>
@@ -592,13 +699,13 @@
 		    <td>Всего с НДС:</td><td style="font-weight: bold;">{{total}} {{curr_symbol}}</td>
 		</tr>
 	    </table>
-	    <div id="document_owners" class="transparent" style="clear: left">
-		<img src="img/add-16.png" title="Создано пользователем" style="vertical-align: middle"> {{created_by}} 
-		<img src="img/edit-16.png" title="Изменено пользователем" style="vertical-align: middle"> {{modified_by}}
-	    </div>
+	</div>
+	<div id="Doc_owners" class="transparent covert" style="clear: left">
+	    <img src="img/add-16.png" title="Создано пользователем" style="vertical-align: middle"> {{created_by}} 
+	    <img src="img/edit-16.png" title="Изменено пользователем" style="vertical-align: middle"> {{modified_by}}
 	</div>
 	<!-- DOCUMENT VIEWS -->
-	<div id="document_view_tile" style="clear:both;vertical-align: top;">
+        <div id="Doc_view_tile" style="clear:both;vertical-align: top;" class="covert">
 	    {{if views}}
 		{{views}}
 		<div class="view_button {{if view_hidden|equals>1}}view_is_hidden{{/if}}" 
@@ -620,19 +727,11 @@
 		</div>
 		{{/views}}
 	    {{/if}}
-	    <img id="document_view_arrow" src="img/arrowright.png" title="Дополнительные шаблоны печати" onclick="Doc.view.togglehidden()">
+	    <img id="Doc_view_arrow" src="img/arrowright.png" title="Дополнительные шаблоны печати" onclick="Doc.view.togglehidden()">
 	</div>
 	<textarea name="doc_data" title="Комментарий" placeholder="Комментарий" data-skip="1" class="document_comment" onchange="Doc.head.update('doc_data',this.value)"></textarea>
     </div>
 </form>
-
-
-
-
-
-
-
-
 <style type="text/css">
     .force_center .panel{
 	margin:auto;
@@ -659,11 +758,11 @@
 	border: 1px solid #ccc;
 	padding: 3px;
     }
-    #document_view_arrow{
+    #Doc_view_arrow{
 	margin: 2px;
 	vertical-align:top;
     }
-    #document_view_arrow:hover{
+    #Doc_view_arrow:hover{
 	cursor: pointer;
 	background-color: #def;
 	border: 2px #abf solid;

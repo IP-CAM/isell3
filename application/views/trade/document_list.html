@@ -1,58 +1,82 @@
-<script type="text/javascript" src="js/jquery-easyui-1.4/datagridfilter/datagrid-filter.js"></script>
 <script type="text/javascript">
     /* global App,DocList */
-    DocList=App.page_trade_document_list = {
-	show_only_pcomp_docs:false,
+    DocList = App.page_trade_document_list = {
+	show_only_pcomp_docs: false,
 	init: function () {
-	    
 	},
 	initAfter: function () {
-	    this.list.init();
-	    App.handler.progress(function(status){
-		if( status==='passiveCompanySelected'){
-		    //DocList.show_only_pcomp_docs=true;
-                    $('#document_list_dg').datagrid('addFilterRule', {
-                            field: 'company_name',
-                            op: 'equal',
-                            value: App.pcomp.label
-                    });
-		    $('#document_list_dg').datagrid('reload');
+            App.handler.progress(function(status){
+                if( status==='passiveCompanySelected' ){
+                    $('#document_list_dg').datagrid('reload');
+                    DocList.doc.load(0);
+                }
+            });
+	},
+	doc:{
+	    doc_id:0,
+	    init:function(){
+		App.loadModule('page/trade/document',{doc_id:DocList.doc.doc_id,open_in:'panel'},'DocInline',/(Doc|page_trade_document)([^\w]|_)/g,"DocInline$2").progress(function(status,param){
+		    switch( status ){
+			case 'close':
+			    $('#document_list_dg').datagrid('unselectAll');
+			    break;
+			case 'deleted':
+			case 'uncommit':
+			case 'commit':
+			    DocList.list.suppressOnSelect=true;
+			    $('#document_list_dg').datagrid('reload');
+			    break;
+			case 'created':
+			    DocList.list.selectedDocId=param;
+			    DocList.list.suppressOnSelect=true;
+			    $('#document_list_dg').datagrid('reload');
+			    break;
+		    }
+		});
+	    },
+	    load:function( doc_id ){
+		this.doc_id=doc_id;
+		if( App.DocInline ){
+		    App.DocInline.data.doc_id=this.doc_id;
+		    App.DocInline.init();
+		} else {
+		    this.init();
 		}
-	    });
+	    }
 	}
     };
+	
     DocList.list = {
 	init: function () {
-	    $('#document_list_dg').datagrid('getPager').pagination({
-                layout:['list','sep','first','prev','sep','links','sep','next','sep','refresh']
-            });
-            this.toggleFilter();
 	},
-	loader:function(param,success,error){
-	    $.get(App.uri('DocumentCore','listFetch',param.page,param.rows,DocList.show_only_pcomp_docs?'show_only_pcomp_docs':''),{filterRules:param.filterRules},function(xhr){
-		var resp=App.json(xhr);
-		if( resp.rows ){
-		    resp.rows.unshift(DocList.list.getNewDocRow());
-		    success( resp );
-		    if( DocList.list.selectedDocId ){
-			$('#document_list_dg').datagrid('selectRecord',DocList.list.selectedDocId);
-		    }
-		}
-		else{
-		    success({
-			rows:[DocList.list.getNewDocRow()],
-			total:1
-		    });
-		}
-	    });
+	loader: function (param, success, error) {
+            if( App.pcomp.company_id ){
+                $.get(App.uri('DocumentCore', 'listFetch', param.page, param.rows, 'show_only_pcomp_docs'), {filterRules: param.filterRules}, function (xhr) {
+                    var resp = App.json(xhr);
+                    if (resp.rows) {
+                        resp.rows.unshift(DocList.list.getNewDocRow());
+                        success(resp);
+                        if (DocList.list.selectedDocId) {
+                            $('#document_list_dg').datagrid('selectRecord', DocList.list.selectedDocId);
+                        }
+                    }
+                    else {
+                        success({
+                            rows: [DocList.list.getNewDocRow()],
+                            total: 1
+                        });
+                    }
+                    $('#document_list_dg').datagrid('mergeCells', {index: 0,field: 'doc_num',colspan: 5});
+                });
+            } else {
+                success({rows: [],total: 1});
+            }
 	},
-	getNewDocRow:function(){
+	getNewDocRow: function () {
 	    return {
-		doc_id:0,
-		doc_type_name:'Новый документ',
-		doc_date:App.today(),
-		company_name:App.pcomp?App.pcomp.label:'',
-		doc_type_icon:"new Новый документ"
+		doc_id: 0,
+		doc_num: 'Создать новый документ',
+		doc_type_icon: "new Новый документ"
 	    };
 	},
 	toggleFilter: function () {
@@ -65,84 +89,64 @@
 		this.filterEnabled = true;
 	    }
 	},
-	toggleHide: function( mode ){
-	    if( mode ){
-		this.colsHidden=(mode!=='hide');
-	    }
-	    if ( this.colsHidden ) {
-		$('#document_list_dg').datagrid('showColumn','doc_type_name');
-		$('#document_list_dg').datagrid('showColumn','views');
-		$('#document_list_dg').datagrid('resize',{width:610});
-		this.colsHidden = false;
-	    }
-	    else {
-		$('#document_list_dg').datagrid('hideColumn','doc_type_name');
-		$('#document_list_dg').datagrid('hideColumn','views');
-		$('#document_list_dg').datagrid('resize',{width:360});
-		this.colsHidden = true;
-	    }	    
-	},
-	onSelect:function(index,row){
-	    if( row.doc_id===0 ){
-		DocList.list.createDoc();
+	onSelect: function (index, row) {
+	    if ( DocList.list.suppressOnSelect ) {
+		DocList.list.suppressOnSelect=false;
 		return;
 	    }
-	    App.loadModule('page/trade/document',{doc_id:row.doc_id,open_in:'panel'}).progress(function(status){
-		if( status==='close' ){
-		    DocList.list.toggleHide('show');
-		    $('#document_list_dg').datagrid('unselectAll');
-		}
-		if( status==='deleted' ){
-		    $('#document_list_dg').datagrid('reload');
-		}
-	    });
-	    DocList.list.toggleHide('hide');
-	},
-	createDoc:function(){
-	    $.post('DocumentCore/createDoc',function(resp){
-		if( resp*1!==0 ){
-		    DocList.list.selectedDocId=resp;
-		    $('#document_list_dg').datagrid('reload');
-		}
-	    });
+	    DocList.doc.load(row.doc_id);
 	}
+	/*,
+	createDoc: function () {
+	    $.post('DocumentCore/createDoc', function (resp) {
+		if (resp * 1 !== 0) {
+		    DocList.list.selectedDocId = resp;
+		    $('#document_list_dg').datagrid('reload');
+		}
+	    });
+	}*/
     };
-
 </script>
+<table style="border-collapse: collapse;">
+    <tr>
+	<td style="vertical-align: top;width:700px;"> 
+	    <div id="DocInline"></div>
+	</td>
+	<td style="vertical-align: top">
+	    <div>
+		<div style="float: left;font-weight: bold;padding-top: 8px;">
+		    <img src="img/table16.png" style="width:16px;height: 16px;"> Список документов
+		</div>
+		<div style="float: right">
+		    <span class="icon-24 icon-create" title="Добавить" onclick="DocList.list.createDoc();"> </span>
+		    <span class="icon-24 icon-tablefilter" title="Фильтр таблицы" onclick="DocList.list.toggleFilter()"> </span>
+		    <span class="icon-24 icon-refresh" title="Обновить" onclick="$('#document_list_dg').datagrid('reload')"> </span> 
+		</div>
+	    </div>
+	    <table id="document_list_dg" class="easyui-datagrid" style="width:255px"
+		   data-options="
+		   idField:'doc_id',
+		   loader:DocList.list.loader,
+		   pagination:true,
+		   pageSize:50,
+		   pageList:[50,100,500,1000],
+		   singleSelect:true,
+		   remoteFilter:true,
+		   onSelect:DocList.list.onSelect,
+		   onLoadSuccess:function(){$('#document_list_dg').datagrid('resize');},
+		   method:'get'">
+		<thead>
+		    <tr>
+			<th data-options="width:25,field:'doc_type_icon',align:'center',formatter:App.datagrid.tooltip">Тип</th>
+			<th data-options="width:45,field:'doc_num',align:'left'">Номер</th>
+			<th data-options="width:65,field:'doc_date'">Дата</th>
+			<th data-options="width:70,field:'amount',align:'right',formatter:function(num){ return isNaN(num*1)?'':App.formatNum( (num*1).toFixed(2)); }">Сумма</th>
+			<th data-options="width:25,field:'commited',align:'center',formatter:App.datagrid.tooltip"></th>
+			<th data-options="width:25,field:'trans_status',align:'center',formatter:App.datagrid.tooltip"></th>
+		    </tr>
+		</thead>
+	    </table>
+	</td>
+    </tr>
+</table>
 
-<div style="display: table-cell;">
-    <div id="page_trade_document"></div>
-</div>
-<div style="display: table-cell;padding-left:1px;">
-    <table id="document_list_dg" class="easyui-datagrid" title="Список документов" style="width:610px;"
-	   data-options="
-	   idField:'doc_id',
-	   loader:DocList.list.loader,
-	   pagination:true,
-	   pageSize:20,
-	   singleSelect:true,
-	   remoteFilter:true,
-	   onSelect:DocList.list.onSelect,
-	   url:'DocumentCore/listFetch',
-	   tools:'#document_list_dg_tools',
-	   method:'get'">
-	<thead>
-	    <tr>
-		<th data-options="width:110,field:'company_name'">Компания</th>
-		<th data-options="width:25,field:'doc_type_icon',align:'center',formatter:App.datagrid.tooltip">Док</th>
-		<th data-options="width:65,field:'doc_date'">Дата</th>
-		<th data-options="width:140,field:'doc_type_name'">Документ</th>
-		<th data-options="width:45,field:'doc_num',align:'right'">Номер</th>
-		<th data-options="width:60,field:'amount',align:'right'">Сумма</th>
-		<th data-options="width:25,field:'commited',align:'center',formatter:App.datagrid.tooltip">Проведен</th>
-		<th data-options="width:25,field:'trans_status',align:'center',formatter:App.datagrid.tooltip">Оплачен</th>
-		<th data-options="width:110,field:'views'">Шаблоны печати</th>
-	    </tr>
-	</thead>
-    </table>
-</div>
-<div id="document_list_dg_tools">
-    <a href="javascript:void(0)" class="icon-eye" onclick="DocList.list.toggleHide();" title="Скрыть/показать колонки"></a>
-    <a href="javascript:void(0)" class="icon-filter" onclick="DocList.list.toggleFilter();" title="Фильтр таблицы"></a>
-    <a href="javascript:void(0)" class="icon-reload" onclick="$('#document_list_dg').datagrid('reload')" title="Обновить"></a>
-</div>
