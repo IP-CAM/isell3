@@ -83,6 +83,7 @@
 	setPropsForm:function(props){
 	    Doc.head.allowUpdate=false;
 	    $('#Doc_head_frm').form('load', props);
+	    $('#Doc_pci').combobox('reload');
 	    Doc.head.allowUpdate=true;
 	    Doc.head.hightlightCommited();
 	    Doc.head.typeComboFormatterIcon(Doc.head.props.doc_type);

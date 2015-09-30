@@ -1,4 +1,3 @@
-<script type="text/javascript" src="js/jquery-easyui-1.4/datagridfilter/datagrid-filter.js"></script>
 <script type="text/javascript">
     /* global App,Blank */
     Blank=App.page_trade_blank = {
@@ -12,11 +11,7 @@
 	    this.buttonsAdjust();
 	    App.handler.progress(function(status){
 		if( status==='passiveCompanySelected'){
-                    $('#blank_list_dg').datagrid('addFilterRule', {
-                            field: 'company_name',
-                            op: 'equal',
-                            value: App.pcomp.label
-                    });
+		    Blank.select(0);
 		    $('#blank_list_dg').datagrid('reload');
 		}
 	    });
@@ -35,6 +30,20 @@
 	    } else {
 		$('#blank_button_save').prop('disabled',true);
 		$('#blank_button_edit').prop('disabled',false);
+	    }
+	},
+	select:function( doc_id ){
+	    Blank.list.selectedDocId=doc_id;
+	    if( Blank.parser.inputsRendered ){
+		Blank.parser.unRenderInputs();
+	    }
+	    if( Blank.list.selectedDocId===0 ){
+		Blank.availsOpen();
+		$('#blank_edit').panel('collapse');
+	    } else {
+		$('#blank_avails').panel('collapse');
+		$('#blank_edit').panel('expand');
+		Blank.load();
 	    }
 	},
 	availsOpen:function(){
@@ -64,8 +73,8 @@
 	    $.post('DocumentBlank/delete',function(ok){
 		if(ok*1){
 		    Blank.list.selectedDocId=0;
-		    $('#blank_list_dg').datagrid('selectRow',0);
-		    //$('#blank_list_dg').datagrid('reload');
+		    $('#blank_list_dg').datagrid('unselectAll');
+		    $('#blank_list_dg').datagrid('reload');
 		    App.flash('Бланк удален!');
 		} else {
 		    App.flash('Ошибка удаления бланка!');
@@ -304,13 +313,10 @@
     };
     Blank.list = {
 	init: function () {
-	    $('#blank_list_dg').datagrid('getPager').pagination({
-                layout:['list','sep','first','prev','sep','links','sep','next','sep','refresh']
-            });
 	    $('#blank_list_dg').datagrid('enableFilter');
 	},
 	loader:function(param,success,error){
-	    $.get(App.uri('DocumentBlank','listFetch',param.page,param.rows),{filterRules:param.filterRules},function(xhr){
+	    $.get(App.uri('DocumentBlank','listFetch',param.page,param.rows, 'show_only_pcomp_docs'),{filterRules:param.filterRules},function(xhr){
 		var resp=App.json(xhr);
 		if( resp.rows ){
 		    resp.rows.unshift(Blank.list.getNewDocRow());
@@ -325,30 +331,18 @@
 			total:1
 		    });
 		}
+		$('#blank_list_dg').datagrid('mergeCells', {index: 0,field: 'doc_num',colspan: 4});
 	    });
 	},
-	getNewDocRow:function(){
+	getNewDocRow: function () {
 	    return {
-		doc_id:0,
-		view_name:'Новый документ',
-		doc_date:App.today(),
-		company_name:App.pcomp?App.pcomp.label:'',
-		doc_type_icon:"new Новый документ"
+		doc_id: 0,
+		doc_num: 'Создать новый бланк',
+		doc_type_icon: "new Новый бланк"
 	    };
 	},
 	onSelect:function(index,row){
-	    Blank.list.selectedDocId=row.doc_id;
-	    if( Blank.parser.inputsRendered ){
-		Blank.parser.unRenderInputs();
-	    }
-	    if( Blank.list.selectedDocId===0 ){
-		Blank.availsOpen();
-		$('#blank_edit').panel('collapse');
-	    } else {
-		$('#blank_avails').panel('collapse');
-		$('#blank_edit').panel('expand');
-		Blank.load();
-	    }
+	    Blank.select(row.doc_id);
             $('#blank_list_dg').datagrid('resize');
 	}
     };
@@ -380,12 +374,13 @@
     </div>
 </div>
 <div style="display: table-cell;padding-left:1px;">
-    <table id="blank_list_dg" class="easyui-datagrid" title="Список бланков" style="width:375px;"
+    <table id="blank_list_dg" class="easyui-datagrid" title="Список бланков" style="width:360px;"
 	   data-options="
 	   idField:'doc_id',
 	   loader:Blank.list.loader,
 	   pagination:true,
-	   pageSize:20,
+	   pageSize:25,
+	   pageList:[25,50,100,500,1000],
 	   singleSelect:true,
 	   remoteFilter:true,
 	   onSelect:Blank.list.onSelect,
@@ -393,11 +388,10 @@
 	   method:'get'">
 	<thead>
 	    <tr>
-		<th data-options="width:110,field:'company_name'">Компания</th>
-		<th data-options="width:25,field:'doc_type_icon',align:'center',formatter:App.datagrid.tooltip">Док</th>
+		<th data-options="width:25,field:'doc_type_icon',align:'center',formatter:App.datagrid.tooltip">Тип</th>
+		<th data-options="width:45,field:'doc_num',align:'left'">Номер</th>
 		<th data-options="width:65,field:'doc_date'">Дата</th>
-		<th data-options="width:45,field:'doc_num',align:'right'">Номер</th>
-		<th data-options="width:100,field:'view_name'">Документ</th>
+		<th data-options="width:200,field:'view_name'">Документ</th>
 		<th data-options="width:25,field:'saved',align:'center',formatter:App.datagrid.tooltip">Сохранен</th>
 	    </tr>
 	</thead>

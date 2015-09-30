@@ -103,7 +103,7 @@ class DocumentCore extends DocumentUtils{
 		document_view_list dv USING(doc_id)
 		    LEFT JOIN
 		document_view_types dvt USING(view_type_id)
-	    WHERE dl.doc_type<10 $andwhere
+	    WHERE dl.doc_type<10 AND dl.active_company_id = '" . $this->Base->acomp('company_id') . "' $andwhere
 	    GROUP BY doc_id
 	    HAVING $having
 	    ORDER BY dl.is_commited,dl.cstamp DESC
