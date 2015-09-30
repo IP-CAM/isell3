@@ -102,6 +102,28 @@ function (ready, dom, on, registry, Tooltip, DataGrid) {
 	setTimeout(HomeJs.init,10);
     });
 });
+
+    /* global App */
+    App.HomeDocumentList={
+	loader:function (param, success, error) {
+	    $.get(App.uri('DocumentCore', 'listFetch', param.page, param.rows), {filterRules: param.filterRules}, function (xhr) {
+		var resp = App.json(xhr);
+		success(resp);
+	    });
+	    $('#home_document_list_dg').datagrid('enableFilter');
+	},
+	documentOpen:function( doc_id ){
+	    App.loadWindow('page/trade/document',{doc_id:doc_id}).progress(function(status){
+		if( status==='deleted' ){
+		    $('#home_document_list_dg').datagrid('reload');
+		}
+	    });
+	},
+	onClick:function (index, row) {
+	    App.HomeDocumentList.documentOpen(row.doc_id);
+	}
+    };
+
 </script>
 <style type="text/css">
     .report_frame{
@@ -118,120 +140,151 @@ function (ready, dom, on, registry, Tooltip, DataGrid) {
 	font-weight: bold;
     }
 </style>
-<div>
-    <div class="report_frame">
-	<div class="report_frame_title">Отчет по должникам<img src="img/tabCloseHover.png" style="float:right;cursor: pointer" onclick="$('#expired_grid_div,#expired_grid_footer').css('display','none')"></div>
-	<button data-dojo-type="dijit/form/Button" onclick="HomeJs.initExpList()">Сформировать отчет</button>
-	<div id="expired_grid_footer" style="display: none;">
-	    <table>
-		<tr>
-		    <td>Просроченный долг</td>
-		    <td style="color:red;font-weight: bold;background-color: white">{{sexp}}</td>
-		</tr>
-		<tr>
-		    <td>Общий долг</td>
-		    <td>{{sdebt}}</td>
-		</tr>
+<table>
+    <tr>
+	<td style="vertical-align: top">
+	    <table id="home_document_list_dg" title="Журнал товарных операций" class="easyui-datagrid" style="width:620px"
+		   data-options="
+		   idField:'doc_id',
+		   loader:App.HomeDocumentList.loader,
+		   pagination:true,
+		   pageSize:25,
+		   pageList:[25,50,100,500,1000],
+		   singleSelect:true,
+		   remoteFilter:true,
+		   onSelect:function(){$('#home_document_list_dg').datagrid('resize');},
+		   onDblClickRow:App.HomeDocumentList.onClick">
+		<thead>
+		    <tr>
+			<th data-options="width:110,field:'company_name'">Компания</th>
+			<th data-options="width:25,field:'doc_type_icon',align:'center',formatter:App.datagrid.tooltip">Док</th>
+			<th data-options="width:45,field:'doc_num',align:'right'">Номер</th>
+			<th data-options="width:65,field:'doc_date'">Дата</th>
+			<th data-options="width:140,field:'doc_type_name'">Документ</th>
+			<th data-options="width:60,field:'amount',align:'right'">Сумма</th>
+			<th data-options="width:25,field:'commited',align:'center',formatter:App.datagrid.tooltip">Проведен</th>
+			<th data-options="width:25,field:'trans_status',align:'center',formatter:App.datagrid.tooltip">Оплачен</th>
+			<th data-options="width:120,field:'views'">Шаблоны печати</th>
+		    </tr>
+		</thead>
 	    </table>
-	</div>
-        <div id="expired_grid_div"></div>
-    </div>
-    <div class="report_frame">
-	<div class="report_frame_title">Отчет по оплатам<img src="img/tabCloseHover.png" style="float:right;cursor: pointer" onclick="$('#mpayments_grid,#mpayments_result').css('display','none')"></div>
-	Период
-	<select data-dojo-type="dijit/form/Select" id="mpayments_month">
-	    <option value="01">Январь</option>
-	    <option value="02">Февраль</option>
-	    <option value="03">Март</option>
-	    <option value="04">Апрель</option>
-	    <option value="05">Май</option>
-	    <option value="06">Июнь</option>
-	    <option value="07">Июль</option>
-	    <option value="08">Август</option>
-	    <option value="09">Сентябрь</option>
-	    <option value="10">Октябрь</option>
-	    <option value="11">Ноябрь</option>
-	    <option value="12">Декабрь</option>
-	</select>
-	<select data-dojo-type="dijit/form/Select" id="mpayments_year">
-	    <option value="2013">2013</option>
-	    <option value="2014">2014</option>
-	    <option value="2015">2015</option>
-	    <option value="2016">2016</option>
-	    <option value="2017">2017</option>
-	</select>
-	<button data-dojo-type="dijit/form/Button" onclick="HomeJs.initManagerPayments()">Сформировать отчет</button>
-	<div id="mpayments_result" style="display: none">
-	    <table>
-		<tr>
-		    <td>Начало периода</td>
-		    <td>{{sdate|default:''}}</td>
-		</tr>
-		<tr>
-		    <td>Конец периода</td>
-		    <td>{{fdate|default:''}}</td>
-		</tr>
-		<tr>
-		    <td>Поступило оплат</td>
-		    <td>{{scredit|default:''}}</td>
-		</tr>
-	    </table>
-	</div>
+	</td>
+	<td style="vertical-align: top">
+	    <div class="report_frame">
+		<div class="report_frame_title">Отчет по должникам<img src="img/tabCloseHover.png" style="float:right;cursor: pointer" onclick="$('#expired_grid_div,#expired_grid_footer').css('display','none')"></div>
+		<button data-dojo-type="dijit/form/Button" onclick="HomeJs.initExpList()">Сформировать отчет</button>
+		<div id="expired_grid_footer" style="display: none;">
+		    <table>
+			<tr>
+			    <td>Просроченный долг</td>
+			    <td style="color:red;font-weight: bold;background-color: white">{{sexp}}</td>
+			</tr>
+			<tr>
+			    <td>Общий долг</td>
+			    <td>{{sdebt}}</td>
+			</tr>
+		    </table>
+		</div>
+		<div id="expired_grid_div"></div>
+	    </div>
+	    <div class="report_frame">
+		<div class="report_frame_title">Отчет по оплатам<img src="img/tabCloseHover.png" style="float:right;cursor: pointer" onclick="$('#mpayments_grid,#mpayments_result').css('display','none')"></div>
+		Период
+		<select data-dojo-type="dijit/form/Select" id="mpayments_month">
+		    <option value="01">Январь</option>
+		    <option value="02">Февраль</option>
+		    <option value="03">Март</option>
+		    <option value="04">Апрель</option>
+		    <option value="05">Май</option>
+		    <option value="06">Июнь</option>
+		    <option value="07">Июль</option>
+		    <option value="08">Август</option>
+		    <option value="09">Сентябрь</option>
+		    <option value="10">Октябрь</option>
+		    <option value="11">Ноябрь</option>
+		    <option value="12">Декабрь</option>
+		</select>
+		<select data-dojo-type="dijit/form/Select" id="mpayments_year">
+		    <option value="2013">2013</option>
+		    <option value="2014">2014</option>
+		    <option value="2015">2015</option>
+		    <option value="2016">2016</option>
+		    <option value="2017">2017</option>
+		</select>
+		<button data-dojo-type="dijit/form/Button" onclick="HomeJs.initManagerPayments()">Сформировать отчет</button>
+		<div id="mpayments_result" style="display: none">
+		    <table>
+			<tr>
+			    <td>Начало периода</td>
+			    <td>{{sdate|default:''}}</td>
+			</tr>
+			<tr>
+			    <td>Конец периода</td>
+			    <td>{{fdate|default:''}}</td>
+			</tr>
+			<tr>
+			    <td>Поступило оплат</td>
+			    <td>{{scredit|default:''}}</td>
+			</tr>
+		    </table>
+		</div>
 
-        <div id="mpayments_grid"></div>
-   </div>
-    <div class="report_frame">
-	<div class="report_frame_title">Отчет по среднему курсу<img src="img/tabCloseHover.png" style="float:right;cursor: pointer" onclick="$('#avgratio_result').css('display','none')"></div>
-	Период
-	<select data-dojo-type="dijit/form/Select" id="avgratio_month">
-	    <option value="01">Январь</option>
-	    <option value="02">Февраль</option>
-	    <option value="03">Март</option>
-	    <option value="04">Апрель</option>
-	    <option value="05">Май</option>
-	    <option value="06">Июнь</option>
-	    <option value="07">Июль</option>
-	    <option value="08">Август</option>
-	    <option value="09">Сентябрь</option>
-	    <option value="10">Октябрь</option>
-	    <option value="11">Ноябрь</option>
-	    <option value="12">Декабрь</option>
-	</select>
-	<select data-dojo-type="dijit/form/Select" id="avgratio_year">
-	    <option value="2013">2013</option>
-	    <option value="2014">2014</option>
-	    <option value="2015">2015</option>
-	    <option value="2016">2016</option>
-	    <option value="2017">2017</option>
-	</select>
-	<button data-dojo-type="dijit/form/Button" onclick="HomeJs.initAvgRatio()">Сформировать отчет</button>
-        <div id="avgratio_result" style="display: none">
-	    <table>
-		<tr>
-		    <td>Начало периода</td>
-		    <td>{{idate}}</td>
-		</tr>
-		<tr>
-		    <td>Конец периода</td>
-		    <td>{{fdate}}</td>
-		</tr>
-		<tr>
-		    <td>Первая покрытая накладная</td>
-		    <td>{{first_closed}}</td>
-		</tr>
-		<tr>
-		    <td>Последняя покрытая накладная</td>
-		    <td>{{last_closed}}</td>
-		</tr>
-		<tr>
-		    <td>Поступило оплат</td>
-		    <td>{{period_payment_sum}}</td>
-		</tr>
-		<tr>
-		    <td>Сумма/Сумма$ = Средний курс</td>
-		    <td>{{total}}/{{total_alt}} = {{avg_ratio}}</td>
-		</tr>
-	    </table>
-	</div>
-   </div>
-</div>
+		<div id="mpayments_grid"></div>
+	   </div>
+	    <div class="report_frame">
+		<div class="report_frame_title">Отчет по среднему курсу<img src="img/tabCloseHover.png" style="float:right;cursor: pointer" onclick="$('#avgratio_result').css('display','none')"></div>
+		Период
+		<select data-dojo-type="dijit/form/Select" id="avgratio_month">
+		    <option value="01">Январь</option>
+		    <option value="02">Февраль</option>
+		    <option value="03">Март</option>
+		    <option value="04">Апрель</option>
+		    <option value="05">Май</option>
+		    <option value="06">Июнь</option>
+		    <option value="07">Июль</option>
+		    <option value="08">Август</option>
+		    <option value="09">Сентябрь</option>
+		    <option value="10">Октябрь</option>
+		    <option value="11">Ноябрь</option>
+		    <option value="12">Декабрь</option>
+		</select>
+		<select data-dojo-type="dijit/form/Select" id="avgratio_year">
+		    <option value="2013">2013</option>
+		    <option value="2014">2014</option>
+		    <option value="2015">2015</option>
+		    <option value="2016">2016</option>
+		    <option value="2017">2017</option>
+		</select>
+		<button data-dojo-type="dijit/form/Button" onclick="HomeJs.initAvgRatio()">Сформировать отчет</button>
+		<div id="avgratio_result" style="display: none">
+		    <table>
+			<tr>
+			    <td>Начало периода</td>
+			    <td>{{idate}}</td>
+			</tr>
+			<tr>
+			    <td>Конец периода</td>
+			    <td>{{fdate}}</td>
+			</tr>
+			<tr>
+			    <td>Первая покрытая накладная</td>
+			    <td>{{first_closed}}</td>
+			</tr>
+			<tr>
+			    <td>Последняя покрытая накладная</td>
+			    <td>{{last_closed}}</td>
+			</tr>
+			<tr>
+			    <td>Поступило оплат</td>
+			    <td>{{period_payment_sum}}</td>
+			</tr>
+			<tr>
+			    <td>Сумма/Сумма$ = Средний курс</td>
+			    <td>{{total}}/{{total_alt}} = {{avg_ratio}}</td>
+			</tr>
+		    </table>
+		</div>
+	   </div>
+	</td>
+    </tr>
+</table>
