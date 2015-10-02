@@ -105,12 +105,14 @@ function (ready, dom, on, registry, Tooltip, DataGrid) {
 
     /* global App */
     App.HomeDocumentList={
+        init:function(){
+            
+        },
 	loader:function (param, success, error) {
 	    $.get(App.uri('DocumentCore', 'listFetch', param.page, param.rows), {filterRules: param.filterRules}, function (xhr) {
 		var resp = App.json(xhr);
 		success(resp);
 	    });
-	    $('#home_document_list_dg').datagrid('enableFilter');
 	},
 	documentOpen:function( doc_id ){
 	    App.loadWindow('page/trade/document',{doc_id:doc_id}).progress(function(status){
@@ -123,14 +125,19 @@ function (ready, dom, on, registry, Tooltip, DataGrid) {
 	    App.HomeDocumentList.documentOpen(row.doc_id);
 	}
     };
-
+    $(function(){
+        setTimeout(function(){
+            $('#home_document_list_dg').datagrid('enableFilter');
+        },500);
+    });
 </script>
 <style type="text/css">
     .report_frame{
-	display: inline-block;
+	-display: inline-block;
 	vertical-align: top;
-	border: 1px #fff solid;
+	border: 1px #666 solid;
 	padding: 2px;
+        margin: 2px;
         background: rgba(255, 255, 255, 0.6); 
     }
     .report_frame_title{
