@@ -37,6 +37,9 @@
 	},
 	fav:{
 	    init:function(){
+		if( Ledger.data.passive_filter && !App.pcomp.company_id ){
+		    return;//Pcomp not yet selected
+		}
 		$.get("AccountsData/accountFavoritesFetch/"+(Ledger.data.passive_filter?1:0),function(resp){
 		    var favs=App.json(resp);
 		    if( favs[0] ){
@@ -65,9 +68,11 @@
 	},
 	tnames:{
 	    init:function(){
-		$.get("AccountsData/transNameListFetch/"+Ledger.current_acc_code,function(resp){
-		    App.renderTpl('ledger_tnames',{tnames:App.json(resp)});
-		});
+		if( Ledger.current_acc_code ){
+		    $.get("AccountsData/transNameListFetch/"+Ledger.current_acc_code,function(resp){
+			App.renderTpl('ledger_tnames',{tnames:App.json(resp)});
+		    });
+		}
 	    },
 	    show:function(){
 		App.loadWindow('page/accounts/trans_names_list',{trans_type:Ledger.current_acc_code}).progress(function(status){
