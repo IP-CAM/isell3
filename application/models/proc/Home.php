@@ -7,6 +7,7 @@ class Home extends Data{
     }
     public function fetchExpiredDebts( $table_query ){
         $user_id=$this->Base->svar('user_id');
+	$active_company_id=$this->Base->acomp('company_id');
         $user_level=$this->Base->svar('user_level');
         $table="(SELECT 
                         level,
@@ -27,6 +28,7 @@ class Home extends Data{
                         acc_trans ON company_id=passive_company_id
                                 LEFT JOIN
                         companies_tree USING(branch_id)
+			WHERE active_company_id='$active_company_id'
                 GROUP BY companies_list.company_id) AS expired";
         $where_path=$this->getAssignedPathWhere();
         $where="(sell>allow OR buy<>0) AND level<='$user_level' $where_path";

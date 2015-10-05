@@ -9,6 +9,7 @@ include 'Catalog.php';
 class AccountsCore extends Catalog{
     public $min_level=1;
     protected function getAccountProperties( $acc_code, $calc_balance=false, $use_passive_filter=false ) {
+	$active_company_id=$this->Base->acomp('company_id');
 	$balance='';
 	if( $calc_balance ){
 	    $passive_filter="";
@@ -19,7 +20,7 @@ class AccountsCore extends Catalog{
 		SELECT 
 		    SUM(ROUND(IF(at.acc_code=acc_debit_code,amount,-amount),2))
 		FROM acc_trans
-		WHERE (acc_debit_code=at.acc_code OR acc_credit_code=at.acc_code) $passive_filter) balance";
+		WHERE (acc_debit_code=at.acc_code OR acc_credit_code=at.acc_code) AND active_company_id=$active_company_id $passive_filter) balance";
 	}
         $sql="SELECT
 		* $balance
@@ -32,7 +33,7 @@ class AccountsCore extends Catalog{
     private function ledgerCreate( $acc_code, $use_alt_amount=false, $use_passive_filter=false ){
 	$this->check($acc_code);
 	$this->check($use_alt_amount,'bool');
-	
+	$active_company_id=$this->Base->acomp('company_id');
 	$passive_filter="";
 	if( $use_passive_filter ){
 	    $passive_filter=" AND passive_company_id='".$this->Base->pcomp('company_id')."'";
@@ -67,8 +68,8 @@ class AccountsCore extends Catalog{
 		    LEFT JOIN
 		user_list ON user_id = modified_by
 	    WHERE
-		(@acc_code = acc_debit_code
-		    OR @acc_code = acc_credit_code)
+		(@acc_code = acc_debit_code OR @acc_code = acc_credit_code)
+		AND active_company_id='$active_company_id'
 		    $passive_filter)";
 	$this->query($sql);
     }
@@ -121,6 +122,11 @@ class AccountsCore extends Catalog{
     }
     public function accountBalanceTreeFetch( $parent_id=0, $idate='', $fdate='', $show_unused=0 ){
 	$this->Base->set_level(3);
+	$this->check($parent_id,'int');
+	$this->check($idate,'\d\d\d\d-\d\d-\d\d');
+	$this->check($fdate,'\d\d\d\d-\d\d-\d\d');
+	$this->check($show_unused,'bool');
+	$active_company_id=$this->Base->acomp('company_id');
 	$this->db->query("SET @idate='$idate 00:00:00', @fdate='$fdate 23:59:59', @parent_id='$parent_id';");
 	$sql=
 	"SELECT 
@@ -152,6 +158,7 @@ class AccountsCore extends Catalog{
 		acc_trans dtrans ON dtrans.acc_debit_code = subtree.acc_code
 	    WHERE
 		tree.parent_id=@parent_id
+		AND active_company_id='$active_company_id'
 	    GROUP BY tree.branch_id) d
 	JOIN
 	    (SELECT 
@@ -167,6 +174,7 @@ class AccountsCore extends Catalog{
 		acc_trans ctrans ON ctrans.acc_credit_code = subtree.acc_code
 	    WHERE
 		tree.parent_id=@parent_id
+		AND active_company_id='$active_company_id'
 	    GROUP BY tree.branch_id) c 
 	ON (d.branch_id=c.branch_id) 
 	HAVING IF( $show_unused, 1, open_bal OR  period_d OR period_c OR close_bal )
