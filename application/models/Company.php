@@ -72,9 +72,15 @@ class Company extends Catalog{
 	$this->Base->set_level(2);
 	$this->check($parent_id,'int');
 	$this->check($label);
+        $def_lang = $this->Base->acomp('language');
+        $def_curr_code = $this->Base->acomp('curr_code');
 	$branch_id=$this->treeCreate('companies_tree', $branch_type, $parent_id,$label);
 	if( $branch_type=='leaf' ){
-	    $this->query("INSERT INTO companies_list SET branch_id=$branch_id,company_name='$label'");
+	    $this->query("INSERT INTO companies_list SET 
+                branch_id=$branch_id,
+                company_name='$label',
+                language='$def_lang',
+                curr_code='$def_curr_code'");
 	    return $this->db->insert_id();
 	}
 	return 0;
