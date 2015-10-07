@@ -616,6 +616,7 @@ class Accounts extends Data {
     /////////////////////////////////////
     public function documentRegistryFetch($period, $direction, $grid_query) {
         $this->Base->set_level(3);
+	$active_company_id=$this->Base->acomp('company_id');
         if ($direction == 'both') {
             return array(
                 'sell' => $this->documentRegistryFetch($period, 'sell'),
@@ -664,7 +665,8 @@ class Accounts extends Data {
             LEFT JOIN document_view_list dvl ON dl.doc_id=dvl.doc_id 
 	    AND view_type_id IN (SELECT view_type_id FROM document_view_types WHERE view_role='tax_bill')";
         $where = "
-            reg_stamp LIKE CONCAT('$period','%')
+	    active_company_id='$active_company_id'
+            AND reg_stamp LIKE CONCAT('$period','%')
             AND is_commited=1
             AND $dir";
         $order = "ORDER BY reg,cstamp";

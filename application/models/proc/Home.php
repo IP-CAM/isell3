@@ -121,6 +121,7 @@ class Home extends Data{
 	
 	$final_debt_sum=  str_replace(' ', '', $ledger_361['entries']['items'][0]['debit']);
 	$period_payment_sum=  str_replace(' ', '', $ledger_361['entries']['items'][1]['credit']);
+	$active_company_id=$this->Base->acomp('company_id');
 	if( !$final_debt_sum || !$period_payment_sum ){
 	    return false;
 	}
@@ -157,10 +158,11 @@ class Home extends Data{
 		    JOIN
 		acc_trans USING (trans_id)
 	    WHERE
-		dt.type = '361_702' AND doc_type = 1
-		    AND is_commited = 1
-		    AND dl.cstamp < @period_finish
-		    AND @final_debt_sum + @period_payment_sum > 0
+		dl.active_company_id='$active_company_id'
+		AND dt.type = '361_702' AND doc_type = 1 
+		AND is_commited = 1 
+		AND dl.cstamp < @period_finish 
+		AND @final_debt_sum + @period_payment_sum > 0
 	    ORDER BY dl.cstamp desc;";
 	$this->Base->query($sql_calculate);
 	$sql_select1=" 

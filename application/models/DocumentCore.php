@@ -73,6 +73,7 @@ class DocumentCore extends DocumentUtils{
 	if( $assigned_path ){
 	    $andwhere.=" AND path LIKE '$assigned_path%'";
 	}
+	$active_company_id=$this->Base->acomp('company_id');
 	$sql="
 	    SELECT 
 		doc_id,
@@ -103,7 +104,7 @@ class DocumentCore extends DocumentUtils{
 		document_view_list dv USING(doc_id)
 		    LEFT JOIN
 		document_view_types dvt USING(view_type_id)
-	    WHERE dl.doc_type<10 AND dl.active_company_id = '" . $this->Base->acomp('company_id') . "' $andwhere
+	    WHERE dl.doc_type<10 AND dl.active_company_id = '$active_company_id' $andwhere
 	    GROUP BY doc_id
 	    HAVING $having
 	    ORDER BY dl.is_commited,dl.cstamp DESC
@@ -123,6 +124,7 @@ class DocumentCore extends DocumentUtils{
     }
     protected function headDefGet() {
         $this->selectDoc(0);
+	$active_company_id=$this->Base->acomp('company_id');
 	$passive_company_id = $this->Base->pcomp('company_id');
         $def_head=[
 	    'doc_id'=>0,
@@ -135,7 +137,17 @@ class DocumentCore extends DocumentUtils{
             'doc_type'=>1,
             'signs_after_dot'=>3
         ];
-	$prev_doc = $this->get_row("SELECT doc_type,signs_after_dot FROM document_list WHERE passive_company_id='$passive_company_id' AND doc_type<10 AND is_commited=1 ORDER BY cstamp DESC LIMIT 1");
+	$prev_doc = $this->get_row("SELECT 
+		doc_type,
+		signs_after_dot 
+	    FROM 
+		document_list 
+	    WHERE 
+		passive_company_id='$passive_company_id' 
+		AND active_company_id='$active_company_id' 
+		AND doc_type<10 
+		AND is_commited=1 
+	    ORDER BY cstamp DESC LIMIT 1");
         if( $prev_doc ){
             $def_head['doc_type']=$prev_doc->doc_type;
             $def_head['signs_after_dot']=$prev_doc->signs_after_dot;

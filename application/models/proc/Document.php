@@ -669,13 +669,14 @@ class Document extends Data {
     }
     
     private function getLastEfields($view_type_id){
+	$active_company_id=$this->Base->acomp('company_id');
         $pcomp_id=$this->Base->pcomp('company_id');
         return $this->Base->get_row("SELECT
                     view_efield_values
                 FROM 
                     document_view_list dvl JOIN document_list USING(doc_id)
                 WHERE 
-                    view_type_id='$view_type_id' AND passive_company_id='$pcomp_id' ORDER BY dvl.tstamp DESC",0);
+                    view_type_id='$view_type_id' AND active_company_id='$active_company_id' AND passive_company_id='$pcomp_id' ORDER BY dvl.tstamp DESC",0);
     }
 /////////////////////////////////////////////////////////////////
 //DOCUMENT ALL
@@ -695,7 +696,7 @@ class Document extends Data {
 	$ratios = $this->Base->Pref->prefGet();
 	$doc_ratio = $ratios["usd_ratio"];
 
-	$prev_doc = $this->Base->get_row("SELECT use_vatless_price,signs_after_dot,notcount,doc_type FROM document_list WHERE passive_company_id='$passive_company_id' AND doc_type<10 AND is_commited=1 ORDER BY cstamp DESC LIMIT 1");
+	$prev_doc = $this->Base->get_row("SELECT use_vatless_price,signs_after_dot,notcount,doc_type FROM document_list WHERE active_company_id='$active_company_id' AND passive_company_id='$passive_company_id' AND doc_type<10 AND is_commited=1 ORDER BY cstamp DESC LIMIT 1");
 	if( $doc_type===null ){
 	    $doc_type=$prev_doc['doc_type']?$prev_doc['doc_type']:1;
 	}
@@ -788,6 +789,7 @@ class Document extends Data {
     }
 
     public function fetchDefaultHead() {
+	$active_company_id=$this->Base->acomp('company_id');
 	$passive_company_id = $this->Base->pcomp('company_id');
 	$doc_head = array();
 	$doc_head['active_comp'] = $this->Base->acomp('company_name');
@@ -799,7 +801,7 @@ class Document extends Data {
 	$doc_head['doc_ratio'] = "-";
 	$doc_head['signs_after_dot'] = 2;
 	$doc_head['vat_rate'] = $this->Base->acomp('company_vat_rate');
-	$prev_doc = $this->Base->get_row("SELECT doc_type FROM document_list WHERE passive_company_id='$passive_company_id' AND doc_type<10 AND is_commited=1 ORDER BY cstamp DESC LIMIT 1");
+	$prev_doc = $this->Base->get_row("SELECT doc_type FROM document_list WHERE active_company_id='$active_company_id' AND passive_company_id='$passive_company_id' AND doc_type<10 AND is_commited=1 ORDER BY cstamp DESC LIMIT 1");
 	$doc_head['doc_type'] = $prev_doc['doc_type'] ? $prev_doc['doc_type'] : 1;
 	return $doc_head;
     }
