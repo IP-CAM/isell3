@@ -13,7 +13,7 @@ class DocumentBlank extends DocumentCore {
 	$andwhere='';
 	if( $mode==='show_only_pcomp_docs' ){
 	    $pcomp_id=$this->Base->pcomp('company_id');
-	    $andwhere.=" AND passive_company_id=$pcomp_id";
+	    $andwhere.=" AND passive_company_id='$pcomp_id'";
 	}
 	$assigned_path=  $this->Base->svar('user_assigned_path');
 	if( $assigned_path ){
