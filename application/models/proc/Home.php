@@ -183,4 +183,3 @@ class Home extends Data{
 	'fetchAvgRate'=>'(string) month,(string) year'
     );
 }
-?>
