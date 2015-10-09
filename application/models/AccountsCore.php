@@ -101,12 +101,12 @@ class AccountsCore extends Catalog{
 	if( !$acc_code || !$idate || !$fdate ){
 	    return [];
 	}
-	$having=$this->decodeFilterRules();
-	$offset=$page>0?($page-1)*$rows:0;
         $default_curr_id=$this->Base->acomp('curr_id');
         $using_alt_currency=$default_curr_id!=$props->curr_id;
-        
 	$this->ledgerCreate($acc_code, $using_alt_currency, $use_passive_filter );
+	
+	$having=$this->decodeFilterRules();
+	$offset=$page>0?($page-1)*$rows:0;
 	$sql="SELECT * FROM tmp_ledger 
 		WHERE '$idate'<cstamp AND cstamp<='$fdate'
 		HAVING $having
