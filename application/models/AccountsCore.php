@@ -82,11 +82,6 @@ class AccountsCore extends Catalog{
 	return $this->get_row($sql);
     }
     public function ledgerFetch( $acc_code, $idate='', $fdate='', $page=1, $rows=30, $use_passive_filter=false ){
-	if( $use_passive_filter ){
-	    $this->Base->set_level(1);
-	} else {
-	    $this->Base->set_level(3);
-	}
 	$this->check($idate,'\d\d\d\d-\d\d-\d\d');
 	$this->check($fdate,'\d\d\d\d-\d\d-\d\d');
 	$this->check($acc_code,'int');
@@ -94,16 +89,23 @@ class AccountsCore extends Catalog{
 	$this->check($rows,'int');
 	$idate.=' 00:00:00';
 	$fdate.=' 23:59:59';
+        
+	$props=$this->getAccountProperties( $acc_code );
+	if( $use_passive_filter ){
+	    $this->Base->set_level(1);
+            $props->curr_id=$this->Base->pcomp('curr_id');
+            $props->curr_symbol=$this->Base->pcomp('curr_symbol');
+	} else {
+	    $this->Base->set_level(3);
+	}
 	if( !$acc_code || !$idate || !$fdate ){
 	    return [];
 	}
-
 	$having=$this->decodeFilterRules();
 	$offset=$page>0?($page-1)*$rows:0;
-	
-	$props=$this->getAccountProperties( $acc_code );
-	$default_curr_id=$this->Base->acomp('curr_id');
-	$using_alt_currency=$default_curr_id!=$props->curr_id;
+        $default_curr_id=$this->Base->acomp('curr_id');
+        $using_alt_currency=$default_curr_id!=$props->curr_id;
+        
 	$this->ledgerCreate($acc_code, $using_alt_currency, $use_passive_filter );
 	$sql="SELECT * FROM tmp_ledger 
 		WHERE '$idate'<cstamp AND cstamp<='$fdate'
