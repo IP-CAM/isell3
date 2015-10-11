@@ -142,16 +142,17 @@ if ( isset($word_header) ) {
 	</style>
 	<script type="text/javascript">
 	    function sendemail(fext) {
-		if (opener && opener.Acc.sendEmail) {
-		    var subject = '<?php echo addslashes($user_data['title']) ?>';
-		    var text = '<?php echo addslashes($user_data['msg']) ?>'.replace(/\\n/img, '\n');
-		    var to = '<?php echo addslashes($user_data['email']) ?>';
-		    var fgenerator = '<?php echo $_GET['mod']; ?>';
-		    var doc_view_id = '<?php echo $user_data['doc_view_id'] ? $user_data['doc_view_id'] : $_GET['doc_view_id']; ?>';
-		    opener.Acc.sendEmail(to, subject, text, fgenerator, doc_view_id, fext);
-		}
-		else {
-		    alert('Opener not defined!!!');
+		var params={
+		    subject:'<?php echo addslashes($user_data['title']) ?>',
+		    body:'<?php echo addslashes($user_data['msg']) ?>'.replace(/\\n/img, '\n'),
+		    to:'<?php echo addslashes($user_data['email']) ?>',
+		    fgenerator:'<?php echo $user_data['fgenerator']; ?>',
+		    doc_view_id:'<?php echo $user_data['doc_view_id'] ? $user_data['doc_view_id'] : $_GET['doc_view_id']; ?>',
+		    send_file:1
+		};
+		if (opener && opener.App) {
+		    opener.App.loadWindow('page/dialog/send_email',params);
+		    opener.focus();
 		}
 	    }
 	</script>

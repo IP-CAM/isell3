@@ -1,6 +1,9 @@
 <?php
 require_once 'AccountsCore.php';
 class AccountsView extends AccountsCore{
+    public function ledgerPaymentViewGet(){
+	$this->ledgerViewGet();
+    }
     public function ledgerViewGet(){
 	$page=$this->request('page','int');
 	$rows=$this->request('rows','int');
@@ -77,7 +80,7 @@ class AccountsView extends AccountsCore{
         if ($out_type == 'print') {
             $file_name = '.print';
             $FileEngine->show_controls = true;
-            $FileEngine->user_data = ['title' => "Виписка з рахунку", 'msg' => 'Доброго дня', 'doc_view_id' => $view->doc_view_id];//'email' => $view['p']->company_email, 
+            $FileEngine->user_data = ['title' => "Виписка з рахунку", 'msg' => 'Доброго дня', 'email' => $view->p->company_email, 'fgenerator'=>'AccountsView', 'doc_view_id' => $view->doc_view_id];//
         }
         return $FileEngine->fetch($file_name);
     }
