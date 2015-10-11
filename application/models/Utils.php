@@ -61,5 +61,10 @@ class Utils extends CI_Model {
 	$number-=$position * 10 * $range * floor($number / $position / 10 / $range);
 	return floor($number / $position);
     }
+    public function getLocalDate($tstamp) {
+	$time = strtotime($tstamp);
+	$months = array("січня", "лютого", "березня", "квітня", "травня", "червня", "липня", "серпня", "вересня", "жовтня", "листопада", "грудня");
+	return date('d', $time) . ' ' . $months[date('m', $time) - 1] . ' ' . date('Y', $time);
+    }
 
 }

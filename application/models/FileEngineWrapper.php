@@ -28,7 +28,7 @@ if ( isset($word_header) ) {
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-	<link rel="icon" type="image/png" href="img/Printer.png">
+	<link rel="icon" type="image/png" href="../../img/Printer.png">
 		<?php
 	    }
 	    ?>
@@ -88,12 +88,11 @@ if ( isset($word_header) ) {
 
     <body>
 	<?php if ($show_controls && !isset($word_header) ) { ?>
-	<link rel="stylesheet" type="text/css" href="css/app.css" />
-	<link rel="stylesheet" type="text/css" href="css/main.css" />
+	<link rel="stylesheet" type="text/css" href="../../css/app.css" />
 	<style type="text/css">
 	    @media all{
 		.appbar{
-		    background: url(img/topbar.png)  repeat-x;
+		    background: url(../../img/topbar.png)  repeat-x;
 		    border-bottom:solid 1px #aaf;
 		    box-shadow:1px 1px 3px 3px #aaf;
 		    padding:3px;
@@ -112,7 +111,7 @@ if ( isset($word_header) ) {
 		    background-color:#FFFFFF;
 		    display:inline-block;
 		    min-height:1110px;
-		    background: url(img/2xLine.jpg);
+		    background: url(../../img/2xLine.jpg);
 		}
 		.page table.sheet0 td{
 		    padding: 2px;
@@ -160,14 +159,14 @@ if ( isset($word_header) ) {
 		<?php
 		if ($export_types):
 		    foreach ($export_types as $ext => $name):?>
-			<div class="gray_grad" style="display:inline-block;padding:3px;font-size:12px;"><a href="javascript:location.href+='&out_type=<?php echo $ext ?>'" style="color:#333;" title="Скачать"><?php echo $name ?><img src="img/down.png" width="24" height="24" border="0" align="absmiddle" /></a> <a href="javascript:sendemail('<?php echo $ext ?>')" style="color:black;font-size:12px;" title="Отправить по Email"><img src="img/email.png" width="24" height="24" border="0" align="absmiddle" /></a></div>
+			<div class="gray_grad" style="display:inline-block;padding:3px;font-size:12px;"><a href="javascript:location.href+='&out_type=<?php echo $ext ?>'" style="color:#333;" title="Скачать"><?php echo $name ?><img src="../../img/down.png" width="24" height="24" border="0" align="absmiddle" /></a> <a href="javascript:sendemail('<?php echo $ext ?>')" style="color:black;font-size:12px;" title="Отправить по Email"><img src="../../img/email.png" width="24" height="24" border="0" align="absmiddle" /></a></div>
 			<?php
 		    endforeach;
 		endif;
 		?>
 	    <div style="display:inline-block;width:30px;">&nbsp;</div>
 	    <div class="gray_grad" style="display:inline-block;padding:3px;">
-		<a href="javascript:window.print()"style="color:black;font-size:12px;">Напечатать <img src="img/print.png" border="0" align="absmiddle" /></a>
+		<a href="javascript:window.print()"style="color:black;font-size:12px;">Напечатать <img src="../../img/print.png" border="0" align="absmiddle" /></a>
 	    </div>
 	</div>
 	<?php } echo "<div align='center' class='WordSection1'>$html</div>" ?>

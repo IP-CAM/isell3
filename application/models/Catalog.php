@@ -26,6 +26,14 @@ class Catalog extends CI_Model {
 		}
 	}
     }
+    protected function request( $name, $type=null, $default=null ){
+	$value=$_REQUEST[$name];
+	if( isset($value) ){
+	    $this->check($value,$type);
+	    return $value;
+	}
+	return $default;
+    }
     
     ////////////////////////////////////////////////////
     // CORE LIST FUNCTIONS
