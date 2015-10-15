@@ -10,13 +10,17 @@ var App = {
     },
     flash:function (msg, type) {
 	if (type === 'error') {
-	    $("#appStatus").html(msg);
-	    $("#appStatus").window({
-		title: 'Ошибка',
-		width: 800,
-		height: 300
-	    });
-	    $("#appStatus").window('move', {top: 0});
+	    if( App.user && App.user.user_level==4 ){
+		$("#appStatus").html(msg);
+		$("#appStatus").window({
+		    title: 'Ошибка',
+		    width: 800,
+		    height: 300
+		});
+		$("#appStatus").window('move', {top: 0});		
+	    } else {
+		console.log(msg);
+	    }
 	}
 	else if (type === 'alert') {
 	    $.messager.alert('Внимание!', msg, 'error');

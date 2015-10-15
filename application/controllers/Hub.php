@@ -109,7 +109,8 @@ class HubBase extends CI_Controller{
     }
 
     public function db_msg(){
-	switch( $this->db->_error_number() ){
+	$error = $this->db->error();
+	switch( $error['code'] ){
 	    case 1451:
 		$this->msg('Элемент ипользуется, поэтому не может быть изменен или удален!');
 		break;
@@ -118,7 +119,7 @@ class HubBase extends CI_Controller{
 		break;
 	    default:
 		header("X-isell-type:error");
-		show_error($this->msg."<br>".$this->db->_error_message()."<pre>".$this->db->last_query()."<pre>", 500);
+		show_error($this->msg." ".$error['message']."<pre>".$this->db->last_query()."<pre>", 500);
 		break;
 	}
     }

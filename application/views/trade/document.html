@@ -464,7 +464,7 @@
     Doc.view={
 	loadTile:function(){
             if( Doc.isCreated ){
-                $.get('DocumentView/listFetch/'+Doc.head.props.doc_id, function (xhr) {
+                $.get('DocumentView/viewListFetch/'+Doc.head.props.doc_id, function (xhr) {
                     Doc.view.views = Doc.view.compile(App.json(xhr));
                     App.renderTpl('Doc_view_tile',{views:Doc.view.views});
                 });

@@ -42,7 +42,8 @@ class Catalog extends CI_Model {
 	if(is_string($query)){
 	    $query=$this->db->query($query);
 	}
-	if($this->db->_error_number()){
+	$error = $this->db->error();
+	if( $error['code'] ){
 	    $this->Base->db_msg();
 	    return NULL;
 	}

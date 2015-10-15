@@ -46,7 +46,7 @@
 */
 
 $active_group = 'default';
-$active_record = TRUE;
+$query_builder = TRUE;
 
 $db['default']['hostname'] = BAY_DB_HOST;
 $db['default']['username'] = BAY_DB_USER;

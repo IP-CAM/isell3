@@ -70,7 +70,7 @@
 	    if( Blank.parser.inputsRendered ){
 		Blank.parser.unRenderInputs();
 	    }
-	    $.post('DocumentBlank/delete',function(ok){
+	    $.post('DocumentBlank/blankDelete',function(ok){
 		if(ok*1){
 		    Blank.list.selectedDocId=0;
 		    $('#blank_list_dg').datagrid('unselectAll');
