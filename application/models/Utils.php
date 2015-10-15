@@ -67,4 +67,31 @@ class Utils extends CI_Model {
 	return date('d', $time) . ' ' . $months[date('m', $time) - 1] . ' ' . date('Y', $time);
     }
 
+    public function sendEmail(){
+        $this->Base->set_level(1);
+        
+        $buffer="pdf pdf";
+        
+        $this->load->library('email');
+        $this->email->initialize([
+            'useragent'=>'iSell',
+            'protocol'=>'smtp',
+            'charset'=>'utf8',
+            'smtp_host'=>BAY_SMTP_SERVER,
+            'smtp_user'=>BAY_SMTP_USER,
+            'smtp_pass'=>BAY_SMTP_PASS
+        ]);
+        $this->email->from(BAY_SMTP_SENDER_MAIL,BAY_SMTP_SENDER_NAME);
+        $this->email->to('bay@nilson.ua');
+        //$this->email->cc(BAY_SMTP_SENDER_MAIL);
+        
+        $this->email->attach($buffer, 'attachment', 'report.pdf', 'application/pdf');
+        
+        
+        $this->email->subject('ТЕст эмаил');
+        $this->email->message('Урррра луга жуда хою');
+        $this->email->send();
+        
+        echo $this->email->print_debugger(array('headers', 'subject', 'body'));
+    }
 }
