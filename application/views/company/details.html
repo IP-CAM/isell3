@@ -23,7 +23,6 @@
 	    this.load(Cdet.data.company_id);
 	},
 	load:function( company_id ){
-	    console.log(Cdet.data,company_id);
 	    if( company_id*1 ){
 		$.get('Company/companyGet/'+company_id,function(xhr){
 		    Cdet.data=App.json(xhr);

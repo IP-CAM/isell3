@@ -67,11 +67,8 @@ class Utils extends CI_Model {
 	return date('d', $time) . ' ' . $months[date('m', $time) - 1] . ' ' . date('Y', $time);
     }
 
-    public function sendEmail(){
+    public function sendEmail($to,$subject,$body,$file=null){
         $this->Base->set_level(1);
-        
-        $buffer="pdf pdf";
-        
         $this->load->library('email');
         $this->email->initialize([
             'useragent'=>'iSell',
@@ -84,14 +81,23 @@ class Utils extends CI_Model {
         $this->email->from(BAY_SMTP_SENDER_MAIL,BAY_SMTP_SENDER_NAME);
         $this->email->to('bay@nilson.ua');
         //$this->email->cc(BAY_SMTP_SENDER_MAIL);
-        
-        $this->email->attach($buffer, 'attachment', 'report.pdf', 'application/pdf');
-        
-        
-        $this->email->subject('ТЕст эмаил');
-        $this->email->message('Урррра луга жуда хою');
+        $this->email->subject($subject);
+        $this->email->message($body);
+        if( $file ){
+	    $this->email->attach($file['data'], 'attachment', $file['name'], $file['mime']);
+	}
         $this->email->send();
-        
-        echo $this->email->print_debugger(array('headers', 'subject', 'body'));
+        echo $this->email->print_debugger();
+    }
+    public function postEmail(){
+	$to=$this->input->get_post('to');
+	$subject=$this->input->get_post('subject');
+	$body=$this->input->get_post('body');
+	
+	$doc_view_id=$this->input->get_post('doc_view_id');
+	$fgenerator=$this->input->get_post('fgenerator');
+	$file=$this->generateFile($doc_view_id,$fgenerator);
+	
+	return $this->sendEmail($to, $subject, $body, $file);
     }
 }
