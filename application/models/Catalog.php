@@ -38,17 +38,24 @@ class Catalog extends CI_Model {
     ////////////////////////////////////////////////////
     // CORE LIST FUNCTIONS
     ////////////////////////////////////////////////////
+    private function check_error(){
+	$error = $this->db->error();
+	if( $error['code'] ){
+	    $this->Base->db_msg();
+	    return true;
+	}
+        return false;
+    }
     protected function query( $query ){
 	if(is_string($query)){
 	    $query=$this->db->query($query);
 	}
-	$error = $this->db->error();
-	if( $error['code'] ){
-	    $this->Base->db_msg();
-	    return NULL;
-	}
-	return $query;
+        if( $this->check_error() ){
+            return NULL;
+        }
+        return $query;
     }
+    
     protected function get_list( $query ){
 	$list=array();
 	$result=$this->query($query);
@@ -82,19 +89,19 @@ class Catalog extends CI_Model {
     }
     protected function create($table,$data) {
 	$this->db->insert($table, $data);
-	$this->db->_error_number()?$this->Base->db_msg():'';
+        $this->check_error();
 	return $this->db->insert_id();
     }
     protected function update($table, $data, $key) {
 	$this->db->update($table, $data, $key);
 	$ok=$this->db->affected_rows();
-	$this->db->_error_number()?$this->Base->db_msg():'';
+        $this->check_error();
 	return $ok;
     }
     protected function delete($table, $key) {
 	$this->db->delete($table, $key);
 	$ok=$this->db->affected_rows();
-	$this->db->_error_number()?$this->Base->db_msg():'';
+        $this->check_error();
 	return $ok;
     }
     ////////////////////////////////////////////////////

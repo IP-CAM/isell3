@@ -194,6 +194,42 @@ class AccountsCore extends Catalog{
 	}
 	return $acc_code;
     }
+
+    /******************
+      STATUS
+      1 not payed
+      2 partly
+      3 payed
+      4 closed
+      5 closing payment
+    *******************/
+
+    public function calculatePayments($pcomp_id = NULL,$acc_code=361) {
+        if (!isset($pcomp_id)){
+            $pcomp_id = $this->Base->pcomp('company_id');
+        }
+        $sensitivity=5.00;
+        $this->query("SET @sum:=0.0;");
+        $this->query("
+                UPDATE
+                    acc_trans
+                SET trans_status=IF(acc_debit_code = $acc_code,
+                        (@sum:=@sum - amount)*0 + 
+                        IF(amount<0,0,
+                            IF(@sum <= 0 ,1,
+                                IF(@sum+$sensitivity< amount, 2, 3)
+                            )
+                        ),
+                        (@sum:=@sum + amount)*0
+                    )
+                WHERE
+                    passive_company_id = $pcomp_id
+                    AND trans_status <> 4
+                    AND trans_status <> 5
+                    AND (acc_debit_code = $acc_code
+                    OR acc_credit_code = $acc_code)
+                ORDER BY acc_debit_code = $acc_code, amount>0, cstamp;");
+    }
     public function transFullGet( $trans_id ){
 	$this->check($trans_id,'int');
 	$curr_id=$this->Base->acomp('curr_id');
@@ -253,7 +289,7 @@ class AccountsCore extends Catalog{
 	}
 	$user_id=$this->Base->svar('user_id');
 	$acc_codes=  explode('_',$trans_type);
-	$data=[
+	$trans=[
 	    'passive_company_id'=>$passive_company_id,
 	    'acc_debit_code'=>$acc_codes[0],
 	    'acc_credit_code'=>$acc_codes[1],
@@ -264,21 +300,30 @@ class AccountsCore extends Catalog{
 	    'modified_by'=>$user_id
 	];
 	if( $trans_id ){
-	    $this->update('acc_trans', $data, ['trans_id'=>$trans_id,'editable'=>1]);
-	    return $this->db->affected_rows()>0?$trans_id:false;
+	    $this->update('acc_trans', $trans, ['trans_id'=>$trans_id,'editable'=>1]);
+	    $trans_id= $this->db->affected_rows()>0?$trans_id:false;
 	} else {
-	    $data['editable']=1;
-	    $data['active_company_id']=$this->Base->acomp('company_id');
-	    $data['created_by']=$user_id;
-	    $this->create('acc_trans', $data);
-	    return $this->db->insert_id();
+	    $trans['editable']=1;
+	    $trans['active_company_id']=$this->Base->acomp('company_id');
+	    $trans['created_by']=$user_id;
+	    $this->create('acc_trans', $trans);
+	    $trans_id= $this->db->insert_id();
 	}
+        if( strpos($trans_type, '361')!==false ){
+            $this->calculatePayments($passive_company_id, 361);
+        }
+        return $trans_id;
     }
     public function transDelete( $trans_id ){
+	$this->Base->set_level(2);
 	$trans=$this->transGet($trans_id);
 	if( $trans && $this->transCheckLevel($trans->acc_debit_code.'_'.$trans->acc_credit_code) ){
 	    $this->delete('acc_trans',['trans_id'=>$trans_id,'editable'=>1]);
-	    return $this->db->affected_rows()>0?true:false;
+            $ok=$this->db->affected_rows()>0?true:false;
+            if( $trans->acc_debit_code==361 || $trans->acc_credit_code==361 ){
+                $this->calculatePayments($trans->passive_company_id, 361);
+            }
+	    return $ok;
 	}
 	$this->Base->msg('access denied');
 	return false;
