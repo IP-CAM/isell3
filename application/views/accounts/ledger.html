@@ -220,7 +220,7 @@
 		};
 		var url='AccountsView/ledgerViewGet/?'+$.param( params );
 		if( out_type==='print' ){
-		    window.open(url);
+		    window.open(url,'print_tab');
 		} else {
 		    location.href=url;
 		}

@@ -147,12 +147,13 @@ if ( isset($word_header) ) {
 		    body:'<?php echo addslashes($user_data['msg']) ?>'.replace(/\\n/img, '\n'),
 		    to:'<?php echo addslashes($user_data['email']) ?>',
 		    fgenerator:'<?php echo $user_data['fgenerator']; ?>',
+                    out_type:fext,
 		    doc_view_id:'<?php echo $user_data['doc_view_id'] ? $user_data['doc_view_id'] : $_GET['doc_view_id']; ?>',
 		    send_file:1
 		};
 		if (opener && opener.App) {
 		    opener.App.loadWindow('page/dialog/send_email',params);
-		    opener.focus();
+		    opener.alert("Файл '"+params.subject+fext+"' прикреплен к письму");
 		}
 	    }
 	</script>
@@ -160,7 +161,13 @@ if ( isset($word_header) ) {
 		<?php
 		if ($export_types):
 		    foreach ($export_types as $ext => $name):?>
-			<div class="gray_grad" style="display:inline-block;padding:3px;font-size:12px;"><a href="javascript:location.href+='&out_type=<?php echo $ext ?>'" style="color:#333;" title="Скачать"><?php echo $name ?><img src="../../img/down.png" width="24" height="24" border="0" align="absmiddle" /></a> <a href="javascript:sendemail('<?php echo $ext ?>')" style="color:black;font-size:12px;" title="Отправить по Email"><img src="../../img/email.png" width="24" height="24" border="0" align="absmiddle" /></a></div>
+			<div class="gray_grad" style="display:inline-block;padding:3px;font-size:12px;">
+                            <a href="javascript:location.href+='&out_type=<?php echo $ext ?>'" style="color:#333;" title="Скачать">
+                                <?php echo $name ?><img src="../../img/down.png" width="24" height="24" border="0" align="absmiddle" /></a>
+                            <a href="javascript:sendemail('<?php echo $ext ?>')" style="color:black;font-size:12px;" title="Отправить по Email">
+                                <img src="../../img/email.png" width="24" height="24" border="0" align="absmiddle" />
+                            </a>
+                        </div>
 			<?php
 		    endforeach;
 		endif;

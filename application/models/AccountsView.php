@@ -52,8 +52,8 @@ class AccountsView extends AccountsCore{
         $view->a = $this->Base->svar('acomp');
         $view->p = $this->Base->svar('pcomp');
         $view->user_sign = $this->Base->svar('user_sign');
-        $view->idate = date('d.m.Y', strtotime($view->idate));
-        $view->fdate = date('d.m.Y', strtotime($view->fdate));
+        $view->idate_dmy = date('d.m.Y', strtotime($view->idate));
+        $view->fdate_dmy = date('d.m.Y', strtotime($view->fdate));
         $view->spell = $Utils->spellAmount( abs($view->ledger->sub_totals->fbal) );//$view->ledger->sub_totals->fbal
         $view->localDate = $Utils->getLocalDate($view->fdate);
 	
@@ -80,8 +80,19 @@ class AccountsView extends AccountsCore{
         if ($out_type == 'print') {
             $file_name = '.print';
             $FileEngine->show_controls = true;
-            $FileEngine->user_data = ['title' => "Виписка з рахунку", 'msg' => 'Доброго дня', 'email' => $view->p->company_email, 'fgenerator'=>'AccountsView', 'doc_view_id' => $view->doc_view_id];//
+            $FileEngine->user_data = [
+                'title' => "Виписка з рахунку",
+                'msg' => 'Доброго дня',
+                'email' => $view->p->company_email,
+                'fgenerator'=>'AccountsView',
+                'out_type'=>$out_type,
+                'doc_view_id' => $view->doc_view_id
+                ];
         }
         return $FileEngine->fetch($file_name);
+    }
+    public function viewFileGet($doc_view_id,$out_type){
+        $view=$this->ledgerViewFill($doc_view_id);
+        return $this->ledgerViewOut($view, $out_type);
     }
 }
