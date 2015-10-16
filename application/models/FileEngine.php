@@ -9,7 +9,7 @@ class FileEngine {
     private $compilator;
     private $compiled_html;
     private $post_processor=null;
-    private $send_headers=true;
+    public $header_mode='send_headers';
     public $user_data;
     public $file_name_override;
     public $tplModifier;
@@ -21,7 +21,7 @@ class FileEngine {
     }
     
     private function header($text){
-        if( $this->send_headers ){
+        if( $this->header_mode==='send_headers' ){
             header($text);
         }
     }
@@ -158,7 +158,6 @@ class FileEngine {
 
     public function fetch($file_name) {
         ob_start();
-        $this->send_headers=false;
         $this->send($file_name);
         $output = ob_get_contents();
         ob_end_clean();

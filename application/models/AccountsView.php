@@ -6,7 +6,7 @@ class AccountsView extends AccountsCore{
     }
     public function ledgerViewGet(){
 	$page=$this->request('page','int');
-	$rows=$this->request('rows','int');
+	$rows=10000;//$this->request('rows','int');
 	$idate=$this->request('idate','\d\d\d\d-\d\d-\d\d');
 	$fdate=$this->request('fdate','\d\d\d\d-\d\d-\d\d');
 	$acc_code=$this->request('acc_code','int');
@@ -14,9 +14,13 @@ class AccountsView extends AccountsCore{
 	$use_passive_filter=$this->request('use_passive_filter','bool');
 	
 	$doc_view_id=$this->ledgerViewStore($acc_code, $idate, $fdate, $page, $rows, $use_passive_filter);
-	$view=$this->ledgerViewFill($doc_view_id);
-	$out=$this->ledgerViewOut($view, $out_type);
-	exit($out);
+        
+        $out=$this->viewFileGet($doc_view_id,$out_type,'send_headers');
+        exit($out);
+    }
+    public function viewFileGet($doc_view_id,$out_type,$header_mode){
+        $view=$this->ledgerViewFill($doc_view_id);
+        return $this->ledgerViewOut($view, $out_type,$header_mode);
     }
     private function ledgerViewStore($acc_code, $idate, $fdate, $page, $rows, $use_passive_filter) {
         $doc_view_id = time();
@@ -61,7 +65,7 @@ class AccountsView extends AccountsCore{
 	$Company->selectPassiveCompany( $previous_pcomp_id );
 	return $view;	
     }
-    private function ledgerViewOut($view,$out_type){
+    private function ledgerViewOut($view,$out_type,$header_mode){
 	$acomp_lang=$this->Base->acomp('language');
         $FileEngine=$this->Base->load_model('FileEngine');
         if ($view->use_passive_filter) {//Convert trans status to readible form
@@ -89,10 +93,7 @@ class AccountsView extends AccountsCore{
                 'doc_view_id' => $view->doc_view_id
                 ];
         }
+        $FileEngine->header_mode=$header_mode;
         return $FileEngine->fetch($file_name);
-    }
-    public function viewFileGet($doc_view_id,$out_type){
-        $view=$this->ledgerViewFill($doc_view_id);
-        return $this->ledgerViewOut($view, $out_type);
     }
 }
