@@ -68,13 +68,13 @@ class AccountsView extends AccountsCore{
     private function ledgerViewOut($view,$out_type,$header_mode){
 	$acomp_lang=$this->Base->acomp('language');
         $FileEngine=$this->Base->load_model('FileEngine');
+        foreach ($view->ledger->rows as $row) {
+            $arr = explode(' ', $row->trans_status);
+            $row->trans_status = $arr[1];
+            $row->debit==0?$row->debit='':'';
+            $row->credit==0?$row->credit='':'';
+        }
         if ($view->use_passive_filter) {//Convert trans status to readible form
-            foreach ($view->ledger->rows as $row) {
-                $arr = explode(' ', $row->trans_status);
-                $row->trans_status = $arr[1];
-		$row->debit==0?$row->debit='':'';
-		$row->credit==0?$row->credit='':'';
-            }
             $FileEngine->assign($view, $acomp_lang.'/LedgerPayments.xlsx');
 	    $file_name = "Акт_Сверки_{$view->fdate}$out_type";
         } else {
