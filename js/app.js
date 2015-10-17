@@ -10,8 +10,8 @@ var App = {
     },
     flash:function (msg, type) {
 	if (type === 'error') {
-	    if( App.user && App.user.user_level==4 ){
-		$("#appStatus").html(msg);
+	    if( App.user && App.user.props.user_level==4 ){
+		$("#appStatus").html('<pre>'+msg+'</pre>');
 		$("#appStatus").window({
 		    title: 'Ошибка',
 		    width: 800,
@@ -221,16 +221,22 @@ App.setBg = function () {
     App.loadWindow('page/dialog/background_setter');
 };
 App.datagrid = {
-    tooltip: function (value, row) {
+    tooltip: function (value, row, callback) {
 	if( !value ){
 	    return '';
 	}
 	var parts = value.split(' ');
 	var cmd = parts.shift();
-	if (cmd)
-	    return '<img src="img/' + cmd + '.png" title="' + parts.join(' ') + '">';
-	else
+	if (cmd){
+	    var handler='';
+	    if( callback ){
+		handler='onclick="setTimeout(function(){'+callback+'},0)" style="cursor:pointer"';
+	    }
+	    return '<img src="img/' + cmd + '.png" title="' + parts.join(' ') + '" '+handler+'>';
+	}
+	else{
 	    return '';
+	}
     }
 };
 App.renderTpl=function( id, data, mode ){

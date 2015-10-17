@@ -119,7 +119,7 @@ class HubBase extends CI_Controller{
 		break;
 	    default:
 		header("X-isell-type:error");
-		show_error($this->msg." ".$error['message']."<pre>".$this->db->last_query()."<pre>", 500);
+		show_error($this->msg." ".$error['message'].$this->db->last_query(), 500);
 		break;
 	}
     }

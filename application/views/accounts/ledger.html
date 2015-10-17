@@ -225,10 +225,12 @@
 		    location.href=url;
 		}
 	    },
-	    rowCreate:function( trans_type, trans_name ){
+	    rowCreate:function( trans_type, trans_name, amount, trans_ref ){
 		var data={
 		    trans_id:0,
 		    trans_date:App.today(),
+		    amount:amount||0,
+		    trans_ref:trans_ref||null,
 		    trans_type:trans_type||'',
 		    description:trans_name||'',
 		    passive_company_id:App.pcomp?App.pcomp.company_id:0,
@@ -258,9 +260,7 @@
 		    });
 		} else {
 		    if( row.trans_id ){
-			$.get("AccountsCore/transGetDocId/"+row.trans_id,function(doc_id){
-			    Ledger.documentOpen(doc_id);
-			});
+			Ledger.list.payTrans();
 		    }
 		}
 	    },
@@ -284,7 +284,10 @@
 	    },
 	    rowTooltip:function(value, row){
 		value=value==='0'?'document':'';
-		return App.datagrid.tooltip(value, row);
+		return App.datagrid.tooltip(value, row, 'Ledger.list.openDoc()');
+	    },
+	    rowPayTooltip:function(value,row){
+		return App.datagrid.tooltip(value,row,'Ledger.list.payTrans()');
 	    },
 	    calculate: function (value, row) {
 		var positive = row.debit > 0 ? true : false;
@@ -295,6 +298,25 @@
 		    color = (positive > 0 ? 'green' : 'red');
 		}
 		return '<span style="color:' + color + ';font-weight:bold">' + value + '</span>';
+	    },
+	    openDoc:function(){
+		var row=$('#account_ledger_dg').datagrid('getSelected');
+		if( row.trans_id ){
+		    $.get("AccountsCore/transGetDocId/"+row.trans_id,function(doc_id){
+			Ledger.documentOpen(doc_id);
+		    });
+		}
+	    },
+	    payTrans:function(){
+		var row=$('#account_ledger_dg').datagrid('getSelected');
+		if( row.trans_status ){
+		    var status=row.trans_status.split(' ')[0];
+		    if( "unpayed partly payed".indexOf(status)>-1 ){
+			this.rowCreate(null,null,row.debit||row.credit,row.trans_id);
+		    } else if( "closing closed".indexOf(status)>-1 ){
+			App.flash("Проводка уже связана.");
+		    }
+		}
 	    }
 	}
     };
@@ -412,7 +434,7 @@
 	<thead>
 	    <tr>
 		<th data-options="width:25,field:'editable',align:'center',formatter:Ledger.list.rowTooltip"></th>
-		<th data-options="width:25,field:'trans_status',align:'center',formatter:App.datagrid.tooltip"></th>
+		<th data-options="width:25,field:'trans_status',align:'center',formatter:Ledger.list.rowPayTooltip"></th>
 		<th data-options="width:65,field:'trans_date'">Дата</th>
 		<th data-options="width:200,field:'company_name'">Компания</th>
 		<th data-options="width:220,field:'description'">Пояснение</th>

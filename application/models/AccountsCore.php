@@ -195,41 +195,6 @@ class AccountsCore extends Catalog{
 	return $acc_code;
     }
 
-    /******************
-      STATUS
-      1 not payed
-      2 partly
-      3 payed
-      4 closed
-      5 closing payment
-    *******************/
-
-    public function calculatePayments($pcomp_id = NULL,$acc_code=361) {
-        if (!isset($pcomp_id)){
-            $pcomp_id = $this->Base->pcomp('company_id');
-        }
-        $sensitivity=5.00;
-        $this->query("SET @sum:=0.0;");
-        $this->query("
-                UPDATE
-                    acc_trans
-                SET trans_status=IF(acc_debit_code = $acc_code,
-                        (@sum:=@sum - amount)*0 + 
-                        IF(amount<0,0,
-                            IF(@sum <= 0 ,1,
-                                IF(@sum+$sensitivity< amount, 2, 3)
-                            )
-                        ),
-                        (@sum:=@sum + amount)*0
-                    )
-                WHERE
-                    passive_company_id = $pcomp_id
-                    AND trans_status <> 4
-                    AND trans_status <> 5
-                    AND (acc_debit_code = $acc_code
-                    OR acc_credit_code = $acc_code)
-                ORDER BY acc_debit_code = $acc_code, amount>0, cstamp;");
-    }
     public function transFullGet( $trans_id ){
 	$this->check($trans_id,'int');
 	$curr_id=$this->Base->acomp('curr_id');
@@ -273,23 +238,92 @@ class AccountsCore extends Catalog{
 	$sql="SELECT 1 FROM acc_trans_names WHERE CONCAT(acc_debit_code,'_',acc_credit_code)='$trans_type' AND user_level<='$user_level'";
 	return $this->get_value($sql);
     }
-    public function transCreateUpdate( $trans_id, $passive_company_id, $trans_type, $trans_date=null, $amount=null, $amount_alt=null ){
+    /******************
+      STATUS
+      1 unpayed
+      2 partly
+      3 payed
+      4 closed
+      5 closing payment
+    *******************/
+
+    private function transPaymentCalculate($pcomp_id = NULL,$acc_code) {
+        if ( !isset($pcomp_id) ){
+            $pcomp_id = $this->Base->pcomp('company_id');
+        }
+        $sensitivity=5.00;
+        $this->query("SET @sum:=0.0;");
+        $this->query("
+                UPDATE
+                    acc_trans
+                SET trans_status=IF(acc_debit_code = $acc_code,
+                        (@sum:=@sum - amount)*0 + 
+                        IF(amount<0,0,
+                            IF(@sum <= 0 ,1,
+                                IF(@sum+$sensitivity< amount, 2, 3)
+                            )
+                        ),
+                        (@sum:=@sum + amount)*0
+                    )
+                WHERE
+                    passive_company_id = $pcomp_id
+                    AND trans_status <> 4
+                    AND trans_status <> 5
+                    AND (acc_debit_code = $acc_code
+                    OR acc_credit_code = $acc_code)
+                ORDER BY acc_debit_code = $acc_code, amount>0, cstamp;");
+    }
+    private $payment_account=361;
+    private function transCheckCalculate($trans){
+        if( isset($trans['acc_debit_code']) && ($trans['acc_debit_code']==$this->payment_account || $trans['acc_credit_code']==$this->payment_account)  ){
+            $this->transPaymentCalculate($trans['passive_company_id'], $this->payment_account);
+        }
+    }
+    private function transCheckLink($trans_id,&$trans){
+	if( $trans['trans_ref'] ){
+	    $trans['trans_status']=5;
+	    $this->update('acc_trans', ['trans_ref'=>$trans_id,'trans_status'=>4], ['trans_id'=>$trans['trans_ref']]);
+	}
+    }
+    private function transBreakLink($trans_ref){
+	if( isset($trans_ref) ){
+	    $this->update('acc_trans', ['trans_ref'=>0,'trans_status'=>0], ['trans_id'=>$trans_ref]);
+	}	
+    }
+    private function transInnerCreateUpdate($trans_id,$trans){
 	$this->Base->set_level(2);
-	$description=$this->input->post('description');
+	$this->transCheckLink($trans_id,$trans);
+	if( $trans_id ){
+	    $this->update('acc_trans', $trans, ['trans_id'=>$trans_id,'editable'=>1]);
+	    $trans_id= $this->db->affected_rows()>0?$trans_id:false;
+	} else {
+	    $trans['editable']=1;
+	    $trans['active_company_id']=$this->Base->acomp('company_id');
+	    $trans['created_by']=$trans['modified_by'];
+	    $this->create('acc_trans', $trans);
+	    $trans_id= $this->db->insert_id();
+	}
+	$this->transCheckCalculate($trans);
+	return $trans_id;	
+    }
+    public function transPostCreateUpdate(){
+	$trans_id=$this->request('trans_id','int',0);
+	$passive_company_id=$this->request('passive_company_id','int');
+	$trans_type=$this->request('trans_type');
+	$trans_date=$this->request('trans_date','\d\d\d\d-\d\d-\d\d');
+	$trans_ref=$this->request('trans_ref','int',null);
+	$amount=$this->request('amount','double');
+	$amount_alt=$this->request('amount_alt','double');
+	$description=$this->request('description');
+	$user_id=$this->Base->svar('user_id');
 	
-	$this->check($trans_id,'int');
-	$this->check($trans_type);
-	$this->check($trans_date,'\d\d\d\d-\d\d-\d\d');
-	$this->check($amount,'double');
-	$this->check($amount_alt,'double');
-	$this->check($description);
+	$acc_codes=  explode('_',$trans_type);
 	if( !$this->transCheckLevel($trans_type) ){
 	    $this->Base->msg('access denied');
 	    return false;
 	}
-	$user_id=$this->Base->svar('user_id');
-	$acc_codes=  explode('_',$trans_type);
 	$trans=[
+	    'trans_ref'=>$trans_ref,
 	    'passive_company_id'=>$passive_company_id,
 	    'acc_debit_code'=>$acc_codes[0],
 	    'acc_credit_code'=>$acc_codes[1],
@@ -299,20 +333,7 @@ class AccountsCore extends Catalog{
 	    'description'=>$description,
 	    'modified_by'=>$user_id
 	];
-	if( $trans_id ){
-	    $this->update('acc_trans', $trans, ['trans_id'=>$trans_id,'editable'=>1]);
-	    $trans_id= $this->db->affected_rows()>0?$trans_id:false;
-	} else {
-	    $trans['editable']=1;
-	    $trans['active_company_id']=$this->Base->acomp('company_id');
-	    $trans['created_by']=$user_id;
-	    $this->create('acc_trans', $trans);
-	    $trans_id= $this->db->insert_id();
-	}
-        if( strpos($trans_type, '361')!==false ){
-            $this->calculatePayments($passive_company_id, 361);
-        }
-        return $trans_id;
+	return $this->transInnerCreateUpdate($trans_id,$trans);
     }
     public function transDelete( $trans_id ){
 	$this->Base->set_level(2);
@@ -320,8 +341,9 @@ class AccountsCore extends Catalog{
 	if( $trans && $this->transCheckLevel($trans->acc_debit_code.'_'.$trans->acc_credit_code) ){
 	    $this->delete('acc_trans',['trans_id'=>$trans_id,'editable'=>1]);
             $ok=$this->db->affected_rows()>0?true:false;
-            if( $trans->acc_debit_code==361 || $trans->acc_credit_code==361 ){
-                $this->calculatePayments($trans->passive_company_id, 361);
+	    $this->transBreakLink($trans->trans_ref);
+            if( $trans->acc_debit_code==$this->payment_account || $trans->acc_credit_code==$this->payment_account ){
+                $this->transPaymentCalculate($trans->passive_company_id, $this->payment_account);
             }
 	    return $ok;
 	}
