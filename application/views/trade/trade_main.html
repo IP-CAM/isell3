@@ -13,7 +13,7 @@
             if ( company.company_id && company.company_id!==App.pcomp.company_id ) {
                 $.post('Company/selectPassiveCompany/' + company.company_id, function (xhr) {
                     App.pcomp = App.json(xhr);
-                    App.handler.notify('passiveCompanySelected');
+                    App.handler.notify('passiveCompanySelected',App.pcomp);
                 });
             }
         },

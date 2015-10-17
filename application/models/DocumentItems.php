@@ -161,7 +161,28 @@ class DocumentItems extends DocumentCore{
 	$this->check($doc_id,'int');
 	$this->selectDoc($doc_id);
 	$Document2=$this->Base->bridgeLoad('Document');
+	$Document2->selectDoc($doc_id);
 	$Document2->recalc($proc);
+    }
+    private function duplicateEntries($new_doc_id,$old_doc_id){
+	$old_entries=$this->get_list("SELECT product_code,product_quantity,self_price,party_label,invoice_price FROM document_entries WHERE doc_id='$old_doc_id'");
+	foreach($old_entries as $entry){
+	    $entry->doc_id=$new_doc_id;
+	    $this->create("document_entries",$entry);
+	}
+    }
+    private function duplicateHead($new_doc_id,$old_doc_id){
+	$old_head=$this->get_row("SELECT cstamp,reg_stamp,doc_data,doc_ratio,notcount,inernn,use_vatless_price FROM document_list WHERE doc_id='$old_doc_id'");
+	$this->update("document_list", $old_head, ['doc_id'=>$new_doc_id]);
+    }
+    public function duplicate( $old_doc_id ){
+	$this->check($old_doc_id,'int');
+	$this->selectDoc($old_doc_id);
+	$old_doc_type = $this->doc('doc_type');
+	$new_doc_id=$this->createDocument($old_doc_type);
+	$this->duplicateEntries($new_doc_id, $old_doc_id);
+	$this->duplicateHead($new_doc_id, $old_doc_id);
+	return $new_doc_id;
     }
     private function calcCorrections() {
 	$doc_id=$this->doc('doc_id');
