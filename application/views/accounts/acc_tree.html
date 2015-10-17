@@ -33,6 +33,14 @@
     <div class="easyui-tree" id="Atree_tree" data-options="
 	method:'get',
 	url:'AccountsData/accountTreeFetch',
+	loadFilter:function(data){
+	    for(var i in data){
+		if( data[i].is_leaf*1 ){
+		    data[i].iconCls='icon-comp';
+		}
+	    }
+	    return data;
+	},
 	onSelect:function(node){
 	    if(node.state=='closed')
 		$(this).tree('expand',node.target);

@@ -56,7 +56,7 @@
 	    $("#Tedit_amount").next().find(".validatebox-text").focus();	    
 	},
 	initRefHighlight:function(){
-	    if( Tedit.data.trans_ref ){
+	    if( Tedit.data.trans_ref*1 ){
 		$("#Tedit_amount,#Tedit_ratio,#Tedit_amount_alt").textbox('readonly',true);
 		$("#Tedit_amount").textbox('textbox').css('backgroundColor','#ddd');
 	    }

@@ -279,9 +279,9 @@ class AccountsCore extends Catalog{
             $this->transPaymentCalculate($trans['passive_company_id'], $this->payment_account);
         }
     }
-    private function transCheckLink($trans_id,&$trans){
+    private function transCheckLink($trans_id,$trans){
 	if( $trans['trans_ref'] ){
-	    $trans['trans_status']=5;
+	    $this->update('acc_trans', ['trans_ref'=>$trans['trans_ref'],'trans_status'=>5], ['trans_id'=>$trans_id]);
 	    $this->update('acc_trans', ['trans_ref'=>$trans_id,'trans_status'=>4], ['trans_id'=>$trans['trans_ref']]);
 	}
     }
@@ -292,7 +292,6 @@ class AccountsCore extends Catalog{
     }
     private function transInnerCreateUpdate($trans_id,$trans){
 	$this->Base->set_level(2);
-	$this->transCheckLink($trans_id,$trans);
 	if( $trans_id ){
 	    $this->update('acc_trans', $trans, ['trans_id'=>$trans_id,'editable'=>1]);
 	    $trans_id= $this->db->affected_rows()>0?$trans_id:false;
@@ -303,6 +302,7 @@ class AccountsCore extends Catalog{
 	    $this->create('acc_trans', $trans);
 	    $trans_id= $this->db->insert_id();
 	}
+	$this->transCheckLink($trans_id,$trans);
 	$this->transCheckCalculate($trans);
 	return $trans_id;	
     }

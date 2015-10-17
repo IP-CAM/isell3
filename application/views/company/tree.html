@@ -170,6 +170,9 @@
 		if(data[i].level!=0){
 		    data[i].iconCls='icon-lock';
 		}
+		else if( data[i].is_leaf*1 ){
+		    data[i].iconCls='icon-comp';
+		}
 	    }
 	    return data;
 	},

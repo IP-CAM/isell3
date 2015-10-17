@@ -307,6 +307,9 @@ button img{
 .icon-tablefilter {
     background:url('../img/Search.png') no-repeat center center;
 }
+.icon-comp {
+    background:url('../img/gray.png') no-repeat center center;
+}
 .covert{
     visibility: hidden;
     display: none;
