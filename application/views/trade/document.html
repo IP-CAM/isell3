@@ -629,13 +629,13 @@
 		<span class="icon-24 icon-commit" title="Провести документ" id="Doc_commit_btn" onclick="Doc.head.commit();"> </span>
 		<span class="icon-24 icon-uncommit" title="Отменить документ" onclick="Doc.head.uncommit();"> </span>
 		<span style="display: inline-block;width:26px"> </span>
+		<span class="icon-24 icon-change" title="Изменить строку" onclick="Doc.entries.edit();"> </span>
+		<span class="icon-24 icon-delete" title="Удалить строку" onclick="Doc.entries.delete();"> </span>
 		<span class="icon-24 icon-lorry" title="Добавить в распорядок" onclick="Doc.head.addEvent();"> </span>
 		<span class="icon-24 icon-sms" title="Отправить СМС" onclick="Doc.head.sendSms();"> </span>
 		<span class="icon-24 icon-calc" title="Перерасчитать цены" onclick="Doc.entries.initRecalculate();"> </span>
-		<span class="icon-24 icon-change" title="Изменить строку" onclick="Doc.entries.edit();"> </span>
-		<span class="icon-24 icon-delete" title="Удалить строку" onclick="Doc.entries.delete();"> </span>
-		<span class="icon-24 icon-refresh" title="Обновить" onclick="Doc.entries.reload();"> </span>
 		<span class="icon-24 icon-utils" title="Дополнительные свойства" onclick="$('#Doc_utils').toggle('slow')"> </span>
+		<span class="icon-24 icon-refresh" title="Обновить" onclick="Doc.entries.reload();"> </span>
 	    </div>
 	</div>
 	<!-- 
