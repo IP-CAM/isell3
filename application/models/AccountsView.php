@@ -18,7 +18,7 @@ class AccountsView extends AccountsCore{
         $out=$this->viewFileGet($doc_view_id,$out_type,'send_headers');
         exit($out);
     }
-    public function viewFileGet($doc_view_id,$out_type,$header_mode){
+    public function viewFileGet($doc_view_id,$out_type,$header_mode='send_headers'){
         $view=$this->ledgerViewFill($doc_view_id);
         return $this->ledgerViewOut($view, $out_type,$header_mode);
     }
