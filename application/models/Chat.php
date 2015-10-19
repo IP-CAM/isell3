@@ -15,10 +15,10 @@ class Chat extends Catalog{
 		GROUP BY user_id";
         return $this->get_list($sql);
     }
-    public function sendRecieve( $counterpart='all' ){
+    public function sendRecieve( $he='all' ){
 	$msg=$this->request('message');
-	$he=$this->request('counterpart');
-        if( $he && $msg!="''" ){
+	$this->check($he);
+        if( $he && $msg ){
             $this->addMessage($he, $msg);
         }
         return $this->getMessages($he);
