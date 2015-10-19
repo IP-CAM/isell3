@@ -16,8 +16,8 @@ class Chat extends Catalog{
         return $this->get_list($sql);
     }
     public function sendRecieve( $counterpart='all' ){
-        $msg=$this->db->escape($this->input->post('message'));
-        $he=$this->db->escape($counterpart);
+	$msg=$this->request('message');
+	$he=$this->request('counterpart');
         if( $he && $msg!="''" ){
             $this->addMessage($he, $msg);
         }
@@ -30,24 +30,24 @@ class Chat extends Catalog{
               SET 
                 event_label='Chat',
                 event_date=NOW(),
-                event_user_id=$user_id,
-                event_target=$he,
-                event_descr=$msg,
+                event_user_id='$user_id',
+                event_target='$he',
+                event_descr='$msg',
                 event_is_private=1,
 		event_status=1";
         $this->query($sql);
     }
     private function getMessages( $he ){
-        $me = $this->db->escape($this->Base->svar('user_login'));
+        $me = $this->Base->svar('user_login');
 	$this->query("SET @unread_id=0;");
         $sql="SELECT
             event_list.*,
             DATE_FORMAT(event_date,'%H:%i:%s') time,
-            IF(event_target=$me OR event_target='all',1,NULL) for_me,
+            IF(event_target='$me' OR event_target='all',1,NULL) for_me,
             event_target reciever,
             user_login sender,
 	    event_status=1 unread,
-	    IF( (event_target=$me OR event_target='all') AND @unread_id=0 AND event_status=1,@unread_id:=event_id,0) unread_id
+	    IF( (event_target='$me' OR event_target='all') AND @unread_id=0 AND event_status=1,@unread_id:=event_id,0) unread_id
                 FROM
                     event_list
                         JOIN
@@ -55,9 +55,9 @@ class Chat extends Catalog{
                 WHERE 
                     event_label='Chat' 
                 HAVING
-                    IF($he='all',
-                        reciever='all' OR reciever=$me,
-                        sender=$me AND reciever=$he OR sender=$he AND reciever=$me)
+                    IF('$he'='all',
+                        reciever='all' OR reciever='$me',
+                        sender='$me' AND reciever='$he' OR sender='$he' AND reciever='$me')
                 ORDER BY event_date";
 	$messages=$this->get_list($sql);
 	$this->setAsRead();
