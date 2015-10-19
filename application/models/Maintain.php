@@ -102,7 +102,9 @@ class Maintain extends CI_Model {
 	$file = fopen($this->dirWork.'/install/db_update.sql', "r");
 	while(!feof($file)){
 	    $line = fgets($file);
-	    $this->db->query($line);
+	    if( $line ){
+		$this->db->query($line);
+	    }
 	}
 	fclose($file);
 	return true;
