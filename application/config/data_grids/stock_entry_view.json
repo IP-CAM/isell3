@@ -64,6 +64,12 @@
 	    "name": "Кол-во",
 	    "align":"right",
 	    "readonly": 1
+	},
+	{
+	    "field": "self_price",
+	    "name": "Учетная ц.",
+	    "align":"right",
+	    "readonly": 1
 	}
     ]
 }
