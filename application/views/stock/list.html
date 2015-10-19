@@ -81,6 +81,9 @@ function(
 			cell.style.push('color:green;');
 		    }
 		}
+		if( cell.field==='self_price' ){
+                    cell.cellData=Number(cell.cellData).toFixed(2);
+		}
 		return cell;
 	    };
 	    startup();
