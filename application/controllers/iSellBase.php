@@ -24,7 +24,7 @@ class iSellBase extends ProcessorBase{
         $this->selectPassiveCompany( $user_data['company_id'] );//WTF
     }
     public function selectActiveCompany( $active_company_id ){
-        $acomp_data=$active_company_id?$this->get_row("SELECT * FROM companies_list LEFT JOIN curr_list USING(curr_code) WHERE company_id='$active_company_id'"):NULL;
+        $acomp_data=$active_company_id?(object)$this->get_row("SELECT * FROM companies_list LEFT JOIN curr_list USING(curr_code) WHERE company_id='$active_company_id'"):NULL;
         $this->_acomp=$_SESSION['acomp']= $acomp_data;
     }
     public function selectPassiveCompany( $passive_company_id ){
@@ -32,7 +32,7 @@ class iSellBase extends ProcessorBase{
             return;
         if( !$this->checkAssignedPassiveCompany( $passive_company_id ) )
             return;
-        $this->_pcomp=$_SESSION['pcomp']=$passive_company_id?$this->get_row("SELECT * FROM companies_list JOIN companies_tree USING(branch_id) LEFT JOIN curr_list USING(curr_code) WHERE company_id='$passive_company_id'"):NULL;
+        $this->_pcomp=$_SESSION['pcomp']=$passive_company_id?(object)$this->get_row("SELECT * FROM companies_list JOIN companies_tree USING(branch_id) LEFT JOIN curr_list USING(curr_code) WHERE company_id='$passive_company_id'"):NULL;
     }
     private function checkAssignedPassiveCompany( $passive_company_id ){
         $branch_id=$this->get_row("SELECT branch_id FROM companies_list WHERE company_id='$passive_company_id'",0);

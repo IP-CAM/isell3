@@ -177,6 +177,7 @@ class DocumentItems extends DocumentCore{
     }
     public function duplicate( $old_doc_id ){
 	$this->check($old_doc_id,'int');
+	$this->Base->set_level(2);
 	$this->selectDoc($old_doc_id);
 	$old_doc_type = $this->doc('doc_type');
 	$new_doc_id=$this->createDocument($old_doc_type);
