@@ -71,7 +71,8 @@ class DocumentItems extends DocumentCore{
                 REPLACE(FORMAT(invoice_price * @vat_correction * @curr_correction * product_quantity,2),',',' ') AS product_sum,
                 CHK_ENTRY(doc_entry_id) AS row_status,
                 party_label,
-                product_uktzet
+                product_uktzet,
+		(invoice_price * @vat_correction * @curr_correction)<self_price is_loss
             FROM
                 document_list
 		    JOIN
@@ -83,11 +84,16 @@ class DocumentItems extends DocumentCore{
             ORDER BY pl.product_code";
 	return $this->get_list($sql);
     }
-    public function entryAdd( $doc_id, $code, $quantity ){
-	$this->check($doc_id,'int');
+    private function entryAdd( $doc_id, $code, $quantity ){
 	$this->selectDoc($doc_id);
 	$Document2=$this->Base->bridgeLoad('Document');
 	return $Document2->addEntry( $code, $quantity );
+    }
+    public function entryPostAdd(){
+	$doc_id=$this->request('doc_id','int');
+	$code=$this->request('code');
+	$quantity=$this->request('quantity','int');
+	return $this->entryAdd($doc_id, $code, $quantity);
     }
     public function entryUpdate( $doc_id, $doc_entry_id, $name, $value ){
 	$this->check($doc_id,'int');
