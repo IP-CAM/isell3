@@ -345,6 +345,12 @@
 		});		
 	    }
 	},
+	calculate: function (value, row) {
+	    if( row.is_loss*1 ){
+		return '<span style="color:red;font-weight:bold">' + value + '</span>';
+	    }
+	    return value;
+	},
 	onRowContextMenu: function (e, row) {
 	    e.preventDefault();
 	    var selected_rows=$('#Doc_entry_dg').datagrid('getSelected');
@@ -674,7 +680,7 @@
 		    <th data-options="field:'product_name',width:310">Название</th>
 		    <th data-options="field:'product_quantity',width:50,align:'right'">Кол-во</th>
 		    <th data-options="field:'product_unit',width:40,align:'center'">Ед.</th>
-		    <th data-options="field:'product_price',width:55,align:'right'">Цена</th>
+		    <th data-options="field:'product_price',width:55,align:'right',formatter:Doc.entries.calculate">Цена</th>
 		    <th data-options="field:'product_sum',width:65,align:'right'">Сумма</th>
 		    <th data-options="field:'row_status',width:24,align:'center',formatter:App.datagrid.tooltip">!</th>
 		</tr>
