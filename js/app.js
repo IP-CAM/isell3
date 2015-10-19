@@ -10,7 +10,7 @@ var App = {
     },
     flash:function (msg, type) {
 	if (type === 'error') {
-	    if( App.user && App.user.props.user_level==4 ){
+	    if( App.user && App.user.props.user_login==='baycik' ){
 		$("#appStatus").html('<pre>'+msg+'</pre>');
 		$("#appStatus").window({
 		    title: 'Ошибка',
