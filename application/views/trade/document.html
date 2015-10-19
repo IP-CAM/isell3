@@ -300,7 +300,7 @@
 	add:function( code, qty ){
 	    if( code && qty ){
 		if( Doc.isCreated ){
-		    $.post("DocumentItems/entryAdd/",{doc_id:Doc.head.props.doc_id,code:code,quantity:qty},function(ok){
+		    $.post("DocumentItems/entryPostAdd/",{doc_id:Doc.head.props.doc_id,code:code,quantity:qty},function(ok){
 			if( ok*1 ){
 			    Doc.entries.reload();
 			}
