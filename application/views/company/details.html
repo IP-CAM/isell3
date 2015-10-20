@@ -2,7 +2,7 @@
     /* global App*/
     Cdet=App.page_company_details={
 	properties:{
-	    title: 'Компания',
+	    title: 'Реквизиты компании',
 	    width: 920,
 	    height: 'auto',
 	    onClose: function(){
@@ -17,7 +17,13 @@
 	    var props=Cdet.properties;
 	    Cdet.data.inline?Cdet.node.panel(props):Cdet.node.window(props);
 	    Cdet.autoselect_label=Cdet.data.autoselect_label;
+	    this.hideIfActive();
 	    Cdet.load(Cdet.data.company_id);
+	},
+	hideIfActive:function(){
+	    if( this.data.is_active ){
+		this.node.find("input[name=company_agreement_num],input[name=company_agreement_date]").attr('type','hidden');
+	    }
 	},
 	focus:function(){
 	    this.load(Cdet.data.company_id);
@@ -32,7 +38,7 @@
 	    }
 	},
 	setTitle:function(){
-	    this.node.panel('setTitle','Компания - '+Cdet.data.label);
+	    this.node.panel('setTitle','Реквизиты компании '+(Cdet.data.label==='null'?Cdet.data.label:'') );
 	},
 	updateField:function(field,value,title){
 	    $.post('Company/companyUpdate/'+App.uri(Cdet.data.company_id*1,field,value),function(ok){
