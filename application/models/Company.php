@@ -87,17 +87,20 @@ class Company extends Catalog{
     }
     public function companyUpdate($company_id, $field, $value='') {
 	$this->Base->set_level(2);
+	$this->check($field,'[a-z_]+');
 	$this->check($value);
 	$assigned_path=$this->Base->svar('user_assigned_path');
-	$fields="company_name/company_jaddress/company_vat_id/company_code/company_vat_licence_id/company_phone/company_agreement_num/
-		 company_agreement_date/company_bank_account/company_bank_id/company_bank_name/label/company_person/company_director/
-		 company_mobile/company_address/company_email/company_web/company_description/company_acc_list";
-	if( strpos($fields, $field)!==false ){
-	    return $this->db->query("UPDATE companies_tree LEFT JOIN companies_list USING(branch_id) SET $field='$value' WHERE (path LIKE '$assigned_path%' OR path IS NULL)
+	$sql="UPDATE 
+		companies_list
+	    LEFT JOIN 
+		companies_tree USING(branch_id) 
+	    SET $field='$value' 
+	    WHERE 
+		(path LIKE '$assigned_path%' OR path IS NULL)
 		    AND
-		company_id=$company_id");
-	}
-	return false;
+		company_id=$company_id";
+	$this->query($sql);
+	return $this->db->affected_rows()>0?1:0;
     }
     public function companyTreeUpdate($branch_id,$field,$value) {
 	$this->Base->set_level(2);

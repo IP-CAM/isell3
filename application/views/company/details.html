@@ -23,6 +23,7 @@
 	hideIfActive:function(){
 	    if( this.data.is_active ){
 		this.node.find("input[name=company_agreement_num],input[name=company_agreement_date]").attr('type','hidden');
+		this.node.find("#page_company_details_frm_hdn").show();
 	    }
 	},
 	focus:function(){
@@ -76,6 +77,14 @@
     <div class="inp_group" style="width:340px;">
 	<input type="text" name="company_agreement_num" title="Номер договора"/>
 	<input type="text" name="company_agreement_date" title="Дата договора"/>
+	<div id="page_company_details_frm_hdn" style="display: none">
+	    <input type="text" name="company_vat_rate" title="Ставка НДС"/>
+	    <select name="language" title="Язык">
+		<option value="en">English</option>
+		<option value="ua">Українська</option>
+		<option value="ru">Русский</option>
+	    </select>
+	</div>
 	<div class="inp_rule"></div>
 	<input type="text" name="company_bank_account" title="Поточный счет"/>
 	<input type="text" name="company_bank_id" title="Код Банка"/>
