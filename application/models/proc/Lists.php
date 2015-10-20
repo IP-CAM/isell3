@@ -47,7 +47,7 @@ class Lists extends Data {
 	$select = implode(',', $select);
 	$where = "event_status<1 AND DATE(event_date)='$selected_date' AND event_label='$selected_label' AND IF(event_is_private,IF(event_user_id='$user_id' OR $user_level>3,1,0),1)";
 	$order = 'ORDER BY event_date DESC';
-	return $this->getGridData(BAY_DB_MAIN.'event_list', $table_query, $select, $where, $order);
+	return $this->getGridData(BAY_DB_MAIN.'.event_list', $table_query, $select, $where, $order);
     }
 
 }
