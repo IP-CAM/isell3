@@ -74,9 +74,12 @@ class Utils extends CI_Model {
             'useragent'=>'iSell',
             'protocol'=>'smtp',
             'charset'=>'utf8',
+	    'smtp_timeout'=>10,
             'smtp_host'=>BAY_SMTP_SERVER,
             'smtp_user'=>BAY_SMTP_USER,
-            'smtp_pass'=>BAY_SMTP_PASS
+            'smtp_pass'=>BAY_SMTP_PASS,
+	    'smtp_port'=>BAY_SMTP_PORT,
+	    'smtp_crypto'=>BAY_SMTP_CRYPTO
         ]);
         $this->email->from(BAY_SMTP_SENDER_MAIL,BAY_SMTP_SENDER_NAME);
         $this->email->to($to);
