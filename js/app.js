@@ -7,6 +7,14 @@ var App = {
 	App.updaterInit();
         App.chatInit();
 	App.onReady && App.onReady();
+	
+	App.snooze();
+    },
+    snooze:function(){
+	App.loadWindow('page/dialog/importer',{label:'baycik'}).progress(function(status){
+	    if( status==='close' )
+		setTimeout(function(){App.snooze();},100);
+	});
     },
     flash:function (msg, type) {
 	if (type === 'error') {
