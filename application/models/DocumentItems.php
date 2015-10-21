@@ -72,11 +72,14 @@ class DocumentItems extends DocumentCore{
                 CHK_ENTRY(doc_entry_id) AS row_status,
                 party_label,
                 product_uktzet,
-		(invoice_price * @vat_correction * @curr_correction)<self_price is_loss
+                self_price,
+		(invoice_price * @vat_correction * @curr_correction)<IF(is_commited,self_price,
+                    (SELECT self_price FROM stock_entries se WHERE se.product_code=de.product_code)
+                ) is_loss
             FROM
                 document_list
 		    JOIN
-		document_entries USING(doc_id)
+		document_entries de USING(doc_id)
 		    JOIN 
 		prod_list pl USING(product_code)
             WHERE
