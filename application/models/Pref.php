@@ -21,4 +21,21 @@ class Pref extends Catalog {
 		    first_name IS NOT NULL AND last_name IS NOT NULL";
         return $this->get_list($sql);
     }
+    public function getPrefs($pref_names="") {// "pref1,pref2,pref3"
+	$this->check($pref_names,'[a-z_,]+');
+	if( $pref_names ){
+	    $where = "WHERE pref_name='" . str_replace(',', "' OR pref_name='", $pref_names) . "'"; 
+	} else {
+	    $where="";
+	}
+        $prefs = $this->get_row("SELECT GROUP_CONCAT(pref_value SEPARATOR '|') pvals,GROUP_CONCAT(pref_name SEPARATOR '|') pnames FROM pref_list  $where");
+        return array_combine(explode('|', $prefs->pnames), explode('|', $prefs->pvals));
+    }
+    public function setPrefs($field,$value) {
+	$this->check($field,'[a-z_]+');
+	$this->check($value,'[^|]+');
+	$this->query("REPLACE pref_list SET pref_name='$field',pref_value='$value'");
+	return $this->db->affected_rows()>0?1:0;
+    }
+
 }

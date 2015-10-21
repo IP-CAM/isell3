@@ -14,10 +14,26 @@
 	    App.loadModule('page/company/details',data,'DetAcomp',/(Cdet|page_company_details)([^\w]|_)/g,"DetAcomp$2");
 	},
 	initPrefs:function(){
-	    var data={
-		usd_ratio:66
-	    };
-	    App.setupForm('#AcompPrefs',data);
+	    $.get("Pref/getPrefs/",function(text){
+		PrefJs.prefData=App.json(text);
+		App.setupForm('#AcompPrefs',PrefJs.prefData).change(function(){
+		    var node=this;
+		    PrefJs.updateField(node.name,node.value,node.title);
+		});
+	    });
+	},
+	initClientbankFields:function(){
+	    
+	},
+	updateField:function(field,value,title){
+	    $.post('Pref/setPrefs/'+App.uri(field,value),function(ok){
+		if( ok*1 ){
+		    PrefJs.prefData[field]=value;
+		    App.flash("Сохранено: " + title);
+		} else {
+		    App.flash("Сохраненние не удалось: " + title);
+		}
+	    });
 	}
     };
 </script>
@@ -29,6 +45,9 @@
 	</div>
 	<div class="inp_group" style="width:340px;">
 	    Поля в файле .csv клиент банка
+	    <table id="AcompPrefs_cbdg" class="easyui-datagrid">
+		
+	    </table>
 	</div>
 	<div class="inp_group" style="width:340px;">
 	    <input name="director_name" title="Руководитель ФИО">
