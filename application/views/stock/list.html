@@ -93,7 +93,9 @@ function(
 	    if( product_code!==null ){
 		StockJs.list.stock_list.request.product_code=product_code;
 		StockJs.list.stock_list.request.rq = 'StockEntryInsert';
-		Connector.addRequest(StockJs.list.stock_list.request);		
+		Connector.addRequest(StockJs.list.stock_list.request,function(){
+                    StockJs.list.stock_list.loadGrid();
+                });		
 	    }
 	};
 	StockJs.list.stock_list.updateProduct= function() {
