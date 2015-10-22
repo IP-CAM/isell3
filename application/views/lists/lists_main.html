@@ -77,8 +77,8 @@
 	    });
 	};
 	ListsJs.events.data_grid.onDelete = function (request) {
-	    request.mod = 'Data';
-	    request.rq = 'DeleteGridRow';
+	    request.mod = 'Lists';
+	    request.rq = 'DeleteEvent';
 	    Connector.addRequest(request,function(){
 		ListsJs.events.loadActiveDates();
 		ListsJs.events.initLabelList();

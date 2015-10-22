@@ -48,6 +48,11 @@ class ProcLists extends iSellBase{
         $this->LoadClass('Lists');
         $this->Lists->updateEvent( $event_id, $eventObj );
     }
+    public function onDeleteEvent(){
+        $event_id=$this->request('event_id',1);
+        $this->LoadClass('Lists');
+        $this->Lists->deleteEvent( $event_id);        
+    }
     public function onGetEventLabels(){
         $selected_day=$this->request('selectedDay');
         $this->LoadClass('Lists');

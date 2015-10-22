@@ -16,6 +16,9 @@ class Lists extends Data {
 	$this->Base->query("INSERT INTO " . BAY_DB_MAIN . ".event_list SET event_date=NOW(),event_user_id=$user_id");
 	return mysql_insert_id();
     }
+    public function deleteEvent( $event_id ){
+	$this->Base->query("DELETE FROM " . BAY_DB_MAIN . ".event_list WHERE event_id=$event_id");        
+    }
 
     public function getEventLabels($selected_day) {
 	$user_id = $this->Base->svar('user_id');
