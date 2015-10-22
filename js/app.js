@@ -11,7 +11,26 @@ var App = {
 	App.snooze();
     },
     snooze:function(){
-	App.loadWindow('page/dialog/importer',{label:'baycik'}).progress(function(status){
+	var f=[
+	    {name:'Код товара',field:'product_code'},
+	    {name:'Код товара',field:'product_code'},
+	    {name:'Код товара',field:'product_code'},
+	    {name:'Код товара',field:'product_code'},
+	    {name:'Код товара',field:'product_code'},
+	    {name:'Код товара',field:'product_code'},
+	    {name:'Код товара',field:'product_code'},
+	    {name:'Код товара',field:'product_code'},
+	    {name:'Код товара',field:'product_code'},
+	    {name:'Код товара',field:'product_code'},
+	    {name:'Код товара',field:'product_code'},
+	    {name:'Код товара',field:'product_code'},
+	    {name:'Код товара',field:'product_code'},
+	    {name:'Код товара',field:'product_code'},
+	    {name:'Код товара',field:'product_code'},
+	    {name:'Код товара',field:'product_code'}
+	];
+	
+	App.loadWindow('page/dialog/importer',{label:'baycik',fields_to_import:f}).progress(function(status){
 	    if( status==='close' )
 		setTimeout(function(){App.snooze();},100);
 	});

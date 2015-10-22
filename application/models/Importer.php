@@ -6,8 +6,13 @@ class Importer extends Catalog{
 	$page=$this->request('page','int',1);
 	$rows=$this->request('rows','int',50);
 	$this->check($label);
+	if( $label ){
+	    $where="WHERE label='$label'";
+	} else {
+	    $where='';
+	}
 	$total=$this->get_value("SELECT COUNT(*) FROM imported_data WHERE label='$label'");
-	$entries=$this->get_list("SELECT * FROM imported_data WHERE label='$label' LIMIT $rows OFFSET ".(($page-1)*$rows));
+	$entries=$this->get_list("SELECT * FROM imported_data $where LIMIT $rows OFFSET ".(($page-1)*$rows));
 	return ['rows'=>$entries,'total'=>$total];
     }
     public function up( $label='' ){
@@ -35,9 +40,19 @@ class Importer extends Catalog{
 	}
         return 'error'.$_FILES['upload_file']['error'];
     }
-    public function impDelete(){
+    public function deleteRows(){
 	$row_ids=$this->request('row_ids','[\d,]+');
 	$this->query("DELETE FROM imported_data WHERE row_id IN ($row_ids)");
+	return $this->db->affected_rows();
+    }
+    public function deleteAll( $label='' ){
+	$this->check($label,'[\w_\d]+');
+	if( $label ){
+	    $where="WHERE label='$label'";
+	} else {
+	    $where='';
+	}
+	$this->query("DELETE FROM imported_data $where");
 	return $this->db->affected_rows();
     }
 }
