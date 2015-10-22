@@ -46,12 +46,14 @@ class ProcLists extends iSellBase{
         $eventObj['event_descr']=$this->request('event_descr');
         $eventObj['event_is_private']=$this->request('event_is_private',1);
         $this->LoadClass('Lists');
+	header("X-isell-type:OK");
         $this->Lists->updateEvent( $event_id, $eventObj );
     }
     public function onDeleteEvent(){
-        $event_id=$this->request('event_id',1);
-        $this->LoadClass('Lists');
-        $this->Lists->deleteEvent( $event_id);        
+	$delIds = $this->request('delIds', 3);
+	$this->LoadClass('Lists');
+	header("X-isell-type:OK");
+        $this->Lists->deleteEvent( $delIds );        
     }
     public function onGetEventLabels(){
         $selected_day=$this->request('selectedDay');
