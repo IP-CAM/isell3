@@ -2,8 +2,13 @@
     "grid_name": "Список склада",
     "selectionMode":"extended",
     "table_style":"width:100%",
-    "toolnames": ["addProduct", "editProduct", "delete", "download", "print"],
+    "toolnames": ["import","addProduct", "editProduct", "delete", "download", "print"],
     "extratools": {
+        "import":{
+            "img":"import.png",
+            "command":"import()",
+            "tip":"Импортировать данные"
+        },
 	"addProduct": {
 	    "img": "add.png",
 	    "command": "createProduct()",

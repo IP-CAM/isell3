@@ -8,31 +8,19 @@ var App = {
         App.chatInit();
 	App.onReady && App.onReady();
 	
-	App.snooze();
+        //App.snooze();
     },
     snooze:function(){
 	var f=[
-	    {name:'Код товара',field:'product_code'},
-	    {name:'Код товара',field:'product_code'},
-	    {name:'Код товара',field:'product_code'},
-	    {name:'Код товара',field:'product_code'},
-	    {name:'Код товара',field:'product_code'},
-	    {name:'Код товара',field:'product_code'},
-	    {name:'Код товара',field:'product_code'},
-	    {name:'Код товара',field:'product_code'},
-	    {name:'Код товара',field:'product_code'},
-	    {name:'Код товара',field:'product_code'},
-	    {name:'Код товара',field:'product_code'},
-	    {name:'Код товара',field:'product_code'},
-	    {name:'Код товара',field:'product_code'},
-	    {name:'Код товара',field:'product_code'},
-	    {name:'Код товара',field:'product_code'},
 	    {name:'Код товара',field:'product_code'}
 	];
 	
-	App.loadWindow('page/dialog/importer',{label:'baycik',fields_to_import:f}).progress(function(status){
+	App.loadWindow('page/dialog/importer',{label:'baycik',fields_to_import:f}).progress(function(status,fvalue){
 	    if( status==='close' )
 		setTimeout(function(){App.snooze();},100);
+            if( status==='submit' ){
+                alert(fvalue.toSource());
+            }
 	});
     },
     flash:function (msg, type) {
