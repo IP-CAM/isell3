@@ -46,8 +46,7 @@ class User extends Catalog {
 	];
     }
     private function getModuleList(){
-	$mods=json_decode(file_get_contents('application/config/modules.json',true));
-	//not very reliable way to check, modules can be loaded anyway by hand
+	$mods=json_decode(file_get_contents('application/config/modules.json',true));//not very reliable way to check, modules can be loaded anyway by hand
 	$alowed=array();
 	foreach( $mods as $mod ){
 	    if( $this->Base->svar('user_level')>=$mod->level && strpos(BAY_ACTIVE_MODULES, "/{$mod->name}/")!==false ){
@@ -61,5 +60,17 @@ class User extends Catalog {
 	$Company->selectActiveCompany($user_data->company_id);
         $this->Base->svar('user_assigned_stat',$user_data->user_assigned_stat);
         $this->Base->svar('user_assigned_path',$user_data->user_assigned_path);
+    }
+    public function listFetch(){
+	$user_id = $this->Base->svar('user_id');
+        $where = ($this->Base->svar('user_level') < 4) ? "WHERE user_id='$user_id'" : "";
+        $sql = "SELECT
+	    * ,
+	    CONCAT(last_name,' ',first_name,' ',middle_name) AS full_name 
+	    FROM " . BAY_DB_MAIN . ".user_list
+		$where 
+	    ORDER BY user_id<>'$user_id', user_level DESC";
+        return $this->get_list($sql);
+
     }
 }
