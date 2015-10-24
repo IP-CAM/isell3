@@ -2,32 +2,39 @@
 
 class Maintain extends CI_Model {
 
-    public function autoUpdate( $step='' ){
-	if( !$step ){
-	    header("Refresh: 2; url= download");
-	    return  'start downloading...';
+    public function getCurrentVersionStamp(){
+	$this->dirWork = realpath('.');
+	if( file_exists($this->dirWork.'/.git') ){
+	    return date(time());
 	}
-	if( $this->appUpdate($step) ){
-	    if( $step=='download' ){
-		header("Refresh: 2; url= unpack");
-		return  'unpacking...';
-	    }
-	    if( $step=='unpack' ){
-		header("Refresh: 2; url= swap");
-		return  'installing files...';
-	    }
-	    if( $step=='swap' ){
-		header("Refresh: 2; url= install");
-		return  'finishing installation...';
-	    }
-	    if( $step=='install' ){
-		return  'update succeded!';
-	    }
-	}
-	else{
-	    return "Failure at step: $step";
-	}
+	return date ("Y-m-d\TH:i:s\Z", filemtime($this->dirWork));
     }
+//    public function autoUpdate( $step='' ){
+//	if( !$step ){
+//	    header("Refresh: 2; url= download");
+//	    return  'start downloading...';
+//	}
+//	if( $this->appUpdate($step) ){
+//	    if( $step=='download' ){
+//		header("Refresh: 2; url= unpack");
+//		return  'unpacking...';
+//	    }
+//	    if( $step=='unpack' ){
+//		header("Refresh: 2; url= swap");
+//		return  'installing files...';
+//	    }
+//	    if( $step=='swap' ){
+//		header("Refresh: 2; url= install");
+//		return  'finishing installation...';
+//	    }
+//	    if( $step=='install' ){
+//		return  'update succeded!';
+//	    }
+//	}
+//	else{
+//	    return "Failure at step: $step";
+//	}
+//    }
     
     private function setupUpdater(){
 	$this->dirParent=realpath('..');
@@ -43,6 +50,7 @@ class Maintain extends CI_Model {
     }
     
     public function appUpdate($action = 'download') {
+	$this->Base->set_level(2);
 	$this->setupUpdater();
 	if ($action == 'download') {
 	    return $this->updateDownload(BAY_UPDATE_URL, $this->zipPath);
@@ -78,11 +86,6 @@ class Maintain extends CI_Model {
     }
 
     private function updateSwap() {
-        //$this->load->helper('file');
-        //delete_files('./path/to/directory/', TRUE);
-        
-        
-        
 	if( file_exists($this->dirWork)
 	    && file_exists($this->dirUnpack . $this->zipSubFolder)
 	    && file_exists($this->dirUnpack)){
@@ -96,19 +99,6 @@ class Maintain extends CI_Model {
 	}
 	return false;
     }
-    
-    public function updateInstall(){
-	$this->dirWork = realpath('.');
-	$file = fopen($this->dirWork.'/install/db_update.sql', "r");
-	while(!feof($file)){
-	    $line = fgets($file);
-	    if( $line ){
-		$this->db->query($line);
-	    }
-	}
-	fclose($file);
-	return true;
-    }
 
     private function delTree($dir) {
 	if( !file_exists ($dir) ){
@@ -120,14 +110,43 @@ class Maintain extends CI_Model {
 	}
 	return rmdir($dir);
     }
-
-    public function getCurrentVersionStamp(){
+    
+    public function updateInstall(){
 	$this->dirWork = realpath('.');
-	if( file_exists($this->dirWork.'/.git') ){
-	    return date(time());
-	}
-	return date ("Y-m-d\TH:i:s\Z", filemtime($this->dirWork));
+	$file = str_replace("\\", "/", $this->dirWork.'/install/db_update.sql');
+	return $this->backupImportExecute($file);
     }
+
+    private function setupConf(){
+	$conf_file=  tempnam(sys_get_temp_dir(),'hah');
+	$conf='[client]
+	    user="'.BAY_DB_USER.'"
+	    password="'.BAY_DB_PASS.'"';
+	file_put_contents($conf_file, $conf);
+	return $conf_file;
+    }
+    
+    private function backupImportExecute( $file ){
+	$output=[];
+	$conf_file=$this->setupConf();
+        $path_to_mysql=$this->db->query("SHOW VARIABLES LIKE 'basedir'")->row()->Value;
+	exec("$path_to_mysql/bin/mysql --defaults-file=$conf_file ".BAY_DB_NAME." <".$file." 2>&1",$output);
+	if( count($output) ){
+	    file_put_contents($this->path_to_backup_folder.date('Y-m-d_H-i-s').'-IMPORT.log', implode( "\n", $output ));
+	    return false;
+	}
+	return true;
+    }
+    
+    public function backupImport(){
+	$this->Base->set_level(4);
+        $file=$this->input->post('filename');
+	if( file_exists($this->path_to_backup_folder.$file) ){
+	    return $this->backupImportExecute($this->path_to_backup_folder.$file);
+	}
+        return false;
+    }
+    
     private $path_to_backup_folder="/ISELL-DB-BACKUP/";
     public function backupDump(){
         $this->Base->set_level(4);
@@ -142,21 +161,6 @@ class Maintain extends CI_Model {
             return false;
         }
         return true;
-    }
-    public function backupImport(){
-	$this->Base->set_level(4);
-        $file=$this->input->post('filename');
-        $path_to_mysql=$this->db->query("SHOW VARIABLES LIKE 'basedir'")->row()->Value;
-	if( file_exists($this->path_to_backup_folder.$file) ){
-	    exec("$path_to_mysql/bin/mysql --user=".BAY_DB_USER." --password=".BAY_DB_PASS);
-	    exec("$path_to_mysql/bin/mysql --user=".BAY_DB_USER." ".BAY_DB_NAME." <".$this->path_to_backup_folder.$file." 2>&1",$output);
-	    if( count($output) ){
-		file_put_contents($this->path_to_backup_folder.date('Y-m-d_H-i-s').'-IMPORT.log', implode( "\n", $output ));
-                return false;
-	    }
-            return true;
-	}
-        return false;
     }
     public function backupList(){
 	$this->Base->set_level(4);
