@@ -31,15 +31,22 @@
         },
         submit:function(){
             var fvalue=App.collectForm("#page_dialog_importer_frm");
-            fvalue.label=App.page_dialog_importer.label;
+	    var split={source:[],target:[]};
+	    var missed=[];
             for(var i in fvalue){
                 if( !fvalue[i] ){
                     var title=$("#page_dialog_importer_frm select[name="+i+"]").attr('title');
-                    alert( "Поле не сопоставлено: "+title );
-                    return;
+		    missed.push(title);
                 }
+		split.source.push(fvalue[i]);
+		split.target.push(i);
             }
-            App.page_dialog_importer.handler.notify('submit',fvalue);
+	    if( missed.length>0 ){
+		alert( "Поле не сопоставлено: "+missed.join(',') );
+		return;
+	    }
+            fvalue.label=App.page_dialog_importer.label;
+            App.page_dialog_importer.handler.notify('submit',fvalue,split);
         },
 	up:function(filelist){
 	    if( filelist.length ){
@@ -125,7 +132,7 @@
             <img src="img/database.png" style="height: 90px;width: auto;"><br>Импортировать
         </button>
         {{fields_to_import}}
-	<select name="{{field}}" title="{{name}} " style="width:50px;">
+	<select name="{{field}}" title="{{name}} " style="width:50px;" required="required">
 	    <option>A</option>
 	    <option>B</option>
 	    <option>C</option>
@@ -148,7 +155,9 @@
 </div>
 <div style="clear: both;border-bottom: 1px solid #999;margin-top: 4px;"></div>
 <div style="text-align: right;padding: 3px;clear: left;">
-    <div style="display: inline-block;line-height: 26px;margin-top: 0px;float: left">Выбранная метка: <input id="page_dialog_importer_label" style="width: 50px;" title="Выбранная метка" onkeyup="App.page_dialog_importer.filter(this)"></div>
+    <div style="display: inline-block;line-height: 26px;margin-top: 0px;float: left">
+	Выбранная метка: <input id="page_dialog_importer_label" style="width: 50px;" title="Выбранная метка" onkeyup="App.page_dialog_importer.filter(this)">
+    </div>
     <span class="icon-24" style="background-image: url(img/truncate.png);background-repeat: no-repeat" title="Очистить таблицу" onclick="App.page_dialog_importer.deleteAll();"> </span>
     <span class="icon-24 icon-delete" title="Удалить выбранные строчки" onclick="App.page_dialog_importer.delete();"> </span>
     <span class="icon-24" style="background-image: url(img/file_upload.png);background-repeat: no-repeat" title="Отправить файл" onclick="$('#page_dialog_importer_file').click();"> </span>

@@ -106,6 +106,14 @@ class Catalog extends CI_Model {
         $this->check_error();
 	return $ok;
     }
+    protected function rowUpdate( $table, $data, $key ){
+	return $this->update($table,$data,$key);
+    }
+    protected function rowUpdateField( $table, $key_field, $id, $field, $value ){
+	$key=array($key_field=>$id);
+	$data=array($field=>$value);
+	return $this->update($table,$data,$key);
+    }
     ////////////////////////////////////////////////////
     // CORE TREE FUNCTIONS
     ////////////////////////////////////////////////////
@@ -208,46 +216,5 @@ class Catalog extends CI_Model {
 	    $having[]="$rule->field LIKE '%$rule->value%'";
 	}
 	return implode(' AND ',$having);
-    }
-    
-    
-    ////////////////////////////////////////////////////
-    // CORE TABLE ROW FUNCTIONS
-    ////////////////////////////////////////////////////    
-    public function rowGet( $table, $key_field, $id ){
-	$key=array($key_field=>$id);
-	return $this->get( $table, $key );
-    }
-//    public function rowCreate( $table, $field, $value ){
-//	$data=array($field=>$value);
-//	return $this->create( $table, $data );
-//    }
-//    
-//    
-//    
-    //bellow is a shame used in  event_list
-    public function rowDelete( $table, $key_field, $id ){
-	$key=array($key_field=>$id);
-	$this->delete($table, $key);
-    }
-    protected function rowUpdate( $table, $data, $key ){
-	return $this->update($table,$data,$key);
-    }
-    public function rowUpdateField( $table, $key_field, $id, $field, $value ){
-	$key=array($key_field=>$id);
-	$data=array($field=>$value);
-	return $this->update($table,$data,$key);
-    }
-    
-    public function rowCreateSet( $table ){
-	$json=$this->input->post('row_data');
-	$data=  json_decode($json);
-	return $this->create( $table, $data );
-    }
-    public function rowUpdateSet( $table, $key_field, $id ){
-	$key=array($key_field=>$id);
-	$json=$this->input->post('row_data');
-	$data=  json_decode($json);
-	return $this->update($table,$data,$key);
     }
 }
