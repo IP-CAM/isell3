@@ -1,4 +1,6 @@
 <script>
+    
+    /*global StockJs, baycik,Connector,App*/
 require([
     "dojo/dom",
     "dijit/registry",
@@ -107,6 +109,20 @@ function(
 		alert("Выберите товар.");
 	    }
 	};
+        StockJs.list.stock_list.import=function(){
+            var f=[
+                {name:'Код товара',field:'product_code'}
+            ];
+            App.loadWindow('page/dialog/importer',{label:'baycik',fields_to_import:f}).progress(function(status,fvalue){
+                if( status==='submit' ){
+                    fvalue.parent_id=StockJs.list.parent_id;
+                    $.post("Stock/import/",fvalue,function(ok){
+			App.flash("Добавлено "+ok);
+                        StockJs.list.stock_list.loadGrid();
+                    });
+                }
+            });
+        };
     };
     StockJs.list.initTree = function() {
 	Connector.addCss('js/dhtmlx/tree/dhtmlxtree.css');
