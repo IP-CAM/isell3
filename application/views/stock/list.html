@@ -116,9 +116,9 @@ function(
             App.loadWindow('page/dialog/importer',{label:'baycik',fields_to_import:f}).progress(function(status,fvalue){
                 if( status==='submit' ){
                     fvalue.parent_id=StockJs.list.parent_id;
-                    alert(fvalue.toSource());
                     $.post("Stock/import/",fvalue,function(ok){
-                        
+			App.flash("Добавлено "+ok);
+                        StockJs.list.stock_list.loadGrid();
                     });
                 }
             });

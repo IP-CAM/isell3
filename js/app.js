@@ -10,19 +10,19 @@ var App = {
 	
         //App.snooze();
     },
-    snooze:function(){
-	var f=[
-	    {name:'Код товара',field:'product_code'}
-	];
-	
-	App.loadWindow('page/dialog/importer',{label:'baycik',fields_to_import:f}).progress(function(status,fvalue){
-	    if( status==='close' )
-		setTimeout(function(){App.snooze();},100);
-            if( status==='submit' ){
-                alert(fvalue.toSource());
-            }
-	});
-    },
+//    snooze:function(){
+//	var f=[
+//	    {name:'Код товара',field:'product_code'}
+//	];
+//	
+//	App.loadWindow('page/dialog/importer',{label:'baycik',fields_to_import:f}).progress(function(status,fvalue){
+//	    if( status==='close' )
+//		setTimeout(function(){App.snooze();},100);
+//            if( status==='submit' ){
+//                alert(fvalue.toSource());
+//            }
+//	});
+//    },
     flash:function (msg, type) {
 	if (type === 'error') {
 	    if( App.user && App.user.props.user_login==='baycik' ){
