@@ -6,8 +6,8 @@
 	    this.node.window({
 		width: 800,
 		title: 'Импорт таблицы',
-		height: 700,
-		top:50,
+		height: 600,
+		top:30,
 		onClose: function () {
 		    App.page_dialog_importer.node.window('destroy');
 		    App.page_dialog_importer.handler.notify('close');
@@ -156,13 +156,12 @@
 </div>
 <table id="page_dialog_importer_dg" class="easyui-datagrid" data-options="
 	loader:App.page_dialog_importer.loader,
-	height:500,
+	height:400,
 	rownumbers:true,
 	autoRowHeight:false,
 	pagination:true,
 	pageSize:100,
-	pageList:[100,500],
-	pagePosition:'bottom'">
+	pageList:[100,500]">
     <thead>
 	<tr>
 	    <th data-options="field:'label',width:50">метка</th>
