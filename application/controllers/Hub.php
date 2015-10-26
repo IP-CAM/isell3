@@ -95,7 +95,8 @@ class HubBase extends CI_Controller{
 		$this->msg("Необходим уровень доступа <b>" . $this->level_names[$allowed_level] . "</b>");
 		$this->kick_out();
 	    } else {
-		$this->response_wrn("Текущий уровень '" . $this->level_names[$this->svar('user_level') * 1] . "'\nНеобходим мин. уровень доступа '" . $this->level_names[$allowed_level] . "'");
+		$this->msg("Необходим мин. уровень доступа '{$this->level_names[$allowed_level]}'");
+		$this->response(0);
 	    }
 	}
     }

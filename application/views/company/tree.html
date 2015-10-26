@@ -32,7 +32,7 @@
 	    }
 	},
 	enableButtons:function( leaf ){
-	    if( leaf ){
+	    if( leaf || this.data.enable_folder_select ){
 		Ctree.node.find('.ok').prop('disabled',false);
 	    }
 	    Ctree.node.find('.folder').prop('disabled',false);
@@ -49,10 +49,12 @@
 	    }
 	},
 	selectTree: function () {
-	    var company=$('#Ctree_tree').tree('getSelected');
-	    if( company.company_id ){
-		Ctree.handler.notify('select', company);
+	    var branch=$('#Ctree_tree').tree('getSelected');
+	    if( branch.company_id ){
+		Ctree.handler.notify('select', branch);
 		Ctree.unselectCombo();
+	    } else {
+		Ctree.handler.notify('selectFolder', branch);
 	    }
 	},
 	unselectTree:function(){
@@ -72,7 +74,7 @@
 	    var parent_id=selected.is_leaf*1?selected.parent_id:selected.branch_id;
 	    var parent_target=parent_id>0?$('#Ctree_tree').tree('find', parent_id).target:null;
 	    var newlabel=(new_branch_type === 'leaf')?prompt("Введите Короткое название новой компании",'Новая компания'):prompt("Введите название новой группы",'Новая группа');
-	    if( newlabel ){
+	    if( newlabel && newlabel.indexOf(',')===-1 ){
 		$.post('Company/companyTreeCreate/'+App.uri(parent_id,newlabel,new_branch_type),function(company_id){
 		    if(new_branch_type === 'leaf' && confirm("Компания '"+newlabel+"' создана.\n\nВвести реквизиты сейчас?\n\n")){
 			Ctree.updateDetails(company_id,parent_target);

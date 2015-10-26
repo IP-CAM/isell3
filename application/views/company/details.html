@@ -2,7 +2,7 @@
     /* global App*/
     Cdet=App.page_company_details={
 	properties:{
-	    title: 'Компания',
+	    title: 'Реквизиты компании',
 	    width: 920,
 	    height: 'auto',
 	    onClose: function(){
@@ -17,7 +17,14 @@
 	    var props=Cdet.properties;
 	    Cdet.data.inline?Cdet.node.panel(props):Cdet.node.window(props);
 	    Cdet.autoselect_label=Cdet.data.autoselect_label;
+	    this.hideIfActive();
 	    Cdet.load(Cdet.data.company_id);
+	},
+	hideIfActive:function(){
+	    if( this.data.is_active ){
+		this.node.find("input[name=company_agreement_num],input[name=company_agreement_date]").attr('type','hidden');
+		this.node.find("#page_company_details_frm_hdn").show();
+	    }
 	},
 	focus:function(){
 	    this.load(Cdet.data.company_id);
@@ -32,7 +39,7 @@
 	    }
 	},
 	setTitle:function(){
-	    this.node.panel('setTitle','Компания - '+Cdet.data.label);
+	    this.node.panel('setTitle','Реквизиты компании '+(Cdet.data.label==='null'?Cdet.data.label:'') );
 	},
 	updateField:function(field,value,title){
 	    $.post('Company/companyUpdate/'+App.uri(Cdet.data.company_id*1,field,value),function(ok){
@@ -70,6 +77,14 @@
     <div class="inp_group" style="width:340px;">
 	<input type="text" name="company_agreement_num" title="Номер договора"/>
 	<input type="text" name="company_agreement_date" title="Дата договора"/>
+	<div id="page_company_details_frm_hdn" style="display: none">
+	    <input type="text" name="company_vat_rate" title="Ставка НДС"/>
+	    <select name="language" title="Язык">
+		<option value="en">English</option>
+		<option value="ua">Українська</option>
+		<option value="ru">Русский</option>
+	    </select>
+	</div>
 	<div class="inp_rule"></div>
 	<input type="text" name="company_bank_account" title="Поточный счет"/>
 	<input type="text" name="company_bank_id" title="Код Банка"/>
