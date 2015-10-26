@@ -2,7 +2,7 @@
 require_once 'Catalog.php';
 class Stock extends Catalog {
     public function import(){
-        $parent_id=$this->request('parent_id','');
+        $parent_id=$this->request('parent_id','int');
         $pcode_col=$this->request('product_code');
         $label=$this->request('label');
 	$where=$label?"AND label='$label'":'';

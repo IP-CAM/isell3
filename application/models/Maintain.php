@@ -75,6 +75,9 @@ class Maintain extends CI_Model {
     }
 
     private function updateUnpack() {
+        if( $this->dirUnpack ){
+            $this->delTree($this->dirUnpack);
+        }
 	$zip = new ZipArchive;
 	if ($zip->open($this->zipPath) === TRUE) {
 	    $zip->extractTo($this->dirUnpack);
@@ -89,9 +92,13 @@ class Maintain extends CI_Model {
 	if( file_exists($this->dirWork)
 	    && file_exists($this->dirUnpack . $this->zipSubFolder)
 	    && file_exists($this->dirUnpack)){
-	    
+            
+            sleep(1);
 	    rename($this->dirBackup, $this->dirBackup.'_old');
+            sleep(1);
 	    rename($this->dirWork, $this->dirBackup);
+            flock($this->dirWork,LOCK_UN);
+            sleep(1);
 	    rename($this->dirUnpack . $this->zipSubFolder, $this->dirWork);
 	    $this->delTree($this->dirUnpack);
 	    $this->delTree($this->dirBackup.'_old');
@@ -118,7 +125,7 @@ class Maintain extends CI_Model {
     }
 
     private function setupConf(){
-	$conf_file=  tempnam(sys_get_temp_dir(),'hah');
+	$conf_file=  tempnam($this->dirWork,'hah');
 	$conf='[client]
 	    user="'.BAY_DB_USER.'"
 	    password="'.BAY_DB_PASS.'"';
@@ -154,6 +161,7 @@ class Maintain extends CI_Model {
 	if( !file_exists ($this->path_to_backup_folder) ){
 	    mkdir($this->path_to_backup_folder);
 	}
+        $output=[];
         $filename=$this->path_to_backup_folder.date('Y-m-d_H-i-s')."-".BAY_DB_NAME.'-ISELL-DB-BACKUP.sql';
         exec("$path_to_mysql/bin/mysqldump --user=".BAY_DB_USER." --password=".BAY_DB_PASS."  --default-character-set=utf8 --single-transaction=TRUE --routines --events  ".BAY_DB_NAME." >".$filename,$output);
         if( count($output) ){
