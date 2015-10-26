@@ -64,13 +64,48 @@ class User extends Catalog {
     public function listFetch(){
 	$user_id = $this->Base->svar('user_id');
         $where = ($this->Base->svar('user_level') < 4) ? "WHERE user_id='$user_id'" : "";
-        $sql = "SELECT
-	    * ,
-	    CONCAT(last_name,' ',first_name,' ',middle_name) AS full_name 
-	    FROM " . BAY_DB_MAIN . ".user_list
+        $sql="SELECT
+		user_id,user_login,user_level,user_sign,user_position,
+		first_name,middle_name,last_name,
+		id_type,id_serial,id_number,id_given_by,id_date,
+		user_assigned_path,
+		CONCAT(last_name,' ',first_name,' ',middle_name) AS full_name 
+	    FROM ".BAY_DB_MAIN.".user_list
 		$where 
 	    ORDER BY user_id<>'$user_id', user_level DESC";
         return $this->get_list($sql);
-
+    }
+    public function save(){
+	$fields=[];
+	$user_id=$this->request('user_id','int');
+	$current_level=$this->Base->svar('user_level');
+	if( $current_level>=1 && $this->Base->svar('user_id')==$user_id ){
+	    $fields['user_login']=$this->request('user_login','^[a-zA-Z_0-9]*$');
+	    $new_pass=$this->request('new_pass','^[a-zA-Z_0-9]*$',false);
+	    if( $new_pass ){
+		$fields['user_pass']=md5($new_pass);
+	    }
+	}
+	if( $current_level>=3 ){
+	    $fields['user_sign']=$this->request('user_sign');
+	    $fields['user_position']=$this->request('user_position');	    
+	    $fields['first_name']=$this->request('first_name');
+	    $fields['middle_name']=$this->request('middle_name');	    
+	    $fields['last_name']=$this->request('last_name');
+	    $fields['id_type']=$this->request('id_type');
+	    $fields['id_serial']=$this->request('id_serial');	    
+	    $fields['id_number']=$this->request('id_number');
+	    $fields['id_given_by']=$this->request('id_given_by');	    
+	    $fields['id_date']=$this->request('id_date');	    
+	}
+	if( $current_level>=4 ){
+	    $fields['user_level']=$this->request('user_level');
+	    $fields['user_assigned_path']=$this->request('user_assigned_path');
+	}
+	if( $user_id===0 ){
+	    return $this->create(BAY_DB_MAIN.".user_list", $fields);
+	} else {
+	    return $this->update(BAY_DB_MAIN.".user_list", $fields,['user_id'=>$user_id]);
+	}
     }
 }

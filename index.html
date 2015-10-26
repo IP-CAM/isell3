@@ -1,7 +1,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-	<title>iSell 3.5</title>
+	<title>iSell 3.6</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<link rel="icon" type="image/png" href="favicon.png" />
 	<link rel="stylesheet" type="text/css" href="js/jquery-easyui-1.4/themes/default/easyui.css"/>
@@ -49,6 +49,9 @@
 			this.loginFormShow();
 		    }
 		},
+		getLevel:function(){
+		    return App.user.props && App.user.props.user_level>0?App.user.props.user_level:0;
+		},
 		signIn: function () {
 		    var user_login=$("#user_login").val();
 		    var user_pass=$("#user_pass").val();
@@ -77,7 +80,7 @@
 		App.user.getData();
 	    };
 	    App.module={
-		legacy:["Companies","Accounts","Stock","Lists","Data","Home"],//,"Pref"
+		legacy:["Companies","Accounts","Stock","Lists","Data","Home"],
 		init:function(){
 		    $(window).bind( 'hashchange', function(e) {
 			App.module.load(location.hash.substring(1));

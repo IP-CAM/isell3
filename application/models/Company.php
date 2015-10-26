@@ -90,6 +90,9 @@ class Company extends Catalog{
 	$this->check($field,'[a-z_]+');
 	$this->check($value);
 	$assigned_path=$this->Base->svar('user_assigned_path');
+	if( $this->Base->acomp('company_id')==$company_id ){
+	    $this->Base->set_level(3);
+	}
 	$sql="UPDATE 
 		companies_list
 	    LEFT JOIN 

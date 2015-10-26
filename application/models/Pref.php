@@ -34,6 +34,11 @@ class Pref extends Catalog {
     public function setPrefs($field,$value) {
 	$this->check($field,'[a-z_]+');
 	$this->check($value,'[^|]+');
+	if( $field==='usd_ratio' ){
+	    $this->Base->set_level(2);
+	} else {
+	    $this->Base->set_level(3);	    
+	}
 	$this->query("REPLACE pref_list SET pref_name='$field',pref_value='$value'");
 	return $this->db->affected_rows()>0?1:0;
     }
