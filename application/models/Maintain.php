@@ -75,9 +75,9 @@ class Maintain extends CI_Model {
     }
 
     private function updateUnpack() {
-        if( $this->dirUnpack ){
-            $this->delTree($this->dirUnpack);
-        }
+        //if( $this->dirUnpack ){
+            //$this->delTree($this->dirUnpack);
+        //}
 	$zip = new ZipArchive;
 	if ($zip->open($this->zipPath) === TRUE) {
 	    $zip->extractTo($this->dirUnpack);
