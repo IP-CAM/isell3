@@ -9,32 +9,6 @@ class Maintain extends CI_Model {
 	}
 	return date ("Y-m-d\TH:i:s\Z", filemtime($this->dirWork));
     }
-//    public function autoUpdate( $step='' ){
-//	if( !$step ){
-//	    header("Refresh: 2; url= download");
-//	    return  'start downloading...';
-//	}
-//	if( $this->appUpdate($step) ){
-//	    if( $step=='download' ){
-//		header("Refresh: 2; url= unpack");
-//		return  'unpacking...';
-//	    }
-//	    if( $step=='unpack' ){
-//		header("Refresh: 2; url= swap");
-//		return  'installing files...';
-//	    }
-//	    if( $step=='swap' ){
-//		header("Refresh: 2; url= install");
-//		return  'finishing installation...';
-//	    }
-//	    if( $step=='install' ){
-//		return  'update succeded!';
-//	    }
-//	}
-//	else{
-//	    return "Failure at step: $step";
-//	}
-//    }
     
     private function setupUpdater(){
 	$this->dirParent=realpath('..');
@@ -75,9 +49,9 @@ class Maintain extends CI_Model {
     }
 
     private function updateUnpack() {
+	$this->delTree($this->dirUnpack . $this->zipSubFolder);
 	$zip = new ZipArchive;
 	if ($zip->open($this->zipPath) === TRUE) {
-            $this->delTree($this->dirUnpack . $this->zipSubFolder);
 	    $zip->extractTo($this->dirUnpack);
 	    $zip->close();
 	    return true;
@@ -85,17 +59,30 @@ class Maintain extends CI_Model {
 	    return false;
 	}
     }
-
+    
+    private function safeRename( $old, $new ){
+	$this->delTree($new);
+	$atempt=10;
+	while( $atempt-- ){
+	    sleep(1);
+	    if( rename($old,$new) ){
+		return true;
+	    }
+	}
+	return false;
+    }
+    
     private function updateSwap() {
 	if( file_exists($this->dirWork)
 	    && file_exists($this->dirUnpack . $this->zipSubFolder)
 	    && file_exists($this->dirUnpack)){
             
-	    rename($this->dirBackup, $this->dirBackup.'_old');
-	    rename($this->dirWork, $this->dirBackup);
-	    rename($this->dirUnpack . $this->zipSubFolder, $this->dirWork);
+	    $this->delTree($this->dirBackup);
+	    $this->safeRename($this->dirWork, $this->dirBackup);
+	    $this->safeRename($this->dirUnpack . $this->zipSubFolder, $this->dirWork);
 	    $this->delTree($this->dirUnpack);
-	    $this->delTree($this->dirBackup.'_old');
+	    //$this->safeRename($this->dirBackup, $this->dirBackup.'_old');
+	    //$this->delTree($this->dirBackup.'_old');
 	    return true;
 	}
 	return false;
