@@ -79,7 +79,7 @@ class User extends Catalog {
 	$fields=[];
 	$user_id=$this->request('user_id','int');
 	$current_level=$this->Base->svar('user_level');
-	if( $current_level>=1 || $this->Base->svar('user_id')==$user_id ){
+	if( $current_level>=1 && $this->Base->svar('user_id')==$user_id || $current_level>=4){
 	    $fields['user_login']=$this->request('user_login','^[a-zA-Z_0-9]*$');
 	    $new_pass=$this->request('new_pass','^[a-zA-Z_0-9]*$',false);
 	    if( $new_pass ){
