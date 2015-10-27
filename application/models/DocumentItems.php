@@ -71,11 +71,15 @@ class DocumentItems extends DocumentCore{
                 REPLACE(FORMAT(invoice_price * @vat_correction * @curr_correction * product_quantity,2),',',' ') AS product_sum,
                 CHK_ENTRY(doc_entry_id) AS row_status,
                 party_label,
-                product_uktzet
+                product_uktzet,
+                self_price,
+		(invoice_price * @vat_correction * @curr_correction)<IF(is_commited,self_price,
+                    (SELECT self_price FROM stock_entries se WHERE se.product_code=de.product_code)
+                ) is_loss
             FROM
                 document_list
 		    JOIN
-		document_entries USING(doc_id)
+		document_entries de USING(doc_id)
 		    JOIN 
 		prod_list pl USING(product_code)
             WHERE
@@ -83,11 +87,16 @@ class DocumentItems extends DocumentCore{
             ORDER BY pl.product_code";
 	return $this->get_list($sql);
     }
-    public function entryAdd( $doc_id, $code, $quantity ){
-	$this->check($doc_id,'int');
+    private function entryAdd( $doc_id, $code, $quantity ){
 	$this->selectDoc($doc_id);
 	$Document2=$this->Base->bridgeLoad('Document');
 	return $Document2->addEntry( $code, $quantity );
+    }
+    public function entryPostAdd(){
+	$doc_id=$this->request('doc_id','int');
+	$code=$this->request('code');
+	$quantity=$this->request('quantity','int');
+	return $this->entryAdd($doc_id, $code, $quantity);
     }
     public function entryUpdate( $doc_id, $doc_entry_id, $name, $value ){
 	$this->check($doc_id,'int');
@@ -161,7 +170,29 @@ class DocumentItems extends DocumentCore{
 	$this->check($doc_id,'int');
 	$this->selectDoc($doc_id);
 	$Document2=$this->Base->bridgeLoad('Document');
+	$Document2->selectDoc($doc_id);
 	$Document2->recalc($proc);
+    }
+    private function duplicateEntries($new_doc_id,$old_doc_id){
+	$old_entries=$this->get_list("SELECT product_code,product_quantity,self_price,party_label,invoice_price FROM document_entries WHERE doc_id='$old_doc_id'");
+	foreach($old_entries as $entry){
+	    $entry->doc_id=$new_doc_id;
+	    $this->create("document_entries",$entry);
+	}
+    }
+    private function duplicateHead($new_doc_id,$old_doc_id){
+	$old_head=$this->get_row("SELECT cstamp,reg_stamp,doc_data,doc_ratio,notcount,inernn,use_vatless_price FROM document_list WHERE doc_id='$old_doc_id'");
+	$this->update("document_list", $old_head, ['doc_id'=>$new_doc_id]);
+    }
+    public function duplicate( $old_doc_id ){
+	$this->check($old_doc_id,'int');
+	$this->Base->set_level(2);
+	$this->selectDoc($old_doc_id);
+	$old_doc_type = $this->doc('doc_type');
+	$new_doc_id=$this->createDocument($old_doc_type);
+	$this->duplicateEntries($new_doc_id, $old_doc_id);
+	$this->duplicateHead($new_doc_id, $old_doc_id);
+	return $new_doc_id;
     }
     private function calcCorrections() {
 	$doc_id=$this->doc('doc_id');

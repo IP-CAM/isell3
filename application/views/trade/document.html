@@ -139,9 +139,11 @@
 		    Doc.entries.reload();
 		    break;
 		case 'passive_company_id':
-		    if( !ok ){
+		    if( ok ){
+			Doc.handler.notify('pcomp_changed',value);
+		    } else {
 			App.flash("Сменить контрагента можно только у не проведенного документа.",'alert');
-			$("#Doc_pci").combobox('reload');
+			$("#Doc_pci").combobox('reload');			
 		    }
 		    break;
 		case 'doc_type':
@@ -262,6 +264,17 @@
 		    
 		}
 	    });
+	},
+	duplicate:function(){
+	    if( confirm("Создать копию этого документа?") ){
+		$.post("DocumentItems/duplicate/"+Doc.head.props.doc_id,function(doc_id){
+		    if( doc_id*1 ){
+			Doc.head.load(doc_id);
+			Doc.handler.notify('created',doc_id);
+			App.flash("Документ скопирован и загружен");
+		    }
+		});
+	    }
 	}
     };
     /////////////////////////////////////////////
@@ -287,7 +300,7 @@
 	add:function( code, qty ){
 	    if( code && qty ){
 		if( Doc.isCreated ){
-		    $.post(App.uri("DocumentItems","entryAdd",Doc.head.props.doc_id,code,qty),function(ok){
+		    $.post("DocumentItems/entryPostAdd/",{doc_id:Doc.head.props.doc_id,code:code,quantity:qty},function(ok){
 			if( ok*1 ){
 			    Doc.entries.reload();
 			}
@@ -332,6 +345,12 @@
 		});		
 	    }
 	},
+	calculate: function (value, row) {
+	    if( row.is_loss*1 ){
+		return '<span style="color:red;font-weight:bold">' + value + '</span>';
+	    }
+	    return value;
+	},
 	onRowContextMenu: function (e, row) {
 	    e.preventDefault();
 	    var selected_rows=$('#Doc_entry_dg').datagrid('getSelected');
@@ -354,7 +373,7 @@
 	initRecalculate:function(){
 	    App.loadWindow('page/trade/document_recalculate').progress(function(state,data){
 		if( state==='submit' ){
-		    $.post("DocumentItems/recalc/"+(data.recalc_proc||0), function ( xhr ) {
+		    $.post("DocumentItems/recalc/"+Doc.head.props.doc_id+'/'+(data.recalc_proc*1||0), function ( xhr ) {
 			Doc.entries.reload();
 		    });
 		}
@@ -464,7 +483,7 @@
     Doc.view={
 	loadTile:function(){
             if( Doc.isCreated ){
-                $.get('DocumentView/listFetch/'+Doc.head.props.doc_id, function (xhr) {
+                $.get('DocumentView/viewListFetch/'+Doc.head.props.doc_id, function (xhr) {
                     Doc.view.views = Doc.view.compile(App.json(xhr));
                     App.renderTpl('Doc_view_tile',{views:Doc.view.views});
                 });
@@ -629,13 +648,14 @@
 		<span class="icon-24 icon-commit" title="Провести документ" id="Doc_commit_btn" onclick="Doc.head.commit();"> </span>
 		<span class="icon-24 icon-uncommit" title="Отменить документ" onclick="Doc.head.uncommit();"> </span>
 		<span style="display: inline-block;width:26px"> </span>
+		<span class="icon-24 icon-change" title="Изменить строку" onclick="Doc.entries.edit();"> </span>
+		<span class="icon-24 icon-delete" title="Удалить строку" onclick="Doc.entries.delete();"> </span>
 		<span class="icon-24 icon-lorry" title="Добавить в распорядок" onclick="Doc.head.addEvent();"> </span>
 		<span class="icon-24 icon-sms" title="Отправить СМС" onclick="Doc.head.sendSms();"> </span>
 		<span class="icon-24 icon-calc" title="Перерасчитать цены" onclick="Doc.entries.initRecalculate();"> </span>
-		<span class="icon-24 icon-change" title="Изменить строку" onclick="Doc.entries.edit();"> </span>
-		<span class="icon-24 icon-delete" title="Удалить строку" onclick="Doc.entries.delete();"> </span>
-		<span class="icon-24 icon-refresh" title="Обновить" onclick="Doc.entries.reload();"> </span>
+		<span class="icon-24 icon-duplicate" title="Копировать" onclick="Doc.head.duplicate();"> </span>
 		<span class="icon-24 icon-utils" title="Дополнительные свойства" onclick="$('#Doc_utils').toggle('slow')"> </span>
+		<span class="icon-24 icon-refresh" title="Обновить" onclick="Doc.entries.reload();"> </span>
 	    </div>
 	</div>
 	<!-- 
@@ -660,7 +680,7 @@
 		    <th data-options="field:'product_name',width:310">Название</th>
 		    <th data-options="field:'product_quantity',width:50,align:'right'">Кол-во</th>
 		    <th data-options="field:'product_unit',width:40,align:'center'">Ед.</th>
-		    <th data-options="field:'product_price',width:55,align:'right'">Цена</th>
+		    <th data-options="field:'product_price',width:55,align:'right',formatter:Doc.entries.calculate">Цена</th>
 		    <th data-options="field:'product_sum',width:65,align:'right'">Сумма</th>
 		    <th data-options="field:'row_status',width:24,align:'center',formatter:App.datagrid.tooltip">!</th>
 		</tr>

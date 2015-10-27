@@ -109,14 +109,4 @@ class AccountsData extends AccountsCore{
 	    return $this->update('acc_tree',['is_favorite'=>$is_favorite],['acc_code'=>$acc_code]);
 	}
     }
-//    public function accountPropsGet( $acc_code ){
-//	$this->check($acc_code);
-//	$sql="SELECT 
-//		*
-//	    FROM
-//		acc_tree
-//	    WHERE 
-//		acc_code='$acc_code'";
-//	return $this->get_row($sql);	
-//    }
 }

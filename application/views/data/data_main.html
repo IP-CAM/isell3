@@ -1,4 +1,7 @@
 <script type="text/javascript">
+    /*global App,DataJs,Connector,baycik,dojo,Acc,data_grid,table_list*/
+    
+    
     //dojo.require('dijit.layout.TabContainer');
     //dojo.require("baycik.datatable.DataTable");
     //dojo.require("dijit.layout.ContentPane");
@@ -10,20 +13,20 @@
     DataJs = {};
     DataJs.init = function () {
 	DataJs.tables.init();
-    }
+    };
     DataJs.destroy = function () {
 	data_grid.destroy();
 	table_list.destroy();
-    }
+    };
     DataJs.tables = {};
     DataJs.tables.init = function () {
 	DataJs.tables.initTableList();
 	DataJs.tables.initDataGrid();
-    }
+    };
     DataJs.tables.destroy = function () {
 	DataJs.tables.data_grid.destroy();
 	DataJs.tables.table_list.destroy();
-    }
+    };
     DataJs.tables.initDataGrid = function () {
 	DataJs.tables.data_grid = new baycik.grid.DataGrid({}, 'data_grid');
 	with (DataJs.tables.data_grid) {
@@ -36,7 +39,7 @@
 		request.rq = 'GridData';
 		Connector.addRequest(request, this, 'setData');
 	    };
-	}
+	};
 	DataJs.tables.data_grid.onDelete = function (request) {
 	    request.rq = 'DeleteGridRow';
 	    Connector.addRequest(request);
@@ -51,12 +54,16 @@
 	    Connector.addRequest(request);
 	};
 	DataJs.tables.data_grid.onUpload = function (request) {
-	    request.rq = 'GridUpload';
-	    request.tpl = 'file_uploader.html';
-	    Acc.showPopup({}, function () {
-		DataJs.tables.data_grid.loadGrid()
-	    }, request);
-	}
+	    var f=DataJs.tables.data_grid._structure.columns;
+            App.loadWindow('page/dialog/importer',{label:'данные',fields_to_import:f}).progress(function(status,fvalue,split){
+                if( status==='submit' ){
+                    $.post("Data/import/"+request.table_name,split,function(ok){
+			App.flash("Добавлено строк "+ok);
+                        DataJs.tables.data_grid.loadGrid();
+                    });
+                }
+            });
+	};
 	DataJs.tables.data_grid.onPrint = function (request) {
 	    request.mod = 'Data';
 	    request.rq = 'GridOut';
@@ -68,8 +75,8 @@
 	    request.out_type = '.xls';
 	    request.limit = 0;
 	    Connector.addRedirection(request);
-	}
-    }
+	};
+    };
     DataJs.tables.initTableList = function () {
 	DataJs.tables.table_list = new baycik.grid.DataGrid({}, 'table_list');
 	with (DataJs.tables.table_list) {

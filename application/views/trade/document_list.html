@@ -1,14 +1,15 @@
 <script type="text/javascript">
-    /* global App,DocList */
+    /* global App,DocList,TradeJs,CtreeInline */
     DocList = App.page_trade_document_list = {
 	show_only_pcomp_docs: false,
 	init: function () {
 	},
 	initAfter: function () {
-            App.handler.progress(function(status){
+            App.handler.progress(function(status,pcomp){
                 if( status==='passiveCompanySelected' ){
                     $('#document_list_dg').datagrid('reload');
                     DocList.doc.load(0);
+		    $("#doc_list_pcompname").text(pcomp.label);
                 }
             });
 	},
@@ -30,6 +31,13 @@
 			    DocList.list.selectedDocId=param;
 			    DocList.list.suppressOnSelect=true;
 			    $('#document_list_dg').datagrid('reload');
+			    break;
+			case 'pcomp_changed':
+			    TradeJs.selectPassiveCompany({company_id:param});
+			    if( CtreeInline ){
+				CtreeInline.unselectTree();
+				CtreeInline.unselectCombo();
+			    }
 			    break;
 		    }
 		});
@@ -115,10 +123,9 @@
 	<td style="vertical-align: top">
 	    <div>
 		<div style="float: left;font-weight: bold;padding-top: 8px;">
-		    <img src="img/table16.png" style="width:16px;height: 16px;"> Список документов
+		    <img src="img/table16.png" style="width:16px;height: 16px;"> Документы <span id="doc_list_pcompname"></span>
 		</div>
 		<div style="float: right">
-		    <span class="icon-24 icon-create" title="Добавить" onclick="DocList.list.createDoc();"> </span>
 		    <span class="icon-24 icon-tablefilter" title="Фильтр таблицы" onclick="DocList.list.toggleFilter()"> </span>
 		    <span class="icon-24 icon-refresh" title="Обновить" onclick="$('#document_list_dg').datagrid('reload')"> </span> 
 		</div>
@@ -128,8 +135,8 @@
 		   idField:'doc_id',
 		   loader:DocList.list.loader,
 		   pagination:true,
-		   pageSize:50,
-		   pageList:[50,100,500,1000],
+		   pageSize:30,
+		   pageList:[30,60,120,600],
 		   singleSelect:true,
 		   remoteFilter:true,
 		   onSelect:DocList.list.onSelect,

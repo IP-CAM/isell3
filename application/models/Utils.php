@@ -61,5 +61,59 @@ class Utils extends CI_Model {
 	$number-=$position * 10 * $range * floor($number / $position / 10 / $range);
 	return floor($number / $position);
     }
+    public function getLocalDate($tstamp) {
+	$time = strtotime($tstamp);
+	$months = array("січня", "лютого", "березня", "квітня", "травня", "червня", "липня", "серпня", "вересня", "жовтня", "листопада", "грудня");
+	return date('d', $time) . ' ' . $months[date('m', $time) - 1] . ' ' . date('Y', $time);
+    }
 
+    private function sendEmail($to,$subject,$body,$file=null){
+        $this->Base->set_level(1);
+        $this->load->library('email');
+        $this->email->initialize([
+            'useragent'=>'iSell',
+            'protocol'=>'smtp',
+            'charset'=>'utf8',
+	    'smtp_timeout'=>10,
+            'smtp_host'=>BAY_SMTP_SERVER,
+            'smtp_user'=>BAY_SMTP_USER,
+            'smtp_pass'=>BAY_SMTP_PASS,
+	    'smtp_port'=>BAY_SMTP_PORT,
+	    'smtp_crypto'=>BAY_SMTP_CRYPTO
+        ]);
+        $this->email->from(BAY_SMTP_SENDER_MAIL,BAY_SMTP_SENDER_NAME);
+        $this->email->to($to);
+        $this->email->cc(BAY_SMTP_SENDER_MAIL);
+        $this->email->subject($subject);
+        $this->email->message($body);
+        if( $file ){
+	    $this->email->attach($file['data'], 'attachment', $file['name'], $file['mime']);
+	}
+        return $this->email->send();
+    }
+    public function postEmail(){
+	$to=$this->input->get_post('to');
+	$subject=$this->input->get_post('subject');
+	$body=$this->input->get_post('body');
+	$doc_view_id=$this->input->get_post('doc_view_id');
+	$fgenerator=$this->input->get_post('fgenerator');
+        $out_type=$this->input->get_post('out_type');
+        $send_file=$this->input->get_post('send_file');
+	$file=$send_file?$this->generateFile($fgenerator,$doc_view_id,$out_type,$subject):null;
+	return $this->sendEmail($to, $subject, $body, $file);
+    }
+    private $mimes=[
+        '.html'=>'text/html',
+        '.xls'=>'application/vnd.ms-excel',
+        '.xlsx'=>'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        '.pdf'=>'application/pdf'
+        ];
+    private function generateFile($fgenerator,$doc_view_id,$out_type='.xlsx',$subject='file'){
+        $file=[];
+        $Generator=$this->Base->load_model($fgenerator);
+        $file['data']=$Generator->viewFileGet($doc_view_id,$out_type);
+        $file['mime']=$this->mimes[$out_type];
+        $file['name']=  str_replace(' ', '_', $subject).$out_type;
+        return $file;
+    }
 }

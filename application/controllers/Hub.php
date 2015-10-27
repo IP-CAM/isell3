@@ -95,7 +95,8 @@ class HubBase extends CI_Controller{
 		$this->msg("Необходим уровень доступа <b>" . $this->level_names[$allowed_level] . "</b>");
 		$this->kick_out();
 	    } else {
-		$this->response_wrn("Текущий уровень '" . $this->level_names[$this->svar('user_level') * 1] . "'\nНеобходим мин. уровень доступа '" . $this->level_names[$allowed_level] . "'");
+		$this->msg("Необходим мин. уровень доступа '{$this->level_names[$allowed_level]}'");
+		$this->response(0);
 	    }
 	}
     }
@@ -109,7 +110,8 @@ class HubBase extends CI_Controller{
     }
 
     public function db_msg(){
-	switch( $this->db->_error_number() ){
+	$error = $this->db->error();
+	switch( $error['code'] ){
 	    case 1451:
 		$this->msg('Элемент ипользуется, поэтому не может быть изменен или удален!');
 		break;
@@ -118,7 +120,7 @@ class HubBase extends CI_Controller{
 		break;
 	    default:
 		header("X-isell-type:error");
-		show_error($this->msg."<br>".$this->db->_error_message()."<pre>".$this->db->last_query()."<pre>", 500);
+		show_error($this->msg." ".$error['message'].$this->db->last_query(), 500);
 		break;
 	}
     }

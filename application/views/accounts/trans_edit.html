@@ -4,7 +4,7 @@
 	parsed:true,
 	init: function () {
 	    this.node.window({
-		title: 'Свойства проводки',
+		title: 'Редактирование проводки',
 		width: 450,
 		height: 300,
 		onClose: function(){
@@ -32,22 +32,34 @@
 	    $("#trans_edit_frm").form('load',Tedit.data);
 	    $("#trans_edit_frm").show();
 	    this.suppressUpdate=false;
-	    
 	    this.calc();
+	    this.initRefHighlight();
+	    this.initSubmit();
+	    this.initSelectOnClick();
+	    this.altCurrencyToggle();
+	},
+	initSubmit:function(){
 	    $("#trans_edit_frm").submit(function(e){
 		e.preventDefault();
-		if( $("#trans_edit_frm").form('validate') ){
-		    Tedit.data=App.collectForm("#trans_edit_frm");
+		Tedit.data=App.collectForm("#trans_edit_frm");
+		if( $("#trans_edit_frm").form('validate') && Tedit.data.amount*1 ){
 		    Tedit.transSubmit();
 		} else {
 		    alert("Проверьте правильность заполнения");
 		}
 	    });
+	},
+	initSelectOnClick:function(){
 	    $('#page_accounts_trans_edit .validatebox-text').on('focus', function() {
 		this.select();
 	    });
-	    $("#Tedit_amount").next().find(".validatebox-text").focus();
-	    this.altCurrencyToggle();
+	    $("#Tedit_amount").next().find(".validatebox-text").focus();	    
+	},
+	initRefHighlight:function(){
+	    if( Tedit.data.trans_ref*1 ){
+		$("#Tedit_amount,#Tedit_ratio,#Tedit_amount_alt").textbox('readonly',true);
+		$("#Tedit_amount").textbox('textbox').css('backgroundColor','#ddd');
+	    }
 	},
 	altCurrencyToggle:function(){
 	    if( Tedit.data.amount_alt*1 || Tedit.data.using_alt_currency*1 ){
@@ -61,8 +73,8 @@
 		return;
 	    }
 	    Tedit.waitingForResponse=true;
-	    var t=Tedit.data;
-	    $.post("AccountsCore/transCreateUpdate/"+App.uri(t.trans_id,t.passive_company_id,t.trans_type,App.toIso(t.trans_date),t.amount||0,t.amount_alt||0),{description:t.description},function(trans_id){
+	    Tedit.data.trans_date=App.toIso(Tedit.data.trans_date);
+	    $.post("AccountsCore/transPostCreateUpdate/",Tedit.data,function(trans_id){
 		Tedit.waitingForResponse=false;
 		if( trans_id*1 ){
 		    Tedit.data.trans_id=trans_id;
@@ -188,6 +200,7 @@
 </script>
 <form id="trans_edit_frm" style="display:none">
     <input type="hidden" name="trans_id">
+    <input type="hidden" name="trans_ref">
     <div style="display: inline-block;width: 205px;float:left;">
 	<input style="width:95px" class="easyui-datebox" name="trans_date" title="Дата" data-options="required:true">
 	<input style="width:95px" class="easyui-textbox" name="amount" id="Tedit_amount" title="Сумма" data-options="

@@ -40,13 +40,13 @@ class User extends Catalog {
 	    'user_login'=>$this->Base->svar('user_login'),
 	    'user_level'=>$this->Base->svar('user_level'),
 	    'user_level_name'=>$this->Base->svar('user_level_name'),
+	    'active_company_id'=>$this->Base->acomp('company_id'),
 	    'active_company_name'=>$this->Base->acomp('company_name'),
 	    'module_list'=>$this->getModuleList()
 	];
     }
     private function getModuleList(){
-	$mods=json_decode(file_get_contents('application/config/modules.json',true));
-	//not very reliable way to check, modules can be loaded anyway by hand
+	$mods=json_decode(file_get_contents('application/config/modules.json',true));//not very reliable way to check, modules can be loaded anyway by hand
 	$alowed=array();
 	foreach( $mods as $mod ){
 	    if( $this->Base->svar('user_level')>=$mod->level && strpos(BAY_ACTIVE_MODULES, "/{$mod->name}/")!==false ){
@@ -60,5 +60,57 @@ class User extends Catalog {
 	$Company->selectActiveCompany($user_data->company_id);
         $this->Base->svar('user_assigned_stat',$user_data->user_assigned_stat);
         $this->Base->svar('user_assigned_path',$user_data->user_assigned_path);
+    }
+    public function listFetch(){
+	$user_id = $this->Base->svar('user_id');
+        $where = ($this->Base->svar('user_level') < 4) ? "WHERE user_id='$user_id'" : "";
+        $sql="SELECT
+		user_id,user_login,user_level,user_sign,user_position,
+		first_name,middle_name,last_name,
+		id_type,id_serial,id_number,id_given_by,id_date,
+		user_assigned_path,
+		CONCAT(last_name,' ',first_name,' ',middle_name) AS full_name 
+	    FROM ".BAY_DB_MAIN.".user_list
+		$where 
+	    ORDER BY user_id<>'$user_id', user_level DESC";
+        return $this->get_list($sql);
+    }
+    public function save(){
+	$fields=[];
+	$user_id=$this->request('user_id','int');
+	$current_level=$this->Base->svar('user_level');
+	if( $current_level>=1 && $this->Base->svar('user_id')==$user_id || $current_level>=4){
+	    $fields['user_login']=$this->request('user_login','^[a-zA-Z_0-9]*$');
+	    $new_pass=$this->request('new_pass','^[a-zA-Z_0-9]*$',false);
+	    if( $new_pass ){
+		$fields['user_pass']=md5($new_pass);
+	    }
+	}
+	if( $current_level>=3 ){
+	    $fields['user_sign']=$this->request('user_sign');
+	    $fields['user_position']=$this->request('user_position');	    
+	    $fields['first_name']=$this->request('first_name');
+	    $fields['middle_name']=$this->request('middle_name');	    
+	    $fields['last_name']=$this->request('last_name');
+	    $fields['id_type']=$this->request('id_type');
+	    $fields['id_serial']=$this->request('id_serial');	    
+	    $fields['id_number']=$this->request('id_number');
+	    $fields['id_given_by']=$this->request('id_given_by');	    
+	    $fields['id_date']=$this->request('id_date');	    
+	}
+	if( $current_level>=4 ){
+	    $fields['user_level']=$this->request('user_level');
+	    $fields['user_assigned_path']=$this->request('user_assigned_path');
+	}
+	if( $user_id===0 ){
+	    return $this->create(BAY_DB_MAIN.".user_list", $fields);
+	} else {
+	    return $this->update(BAY_DB_MAIN.".user_list", $fields,['user_id'=>$user_id]);
+	}
+    }
+    public function remove( $user_id ){
+	$this->Base->set_level(4);
+	$this->check($user_id,'int');
+	return $this->delete(BAY_DB_MAIN.".user_list", ['user_id'=>$user_id]);
     }
 }

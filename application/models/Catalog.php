@@ -4,6 +4,8 @@ class Catalog extends CI_Model {
     public $min_level=1;
     protected function check( &$var, $type=null ){
 	switch( $type ){
+	    case 'raw':
+		break;
 	    case 'int':
 		$var=(int) $var;
 		break;
@@ -16,6 +18,9 @@ class Catalog extends CI_Model {
 	    case 'escape':
 		$var=$this->db->escape($var);
 		break;
+	    case 'string':
+                $var=  addslashes( $var );
+                break;
 	    default:
 		if( $type ){
 		    $matches=[];
@@ -26,20 +31,36 @@ class Catalog extends CI_Model {
 		}
 	}
     }
+    protected function request( $name, $type=null, $default=null ){
+	$value=$this->input->get_post($name);
+	if( isset($value) ){
+	    $this->check($value,$type);
+	    return $value;
+	}
+	return $default;
+    }
     
     ////////////////////////////////////////////////////
     // CORE LIST FUNCTIONS
     ////////////////////////////////////////////////////
+    private function check_error(){
+	$error = $this->db->error();
+	if( $error['code'] ){
+	    $this->Base->db_msg();
+	    return true;
+	}
+        return false;
+    }
     protected function query( $query ){
 	if(is_string($query)){
 	    $query=$this->db->query($query);
 	}
-	if($this->db->_error_number()){
-	    $this->Base->db_msg();
-	    return NULL;
-	}
-	return $query;
+        if( $this->check_error() ){
+            return NULL;
+        }
+        return $query;
     }
+    
     protected function get_list( $query ){
 	$list=array();
 	$result=$this->query($query);
@@ -73,20 +94,28 @@ class Catalog extends CI_Model {
     }
     protected function create($table,$data) {
 	$this->db->insert($table, $data);
-	$this->db->_error_number()?$this->Base->db_msg():'';
+        $this->check_error();
 	return $this->db->insert_id();
     }
     protected function update($table, $data, $key) {
 	$this->db->update($table, $data, $key);
 	$ok=$this->db->affected_rows();
-	$this->db->_error_number()?$this->Base->db_msg():'';
+        $this->check_error();
 	return $ok;
     }
     protected function delete($table, $key) {
 	$this->db->delete($table, $key);
 	$ok=$this->db->affected_rows();
-	$this->db->_error_number()?$this->Base->db_msg():'';
+        $this->check_error();
 	return $ok;
+    }
+    protected function rowUpdate( $table, $data, $key ){
+	return $this->update($table,$data,$key);
+    }
+    protected function rowUpdateField( $table, $key_field, $id, $field, $value ){
+	$key=array($key_field=>$id);
+	$data=array($field=>$value);
+	return $this->update($table,$data,$key);
     }
     ////////////////////////////////////////////////////
     // CORE TREE FUNCTIONS
@@ -190,46 +219,5 @@ class Catalog extends CI_Model {
 	    $having[]="$rule->field LIKE '%$rule->value%'";
 	}
 	return implode(' AND ',$having);
-    }
-    
-    
-    ////////////////////////////////////////////////////
-    // CORE TABLE ROW FUNCTIONS
-    ////////////////////////////////////////////////////    
-    public function rowGet( $table, $key_field, $id ){
-	$key=array($key_field=>$id);
-	return $this->get( $table, $key );
-    }
-//    public function rowCreate( $table, $field, $value ){
-//	$data=array($field=>$value);
-//	return $this->create( $table, $data );
-//    }
-//    
-//    
-//    
-    //bellow is a shame used in  event_list
-    public function rowDelete( $table, $key_field, $id ){
-	$key=array($key_field=>$id);
-	$this->delete($table, $key);
-    }
-    protected function rowUpdate( $table, $data, $key ){
-	return $this->update($table,$data,$key);
-    }
-    public function rowUpdateField( $table, $key_field, $id, $field, $value ){
-	$key=array($key_field=>$id);
-	$data=array($field=>$value);
-	return $this->update($table,$data,$key);
-    }
-    
-    public function rowCreateSet( $table ){
-	$json=$this->input->post('row_data');
-	$data=  json_decode($json);
-	return $this->create( $table, $data );
-    }
-    public function rowUpdateSet( $table, $key_field, $id ){
-	$key=array($key_field=>$id);
-	$json=$this->input->post('row_data');
-	$data=  json_decode($json);
-	return $this->update($table,$data,$key);
     }
 }

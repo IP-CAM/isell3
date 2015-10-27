@@ -28,7 +28,7 @@ class Utils extends Data {
 	try {
 	    require_once 'application/libraries/swift/swift_required.php';
 	    $message = Swift_Message::newInstance()
-		    ->setFrom(array($sender_mail => iconv('windows-1251', 'utf-8', BAY_SMTP_SENDER_NAME)))
+		    ->setFrom(array($sender_mail => BAY_SMTP_SENDER_NAME))
 		    ->setSubject($subject)
 		    ->setTo($recep)
 		    ->setBody($body, 'text/plain', $encoding)
@@ -44,7 +44,9 @@ class Utils extends Data {
 		    ->setUsername(BAY_SMTP_USER)
 		    ->setPassword(BAY_SMTP_PASS)
 		    ->setTimeout(10);
-	    ;
+	    if( defined(BAY_SMTP_CRYPTO) && defined(BAY_SMTP_PORT) ){
+		$transport->setEncryption(BAY_SMTP_CRYPTO)->setPort(BAY_SMTP_PORT);
+	    }
 	    $mailer = Swift_Mailer::newInstance($transport);
 
 	    if (!$mailer->send($message, $failures)) {

@@ -1,5 +1,5 @@
 <?php
-if ($word_header) {
+if ( isset($word_header) ) {
 ?>
 <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
     <head>
@@ -87,7 +87,7 @@ if ($word_header) {
     </head>
 
     <body>
-	<?php if ($show_controls && !$word_header) { ?>
+	<?php if ($show_controls && !isset($word_header) ) { ?>
 	<link rel="stylesheet" type="text/css" href="css/app.css" />
 	<link rel="stylesheet" type="text/css" href="css/main.css" />
 	<style type="text/css">

@@ -5,15 +5,12 @@
         init: function () {
             App.initTabs('trade_main_tabs');
 	    this.ctreeInlineInit();
-	    //this.selectPassiveCompany({company_id:115});
-            //        $("#trade_main_tabs_info").hide();
-            //        $("#trade_main_tabs_content").css('visibility','visible');
 	},
         selectPassiveCompany: function ( company ) {
             if ( company.company_id && company.company_id!==App.pcomp.company_id ) {
                 $.post('Company/selectPassiveCompany/' + company.company_id, function (xhr) {
                     App.pcomp = App.json(xhr);
-                    App.handler.notify('passiveCompanySelected');
+                    App.handler.notify('passiveCompanySelected',App.pcomp);
                 });
             }
         },
@@ -35,7 +32,7 @@
         </td>
         <td style="vertical-align: top;padding: 0px;">
             <div id="trade_main_tabs_info">
-                <h1><<< Выберите клиента для начала работы</h1>
+                <h1 style="text-shadow: 0px 0px 2px #fff;color:#333"><<< <i>Выберите клиента для начала работы</i></h1>
             </div>
             <div id="trade_main_tabs_content" style="visibility: hidden">
                 <div id="trade_main_tabs" class="slim-tab">

@@ -1,4 +1,6 @@
 <script>
+    
+    /*global StockJs, baycik,Connector,App*/
 require([
     "dojo/dom",
     "dijit/registry",
@@ -81,6 +83,9 @@ function(
 			cell.style.push('color:green;');
 		    }
 		}
+		if( cell.field==='self_price' ){
+                    cell.cellData=Number(cell.cellData).toFixed(2);
+		}
 		return cell;
 	    };
 	    startup();
@@ -90,7 +95,9 @@ function(
 	    if( product_code!==null ){
 		StockJs.list.stock_list.request.product_code=product_code;
 		StockJs.list.stock_list.request.rq = 'StockEntryInsert';
-		Connector.addRequest(StockJs.list.stock_list.request);		
+		Connector.addRequest(StockJs.list.stock_list.request,function(){
+                    StockJs.list.stock_list.loadGrid();
+                });		
 	    }
 	};
 	StockJs.list.stock_list.updateProduct= function() {
@@ -102,6 +109,20 @@ function(
 		alert("Выберите товар.");
 	    }
 	};
+        StockJs.list.stock_list.import=function(){
+            var f=[
+                {name:'Код товара',field:'product_code'}
+            ];
+            App.loadWindow('page/dialog/importer',{label:'склад',fields_to_import:f}).progress(function(status,fvalue){
+                if( status==='submit' ){
+                    fvalue.parent_id=StockJs.list.parent_id;
+                    $.post("Stock/import/",fvalue,function(ok){
+			App.flash("Добавлено "+ok);
+                        StockJs.list.stock_list.loadGrid();
+                    });
+                }
+            });
+        };
     };
     StockJs.list.initTree = function() {
 	Connector.addCss('js/dhtmlx/tree/dhtmlxtree.css');

@@ -7,16 +7,35 @@ var App = {
 	App.updaterInit();
         App.chatInit();
 	App.onReady && App.onReady();
+	
+        //App.snooze();
     },
+//    snooze:function(){
+//	var f=[
+//	    {name:'Код товара',field:'product_code'}
+//	];
+//	
+//	App.loadWindow('page/dialog/importer',{label:'baycik',fields_to_import:f}).progress(function(status,fvalue){
+//	    if( status==='close' )
+//		setTimeout(function(){App.snooze();},100);
+//            if( status==='submit' ){
+//                alert(fvalue.toSource());
+//            }
+//	});
+//    },
     flash:function (msg, type) {
 	if (type === 'error') {
-	    $("#appStatus").html(msg);
-	    $("#appStatus").window({
-		title: 'Ошибка',
-		width: 800,
-		height: 300
-	    });
-	    $("#appStatus").window('move', {top: 0});
+	    if( App.user && App.user.props.user_login==='baycik' ){
+		$("#appStatus").html('<pre>'+msg+'</pre>');
+		$("#appStatus").window({
+		    title: 'Ошибка',
+		    width: 800,
+		    height: 300
+		});
+		$("#appStatus").window('move', {top: 0});		
+	    } else {
+		console.log(msg);
+	    }
 	}
 	else if (type === 'alert') {
 	    $.messager.alert('Внимание!', msg, 'error');
@@ -217,16 +236,22 @@ App.setBg = function () {
     App.loadWindow('page/dialog/background_setter');
 };
 App.datagrid = {
-    tooltip: function (value, row) {
+    tooltip: function (value, row, callback) {
 	if( !value ){
 	    return '';
 	}
 	var parts = value.split(' ');
 	var cmd = parts.shift();
-	if (cmd)
-	    return '<img src="img/' + cmd + '.png" title="' + parts.join(' ') + '">';
-	else
+	if (cmd){
+	    var handler='';
+	    if( callback ){
+		handler='onclick="setTimeout(function(){'+callback+'},0)" style="cursor:pointer"';
+	    }
+	    return '<img src="img/' + cmd + '.png" title="' + parts.join(' ') + '" '+handler+'>';
+	}
+	else{
 	    return '';
+	}
     }
 };
 App.renderTpl=function( id, data, mode ){

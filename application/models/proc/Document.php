@@ -387,7 +387,7 @@ class Document extends Data {
 	}
 	$doc_entry_id = mysql_insert_id();
         /*
-         *bugfix getInvoicePrice accepts stripslashed product_code
+         *  bugfix getInvoicePrice accepts stripslashed product_code
          */
 	$invoice_price = $this->getProductInvoicePrice( stripslashes($product_code) );
 	if (!$this->alterEntry('update', $doc_entry_id, $product_quantity, $invoice_price)) {//update not ok

@@ -121,7 +121,7 @@ class DocumentBlank extends DocumentCore {
         }
 	return false;
     }
-    public function delete(){
+    public function blankDelete(){
 	$this->selectDoc($this->Base->svar('selectedBlankId'));
 	$doc_id = $this->doc('doc_id');
 	$this->query("DELETE FROM document_view_list WHERE doc_id=$doc_id");

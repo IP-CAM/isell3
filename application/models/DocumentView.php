@@ -2,7 +2,7 @@
 require_once 'DocumentItems.php';
 class DocumentView extends DocumentItems{
     public $min_level=1;
-    public function listFetch( $doc_id ){
+    public function viewListFetch( $doc_id ){
 	$this->check($doc_id);
 	if( $doc_id ){
 	    $this->selectDoc($doc_id);

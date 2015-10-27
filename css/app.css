@@ -289,6 +289,9 @@ button img{
 .icon-utils{
     background:url('../img/utils.png') no-repeat center center;
 }
+.icon-duplicate{
+    background:url('../img/copy.png') no-repeat center center;
+}
 .icon-settings16{
     background:url('../img/settings.png') no-repeat center center;
 }
@@ -306,6 +309,9 @@ button img{
 }
 .icon-tablefilter {
     background:url('../img/Search.png') no-repeat center center;
+}
+.icon-comp {
+    background:url('../img/gray.png') no-repeat center center;
 }
 .covert{
     visibility: hidden;
