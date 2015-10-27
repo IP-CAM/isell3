@@ -108,4 +108,9 @@ class User extends Catalog {
 	    return $this->update(BAY_DB_MAIN.".user_list", $fields,['user_id'=>$user_id]);
 	}
     }
+    public function remove( $user_id ){
+	$this->Base->set_level(4);
+	$this->check($user_id,'int');
+	return $this->delete(BAY_DB_MAIN.".user_list", ['user_id'=>$user_id]);
+    }
 }

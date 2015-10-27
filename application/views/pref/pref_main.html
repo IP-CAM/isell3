@@ -48,6 +48,17 @@
 	    formatter:function(value){
 		return ["Нет доступа","Ограниченный","Менеджер","Бухгалтер","Администратор"][value];
 	    },
+	    delete:function(){
+		var user=$('#pref_user_dg').datagrid('getSelected');
+		$.post("User/remove/"+user.user_id,function(ok){
+		   if( ok*1 ){
+		       App.flash("Пользователь"+user.user_login+" удален");
+		   } else {
+		       App.flash("Пользователь не удален");
+		   }
+		   $('#pref_user_dg').datagrid('reload');
+		});
+	    },
 	    edit:function(){
 		var user=$('#pref_user_dg').datagrid('getSelected');
 		PrefJs.user.promptEditor(user);
