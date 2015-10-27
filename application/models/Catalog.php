@@ -18,6 +18,9 @@ class Catalog extends CI_Model {
 	    case 'escape':
 		$var=$this->db->escape($var);
 		break;
+	    case 'string':
+                $var=  addslashes( $var );
+                break;
 	    default:
 		if( $type ){
 		    $matches=[];
