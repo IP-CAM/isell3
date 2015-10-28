@@ -60,16 +60,44 @@ class Maintain extends CI_Model {
 	}
     }
     
-    private function safeRename( $old, $new ){
-	$this->delTree($new);
-	$atempt=10;
-	while( $atempt-- ){
-	    sleep(1);
-	    if( rename($old,$new) ){
-		return true;
-	    }
-	}
-	return false;
+//    private function chmodRecursive2($dir) {
+//	if( !file_exists ($dir) ){
+//	    return false;
+//	}
+//	$files = array_diff(scandir($dir), array('.', '..'));
+//	foreach ($files as $file) {
+//	    (is_dir("$dir/$file")) ? $this->chmodRecursive2("$dir/$file") : chmod("$dir/$file",0777);
+//	}
+//	return chmod($dir,0777);
+//    }
+//    
+//    
+//    private function chmodRecursive( $pathname, $filemode ){
+//        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($pathname));
+//        foreach($iterator as $item) {
+//            chmod($item, $filemode);
+//        }
+//    }
+//    public function chfolder(){
+//        $this->chmodRecursive2(realpath('.'), 0777);
+//    }
+//    private function safeRename( $old, $new ){
+//	$this->delTree($new);
+//        $this->chmodRecursive($old, 0777);
+//	$atempt=10;
+//	while( $atempt-- ){
+//	    if( @rename($old,$new) ){
+//		return true;
+//	    }
+//	    sleep(1);
+//	}
+//	return false;
+//    }
+    
+    private function winRename( $old, $new ){
+        $output=[];
+	exec("rename $old $new 2>&1",$output);
+        return implode($output);
     }
     
     private function updateSwap() {
@@ -78,11 +106,9 @@ class Maintain extends CI_Model {
 	    && file_exists($this->dirUnpack)){
             
 	    $this->delTree($this->dirBackup);
-	    $this->safeRename($this->dirWork, $this->dirBackup);
-	    $this->safeRename($this->dirUnpack . $this->zipSubFolder, $this->dirWork);
+	    $this->winRename($this->dirWork, $this->dirBackup);
+	    $this->winRename($this->dirUnpack . $this->zipSubFolder, $this->dirWork);
 	    $this->delTree($this->dirUnpack);
-	    //$this->safeRename($this->dirBackup, $this->dirBackup.'_old');
-	    //$this->delTree($this->dirBackup.'_old');
 	    return true;
 	}
 	return false;
