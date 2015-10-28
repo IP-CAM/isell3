@@ -21,4 +21,13 @@ class Stock extends Catalog {
 	$this->query($sql);
         return $this->db->affected_rows();
     }
-}
+    public function branchFetch() {
+	$parent_id=$this->request('id','int',0);
+	return $this->treeFetch("stock_tree", $parent_id, 'top');
+    }
+    public function stockTreeCreate($parent_id,$label){
+	$this->Base->set_level(2);
+	$this->check($parent_id,'int');
+	$this->check($label);
+	return $this->treeCreate('stock_tree', 'folder', $parent_id, $label);
+    }}

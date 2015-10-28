@@ -19,3 +19,5 @@ CREATE TABLE  IF NOT EXISTS `imported_data` (
   `Q` text,
   PRIMARY KEY (`row_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+ALTER TABLE `stock_tree` 
+ADD COLUMN `path` TEXT NULL AFTER `level`;

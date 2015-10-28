@@ -1,0 +1,24 @@
+<script type="text/javascript">
+    /* global App */
+    Leftovers=App.page_stock_leftovers={
+	init:function(){
+	    this.initTree();
+	},
+	initTree:function(){
+	    App.loadModule('page/stock/tree',{inline:true},'StreeInline',/(Stree|page_stock_tree)([^\w]|_)/g,"StreeInline$2").progress(function(status){
+		console.log( status );
+	    });
+	},
+	focus:function(){
+	    this.load();
+	},
+    };
+</script>
+<table>
+    <tr>
+	<td>
+	    Категории товара
+	    <div id="StreeInline"></div>
+	</td>
+    </tr>
+</table>
