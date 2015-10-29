@@ -5,20 +5,55 @@
 	    this.initTree();
 	},
 	initTree:function(){
-	    App.loadModule('page/stock/tree',{inline:true},'StreeInline',/(Stree|page_stock_tree)([^\w]|_)/g,"StreeInline$2").progress(function(status){
-		console.log( status );
-	    });
+	    App.loadModule('page/stock/tree',{inline:true},'StreeInline',/(Stree|page_stock_tree)([^\w]|_)/g,"StreeInline$2");
 	},
 	focus:function(){
 	    this.load();
 	},
+	list:{
+	    parent_id:0,
+	    loader:function( param, success, error ){
+		$.get("Stock/listFetch/"+App.uri(param.page,param.rows,Leftovers.list.parent_id),function( xhr ){
+		    var resp=App.json(xhr);
+		    success(resp);
+		});
+	    }
+	}
     };
 </script>
 <table>
     <tr>
-	<td>
+	<td style="vertical-align: top">
 	    Категории товара
+	    <hr>
 	    <div id="StreeInline"></div>
+	</td>
+	<td style="vertical-align: top">
+	    <div style="text-align: right;padding-right: 5px;">
+		<span class="icon-24 icon-create" title="Добавить пользователя" onclick="PrefJs.user.create();"> </span>
+		<span class="icon-24 icon-change" title="Изменить пользователя" onclick="PrefJs.user.edit();"> </span>
+		<span class="icon-24 icon-delete" title="Удалить пользователя" onclick="PrefJs.user.delete();"> </span>
+		<span class="icon-24 icon-refresh" title="Обновить" onclick="$('#pref_user_dg').datagrid('reload')"> </span>
+	    </div>
+	    <table class="easyui-datagrid" id="stock_dg" style="width:850px" data-options="
+		    loader:Leftovers.list.loader,
+		    pagination:true,
+		    pageSize:50,
+		    pageList:[50,100,500,1000],
+		    onSelect:function(){$('#stock_dg').datagrid('resize');}">
+		<thead>
+		    <tr>
+			<th data-options="field:'parent_label',width:120">Категория</th>
+			<th data-options="field:'m3',width:50">3м</th>
+			<th data-options="field:'m1',width:50">1м</th>
+			<th data-options="field:'product_wrn_quantity',width:50">Мин</th>
+			<th data-options="field:'product_code',width:100">Код</th>
+			<th data-options="field:'ru',width:325">Название</th>
+			<th data-options="field:'party_label',width:100">Партия</th>
+			<th data-options="field:'self_price',width:50">Учетная ц.</th>
+		    </tr>
+		</thead>
+	    </table>
 	</td>
     </tr>
 </table>

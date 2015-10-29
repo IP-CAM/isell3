@@ -179,7 +179,7 @@
 	    return data;
 	},
 	onSelect:Ctree.click,
-	onBeforeDrop:Ctree.drop,
+	onDrop:Ctree.drop,
 	onDragOver:function(target,source){
 	    return !$(this).tree('isLeaf',target);
 	},
