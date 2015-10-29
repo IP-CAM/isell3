@@ -111,7 +111,7 @@
 	    Поля в файле .csv клиент банка
 	    <textarea name="clientbank_fields" style="height: 230px"></textarea>
 	</div>
-    </form>    
+    </form>
 </div>
 <div id="DetAcomp" style="width:920px;padding: 3px;margin-bottom: 2px"></div>
 <div class="easyui-panel" title="Пользователи и сотрудники" style="width:920px;padding: 3px;margin-bottom: 2px">
@@ -148,6 +148,9 @@
 	    </thead>
 	</table>
     </div>
+</div>
+<div class="easyui-panel" title="Инструменты" style="width:920px;min-height: 200px;padding: 3px;margin-bottom: 2px">
+    <button onclick="App.loadWindow('page/dialog/backup');"><img src="img/database.png" style="width:24px;height:24px"> Запустить менеджер резевного копирования</button>
 </div>
 <style>
     #AcompPrefs b{
