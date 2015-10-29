@@ -81,8 +81,8 @@ class Maintain extends CI_Model {
 	    if( rename($old,$new) ){
 		return true;
 	    } else {
-		$this->xcopy($this->dirWork, $this->dirBackup);
-                $this->delTree($this->dirWork);
+		$this->xcopy($old, $new);
+                $this->delTree($old);
 		return true;
 	    }
 	}
