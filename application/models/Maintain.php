@@ -62,19 +62,19 @@ class Maintain extends CI_Model {
 	}
     }
     
-//    private function safeRename( $old, $new ){
-//	$this->delTree($new);
-//	$atempt=10;
-//	while( $atempt-- ){
-//	    sleep(1);
-//	    if( rename($old,$new) ){
-//		return true;
-//	    }
-//	}
-//	return false;
-//    }
-    
     private function safeRename( $old, $new ){
+	$this->delTree($new);
+	$atempt=10;
+	while( $atempt-- ){
+	    sleep(1);
+	    if( rename($old,$new) ){
+		return true;
+	    }
+	}
+	return false;
+    }
+    
+    private function safeRename2( $old, $new ){
 	error_reporting(E_ERROR | E_WARNING | E_PARSE);
 	if( file_exists($old) ){
 	    $this->delTree($new);
