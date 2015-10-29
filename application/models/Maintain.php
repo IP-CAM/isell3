@@ -17,12 +17,17 @@ class Maintain extends CI_Model {
 	    $this->Base->msg("Work folder contains .git folder. Update may corrupt your work! Workdir is set to -isell3 ");
 	    $this->dirWork = $this->dirParent.'/-isell3';//realpath('.');
 	}
-        preg_match("/\/(\w+).zip/", BAY_UPDATE_URL, $matches);
-        $git_branch_name=$matches[1];
+        $git_branch_name=$this->getGitBranch();
 	$this->dirUnpack=$this->dirParent.'/isell3_update';
 	$this->dirBackup=$this->dirParent.'/isell3_backup';
 	$this->zipPath = $this->dirUnpack.'/isell3_update.zip';
 	$this->zipSubFolder = $this->dirUnpack."/isell3-$git_branch_name/";	
+    }
+    
+    private function getGitBranch(){
+	$matches=[];
+        preg_match("/\/(\w+).zip/", BAY_UPDATE_URL, $matches);
+	return $matches[1];
     }
     
     public function appUpdate($action = 'download') {
@@ -66,50 +71,47 @@ class Maintain extends CI_Model {
 	$this->delTree($new);
 	$atempt=10;
 	while( $atempt-- ){
-	    sleep(1);
 	    if( rename($old,$new) ){
 		return true;
 	    }
+	    sleep(1);
 	}
 	return false;
     }
     
     private function safeRename2( $old, $new ){
-	error_reporting(E_ERROR | E_WARNING | E_PARSE);
+	error_reporting(E_ERROR | E_PARSE);
 	if( file_exists($old) ){
 	    $this->delTree($new);
 	    if( rename($old,$new) ){
 		return true;
 	    } else {
-		if( $this->xcopy($old, $new) ){
-                    $this->delTree($old);
-                }
-                
-		return true;
+		exec("move $old $new",$output,$code);
+		return $code==0;
 	    }
 	}
     }
     
-    private function xcopy($source, $dest, $permissions = 0755){
-        if (is_link($source)) {
-            return symlink(readlink($source), $dest);
-        }
-        if (is_file($source)) {
-            return copy($source, $dest);
-        }
-        if (!is_dir($dest)) {
-            mkdir($dest, $permissions);
-        }
-        $dir = dir($source);
-        while (false !== $entry = $dir->read()) {
-            if ($entry == '.' || $entry == '..') {
-                continue;
-            }
-            $this->xcopy("$source/$entry", "$dest/$entry", $permissions);
-        }
-        $dir->close();
-        return true;
-    }
+//    private function xcopy($source, $dest, $permissions = 0755){
+//        if (is_link($source)) {
+//            return symlink(readlink($source), $dest);
+//        }
+//        if (is_file($source)) {
+//            return copy($source, $dest);
+//        }
+//        if (!is_dir($dest)) {
+//            mkdir($dest, $permissions);
+//        }
+//        $dir = dir($source);
+//        while (false !== $entry = $dir->read()) {
+//            if ($entry == '.' || $entry == '..') {
+//                continue;
+//            }
+//            $this->xcopy("$source/$entry", "$dest/$entry", $permissions);
+//        }
+//        $dir->close();
+//        return true;
+//    }
     
     private function updateSwap() {
 	if( file_exists($this->dirWork) && file_exists($this->zipSubFolder) ){
