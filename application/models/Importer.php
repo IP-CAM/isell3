@@ -27,7 +27,7 @@ class Importer extends Catalog{
 		    $set=['label'=>$label];
 		    foreach ($row->getCellIterator() as $cell) {
 			$value = $cell->getValue();
-			$set[$f[$i++]]=$value;
+			$set[$f[$i++]]=$value==null?"":$value;
 			if( $i>15 ){
 			    break;
 			}
