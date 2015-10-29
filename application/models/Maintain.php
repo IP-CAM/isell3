@@ -16,11 +16,13 @@ class Maintain extends CI_Model {
 	if( file_exists($this->dirWork.'/.git') ){
 	    $this->Base->msg("Work folder contains .git folder. Update may corrupt your work! Workdir is set to -isell3 ");
 	    $this->dirWork = $this->dirParent.'/-isell3';//realpath('.');
-	}	
+	}
+        preg_match("/\/(\w+).zip/", BAY_UPDATE_URL, $matches);
+        $git_branch_name=$matches[1];
 	$this->dirUnpack=$this->dirParent.'/isell3_update';
 	$this->dirBackup=$this->dirParent.'/isell3_backup';
 	$this->zipPath = $this->dirUnpack.'/isell3_update.zip';
-	$this->zipSubFolder = $this->dirUnpack.'/isell3-master/';	
+	$this->zipSubFolder = $this->dirUnpack."/isell3-$git_branch_name/";	
     }
     
     public function appUpdate($action = 'download') {
@@ -83,6 +85,13 @@ class Maintain extends CI_Model {
 		return $code==0;
 	    }
 	}
+    }
+    
+    public function haha(){
+        
+        
+        
+        
     }
     
     private function updateSwap() {
