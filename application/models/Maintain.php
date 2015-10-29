@@ -76,8 +76,6 @@ class Maintain extends CI_Model {
     
     private function safeRename( $old, $new ){
 	error_reporting(E_ERROR | E_WARNING | E_PARSE);
-        
-        $this->chmodFolder($old,0777);
 	if( file_exists($old) ){
 	    $this->delTree($new);
 	    if( rename($old,$new) ){
