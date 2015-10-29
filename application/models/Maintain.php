@@ -76,22 +76,39 @@ class Maintain extends CI_Model {
     
     private function safeRename( $old, $new ){
 	error_reporting(E_ERROR | E_WARNING | E_PARSE);
+        
+        $this->chmodFolder($old,0777);
 	if( file_exists($old) ){
 	    $this->delTree($new);
 	    if( rename($old,$new) ){
 		return true;
 	    } else {
-		exec("move $old $new",$output,$code);
-		return $code==0;
+		$this->xcopy($this->dirWork, $this->dirBackup);
+                $this->delTree($this->dirWork);
+		return true;
 	    }
 	}
     }
     
-    public function haha(){
-        
-        
-        
-        
+    private function xcopy($source, $dest, $permissions = 0755){
+        if (is_link($source)) {
+            return symlink(readlink($source), $dest);
+        }
+        if (is_file($source)) {
+            return copy($source, $dest);
+        }
+        if (!is_dir($dest)) {
+            mkdir($dest, $permissions);
+        }
+        $dir = dir($source);
+        while (false !== $entry = $dir->read()) {
+            if ($entry == '.' || $entry == '..') {
+                continue;
+            }
+            $this->xcopy("$source/$entry", "$dest/$entry", $permissions);
+        }
+        $dir->close();
+        return true;
     }
     
     private function updateSwap() {
