@@ -68,12 +68,20 @@ class Maintain extends CI_Model {
     }
     
     private function safeRename( $old, $new ){
+	error_reporting(E_ERROR | E_PARSE);
 	$this->delTree($new);
 	$atempt=10;
 	while( $atempt-- ){
-	    if( rename($old,$new) ){
-		return true;
-	    }
+            if( rename($old,$new) ){
+                return true;
+            }
+            $output=[];$code=0;
+            exec("move $old $new 2>&1",$output,$code);
+            if( $code==0 ){
+                return true;
+            } else {
+                $this->Base->msg(implode($output));
+            }
 	    sleep(1);
 	}
 	return false;
@@ -86,7 +94,7 @@ class Maintain extends CI_Model {
 	    if( rename($old,$new) ){
 		return true;
 	    } else {
-		exec("move $old $new",$output,$code);
+		exec("move $old $new  2>&1",$output,$code);
 		return $code==0;
 	    }
 	}
