@@ -67,10 +67,8 @@ class Maintain extends CI_Model {
 	}
     }
     
-    private function tryRename($old, $new){
-    }
-
     private function safeRename( $old, $new ){
+	error_reporting(E_ERROR | E_PARSE);
 	$this->delTree($new);
 	$atempt=10;
 	while( $atempt-- ){
