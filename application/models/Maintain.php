@@ -67,13 +67,21 @@ class Maintain extends CI_Model {
 	}
     }
     
+    private function tryRename($old, $new){
+    }
+
     private function safeRename( $old, $new ){
 	$this->delTree($new);
 	$atempt=10;
 	while( $atempt-- ){
-	    if( rename($old,$new) ){
-		return true;
-	    }
+            if( rename($old,$new) ){
+                return true;
+            }
+            $output=[];$code=0;
+            exec("move $old $new",$output,$code);
+            if( $code==0 ){
+                return true;
+            }
 	    sleep(1);
 	}
 	return false;
