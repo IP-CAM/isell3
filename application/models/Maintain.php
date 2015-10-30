@@ -16,11 +16,18 @@ class Maintain extends CI_Model {
 	if( file_exists($this->dirWork.'/.git') ){
 	    $this->Base->msg("Work folder contains .git folder. Update may corrupt your work! Workdir is set to -isell3 ");
 	    $this->dirWork = $this->dirParent.'/-isell3';//realpath('.');
-	}	
+	}
+        $git_branch_name=$this->getGitBranch();
 	$this->dirUnpack=$this->dirParent.'/isell3_update';
 	$this->dirBackup=$this->dirParent.'/isell3_backup';
 	$this->zipPath = $this->dirUnpack.'/isell3_update.zip';
-	$this->zipSubFolder = '/isell3-master/';	
+	$this->zipSubFolder = $this->dirUnpack."/isell3-$git_branch_name/";	
+    }
+    
+    private function getGitBranch(){
+	$matches=[];
+        preg_match("/\/(\w+).zip/", BAY_UPDATE_URL, $matches);
+	return $matches[1];
     }
     
     public function appUpdate($action = 'download') {
@@ -49,7 +56,7 @@ class Maintain extends CI_Model {
     }
 
     private function updateUnpack() {
-	$this->delTree($this->dirUnpack . $this->zipSubFolder);
+	$this->delTree($this->zipSubFolder);
 	$zip = new ZipArchive;
 	if ($zip->open($this->zipPath) === TRUE) {
 	    $zip->extractTo($this->dirUnpack);
@@ -64,26 +71,53 @@ class Maintain extends CI_Model {
 	$this->delTree($new);
 	$atempt=10;
 	while( $atempt-- ){
-	    sleep(1);
 	    if( rename($old,$new) ){
 		return true;
 	    }
+	    sleep(1);
 	}
 	return false;
     }
     
+    private function safeRename2( $old, $new ){
+	error_reporting(E_ERROR | E_PARSE);
+	if( file_exists($old) ){
+	    $this->delTree($new);
+	    if( rename($old,$new) ){
+		return true;
+	    } else {
+		exec("move $old $new",$output,$code);
+		return $code==0;
+	    }
+	}
+    }
+    
+//    private function xcopy($source, $dest, $permissions = 0755){
+//        if (is_link($source)) {
+//            return symlink(readlink($source), $dest);
+//        }
+//        if (is_file($source)) {
+//            return copy($source, $dest);
+//        }
+//        if (!is_dir($dest)) {
+//            mkdir($dest, $permissions);
+//        }
+//        $dir = dir($source);
+//        while (false !== $entry = $dir->read()) {
+//            if ($entry == '.' || $entry == '..') {
+//                continue;
+//            }
+//            $this->xcopy("$source/$entry", "$dest/$entry", $permissions);
+//        }
+//        $dir->close();
+//        return true;
+//    }
+    
     private function updateSwap() {
-	if( file_exists($this->dirWork)
-	    && file_exists($this->dirUnpack . $this->zipSubFolder)
-	    && file_exists($this->dirUnpack)){
-            
-	    $this->delTree($this->dirBackup);
-	    $this->safeRename($this->dirWork, $this->dirBackup);
-	    $this->safeRename($this->dirUnpack . $this->zipSubFolder, $this->dirWork);
-	    $this->delTree($this->dirUnpack);
-	    //$this->safeRename($this->dirBackup, $this->dirBackup.'_old');
-	    //$this->delTree($this->dirBackup.'_old');
-	    return true;
+	if( file_exists($this->dirWork) && file_exists($this->zipSubFolder) ){
+            return  $this->safeRename($this->dirWork, $this->dirBackup) && 
+		    $this->safeRename($this->zipSubFolder, $this->dirWork) &&
+		    $this->delTree($this->dirUnpack);
 	}
 	return false;
     }
@@ -119,6 +153,7 @@ class Maintain extends CI_Model {
 	$conf_file=$this->setupConf();
         $path_to_mysql=$this->db->query("SHOW VARIABLES LIKE 'basedir'")->row()->Value;
 	exec("$path_to_mysql/bin/mysql --defaults-file=$conf_file ".BAY_DB_NAME." <".$file." 2>&1",$output);
+	unlink($conf_file);
 	if( count($output) ){
 	    file_put_contents($this->path_to_backup_folder.date('Y-m-d_H-i-s').'-IMPORT.log', implode( "\n", $output ));
 	    return false;
