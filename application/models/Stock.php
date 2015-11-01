@@ -55,23 +55,31 @@ class Stock extends Catalog {
 	if( $offset<0 ){
 	    $offset=0;
 	}
+	$having=$this->decodeFilterRules();
 	$where='';
 	if( $parent_id ){
-	    $where="WHERE se.parent_id='$parent_id'";
+	    $branch_ids=$this->treeGetSub('stock_tree',$parent_id);
+	    $where="WHERE se.parent_id IN (".implode(',',$branch_ids).")";
 	}
 	$sql="SELECT
 		label parent_label,
-		45 m3,
-		56 m1,
-		ru,
+		SUM(IF(TO_DAYS(NOW()) - TO_DAYS(dl.cstamp) <= 90,de.product_quantity,0)) m3,
+		SUM(IF(TO_DAYS(NOW()) - TO_DAYS(dl.cstamp) <= 30,de.product_quantity,0)) m1,
+		pl.*,
 		se.*
 	    FROM
 		stock_entries se
 		    JOIN
-		prod_list USING(product_code)
+		prod_list pl USING(product_code)
 		    LEFT JOIN
 		stock_tree ON se.parent_id=branch_id
+		    LEFT JOIN
+		document_entries de USING(product_code)
+		    LEFT JOIN
+		document_list dl ON de.doc_id=dl.doc_id AND dl.is_commited=1 AND dl.doc_type=1
 	    $where
+	    GROUP BY se.product_code
+	    HAVING $having
 	    LIMIT $rows OFFSET $offset";
 	$result_rows=$this->get_list($sql);
 	$total_estimate=$offset+(count($result_rows)==$rows?$rows+1:count($result_rows));

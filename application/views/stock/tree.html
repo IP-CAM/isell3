@@ -44,6 +44,10 @@
 	unselectTree:function(){
 	    this.node.find('.tree-node-selected').removeClass('tree-node-selected');
 	},
+	reset:function(){
+	    this.unselectTree();
+	    this.selectTree();
+	},
 	create:function( new_branch_type ){
 	    var selected=$('#Stree_tree').tree('getSelected');
 	    var parent_id=selected.is_leaf*1?selected.parent_id:selected.branch_id;
@@ -112,6 +116,7 @@
     };
 </script>
 <div style="overflow: auto">
+    <button class="tiny_button" onclick="Stree.reset()" style="width:100%" title="Сбросить выделение">Все категории</button>
     <ul class="easyui-tree" id="Stree_tree" data-options="
 	url:'Stock/branchFetch/',
 	method:'get',

@@ -3,20 +3,83 @@
     Leftovers=App.page_stock_leftovers={
 	init:function(){
 	    this.initTree();
+	    Leftovers.list.toggleFilter();
 	},
 	initTree:function(){
-	    App.loadModule('page/stock/tree',{inline:true},'StreeInline',/(Stree|page_stock_tree)([^\w]|_)/g,"StreeInline$2");
+	    App.loadModule('page/stock/tree',{inline:true,clickselect:true},'StreeInline',/(Stree|page_stock_tree)([^\w]|_)/g,"StreeInline$2").progress(function(status,branch){
+		if( status==='select' ){
+		    Leftovers.list.loadParent(branch?branch.branch_id:0);
+		    $("#stock_cat_name").html(branch?branch.label:'Все');
+		}
+	    });
 	},
 	focus:function(){
 	    this.load();
 	},
 	list:{
 	    parent_id:0,
+	    filterRules:{},
 	    loader:function( param, success, error ){
-		$.get("Stock/listFetch/"+App.uri(param.page,param.rows,Leftovers.list.parent_id),function( xhr ){
+		Leftovers.list.filterRules=param.filterRules;
+		$.get("Stock/listFetch/"+App.uri(param.page,param.rows,Leftovers.list.parent_id), {filterRules: Leftovers.list.filterRules},function( xhr ){
 		    var resp=App.json(xhr);
 		    success(resp);
 		});
+	    },
+	    reload:function(){
+		$("#stock_dg").datagrid('reload');
+	    },
+	    out:function( out_type ){
+		var params={
+		    parent_id:Leftovers.list.parent_id,
+		    filterRules:Leftovers.list.filterRules,
+		    out_type:out_type
+		};
+		var url='Stock/stockViewGet/?'+$.param( params );
+		if( out_type==='print' ){
+		    window.open(url,'print_tab');
+		} else {
+		    location.href=url;
+		}
+	    },
+	    loadParent:function( parent_id ){
+		this.parent_id=parent_id;
+		this.reload();
+	    },
+	    toggleFilter: function () {
+		if (this.filterEnabled) {
+		    $('#stock_dg').datagrid('disableFilter');
+		    this.filterEnabled = false;
+		}
+		else {
+		    $('#stock_dg').datagrid('enableFilter');
+		    this.filterEnabled = true;
+		}
+	    },
+	    calc:{
+		clear:function(value){
+		    return value*1||'';
+		},
+		self:function(value,row){
+		    return Number(value).toFixed(2);
+		},
+		round:function(value){
+		    return Number(value).toFixed(5);
+		},
+		left:function(value,row){
+		    if( row.product_quantity*2<row.product_wrn_quantity ){
+			return 'background-color:#f9f';
+		    } 
+		    if( row.product_quantity<row.product_wrn_quantity ){
+			return 'background-color:#fcf';
+		    } 
+		},
+		m1:function(value,row){
+		    if( row.m1*1<row.m3*1 ){
+			return 'color:red';
+		    }
+		    return 'color:green';
+		}
 	    }
 	}
     };
@@ -29,28 +92,45 @@
 	    <div id="StreeInline"></div>
 	</td>
 	<td style="vertical-align: top">
-	    <div style="text-align: right;padding-right: 5px;">
-		<span class="icon-24 icon-create" title="Добавить пользователя" onclick="PrefJs.user.create();"> </span>
-		<span class="icon-24 icon-change" title="Изменить пользователя" onclick="PrefJs.user.edit();"> </span>
-		<span class="icon-24 icon-delete" title="Удалить пользователя" onclick="PrefJs.user.delete();"> </span>
-		<span class="icon-24 icon-refresh" title="Обновить" onclick="$('#pref_user_dg').datagrid('reload')"> </span>
+	    <div style="float: left;font-weight: bold;padding-top: 8px;">
+		<img src="img/table16.png" style="width:16px;height: 16px;"> Остатки в категории: "<span id="stock_cat_name">Все</span>"
 	    </div>
-	    <table class="easyui-datagrid" id="stock_dg" style="width:850px" data-options="
+	    <div style="text-align: right;padding-right: 5px;">
+		<span class="icon-24 icon-create" title="Добавить пользователя" onclick="Leftovers.list.create();"> </span>
+		<span class="icon-24 icon-change" title="Изменить пользователя" onclick="Leftovers.list.edit();"> </span>
+		<span class="icon-24 icon-delete" title="Удалить пользователя" onclick="Leftovers.list.delete();"> </span>
+		<span class="icon-24 icon-tablefilter" title="Фильтр таблицы" onclick="Leftovers.list.toggleFilter()"> </span>
+		<span class="icon-24 icon-refresh" title="Обновить" onclick="Leftovers.list.reload()"> </span>
+		<span class="icon-24 icon-print" title="Обновить" onclick="Leftovers.list.out('print')"> </span>
+	    </div>
+	    <table class="easyui-datagrid" id="stock_dg" style="width:750px" data-options="
 		    loader:Leftovers.list.loader,
 		    pagination:true,
-		    pageSize:50,
-		    pageList:[50,100,500,1000],
+		    pageSize:30,
+		    pageList:[30,60,120,600],
+		    remoteFilter:true,
 		    onSelect:function(){$('#stock_dg').datagrid('resize');}">
-		<thead>
+		<thead data-options="frozen:true">
 		    <tr>
 			<th data-options="field:'parent_label',width:120">Категория</th>
-			<th data-options="field:'m3',width:50">3м</th>
-			<th data-options="field:'m1',width:50">1м</th>
-			<th data-options="field:'product_wrn_quantity',width:50">Мин</th>
-			<th data-options="field:'product_code',width:100">Код</th>
-			<th data-options="field:'ru',width:325">Название</th>
+			<th data-options="field:'product_code',width:80">Код</th>
+		    </tr>
+		</thead>
+		<thead>
+		    <tr>
+			<th data-options="field:'ru',width:330">Название</th>
+			<th data-options="field:'product_quantity',width:70,align:'right',formatter:Leftovers.list.calc.clear,styler:Leftovers.list.calc.left">Остаток</th>
+			<th data-options="field:'product_wrn_quantity',width:50,align:'right',formatter:Leftovers.list.calc.clear">Мин</th>
+			<th data-options="field:'m1',width:50,align:'right',formatter:Leftovers.list.calc.clear,styler:Leftovers.list.calc.m1">1м</th>
+			<th data-options="field:'m3',width:50,align:'right',formatter:Leftovers.list.calc.clear">3м</th>
+			<th data-options="field:'self_price',width:50,align:'right',formatter:Leftovers.list.calc.self">Учетная ц.</th>
+			<th data-options="field:'product_spack',width:50,align:'right'">М. упак</th>
+			<th data-options="field:'product_bpack',width:50,align:'right',">Б. упак</th>
+			<th data-options="field:'product_weight',width:70,align:'right',formatter:Leftovers.list.calc.round">Вес кг</th>
+			<th data-options="field:'product_volume',width:70,align:'right',formatter:Leftovers.list.calc.round">Объем м3</th>
 			<th data-options="field:'party_label',width:100">Партия</th>
-			<th data-options="field:'self_price',width:50">Учетная ц.</th>
+			<th data-options="field:'product_uktzet',width:100,align:'right'">Таможенный код</th>
+			<th data-options="field:'barcode',width:100,align:'right'">Штрихкод</th>
 		    </tr>
 		</thead>
 	    </table>
