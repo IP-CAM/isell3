@@ -47,7 +47,7 @@ class Stock extends Catalog {
 	$deleted=$this->db->affected_rows();
 	return $deleted;
     }
-    public function listFetch( $page=1, $rows=30, $parent_id=0 ){
+    public function listFetch( $page=1, $rows=30, $parent_id=0, $having=null ){
 	$this->check($page,'int');
 	$this->check($rows,'int');
 	$this->check($parent_id,'int');
@@ -55,7 +55,9 @@ class Stock extends Catalog {
 	if( $offset<0 ){
 	    $offset=0;
 	}
-	$having=$this->decodeFilterRules();
+	if( !$having ){
+	    $having=$this->decodeFilterRules();
+	}
 	$where='';
 	if( $parent_id ){
 	    $branch_ids=$this->treeGetSub('stock_tree',$parent_id);
@@ -85,5 +87,28 @@ class Stock extends Catalog {
 	$total_estimate=$offset+(count($result_rows)==$rows?$rows+1:count($result_rows));
 	return array('rows'=>$result_rows,'total'=>$total_estimate);
     }
-    
+    public function labelFetch(){
+	$q=$this->request('q','string',0);
+	return $this->get_list("SELECT branch_id,label FROM stock_tree WHERE label LIKE '%$q%'");
+    }
+    public function productSave(){
+	$stock_entry_id=$this->request('stock_entry_id','int');
+	$product=[
+	    'product_code'=>$this->request('product_code','[\w\d,.-\s]+'),
+	    'parent_id'=>$this->request('parent_id','int'),
+	    'product_unit'=>$this->request('product_unit'),
+	    'product_wrn_quantity'=>$this->request('product_wrn_quantity','int'),
+	    'ru'=>$this->request('ru'),
+	    'ua'=>$this->request('ua'),
+	    'en'=>$this->request('en'),
+	    'product_spack'=>$this->request('product_spack'),
+	    'product_bpack'=>$this->request('product_bpack'),
+	    'product_weight'=>$this->request('product_weight'),
+	    'product_volume'=>$this->request('product_volume'),
+	    'product_uktzet'=>$this->request('product_uktzet'),
+	    'barcode'=>$this->request('barcode'),
+	    'party_label'=>$this->request('party_label')
+	];
+	return $this->update('stock_entries JOIN prod_list USING(product_code)', $product, ['stock_entry_id'=>$stock_entry_id]);
+    }
 }

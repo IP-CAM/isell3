@@ -19,8 +19,10 @@
 	list:{
 	    parent_id:0,
 	    filterRules:{},
+	    currPage:1,
 	    loader:function( param, success, error ){
 		Leftovers.list.filterRules=param.filterRules;
+		Leftovers.list.currPage=param.page;
 		$.get("Stock/listFetch/"+App.uri(param.page,param.rows,Leftovers.list.parent_id), {filterRules: Leftovers.list.filterRules},function( xhr ){
 		    var resp=App.json(xhr);
 		    success(resp);
@@ -31,15 +33,34 @@
 	    },
 	    out:function( out_type ){
 		var params={
+		    page:Leftovers.list.currPage,
 		    parent_id:Leftovers.list.parent_id,
 		    filterRules:Leftovers.list.filterRules,
 		    out_type:out_type
 		};
-		var url='Stock/stockViewGet/?'+$.param( params );
+		var url='StockView/stockViewGet/?'+$.param( params );
 		if( out_type==='print' ){
 		    window.open(url,'print_tab');
 		} else {
 		    location.href=url;
+		}
+	    },
+	    edit:function(index,field,value){
+		var row=$("#stock_dg").datagrid('getSelected');
+		if( row ){
+		    row.focus=field;
+		    App.loadWindow('page/stock/product_card',row).progress(function(status,fvalue){
+			if( status==='submit' ){
+			    $.post('Stock/productSave/',fvalue,function(ok){
+				if( ok*1 ){
+				    App.flash("Свойства товара сохранены");
+				    Leftovers.list.reload();
+				} else {
+				    App.flash("Свойства товара не изменились");
+				}
+			    });
+			}
+		    });
 		}
 	    },
 	    loadParent:function( parent_id ){
@@ -101,15 +122,18 @@
 		<span class="icon-24 icon-delete" title="Удалить пользователя" onclick="Leftovers.list.delete();"> </span>
 		<span class="icon-24 icon-tablefilter" title="Фильтр таблицы" onclick="Leftovers.list.toggleFilter()"> </span>
 		<span class="icon-24 icon-refresh" title="Обновить" onclick="Leftovers.list.reload()"> </span>
+		<span class="icon-24" style="background-image: url(img/file_download.png);background-repeat: no-repeat" title="Скачать таблицу" onclick="Leftovers.list.out('.xlsx');"> </span>
 		<span class="icon-24 icon-print" title="Обновить" onclick="Leftovers.list.out('print')"> </span>
 	    </div>
-	    <table class="easyui-datagrid" id="stock_dg" style="width:750px" data-options="
+	    <table class="easyui-datagrid" id="stock_dg" style="width:780px" data-options="
 		    loader:Leftovers.list.loader,
 		    pagination:true,
 		    pageSize:30,
 		    pageList:[30,60,120,600],
+		    singleSelect:true,
 		    remoteFilter:true,
-		    onSelect:function(){$('#stock_dg').datagrid('resize');}">
+		    onSelect:function(){$('#stock_dg').datagrid('resize');},
+		    onDblClickCell:Leftovers.list.edit">
 		<thead data-options="frozen:true">
 		    <tr>
 			<th data-options="field:'parent_label',width:120">Категория</th>
@@ -120,6 +144,7 @@
 		    <tr>
 			<th data-options="field:'ru',width:330">Название</th>
 			<th data-options="field:'product_quantity',width:70,align:'right',formatter:Leftovers.list.calc.clear,styler:Leftovers.list.calc.left">Остаток</th>
+			<th data-options="field:'product_unit',width:30,align:'left'">Ед</th>
 			<th data-options="field:'product_wrn_quantity',width:50,align:'right',formatter:Leftovers.list.calc.clear">Мин</th>
 			<th data-options="field:'m1',width:50,align:'right',formatter:Leftovers.list.calc.clear,styler:Leftovers.list.calc.m1">1м</th>
 			<th data-options="field:'m3',width:50,align:'right',formatter:Leftovers.list.calc.clear">3м</th>
