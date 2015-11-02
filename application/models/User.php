@@ -19,6 +19,8 @@ class User extends Catalog {
 	    $this->Base->svar('user_level', $user_data->user_level);
 	    $this->Base->svar('user_level_name', $this->Base->level_names[$user_data->user_level]);
 	    $this->Base->svar('user_login', $user_data->user_login);
+	    $this->Base->svar('user_sign', $user_data->user_sign);
+	    $this->Base->svar('user_position', $user_data->user_position);
 	    if ( method_exists($this, 'initLoggedUser') ) {
 		$this->initLoggedUser($user_data);
 	    }
