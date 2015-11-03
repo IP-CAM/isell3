@@ -34,8 +34,12 @@
 	submit:function(e){
 	    e.preventDefault();
 	    this.data=App.collectForm("#page_stock_product_card_frm");
-	    this.handler.notify('submit',this.data);
-	    App.page_stock_product_card.node.window('close');
+	    if( this.data.product_code.match(/^[\w\. ,-]+$/) ){
+		this.handler.notify('submit',this.data);
+		App.page_stock_product_card.node.window('close');
+	    } else {
+		alert("Код товара не должен содержать сивол: "+this.data.product_code.match(/[^\w\. ,-]/g).join(""));
+	    }
 	}
     };
 </script>
@@ -57,10 +61,10 @@
 			 }
 		     }]
 		">
-	<input name="product_code" title="Код">
-	<input name="product_unit" title="Единица">
+	<input name="product_code" title="Код" required="required">
+	<input name="product_unit" title="Единица" required="required">
 	<input name="product_wrn_quantity" title="Мин. кол-во">
-	<input name="ru" title="Название Рус" style="width:300px">
+	<input name="ru" title="Название Рус" style="width:300px" required="required">
 	<input name="ua" title="Название Укр" style="width:300px">
 	<input name="en" title="Название Англ" style="width:300px">
     </div>

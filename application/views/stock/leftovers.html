@@ -8,8 +8,7 @@
 	initTree:function(){
 	    App.loadModule('page/stock/tree',{inline:true,clickselect:true},'StreeInline',/(Stree|page_stock_tree)([^\w]|_)/g,"StreeInline$2").progress(function(status,branch){
 		if( status==='select' ){
-		    Leftovers.list.loadParent(branch?branch.branch_id:0);
-		    $("#stock_cat_name").html(branch?branch.label:'Все');
+		    Leftovers.list.loadParent(branch?branch.branch_id:0,branch?branch.label:'Все');
 		}
 	    });
 	},
@@ -49,22 +48,35 @@
 		var row=$("#stock_dg").datagrid('getSelected');
 		if( row ){
 		    row.focus=field;
-		    App.loadWindow('page/stock/product_card',row).progress(function(status,fvalue){
-			if( status==='submit' ){
-			    $.post('Stock/productSave/',fvalue,function(ok){
-				if( ok*1 ){
-				    App.flash("Свойства товара сохранены");
-				    Leftovers.list.reload();
-				} else {
-				    App.flash("Свойства товара не изменились");
-				}
-			    });
-			}
-		    });
+		    Leftovers.list.showProductCard(row);
 		}
 	    },
-	    loadParent:function( parent_id ){
+	    create:function(){
+		var fvalue={
+		    parent_id:Leftovers.list.parent_id,
+		    parent_label:Leftovers.list.parent_label,
+		    product_code:''
+		};
+		Leftovers.list.showProductCard(fvalue);
+	    },
+	    showProductCard:function( fvalue ){
+		App.loadWindow('page/stock/product_card',fvalue).progress(function(status,fvalue){
+		    if( status==='submit' ){
+			$.post('Stock/productSave/',fvalue,function(ok){
+			    if( ok*1 ){
+				App.flash("Свойства товара сохранены");
+				Leftovers.list.reload();
+			    } else {
+				App.flash("Свойства товара не изменились");
+			    }
+			});
+		    }
+		});
+	    },
+	    loadParent:function( parent_id,label ){
 		this.parent_id=parent_id;
+		this.parent_label=label;
+		$("#stock_cat_name").html(this.parent_label);
 		this.reload();
 	    },
 	    toggleFilter: function () {

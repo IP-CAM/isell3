@@ -68,7 +68,10 @@ class Stock extends Catalog {
 		SUM(IF(TO_DAYS(NOW()) - TO_DAYS(dl.cstamp) <= 90,de.product_quantity,0)) m3,
 		SUM(IF(TO_DAYS(NOW()) - TO_DAYS(dl.cstamp) <= 30,de.product_quantity,0)) m1,
 		pl.*,
-		se.*
+		se.parent_id,
+		se.party_label,
+		se.product_quantity,
+		se.product_wrn_quantity
 	    FROM
 		stock_entries se
 		    JOIN
@@ -92,23 +95,32 @@ class Stock extends Catalog {
 	return $this->get_list("SELECT branch_id,label FROM stock_tree WHERE label LIKE '%$q%'");
     }
     public function productSave(){
+	$this->Base->set_level(2);
 	$stock_entry_id=$this->request('stock_entry_id','int');
+	$product_code=$this->request('product_code','^[\w\. ,-]+$');
 	$product=[
-	    'product_code'=>$this->request('product_code','[\w\d,.-\s]+'),
-	    'parent_id'=>$this->request('parent_id','int'),
-	    'product_unit'=>$this->request('product_unit'),
-	    'product_wrn_quantity'=>$this->request('product_wrn_quantity','int'),
+	    'prod_list.product_code'=>$product_code,
 	    'ru'=>$this->request('ru'),
 	    'ua'=>$this->request('ua'),
 	    'en'=>$this->request('en'),
+	    'product_unit'=>$this->request('product_unit'),
 	    'product_spack'=>$this->request('product_spack'),
 	    'product_bpack'=>$this->request('product_bpack'),
 	    'product_weight'=>$this->request('product_weight'),
 	    'product_volume'=>$this->request('product_volume'),
 	    'product_uktzet'=>$this->request('product_uktzet'),
-	    'barcode'=>$this->request('barcode'),
+	    'barcode'=>$this->request('barcode')
+	];
+	if( !$stock_entry_id ){//NEW RECORD
+	    if( $this->create(BAY_DB_MAIN.'.prod_list', ['product_code'=>$product_code]) ){
+		$stock_entry_id=$this->create(BAY_DB_MAIN.'.stock_entries', ['product_code'=>$product_code]);
+	    }
+	}
+	$product+=[
+	    'parent_id'=>$this->request('parent_id','int'),
+	    'product_wrn_quantity'=>$this->request('product_wrn_quantity','int'),
 	    'party_label'=>$this->request('party_label')
 	];
-	return $this->update('stock_entries JOIN prod_list USING(product_code)', $product, ['stock_entry_id'=>$stock_entry_id]);
+	return $this->update(BAY_DB_MAIN.'.stock_entries JOIN prod_list USING(product_code)', $product, ['stock_entry_id'=>$stock_entry_id]);
     }
 }
