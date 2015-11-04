@@ -24,8 +24,47 @@
 		Leftovers.list.currPage=param.page;
 		$.get("Stock/listFetch/"+App.uri(param.page,param.rows,Leftovers.list.parent_id), {filterRules: Leftovers.list.filterRules},function( xhr ){
 		    var resp=App.json(xhr);
+		    resp=Leftovers.list.calc.calcTable(resp);
 		    success(resp);
 		});
+	    },
+	    calc:{
+		calcTable:function( resp ){
+		    for(var i in resp.rows ){
+			resp.rows[i].m1=this.clear(resp.rows[i].m1);
+			resp.rows[i].m3=this.clear(resp.rows[i].m3);
+			resp.rows[i].product_spack=this.clear(resp.rows[i].product_spack);
+			resp.rows[i].product_bpack=this.clear(resp.rows[i].product_bpack);
+			resp.rows[i].product_quantity=this.clear(resp.rows[i].product_quantity);
+			resp.rows[i].product_wrn_quantity=this.clear(resp.rows[i].product_wrn_quantity);
+			resp.rows[i].product_weight=this.round(resp.rows[i].product_weight,5);
+			resp.rows[i].product_volume=this.round(resp.rows[i].product_volume,5);
+			resp.rows[i].self_price=this.round(resp.rows[i].self_price,2);
+			resp.rows[i].sell=this.round(resp.rows[i].sell,2);
+			resp.rows[i].buy=this.round(resp.rows[i].buy,2);
+		    }
+		    return resp;
+		},
+		clear:function(value){
+		    return value*1||'';
+		},
+		round:function(value,precision){
+		    return Number(value).toFixed(precision);
+		},
+		left:function(value,row){
+		    if( row.product_quantity*2<row.product_wrn_quantity ){
+			return 'background-color:#f9f';
+		    } 
+		    if( row.product_quantity<row.product_wrn_quantity ){
+			return 'background-color:#fcf';
+		    } 
+		},
+		m1:function(value,row){
+		    if( row.m1*1<row.m3*1 ){
+			return 'color:red';
+		    }
+		    return 'color:green';
+		}
 	    },
 	    reload:function(){
 		$("#stock_dg").datagrid('reload');
@@ -73,6 +112,24 @@
 		    }
 		});
 	    },
+	    delete:function(){
+		var row=$("#stock_dg").datagrid('getSelected');
+		if( row && row.product_quantity>0 ){
+		    alert("Остаток '"+row.ru+"' должен быть нулевым");
+		    return;
+		}
+		if( row && confirm("Удалить '"+row.ru+"' со списка склада?") ){
+		    $.post('Stock/productDelete/',{product_code:row.product_code},function(ok){
+			if( ok*1 ){
+			    App.flash("Товар удален: "+row.ru);
+			    Leftovers.list.reload();
+			} else {
+			    App.flash("Товар не удален");
+			}
+		    });
+		}
+		
+	    },
 	    loadParent:function( parent_id,label ){
 		this.parent_id=parent_id;
 		this.parent_label=label;
@@ -87,31 +144,6 @@
 		else {
 		    $('#stock_dg').datagrid('enableFilter');
 		    this.filterEnabled = true;
-		}
-	    },
-	    calc:{
-		clear:function(value){
-		    return value*1||'';
-		},
-		self:function(value,row){
-		    return Number(value).toFixed(2);
-		},
-		round:function(value){
-		    return Number(value).toFixed(5);
-		},
-		left:function(value,row){
-		    if( row.product_quantity*2<row.product_wrn_quantity ){
-			return 'background-color:#f9f';
-		    } 
-		    if( row.product_quantity<row.product_wrn_quantity ){
-			return 'background-color:#fcf';
-		    } 
-		},
-		m1:function(value,row){
-		    if( row.m1*1<row.m3*1 ){
-			return 'color:red';
-		    }
-		    return 'color:green';
 		}
 	    }
 	}
@@ -143,6 +175,7 @@
 		    pageSize:30,
 		    pageList:[30,60,120,600],
 		    singleSelect:true,
+		    autoRowHeight:false,
 		    remoteFilter:true,
 		    onSelect:function(){$('#stock_dg').datagrid('resize');},
 		    onDblClickCell:Leftovers.list.edit">
@@ -155,16 +188,19 @@
 		<thead>
 		    <tr>
 			<th data-options="field:'ru',width:330">Название</th>
-			<th data-options="field:'product_quantity',width:70,align:'right',formatter:Leftovers.list.calc.clear,styler:Leftovers.list.calc.left">Остаток</th>
+			<th data-options="field:'product_quantity',width:70,align:'right',styler:Leftovers.list.calc.left">Остаток</th>
 			<th data-options="field:'product_unit',width:30,align:'left'">Ед</th>
-			<th data-options="field:'product_wrn_quantity',width:50,align:'right',formatter:Leftovers.list.calc.clear">Мин</th>
-			<th data-options="field:'m1',width:50,align:'right',formatter:Leftovers.list.calc.clear,styler:Leftovers.list.calc.m1">1м</th>
-			<th data-options="field:'m3',width:50,align:'right',formatter:Leftovers.list.calc.clear">3м</th>
-			<th data-options="field:'self_price',width:50,align:'right',formatter:Leftovers.list.calc.self">Учетная ц.</th>
+			<th data-options="field:'product_wrn_quantity',width:50,align:'right'">Мин</th>
+			<th data-options="field:'m1',width:50,align:'right',styler:Leftovers.list.calc.m1">1м</th>
+			<th data-options="field:'m3',width:50,align:'right'">3м</th>
+			<th data-options="field:'self_price',width:50,align:'right'">Учетная ц.</th>
+			<th data-options="field:'sell',width:50,align:'right'">Продажа</th>
+			<th data-options="field:'buy',width:50,align:'right'">Покупка</th>
+			<th data-options="field:'curr_code',width:50,align:'right'">Валюта</th>
 			<th data-options="field:'product_spack',width:50,align:'right'">М. упак</th>
 			<th data-options="field:'product_bpack',width:50,align:'right',">Б. упак</th>
-			<th data-options="field:'product_weight',width:70,align:'right',formatter:Leftovers.list.calc.round">Вес кг</th>
-			<th data-options="field:'product_volume',width:70,align:'right',formatter:Leftovers.list.calc.round">Объем м3</th>
+			<th data-options="field:'product_weight',width:70,align:'right'">Вес кг</th>
+			<th data-options="field:'product_volume',width:70,align:'right'">Объем м3</th>
 			<th data-options="field:'party_label',width:100">Партия</th>
 			<th data-options="field:'product_uktzet',width:100,align:'right'">Таможенный код</th>
 			<th data-options="field:'barcode',width:100,align:'right'">Штрихкод</th>

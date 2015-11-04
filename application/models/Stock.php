@@ -68,14 +68,19 @@ class Stock extends Catalog {
 		SUM(IF(TO_DAYS(NOW()) - TO_DAYS(dl.cstamp) <= 90,de.product_quantity,0)) m3,
 		SUM(IF(TO_DAYS(NOW()) - TO_DAYS(dl.cstamp) <= 30,de.product_quantity,0)) m1,
 		pl.*,
+		pp.*,
+		se.stock_entry_id,
 		se.parent_id,
 		se.party_label,
 		se.product_quantity,
-		se.product_wrn_quantity
+		se.product_wrn_quantity,
+		se.self_price
 	    FROM
 		stock_entries se
 		    JOIN
 		prod_list pl USING(product_code)
+		    LEFT JOIN
+		price_list pp USING(product_code)
 		    LEFT JOIN
 		stock_tree ON se.parent_id=branch_id
 		    LEFT JOIN
@@ -109,18 +114,19 @@ class Stock extends Catalog {
 	    'product_weight'=>$this->request('product_weight'),
 	    'product_volume'=>$this->request('product_volume'),
 	    'product_uktzet'=>$this->request('product_uktzet'),
-	    'barcode'=>$this->request('barcode')
-	];
-	if( !$stock_entry_id ){//NEW RECORD
-	    if( $this->create(BAY_DB_MAIN.'.prod_list', ['product_code'=>$product_code]) ){
-		$stock_entry_id=$this->create(BAY_DB_MAIN.'.stock_entries', ['product_code'=>$product_code]);
-	    }
-	}
-	$product+=[
+	    'barcode'=>$this->request('barcode'),
 	    'parent_id'=>$this->request('parent_id','int'),
 	    'product_wrn_quantity'=>$this->request('product_wrn_quantity','int'),
 	    'party_label'=>$this->request('party_label')
 	];
-	return $this->update(BAY_DB_MAIN.'.stock_entries JOIN prod_list USING(product_code)', $product, ['stock_entry_id'=>$stock_entry_id]);
+	if( !$stock_entry_id ){//NEW RECORD
+	    $this->create(BAY_DB_MAIN.'.prod_list', ['product_code'=>$product_code]);
+	    $stock_entry_id=$this->create(BAY_DB_MAIN.'.stock_entries', ['product_code'=>$product_code]);
+	}
+	return $this->update(BAY_DB_MAIN.'.stock_entries JOIN '.BAY_DB_MAIN.'.prod_list USING(product_code)', $product, ['stock_entry_id'=>$stock_entry_id]);
+    }
+    public function productDelete(){
+	$product_code=$this->request('product_code','^[\w\. ,-]+$');
+	return $this->delete(BAY_DB_MAIN.'.stock_entries', ['product_code'=>$product_code,'product_quantity'=>0]);
     }
 }

@@ -6,7 +6,10 @@
 		title: 'Товарная карточка',
 		width: 780,
 		height: 'auto',
-		shadow:false
+		shadow:false,
+		onClose:function(){
+		    delete App.page_stock_product_card;
+		}
 	    });
 	    this.node.window('hcenter');
 	    this.node.window('window').css('position','fixed');
