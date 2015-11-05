@@ -1,0 +1,21 @@
+<script type="text/javascript">
+    /* global App */
+    App.page_stock_movements={
+	init:function(){
+	    App.page_stock_movements.toggleFilter();
+	}
+    };
+</script>
+<table class="easyui-datagrid">
+    <thead>
+	<tr>
+	    <th data-options="field:'date',width:70">Дата</th>
+	    <th data-options="field:'document',width:70">Документ</th>
+	    <th data-options="field:'company_name'">Контрагент</th>
+	    <th data-options="field:'product_code'">Код</th>
+	    <th data-options="field:'ru',width:50">Название</th>
+	    <th data-options="field:'in',width:50">Приход</th>
+	    <th data-options="field:'out',width:50">Расход</th>
+	</tr>
+    </thead>
+</table>
