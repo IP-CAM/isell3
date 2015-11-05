@@ -109,21 +109,25 @@ class Stock extends Catalog {
 	    'ua'=>$this->request('ua'),
 	    'en'=>$this->request('en'),
 	    'product_unit'=>$this->request('product_unit'),
-	    'product_spack'=>$this->request('product_spack'),
-	    'product_bpack'=>$this->request('product_bpack'),
-	    'product_weight'=>$this->request('product_weight'),
-	    'product_volume'=>$this->request('product_volume'),
+	    'product_spack'=>$this->request('product_spack','int'),
+	    'product_bpack'=>$this->request('product_bpack','int'),
+	    'product_weight'=>$this->request('product_weight','double'),
+	    'product_volume'=>$this->request('product_volume','double'),
 	    'product_uktzet'=>$this->request('product_uktzet'),
 	    'barcode'=>$this->request('barcode'),
 	    'parent_id'=>$this->request('parent_id','int'),
 	    'product_wrn_quantity'=>$this->request('product_wrn_quantity','int'),
-	    'party_label'=>$this->request('party_label')
+	    'party_label'=>$this->request('party_label'),
+	    'buy'=>$this->request('buy','double'),
+	    'sell'=>$this->request('sell','double'),
+	    'curr_code'=>$this->request('curr_code'),
 	];
 	if( !$stock_entry_id ){//NEW RECORD
 	    $this->create(BAY_DB_MAIN.'.prod_list', ['product_code'=>$product_code]);
+	    $this->create(BAY_DB_MAIN.'.price_list', ['product_code'=>$product_code]);
 	    $stock_entry_id=$this->create(BAY_DB_MAIN.'.stock_entries', ['product_code'=>$product_code]);
 	}
-	return $this->update(BAY_DB_MAIN.'.stock_entries JOIN '.BAY_DB_MAIN.'.prod_list USING(product_code)', $product, ['stock_entry_id'=>$stock_entry_id]);
+	return $this->update(BAY_DB_MAIN.'.stock_entries JOIN '.BAY_DB_MAIN.'.prod_list USING(product_code) LEFT JOIN '.BAY_DB_MAIN.'.price_list USING(product_code)', $product, ['stock_entry_id'=>$stock_entry_id]);
     }
     public function productDelete(){
 	$product_code=$this->request('product_code','^[\w\. ,-]+$');

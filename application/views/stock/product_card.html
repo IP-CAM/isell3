@@ -49,7 +49,7 @@
 <form id="page_stock_product_card_frm" onsubmit="App.page_stock_product_card.submit(event)">
     <input type="hidden" name="stock_entry_id">
     <div class="inp_group" style="width: 420px;vertical-align: top">
-    <img src="img/product.png" style="float:left;width:100px;height: auto" />
+	<img src="img/product.png" style="float:left;width:100px;height: auto" />
 	<input class="easyui-combobox" name="parent_id" id="Stock_parent_id" title="Категория" data-options="
 		valueField: 'branch_id',
 		textField: 'label',
@@ -80,7 +80,15 @@
 	<input name="barcode" title="Штрихкод">
 	<input name="party_label" title="Партия">	
     </div>
-    <div>
+    <div class="inp_rule"></div>
+    <div class="inp_group">
+	<input name="sell" title="Продажа">
+	<select name="curr_code" title="Валюта">
+	    <option value="UAH">UAH Гривна</option>
+	    <option value="USD">USD Доллар</option>
+	    <option value="RUB">RUB Рубль</option>
+	</select>
+	<input name="buy" title="Покупка">
     </div>
     <div style="text-align: center;margin-top: 15px;">
 	<button type="submit"><img src="img/Save-24.png" /> Сохранить</button>

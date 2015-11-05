@@ -99,6 +99,10 @@
 		Leftovers.list.showProductCard(fvalue);
 	    },
 	    showProductCard:function( fvalue ){
+		if( App.user.props.user_level<2 ){
+		    alert("Доступ ограничен");
+		    return;
+		}
 		App.loadWindow('page/stock/product_card',fvalue).progress(function(status,fvalue){
 		    if( status==='submit' ){
 			$.post('Stock/productSave/',fvalue,function(ok){
@@ -194,9 +198,6 @@
 			<th data-options="field:'m1',width:50,align:'right',styler:Leftovers.list.calc.m1">1м</th>
 			<th data-options="field:'m3',width:50,align:'right'">3м</th>
 			<th data-options="field:'self_price',width:50,align:'right'">Учетная ц.</th>
-			<th data-options="field:'sell',width:50,align:'right'">Продажа</th>
-			<th data-options="field:'buy',width:50,align:'right'">Покупка</th>
-			<th data-options="field:'curr_code',width:50,align:'right'">Валюта</th>
 			<th data-options="field:'product_spack',width:50,align:'right'">М. упак</th>
 			<th data-options="field:'product_bpack',width:50,align:'right',">Б. упак</th>
 			<th data-options="field:'product_weight',width:70,align:'right'">Вес кг</th>
