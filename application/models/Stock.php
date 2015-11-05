@@ -133,4 +133,7 @@ class Stock extends Catalog {
 	$product_code=$this->request('product_code','^[\w\. ,-]+$');
 	return $this->delete(BAY_DB_MAIN.'.stock_entries', ['product_code'=>$product_code,'product_quantity'=>0]);
     }
+    public function movementsFetch( $page=1, $rows=30 ){
+	
+    }
 }
