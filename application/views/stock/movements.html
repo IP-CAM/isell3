@@ -1,0 +1,72 @@
+<script type="text/javascript">
+    /* global App */
+    App.page_stock_movements={
+	init:function(){
+	    App.page_stock_movements.toggleFilter();
+	},
+	toggleFilter:function () {
+	    if (this.filterEnabled) {
+		$('#Stock_movements_dg').datagrid('disableFilter');
+		this.filterEnabled = false;
+	    }
+	    else {
+		$('#Stock_movements_dg').datagrid('enableFilter');
+		this.filterEnabled = true;
+	    }
+	},
+	loader:function( param, success, error ){
+	    $.get("Stock/movementsFetch/"+App.uri(param.page,param.rows), {filterRules: param.filterRules},function( xhr ){
+		var resp=App.page_stock_movements.clear( App.json(xhr) );
+		success(resp);
+	    });	    
+	},
+        clear:function(resp){
+            var prev_concat='';
+            for(var i in resp.rows){
+                var concat=resp.rows[i]['oper_date']+resp.rows[i]['doc']+resp.rows[i]['label'];
+                if( concat===prev_concat ){
+                    resp.rows[i]['oper_date']='';
+                    resp.rows[i]['doc']='';
+                    resp.rows[i]['label']='';
+                }
+                prev_concat=concat;
+            }
+            return resp;
+        },
+	reload:function(){
+	    $("#Stock_movements_dg").datagrid('reload');
+	},
+	out:function( out_type ){
+	    
+	}
+    };
+</script>
+<div>
+    <div style="text-align: right;padding-right: 5px;">
+        <span class="icon-24 icon-tablefilter" title="Фильтр таблицы" onclick="App.page_stock_movements.toggleFilter()"> </span>
+        <span class="icon-24 icon-refresh" title="Обновить" onclick="App.page_stock_movements.reload()"> </span>
+        <span class="icon-24" style="background-image: url(img/file_download.png);background-repeat: no-repeat" title="Скачать таблицу" onclick="App.page_stock_movements.out('.xlsx');"> </span>
+        <span class="icon-24 icon-print" title="Печать" onclick="App.page_stock_movements.out('print')"> </span>
+    </div>
+    <table class="easyui-datagrid" id="Stock_movements_dg" data-options="
+           width:795,
+            loader:App.page_stock_movements.loader,
+            pagination:true,
+            pageSize:30,
+            pageList:[30,60,120,600],
+            singleSelect:true,
+            autoRowHeight:false,
+            remoteFilter:true">
+        <thead>
+            <tr>
+                <th data-options="field:'oper_date',width:70">Дата</th>
+                <th data-options="field:'doc',width:170">Документ</th>
+                <th data-options="field:'label',width:110">Контрагент</th>
+                <th data-options="field:'product_code',width:90">Код</th>
+                <th data-options="field:'ru',width:250">Название</th>
+                <th data-options="field:'buy',width:50">Приход</th>
+                <th data-options="field:'sell',width:50">Расход</th>
+            </tr>
+        </thead>
+    </table>
+</div>

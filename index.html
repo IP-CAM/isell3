@@ -80,7 +80,7 @@
 		App.user.getData();
 	    };
 	    App.module={
-		legacy:["Companies","Accounts","Stock","Lists","Data","Home"],
+		legacy:["Companies","Accounts","Lists","Data","Home"],//,"Stock"
 		init:function(){
 		    $(window).bind( 'hashchange', function(e) {
 			App.module.load(location.hash.substring(1));
