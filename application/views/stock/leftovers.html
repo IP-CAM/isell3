@@ -12,6 +12,9 @@
 		}
 	    });
 	},
+        initAfter:function(){
+            this.list.checkHide();
+        },
 	focus:function(){
 	    this.load();
 	},
@@ -66,6 +69,20 @@
 		    return 'color:green';
 		}
 	    },
+            checkHide: function(){
+                if ( App.user.props.user_level>=3 ) {
+                    $('#stock_dg').datagrid('showColumn','sell');
+                    $('#stock_dg').datagrid('showColumn','buy');
+                    $('#stock_dg').datagrid('showColumn','curr_code');
+                    $('#stock_dg').datagrid('showColumn','self_price');
+                }
+                else {
+                    $('#stock_dg').datagrid('hideColumn','sell');
+                    $('#stock_dg').datagrid('hideColumn','buy');
+                    $('#stock_dg').datagrid('hideColumn','curr_code');
+                    $('#stock_dg').datagrid('hideColumn','self_price');
+                }	    
+            },
 	    reload:function(){
 		$("#stock_dg").datagrid('reload');
 	    },
@@ -197,7 +214,10 @@
 			<th data-options="field:'product_wrn_quantity',width:50,align:'right'">Мин</th>
 			<th data-options="field:'m1',width:50,align:'right',styler:Leftovers.list.calc.m1">1м</th>
 			<th data-options="field:'m3',width:50,align:'right'">3м</th>
-			<th data-options="field:'self_price',width:50,align:'right'">Учетная ц.</th>
+			<th data-options="field:'self_price',width:50,align:'right',hidden:true">Учетная ц.</th>
+			<th data-options="field:'sell',width:50,align:'right',hidden:true">Продажа</th>
+			<th data-options="field:'buy',width:50,align:'right',hidden:true">Покупка</th>
+			<th data-options="field:'curr_code',width:50,align:'right',hidden:true">Валюта</th>
 			<th data-options="field:'product_spack',width:50,align:'right'">М. упак</th>
 			<th data-options="field:'product_bpack',width:50,align:'right',">Б. упак</th>
 			<th data-options="field:'product_weight',width:70,align:'right'">Вес кг</th>

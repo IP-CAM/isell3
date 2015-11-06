@@ -5,15 +5,18 @@
 	    this.node.window({
 		title: 'Товарная карточка',
 		width: 780,
+                top:50,
 		height: 'auto',
 		shadow:false,
 		onClose:function(){
 		    delete App.page_stock_product_card;
+                    console.log('pc terminated');
 		}
 	    });
 	    this.node.window('hcenter');
 	    this.node.window('window').css('position','fixed');
 	    this.node.window('window').css('top','40px');
+            this.data.product_code_new=this.data.product_code;
 	    App.setupForm("#page_stock_product_card_frm", this.data);
 	},
 	initAfter:function(){
@@ -37,17 +40,26 @@
 	submit:function(e){
 	    e.preventDefault();
 	    this.data=App.collectForm("#page_stock_product_card_frm");
-	    if( this.data.product_code.match(/^[\w\. ,-]+$/) ){
+	    if( this.data.product_code_new.match(/^[\w\. ,-]+$/) ){
 		this.handler.notify('submit',this.data);
 		App.page_stock_product_card.node.window('close');
 	    } else {
-		alert("Код товара не должен содержать сивол: "+this.data.product_code.match(/[^\w\. ,-]/g).join(""));
+		alert("Код товара не должен содержать сивол: "+this.data.product_code_new.match(/[^\w\. ,-]/g).join(""));
 	    }
-	}
+	},
+        stockTree:function(){
+            App.loadWindow('page/stock/tree').progress(function(status,category){
+                if( status==='select' ){
+                    console.log(category);
+                    $("#Stock_parent_id").combobox('setValue',category.branch_id);
+                    $("#Stock_parent_id").combobox('setText',category.label);
+                }
+            });
+        }
     };
 </script>
 <form id="page_stock_product_card_frm" onsubmit="App.page_stock_product_card.submit(event)">
-    <input type="hidden" name="stock_entry_id">
+    <input type="hidden" name="product_code">
     <div class="inp_group" style="width: 420px;vertical-align: top">
 	<img src="img/product.png" style="float:left;width:100px;height: auto" />
 	<input class="easyui-combobox" name="parent_id" id="Stock_parent_id" title="Категория" data-options="
@@ -64,7 +76,7 @@
 			 }
 		     }]
 		">
-	<input name="product_code" title="Код" required="required">
+	<input name="product_code_new" title="Код" required="required">
 	<input name="product_unit" title="Единица" required="required">
 	<input name="product_wrn_quantity" title="Мин. кол-во">
 	<input name="ru" title="Название Рус" style="width:300px" required="required">

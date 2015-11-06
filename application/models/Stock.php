@@ -64,11 +64,13 @@ class Stock extends Catalog {
 	    $where="WHERE se.parent_id IN (".implode(',',$branch_ids).")";
 	}
 	$sql="SELECT
-		label parent_label,
+		st.label parent_label,
 		SUM(IF(TO_DAYS(NOW()) - TO_DAYS(dl.cstamp) <= 90,de.product_quantity,0)) m3,
 		SUM(IF(TO_DAYS(NOW()) - TO_DAYS(dl.cstamp) <= 30,de.product_quantity,0)) m1,
 		pl.*,
-		pp.*,
+		pp.sell,
+		pp.buy,
+		pp.curr_code,
 		se.stock_entry_id,
 		se.parent_id,
 		se.party_label,
@@ -82,7 +84,7 @@ class Stock extends Catalog {
 		    LEFT JOIN
 		price_list pp USING(product_code)
 		    LEFT JOIN
-		stock_tree ON se.parent_id=branch_id
+		stock_tree st ON se.parent_id=branch_id
 		    LEFT JOIN
 		document_entries de USING(product_code)
 		    LEFT JOIN
@@ -101,10 +103,10 @@ class Stock extends Catalog {
     }
     public function productSave(){
 	$this->Base->set_level(2);
-	$stock_entry_id=$this->request('stock_entry_id','int');
-	$product_code=$this->request('product_code','^[\w\. ,-]+$');
+	$product_code=$this->request('product_code');
+        $product_code_new=$this->request('product_code_new','^[\w\. ,-]+$');
 	$product=[
-	    'prod_list.product_code'=>$product_code,
+	    'prod_list.product_code'=>$product_code_new,
 	    'ru'=>$this->request('ru'),
 	    'ua'=>$this->request('ua'),
 	    'en'=>$this->request('en'),
@@ -122,15 +124,15 @@ class Stock extends Catalog {
 	    'sell'=>$this->request('sell','double'),
 	    'curr_code'=>$this->request('curr_code'),
 	];
-	if( !$stock_entry_id ){//NEW RECORD
-	    $this->create(BAY_DB_MAIN.'.prod_list', ['product_code'=>$product_code]);
-	    $this->create(BAY_DB_MAIN.'.price_list', ['product_code'=>$product_code]);
-	    $stock_entry_id=$this->create(BAY_DB_MAIN.'.stock_entries', ['product_code'=>$product_code]);
+	if( !$product_code ){//NEW RECORD
+	    $this->create(BAY_DB_MAIN.'.prod_list', ['product_code'=>$product_code_new]);
+	    $this->create(BAY_DB_MAIN.'.price_list', ['product_code'=>$product_code_new]);
+	    $this->create(BAY_DB_MAIN.'.stock_entries', ['product_code'=>$product_code_new]);
 	}
-	return $this->update(BAY_DB_MAIN.'.stock_entries JOIN '.BAY_DB_MAIN.'.prod_list USING(product_code) LEFT JOIN '.BAY_DB_MAIN.'.price_list USING(product_code)', $product, ['stock_entry_id'=>$stock_entry_id]);
+	return $this->update(BAY_DB_MAIN.'.stock_entries JOIN '.BAY_DB_MAIN.'.prod_list USING(product_code) LEFT JOIN '.BAY_DB_MAIN.'.price_list USING(product_code)', $product, ['product_code'=>$product_code]);
     }
     public function productDelete(){
-	$product_code=$this->request('product_code','^[\w\. ,-]+$');
+	$product_code=$this->request('product_code');
 	return $this->delete(BAY_DB_MAIN.'.stock_entries', ['product_code'=>$product_code,'product_quantity'=>0]);
     }
     public function movementsFetch( $page=1, $rows=30 ){

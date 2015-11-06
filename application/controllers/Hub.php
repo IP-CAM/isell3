@@ -79,6 +79,7 @@ class HubBase extends CI_Controller{
 	}
 	return isset($_SESSION[$name])?$_SESSION[$name]:NULL;
     }
+    
     public function load_model( $name ){
 	$this->load->model($name,null,true);
 	if( isset($this->{$name}->min_level) ){
@@ -100,6 +101,7 @@ class HubBase extends CI_Controller{
 	    }
 	}
     }
+    
     private function kick_out() {
 	$this->rtype = 'DIALOG';
 	$this->response('page/dialog/loginform.html');
@@ -120,11 +122,10 @@ class HubBase extends CI_Controller{
 		break;
 	    default:
 		header("X-isell-type:error");
-		show_error($this->msg." ".$error['message'].$this->db->last_query(), 500);
+		show_error($this->msg." ".$error['message'].' '.$this->db->last_query(), 500);
 		break;
 	}
     }
-    
     
     public function response( $response ){
 	if( isset($this->bridge) && $this->bridge->msg ){

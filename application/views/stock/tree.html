@@ -5,6 +5,7 @@
 	    title: 'Дерево категорий склада',
 	    width: 300,
 	    height: 440,
+            top:50,
 	    modal: true,
 	    onClose: function () {
 		Stree.handler.notify('close', Stree.data);
@@ -17,6 +18,9 @@
 	    if (!this.data.inline) {
 		this.node.window(Stree.properties);
 	    }
+	    if( this.data.clickselect ){
+		this.node.find('button.ok').hide();
+	    }
 	},
 	close:function(){
 	    if (!this.data.inline) {
@@ -24,7 +28,7 @@
 	    }
 	},
 	enableButtons:function( leaf ){
-	    Stree.node.find('.folder').prop('disabled',false);
+	    Stree.node.find('.folder,.ok').prop('disabled',false);
 	},
 	click:function(node){
 	    if( node.state==='closed' ) {
@@ -149,4 +153,7 @@
     <button class="folder tiny_button" disabled="disabled" onclick="Stree.delete()" title="Удалить"><img src="img/delete.png"></button>
     <button class="folder tiny_button" disabled="disabled" onclick="Stree.up()" title="Переместить в корень"><img src="img/up.png"></button>
     <button class="tiny_button" onclick="Stree.reload()" title="Обновить"><img src="img/reload.png"></button>
+</div>
+<div style="text-align: center;margin-top: 5px;">
+    <button class="ok" disabled="disabled" onclick="Stree.selectTree();Stree.close();"><img src="img/apply24.png"> Выбрать</button>
 </div>
