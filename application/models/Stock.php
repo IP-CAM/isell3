@@ -136,6 +136,40 @@ class Stock extends Catalog {
 	return $this->delete(BAY_DB_MAIN.'.stock_entries', ['product_code'=>$product_code,'product_quantity'=>0]);
     }
     public function movementsFetch( $page=1, $rows=30 ){
-	
+	$this->check($page,'int');
+	$this->check($rows,'int');
+	$offset=($page-1)*$rows;
+	if( $offset<0 ){
+	    $offset=0;
+	}
+        $having=$this->decodeFilterRules();
+        $sql="SELECT
+                DATE_FORMAT(dl.cstamp,'%d.%m.%Y') oper_date,
+                CONCAT(dt.doc_type_name,IF(dl.is_reclamation,' (Возврат)',''),' #',dl.doc_num) doc,
+                label,
+                product_code,
+                ru,
+                IF(doc_type=1,product_quantity,'') sell,
+                IF(doc_type=2,product_quantity,'') buy
+            FROM
+                document_entries de
+                    JOIN
+                document_list dl USING(doc_id)
+                    JOIN
+                document_types dt USING(doc_type)
+                    JOIN
+                prod_list USING(product_code)
+                    JOIN
+                companies_list ON passive_company_id=company_id
+                    LEFT JOIN
+                companies_tree USING(branch_id)
+            WHERE
+                is_commited
+            HAVING $having
+            ORDER BY dl.cstamp DESC
+            LIMIT $rows OFFSET $offset";
+	$result_rows=$this->get_list($sql);
+	$total_estimate=$offset+(count($result_rows)==$rows?$rows+1:count($result_rows));
+	return array('rows'=>$result_rows,'total'=>$total_estimate);
     }
 }

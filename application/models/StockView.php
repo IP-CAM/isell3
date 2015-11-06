@@ -66,4 +66,16 @@ class StockView extends Stock{
         $FileEngine->header_mode=$header_mode;
         return $FileEngine->fetch($file_name);
     }
+    public function stockViewGet22222222(){
+	$page=$this->request('page','int');
+	$rows=10000;//$this->request('rows','int');
+	$having=$this->decodeFilterRules();
+	$out_type=$this->request('out_type');
+        
+        
+	$doc_view_id=$this->stockViewStore($page, $rows, '', $having);
+        
+        $out=$this->viewFileGet($doc_view_id,$out_type,'send_headers');
+        exit($out);
+    }
 }
