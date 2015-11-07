@@ -33,7 +33,7 @@ class StockView extends Stock{
     }
     public function stockMoveViewGet(){
 	$page=$this->request('page','int');
-	$rows=$this->request('rows','int');;
+	$rows=$this->request('rows','int');
 	$having=$this->decodeFilterRules();
 	$out_type=$this->request('out_type');
 	

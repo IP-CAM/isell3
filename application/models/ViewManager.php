@@ -7,6 +7,7 @@ class ViewManager extends CI_Model{
 	if(!file_exists($this->viewStorageFolder)){
 	    mkdir($this->viewStorageFolder);
 	}
+	$this->dump=new stdClass();
 	$this->clear();
 	parent::__construct();
     }

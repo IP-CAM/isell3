@@ -171,7 +171,20 @@ class Stock extends Catalog {
             ORDER BY dl.cstamp DESC
             LIMIT $rows OFFSET $offset";
 	$result_rows=$this->get_list($sql);
+	$this->distinctRows($result_rows);
 	$total_estimate=$offset+(count($result_rows)==$rows?$rows+1:count($result_rows));
 	return array('rows'=>$result_rows,'total'=>$total_estimate);
+    }
+    private function distinctRows( &$result_rows ){
+	$prev_concat='';
+	foreach( $result_rows as $row ){
+	    $concat=$row->oper_date.$row->doc.$row->label;
+	    if( $prev_concat==$concat ){
+		$row->oper_date='';
+		$row->doc='';
+		$row->label='';
+	    }
+	    $prev_concat=$concat;
+	}
     }
 }

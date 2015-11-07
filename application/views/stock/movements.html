@@ -16,30 +16,19 @@
 	},
 	loader:function( param, success, error ){
 	    App.page_stock_movements.currPage=param.page;
+	    App.page_stock_movements.currRows=param.rows;
 	    $.get("Stock/movementsFetch/"+App.uri(param.page,param.rows), {filterRules: param.filterRules},function( xhr ){
-		var resp=App.page_stock_movements.clear( App.json(xhr) );
+		var resp=App.json(xhr);
 		success(resp);
 	    });	    
 	},
-        clear:function(resp){
-            var prev_concat='';
-            for(var i in resp.rows){
-                var concat=resp.rows[i]['oper_date']+resp.rows[i]['doc']+resp.rows[i]['label'];
-                if( concat===prev_concat ){
-                    resp.rows[i]['oper_date']='';
-                    resp.rows[i]['doc']='';
-                    resp.rows[i]['label']='';
-                }
-                prev_concat=concat;
-            }
-            return resp;
-        },
 	reload:function(){
 	    $("#Stock_movements_dg").datagrid('reload');
 	},
 	out:function( out_type ){
 	    var params={
 		page:App.page_stock_movements.currPage,
+		rows:App.page_stock_movements.currRows,
 		filterRules:App.page_stock_movements.filterRules,
 		out_type:out_type
 	    };
