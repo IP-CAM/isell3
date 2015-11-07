@@ -309,6 +309,9 @@ button img{
 .icon-utils{
     background:url('../img/utils.png') no-repeat center center;
 }
+.icon-import{
+    background:url('../img/import.png') no-repeat center center;
+}
 .icon-duplicate{
     background:url('../img/copy.png') no-repeat center center;
 }

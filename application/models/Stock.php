@@ -1,26 +1,6 @@
 <?php
 require_once 'Catalog.php';
 class Stock extends Catalog {
-    public function import(){
-        $parent_id=$this->request('parent_id','int');
-        $pcode_col=$this->request('product_code');
-        $label=$this->request('label');
-	$where=$label?"AND label='$label'":'';
-        $sql="
-	    INSERT INTO ".BAY_DB_MAIN.".stock_entries(product_code,parent_id)
-            SELECT
-                product_code,
-		'$parent_id'
-            FROM
-                imported_data
-                    JOIN
-                prod_list ON product_code=$pcode_col
-            WHERE
-                product_code NOT IN (SELECT product_code FROM ".BAY_DB_MAIN.".stock_entries)
-		$where";
-	$this->query($sql);
-        return $this->db->affected_rows();
-    }
     public function branchFetch() {
 	$parent_id=$this->request('id','int',0);
 	return $this->treeFetch("stock_tree", $parent_id, 'top');
@@ -171,11 +151,11 @@ class Stock extends Catalog {
             ORDER BY dl.cstamp DESC
             LIMIT $rows OFFSET $offset";
 	$result_rows=$this->get_list($sql);
-	$this->distinctRows($result_rows);
+	$this->distinctMovementsRows($result_rows);
 	$total_estimate=$offset+(count($result_rows)==$rows?$rows+1:count($result_rows));
 	return array('rows'=>$result_rows,'total'=>$total_estimate);
     }
-    private function distinctRows( &$result_rows ){
+    private function distinctMovementsRows( &$result_rows ){
 	$prev_concat='';
 	foreach( $result_rows as $row ){
 	    $concat=$row->oper_date.$row->doc.$row->label;
@@ -186,5 +166,49 @@ class Stock extends Catalog {
 	    }
 	    $prev_concat=$concat;
 	}
+    }
+    public function import_(){
+        $parent_id=$this->request('parent_id','int');
+        $pcode_col=$this->request('product_code');
+        $label=$this->request('label');
+	$where=$label?"AND label='$label'":'';
+        $sql="
+	    INSERT INTO ".BAY_DB_MAIN.".stock_entries(product_code,parent_id)
+            SELECT
+                product_code,
+		'$parent_id'
+            FROM
+                imported_data
+                    JOIN
+                prod_list ON product_code=$pcode_col
+            WHERE
+                product_code NOT IN (SELECT product_code FROM ".BAY_DB_MAIN.".stock_entries)
+		$where";
+	$this->query($sql);
+        return $this->db->affected_rows();
+    }
+    public function import( $table_name ){
+	if( !in_array($table_name, $this->permitted_tables) ){
+	    return false;
+	}
+	$source = array_map('addslashes',$this->request('source','raw'));
+	$target = array_map('addslashes',$this->request('target','raw'));
+	$source_fields=  implode(',', $source);
+	$target_fields=  implode(',', $target);
+	
+	$i=0;
+	$update_set=[];
+	foreach( $target as $tfield ){
+	    if( $tfield=='product_code' ){
+		$i++;
+		continue;
+	    }
+	    $update_set[]="$tfield={$source[$i]}";
+	    $i++;
+	}
+	
+	$sql="INSERT INTO $table_name ($target_fields) SELECT $source_fields FROM imported_data ON DUPLICATE KEY UPDATE ".implode(',',$update_set);
+	$this->query($sql);
+        return $this->db->affected_rows();
     }
 }

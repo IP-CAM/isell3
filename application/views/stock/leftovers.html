@@ -86,6 +86,34 @@
 	    reload:function(){
 		$("#stock_dg").datagrid('reload');
 	    },
+	    import:function(){
+		var config=[
+		    {name:'Код товара',field:'product_code',required:true},
+		    {name:'Название Рус.',field:'ru'},
+		    {name:'Название Укр.',field:'ua'},
+		    {name:'Название Анг.',field:'en'},
+		    {name:'Единица',field:'product_unit'},
+		    {name:'В коробке',field:'product_spack'},
+		    {name:'В ящике',field:'product_bpack'},
+		    {name:'Вес кг',field:'product_weight'},
+		    {name:'Объем м3',field:'product_volume'},
+		    {name:'Тамож. код',field:'product_uktzet'},
+		    {name:'Штрихкод',field:'barcode'},
+		    {name:'Партия',field:'party_label'},
+		    {name:'Продажа',field:'sell'},
+		    {name:'Покупка',field:'buy'},
+		    {name:'Валюта',field:'curr_code'}		    
+		];
+		App.loadWindow('page/dialog/importer',{label:'склад',fields_to_import:config}).progress(function(status,fvalue){
+		    if( status==='submit' ){
+			fvalue.parent_id=Leftovers.list.parent_id;
+			$.post("Stock/import/",fvalue,function(ok){
+			    App.flash("Добавлено "+ok);
+			    Leftovers.list.reload();
+			});
+		    }
+		});
+	    },
 	    out:function( out_type ){
 		var params={
 		    page:Leftovers.list.currPage,
@@ -185,6 +213,7 @@
 		<span class="icon-24 icon-create" title="Добавить" onclick="Leftovers.list.create();"> </span>
 		<span class="icon-24 icon-change" title="Изменить" onclick="Leftovers.list.edit();"> </span>
 		<span class="icon-24 icon-delete" title="Удалить" onclick="Leftovers.list.delete();"> </span>
+		<span class="icon-24 icon-import" title="Импорт" onclick="Leftovers.list.import();"> </span>
 		<span class="icon-24 icon-tablefilter" title="Фильтр таблицы" onclick="Leftovers.list.toggleFilter()"> </span>
 		<span class="icon-24 icon-refresh" title="Обновить" onclick="Leftovers.list.reload()"> </span>
 		<span class="icon-24" style="background-image: url(img/file_download.png);background-repeat: no-repeat" title="Скачать таблицу" onclick="Leftovers.list.out('.xlsx');"> </span>
