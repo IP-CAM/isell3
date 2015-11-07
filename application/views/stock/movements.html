@@ -15,6 +15,7 @@
 	    }
 	},
 	loader:function( param, success, error ){
+	    App.page_stock_movements.currPage=param.page;
 	    $.get("Stock/movementsFetch/"+App.uri(param.page,param.rows), {filterRules: param.filterRules},function( xhr ){
 		var resp=App.page_stock_movements.clear( App.json(xhr) );
 		success(resp);
@@ -37,7 +38,17 @@
 	    $("#Stock_movements_dg").datagrid('reload');
 	},
 	out:function( out_type ){
-	    
+	    var params={
+		page:App.page_stock_movements.currPage,
+		filterRules:App.page_stock_movements.filterRules,
+		out_type:out_type
+	    };
+	    var url='StockView/stockMoveViewGet/?'+$.param( params );
+	    if( out_type==='.print' ){
+		window.open(url,'print_tab');
+	    } else {
+		location.href=url;
+	    }
 	}
     };
 </script>
@@ -46,7 +57,7 @@
         <span class="icon-24 icon-tablefilter" title="Фильтр таблицы" onclick="App.page_stock_movements.toggleFilter()"> </span>
         <span class="icon-24 icon-refresh" title="Обновить" onclick="App.page_stock_movements.reload()"> </span>
         <span class="icon-24" style="background-image: url(img/file_download.png);background-repeat: no-repeat" title="Скачать таблицу" onclick="App.page_stock_movements.out('.xlsx');"> </span>
-        <span class="icon-24 icon-print" title="Печать" onclick="App.page_stock_movements.out('print')"> </span>
+        <span class="icon-24 icon-print" title="Печать" onclick="App.page_stock_movements.out('.print')"> </span>
     </div>
     <table class="easyui-datagrid" id="Stock_movements_dg" data-options="
            width:795,

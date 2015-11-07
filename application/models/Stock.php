@@ -135,14 +135,16 @@ class Stock extends Catalog {
 	$product_code=$this->request('product_code');
 	return $this->delete(BAY_DB_MAIN.'.stock_entries', ['product_code'=>$product_code,'product_quantity'=>0]);
     }
-    public function movementsFetch( $page=1, $rows=30 ){
+    public function movementsFetch( $page=1, $rows=30, $having=null ){
 	$this->check($page,'int');
 	$this->check($rows,'int');
 	$offset=($page-1)*$rows;
 	if( $offset<0 ){
 	    $offset=0;
 	}
-        $having=$this->decodeFilterRules();
+	if( !$having ){
+	    $having=$this->decodeFilterRules();
+	}
         $sql="SELECT
                 DATE_FORMAT(dl.cstamp,'%d.%m.%Y') oper_date,
                 CONCAT(dt.doc_type_name,IF(dl.is_reclamation,' (Возврат)',''),' #',dl.doc_num) doc,
