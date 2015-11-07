@@ -17,10 +17,13 @@
 		e.preventDefault();
 		var data=App.collectForm('#dialog_send_email_frm');
                 if( data.to ){
+		    App.page_dialog_send_email.node.find('.submit').attr('disabled','disabled');
                     $.post('Utils/postEmail',data,function(ok){
                         if( ok*1 ){
                             App.flash("Сообщение было отправлено на "+data.to);
-                        }
+                        } else {
+			    App.flash("Не удалось отправить сообщение");
+			}
                         App.page_dialog_send_email.node.window('close');
                     });
                 }
@@ -31,14 +34,14 @@
 <form id="dialog_send_email_frm">
     <input type="hidden" name="out_type">
     <input type="hidden" name="fgenerator">
-    <input type="hidden" name="doc_view_id">
+    <input type="hidden" name="dump_id">
     <input type="hidden" name="copy" value="1">
     <input type="email" multiple="multiple" name="to" title="e-mail" />
     <input type="text" name="subject" title="Тема">
     <input type="checkbox" name="send_file" title="Прикр. файл" value="ok">
     <textarea name="body" title="Текст"></textarea>
     <div style="text-align: center">
-	<button type="submit"><img src="img/email.png" style="vertical-align: middle"> Отправить</button>
+	<button type="submit" class="submit"><img src="img/email.png" style="vertical-align: middle"> Отправить</button>
 	<button type="button" onclick="App.page_dialog_send_email.node.window('close')"><img src="img/close24.png" style="vertical-align: middle"> Закрыть</button>
     </div>
 </form>
