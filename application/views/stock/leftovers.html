@@ -104,10 +104,10 @@
 		    {name:'Покупка',field:'buy'},
 		    {name:'Валюта',field:'curr_code'}		    
 		];
-		App.loadWindow('page/dialog/importer',{label:'склад',fields_to_import:config}).progress(function(status,fvalue){
+		App.loadWindow('page/dialog/importer',{label:'склад',fields_to_import:config}).progress(function(status,fvalue,split){
 		    if( status==='submit' ){
-			fvalue.parent_id=Leftovers.list.parent_id;
-			$.post("Stock/import/",fvalue,function(ok){
+			split.parent_id=Leftovers.list.parent_id;
+			$.post("Stock/import/",split,function(ok){
 			    App.flash("Добавлено "+ok);
 			    Leftovers.list.reload();
 			});

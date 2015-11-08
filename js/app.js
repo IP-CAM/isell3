@@ -26,7 +26,7 @@ var App = {
     flash:function (msg, type) {
 	if (type === 'error') {
 	    if( App.user && App.user.props.user_login==='baycik' ){
-		$("#appStatus").html('<pre>'+msg+'</pre>');
+		$("#appStatus").html('<pre style="white-space: pre-wrap">'+msg+'</pre>');
 		$("#appStatus").window({
 		    title: 'Ошибка',
 		    width: 800,

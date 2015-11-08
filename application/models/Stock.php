@@ -187,28 +187,34 @@ class Stock extends Catalog {
 	$this->query($sql);
         return $this->db->affected_rows();
     }
-    public function import( $table_name ){
-	if( !in_array($table_name, $this->permitted_tables) ){
-	    return false;
-	}
+    public function import(){
+	$parent_id=$this->request('parent_id','int');
 	$source = array_map('addslashes',$this->request('source','raw'));
 	$target = array_map('addslashes',$this->request('target','raw'));
-	$source_fields=  implode(',', $source);
-	$target_fields=  implode(',', $target);
 	
-	$i=0;
-	$update_set=[];
-	foreach( $target as $tfield ){
-	    if( $tfield=='product_code' ){
-		$i++;
-		continue;
+	
+	$this->importInTable('prod_list', $source, $target, '/product_code/ru/ua/en/product_spack/product_bpack/product_weight/product_volume/product_unit/product_uktzet/barcode/');
+	$this->importInTable('price_list', $source, $target, '/product_code/sell/buy/curr_code/');
+	$this->importInTable('stock_entries', $source, $target, '/product_code/');
+	$this->query("DELETE FROM imported_data WHERE {$source[0]} IN (SELECT product_code FROM stock_entries)");
+        return  $this->db->affected_rows();
+    }
+    private function importInTable( $table, $src, $trg, $filter ){
+	$set=[];
+	$target=[];
+	$source=[];
+	for( $i=0;$i<count($trg);$i++ ){
+	    if( strpos($filter,$trg[$i]) && !empty($src[$i]) ){
+		$target[]=$trg[$i];
+		$source[]=$src[$i];
+		$set[]="{$trg[$i]}=$src[$i]";//$trg[$i]!='product_code'?:'';
 	    }
-	    $update_set[]="$tfield={$source[$i]}";
-	    $i++;
 	}
-	
-	$sql="INSERT INTO $table_name ($target_fields) SELECT $source_fields FROM imported_data ON DUPLICATE KEY UPDATE ".implode(',',$update_set);
-	$this->query($sql);
-        return $this->db->affected_rows();
+	$target_list=  implode(',', $target);
+	$source_list=  implode(',', $source);
+	$set_list=  count($set)?"ON DUPLICATE KEY UPDATE ".implode(',', $set):'';
+	$this->query("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data $set_list");
+	print("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data $set_list");
+	return $this->db->affected_rows();
     }
 }
