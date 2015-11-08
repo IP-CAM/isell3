@@ -68,6 +68,9 @@
 	},
 	tnames:{
 	    init:function(){
+                Mark.pipes.undollar=function(str){
+                    return str.replace('$','&#36;');
+                };
 		if( Ledger.current_acc_code ){
 		    $.get("AccountsData/transNameListFetch/"+Ledger.current_acc_code,function(resp){
 			App.renderTpl('ledger_tnames',{tnames:App.json(resp)});
@@ -369,7 +372,7 @@
     <div id="ledger_tnames" class="covert">
 	<img src="img/edit_add.png" style="width:16px;height:16px;margin-bottom: 2px;"> Операции по счету
 	{{tnames}}
-	<button style="text-align: left;margin-bottom: 3px;width: 177px" onclick="Ledger.addTransaction('{{trans_type}}','{{trans_name}}')"><div class="tag">{{trans_type}}</div><br>{{trans_name}}</button>
+	<button style="text-align: left;margin-bottom: 3px;width: 177px" onclick="Ledger.addTransaction('{{trans_type}}','{{trans_name|undollar}}')"><div class="tag">{{trans_type}}</div><br>{{trans_name}}</button>
 	{{/tnames}}
 	<div><a href="javascript:Ledger.tnames.show()"><img src="img/edit-16.png"> Изменить список</a></div>
     </div>

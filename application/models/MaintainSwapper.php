@@ -24,6 +24,7 @@ if( $_POST['swap'] ){
     if( file_exists("isell3") && file_exists("isell3_new") ){
 	delTree("isell3_backup");
 	if( loopRename("isell3", "isell3_backup") ){
+            header("X-isell-type:OK");
 	    echo loopRename("isell3_new", "isell3");
 	}
     }

@@ -20,6 +20,7 @@ class User extends Catalog {
 	    $this->Base->svar('user_level_name', $this->Base->level_names[$user_data->user_level]);
 	    $this->Base->svar('user_login', $user_data->user_login);
 	    $this->Base->svar('user_sign', $user_data->user_sign);
+	    $this->Base->svar('user_position', $user_data->user_position);
 	    if ( method_exists($this, 'initLoggedUser') ) {
 		$this->initLoggedUser($user_data);
 	    }
@@ -67,7 +68,7 @@ class User extends Catalog {
         $where = ($this->Base->svar('user_level') < 4) ? "WHERE user_id='$user_id'" : "";
         $sql="SELECT
 		user_id,user_login,user_level,user_sign,user_position,
-		first_name,middle_name,last_name,
+		first_name,middle_name,last_name,nick,
 		id_type,id_serial,id_number,id_given_by,id_date,
 		user_assigned_path,
 		CONCAT(last_name,' ',first_name,' ',middle_name) AS full_name 
@@ -93,6 +94,7 @@ class User extends Catalog {
 	    $fields['first_name']=$this->request('first_name');
 	    $fields['middle_name']=$this->request('middle_name');	    
 	    $fields['last_name']=$this->request('last_name');
+            $fields['nick']=mb_substr($fields['last_name'],0,1).mb_substr($fields['first_name'],0,1).mb_substr($fields['middle_name'],0,1);
 	    $fields['id_type']=$this->request('id_type');
 	    $fields['id_serial']=$this->request('id_serial');	    
 	    $fields['id_number']=$this->request('id_number');
