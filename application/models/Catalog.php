@@ -24,7 +24,7 @@ class Catalog extends CI_Model {
 	    default:
 		if( $type ){
 		    $matches=[];
-		    preg_match("/$type/u", $var, $matches);
+		    preg_match('/'.$type.'/u', $var, $matches);
 		    $var=  isset($matches[0])?$matches[0]:null;
 		} else {
 		    $var=  addslashes( $var );

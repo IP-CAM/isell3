@@ -9,8 +9,8 @@
 		height: 'auto',
 		shadow:false,
 		onClose:function(){
-		    delete App.page_stock_product_card;
-                    console.log('pc terminated');
+                    //delete App.page_stock_product_card;
+                    //console.log('pc terminated');
 		}
 	    });
 	    this.node.window('hcenter');
@@ -40,11 +40,11 @@
 	submit:function(e){
 	    e.preventDefault();
 	    this.data=App.collectForm("#page_stock_product_card_frm");
-	    if( this.data.product_code_new.match(/^[\w\. ,-]+$/) ){
+	    if( this.data.product_code_new.match(/^[\wабвгдеёжзийклмнопрстуфхцчшщъыьюяіїє\. ,-]+$/i) ){
 		this.handler.notify('submit',this.data);
 		App.page_stock_product_card.node.window('close');
 	    } else {
-		alert("Код товара не должен содержать сивол: "+this.data.product_code_new.match(/[^\w\. ,-]/g).join(""));
+		alert("Код товара не должен содержать сивол: "+(this.data.product_code_new.match(/[^\wабвгдеёжзийклмнопрстуфхцчшщъыьюяіїє\. ,-]/ig)||[]).join(""));
 	    }
 	},
         stockTree:function(){
