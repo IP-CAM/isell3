@@ -144,6 +144,22 @@
 		});
 	    }
 	},
+        lock:function(){
+	    var node=$('#Ctree_tree').tree('getSelected');
+	    if( node ){
+                var level=prompt("Введите номер мин. уровня доступа пользователя, который может работать с этой компанией\n0 (Все)\n2 (Менеджер)\n3 (Бухгалтер)\n4 (Администратор)",node.level);
+		if( level!==null ){
+		    $.post('Company/companyTreeUpdate/'+App.uri(node.branch_id,'level',level),function(ok){
+			if( ok*1 ){
+			    App.flash("Сохранено: уровень доступа");
+                            Ctree.reload();
+			} else {
+			    App.flash("Сохраненние не удалось: уровень доступа");
+			}
+		    });
+		}
+	    }
+        },
 	reload:function(){
 	    $('#Ctree_tree').tree('reload');
 	    Ctree.node.find('.ok,.folder').prop('disabled',true);
@@ -196,6 +212,7 @@
     <button class="folder tiny_button" disabled="disabled" onclick="Ctree.create('folder')" title="Добавить папку"><img src="img/FolderAdd-24.png"></button>
     <button class="folder tiny_button" disabled="disabled" onclick="Ctree.update()" title="Редактировать"><img src="img/Edit-24.png"></button>
     <button class="folder tiny_button" disabled="disabled" onclick="Ctree.delete()" title="Удалить"><img src="img/delete.png"></button>
+    <button class="folder tiny_button" disabled="disabled" onclick="Ctree.lock()" title="Скрыть"><img src="img/lock.png"></button>
     <button class="folder tiny_button" disabled="disabled" onclick="Ctree.up()" title="Переместить в корень"><img src="img/up.png"></button>
     <button class="tiny_button" onclick="Ctree.reload()" title="Обновить"><img src="img/reload.png"></button>
 </div>
