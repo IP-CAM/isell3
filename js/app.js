@@ -267,8 +267,9 @@ App.setHTML=function( query, html ){
 };
 App.updaterCheck=function ( skip_release_check ){ 
     var handler=$.Deferred();
-    $.get('Maintain/getCurrentVersionStamp',function(stamp){
-	$.getJSON('https://api.github.com/repos/baycik/isell3/commits?since='+stamp+'&callback=?',function(resp){
+    $.get('Maintain/getCurrentVersionStamp',function(info){
+	var info=App.json(info);
+	$.getJSON('https://api.github.com/repos/baycik/isell3/commits?since='+info.stamp+'&sha='+info.branch+'&callback=?',function(resp){
 	    try{
 		var is_release=false;
 		var list=[];
