@@ -1,0 +1,109 @@
+<script type="text/javascript">
+    /*global App */
+    App.page_stock_product_card = {
+	init: function () {
+	    this.node.window({
+		title: 'Товарная карточка',
+		width: 780,
+                top:50,
+		height: 'auto',
+		shadow:false,
+		onClose:function(){
+                    //delete App.page_stock_product_card;
+                    //console.log('pc terminated');
+		}
+	    });
+	    this.node.window('hcenter');
+	    this.node.window('window').css('position','fixed');
+	    this.node.window('window').css('top','40px');
+            this.data.product_code_new=this.data.product_code;
+	    App.setupForm("#page_stock_product_card_frm", this.data);
+	},
+	initAfter:function(){
+	    $('#page_stock_product_card input').on('focus', function() {
+		this.select();
+	    });
+	    $("input[name="+this.data.focus+"]").select();
+	    $("#Stock_parent_id").combobox('setValue',App.page_stock_product_card.data.parent_id);
+	    $("#Stock_parent_id").combobox('setText',App.page_stock_product_card.data.parent_label);
+	},
+	categoryLoader:function(param, success, error){
+	    if( param.q===undefined ){
+		success([{branch_id:App.page_stock_product_card.data.parent_id,label:App.page_stock_product_card.data.parent_label}]);
+		return ;
+	    }
+	    $.get('Stock/labelFetch/', param, function (xhr) {
+		var resp = App.json(xhr);
+		success(resp[0] ? resp : []);
+	    });
+	},
+	submit:function(e){
+	    e.preventDefault();
+	    this.data=App.collectForm("#page_stock_product_card_frm");
+	    if( this.data.product_code_new.match(/^[\wабвгдеёжзийклмнопрстуфхцчшщъыьюяіїє\. ,-]+$/i) ){
+		this.handler.notify('submit',this.data);
+		App.page_stock_product_card.node.window('close');
+	    } else {
+		alert("Код товара не должен содержать сивол: "+(this.data.product_code_new.match(/[^\wабвгдеёжзийклмнопрстуфхцчшщъыьюяіїє\. ,-]/ig)||[]).join(""));
+	    }
+	},
+        stockTree:function(){
+            App.loadWindow('page/stock/tree').progress(function(status,category){
+                if( status==='select' ){
+                    console.log(category);
+                    $("#Stock_parent_id").combobox('setValue',category.branch_id);
+                    $("#Stock_parent_id").combobox('setText',category.label);
+                }
+            });
+        }
+    };
+</script>
+<form id="page_stock_product_card_frm" onsubmit="App.page_stock_product_card.submit(event)">
+    <input type="hidden" name="product_code">
+    <div class="inp_group" style="width: 420px;vertical-align: top">
+	<img src="img/product.png" style="float:left;width:100px;height: auto" />
+	<input class="easyui-combobox" name="parent_id" id="Stock_parent_id" title="Категория" data-options="
+		valueField: 'branch_id',
+		textField: 'label',
+		loader:App.page_stock_product_card.categoryLoader,
+		mode: 'remote',
+		hasDownArrow:false,
+		onSelect: function(node){App.page_stock_product_card.data.parent_id=node.branch_id},
+		icons: [{
+			 iconCls:'icon-settings16',
+			 handler: function(e){
+			    App.page_stock_product_card.stockTree();
+			 }
+		     }]
+		">
+	<input name="product_code_new" title="Код" required="required">
+	<input name="product_unit" title="Единица" required="required">
+	<input name="product_wrn_quantity" title="Мин. кол-во">
+	<input name="ru" title="Название Рус" style="width:300px" required="required">
+	<input name="ua" title="Название Укр" style="width:300px">
+	<input name="en" title="Название Англ" style="width:300px">
+    </div>
+    <div class="inp_group" style="width: 320px;vertical-align: top">
+	<input name="product_spack" title="В коробке">
+	<input name="product_bpack" title="В ящике">
+	<input name="product_weight" title="Вес кг">
+	<input name="product_volume" title="Объем м3">
+	<input name="product_uktzet" title="Тамож. код">
+	<input name="barcode" title="Штрихкод">
+	<input name="party_label" title="Партия">	
+    </div>
+    <div class="inp_rule"></div>
+    <div class="inp_group">
+	<input name="sell" title="Продажа">
+	<select name="curr_code" title="Валюта">
+	    <option value="UAH">UAH Гривна</option>
+	    <option value="USD">USD Доллар</option>
+	    <option value="RUB">RUB Рубль</option>
+	</select>
+	<input name="buy" title="Покупка">
+    </div>
+    <div style="text-align: center;margin-top: 15px;">
+	<button type="submit"><img src="img/Save-24.png" /> Сохранить</button>
+	<button type="button" onclick="App.page_stock_product_card.node.window('close')"><img src="img/close24.png" /> Закрыть</button>
+    </div>
+</form>

@@ -148,7 +148,7 @@ if ( isset($word_header) ) {
 		    to:'<?php echo addslashes($user_data['email']) ?>',
 		    fgenerator:'<?php echo $user_data['fgenerator']; ?>',
                     out_type:fext,
-		    doc_view_id:'<?php echo $user_data['doc_view_id'] ? $user_data['doc_view_id'] : $_GET['doc_view_id']; ?>',
+		    dump_id:'<?php echo isset($user_data['dump_id'])?$user_data['dump_id'] : isset($_GET['dump_id'])?$_GET['dump_id']:0; ?>',
 		    send_file:1
 		};
 		if (opener && opener.App) {

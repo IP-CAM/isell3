@@ -17,7 +17,7 @@ class FileEngine {
     public function FileEngine() {
         $this->conversion_table['.html'] = array('.html' => 'Веб Страница', '.doc' => 'Word Документ');
         $this->conversion_table['.xml'] = array('.xml' => 'XML Экспорт Данных');
-        $this->conversion_table['.xlsx'] = array('.xlsx' => 'Excel', '.xls' => 'Excel .xls', '.html' => 'Веб Страница');
+        $this->conversion_table['.xlsx'] = array('.xlsx' => 'Excel 2007', '.xls' => 'Excel 2003', '.html' => 'Веб Страница');
     }
     
     private function header($text){

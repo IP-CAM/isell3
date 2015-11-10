@@ -174,7 +174,9 @@ button img{
 .easyui-tabs .tabs-panels>.panel>.panel-body,.transp_grad{
     background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.60), rgba(150, 200, 255, 0.65)) repeat scroll 0 0 rgba(0, 0, 0, 0) !important;
 }
-
+.datagrid-body{
+    background-color: rgba(255,255,255,0.30);
+}
 
 
 .slim-tab{
@@ -182,12 +184,30 @@ button img{
 }
 .slim-tab .tabs-panels .panel-body,.slim-tab .tabs-header, .slim-tab .tabs-wrap, .slim-tab .tabs{
    width: auto !important;
-   min-width: 500px;
+   -min-width: 500px;
 }
 
 .tabs-header, .tabs-tool {
     background-color: rgba(224,236,255,0.85);
 }
+/* blue datagrid hack 
+
+.datagrid .datagrid-body{
+    background-color:#DAE5F0;
+}
+.datagrid .datagrid-header td, .datagrid .datagrid-body td, .datagrid .datagrid-footer td {
+    border-style: solid;
+    border-width: 0 1px 1px 0;
+    border-color: #E6F5FF;
+}
+.datagrid .datagrid-header, .datagrid-td-rownumber {
+    background: rgba(0, 0, 0, 0) linear-gradient(to bottom, #E6F5FF 0px, #c0d0f0 100%) repeat-x scroll 0 0;
+}
+.datagrid .datagrid-header td{
+    height: 28px !important;
+}
+ /blue datagrid hack */
+
 .datagrid-row-selected  .datagrid-cell{
     white-space: normal;
     word-wrap: normal;
@@ -289,6 +309,9 @@ button img{
 .icon-utils{
     background:url('../img/utils.png') no-repeat center center;
 }
+.icon-import{
+    background:url('../img/import.png') no-repeat center center;
+}
 .icon-duplicate{
     background:url('../img/copy.png') no-repeat center center;
 }
@@ -322,7 +345,9 @@ img{
 }
 @keyframes blink{
     0%{background-color: red;}
-    50%{background-color: yellow;}
+    25%{background-color: yellow;}
+    50%{background-color: green;}
+    75%{background-color: yellow;}
     100%{background-color: red;}
 }
 .blink{
