@@ -6,6 +6,7 @@
  */
 require_once 'Catalog.php';
 class Company extends Catalog{
+    
     public function branchFetch() {
 	$parent_id=$this->request('id','int',0);
 	$table = "companies_tree LEFT JOIN companies_list USING(branch_id)";
@@ -138,10 +139,6 @@ class Company extends Catalog{
     }
     
     public function switchActiveCompany(){
-        /*
-         * TODO support for acomps more than 2
-         */
-        
         $current_acomp_id=$this->Base->acomp('company_id');
         $sql="SELECT 
                 company_id 
@@ -150,7 +147,7 @@ class Company extends Catalog{
             WHERE 
                 is_active=1 
                 AND company_id<>'$current_acomp_id' 
-            ORDER BY company_id
+            ORDER BY company_id<'$current_acomp_id',company_id
             LIMIT 1";
         $company_id=$this->get_value($sql);
         return $this->selectActiveCompany($company_id);

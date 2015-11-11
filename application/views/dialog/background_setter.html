@@ -3,10 +3,10 @@
     App.page_dialog_background_setter={
 	init:function(){
 	    this.node.window({
-		title: 'Фоновый рисунок',
+		title: 'Фоновое изображение',
 		closable:true,
 		collapsible:true,
-		width: 270,
+		width: 350,
 		height: 'auto',
 		onClose: function () {
 		    App.page_dialog_background_setter.handler.notify('close');
@@ -19,7 +19,7 @@
 		var reader = new FileReader();
 		reader.onload = function (e) {
 		    try{
-                        var suffix=App.getUrlParent();
+                        var suffix=App.acomp?App.acomp.company_id:0;
 			localStorage.setItem('isell_bg'+suffix,e.target.result);
 			App.loadBg();
 		    }
@@ -37,10 +37,12 @@
     };
 </script>
 <p style="padding: 10px;">
-    <img src="img/personalize-icon.png" style="float:left;width:60px;height:60px;margin: 2px">
+    <img src="img/personalize-icon.png" style="float:left;width:110px;height:auto;margin: 2px">
     Загрузите изображение заднего фона в формате .jpeg, .png или .gif<br><br>
-    <input type="file" style="margin: auto" onchange="App.page_dialog_background_setter.setBg(this)">
-    <br><br>
-    <button type="button" onclick="App.page_dialog_background_setter.node.window('close')"><img src="img/apply24.png" style="vertical-align: middle"> Закрыть</button>
-    <button onclick="App.page_dialog_background_setter.removeBg()"><img src="img/delete.png" style="vertical-align: middle"> Удалить фон</button>
+    <input type="file" id="pdbackground_setter" style="display: none;" onchange="App.page_dialog_background_setter.setBg(this)">
+    <button onclick="$('#pdbackground_setter').click()"><img src="img/down.png" style="transform: rotate(180deg);">Загрузить изображение</button>
+<div style="clear: both;text-align: center;margin-top: 40px;">
+	<button type="button" onclick="App.page_dialog_background_setter.node.window('close')"><img src="img/apply24.png" style="vertical-align: middle"> Закрыть</button>
+	<button onclick="App.page_dialog_background_setter.removeBg()"><img src="img/delete.png" style="vertical-align: middle"> Удалить фон</button>
+    </div>
 </p>

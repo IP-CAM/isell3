@@ -4,6 +4,13 @@
 	init:function(){
 	    App.page_stock_movements.toggleFilter();
 	},
+	initAfter:function(){
+	    App.handler.progress(function(status){
+		if( status==="activeCompanySelected" ){
+		    App.page_stock_movements.reload();
+		}
+	    });
+	},
 	toggleFilter:function () {
 	    if (this.filterEnabled) {
 		$('#Stock_movements_dg').datagrid('disableFilter');

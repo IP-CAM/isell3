@@ -52,13 +52,12 @@ var App = {
     setTitle:function( title ){
         this.title = title||this.title;
         var title_data={
-            acomp_name:App.user.props.active_label,
+            acomp_name:App.acomp.label,
             pcomp_name:App.pcomp?App.pcomp.label:'',
             module_name:this.title
         };
-	console.log(title_data);
         App.renderTpl("module_title",title_data);
-        document.title = this.title + ': ' +  App.user.props.active_company_name;
+        document.title = this.title + ': ' +  App.acomp.company_name;
     },
     initTabs: function (tab_id) {
 	$('#' + tab_id).tabs({
@@ -233,9 +232,11 @@ App.getUrlParent=function(){
     return location.href.split('/')[3];
 };
 App.loadBg = function () {
-    if (localStorage.getItem('isell_bg'+App.getUrlParent())) {
-	$("body").css('background', 'url("' + localStorage.getItem('isell_bg'+App.getUrlParent()) + '") repeat fixed center top');
+    if (localStorage.getItem('isell_bg'+(App.acomp?App.acomp.company_id:0) )) {
+	$("body").css('background', 'url("' + localStorage.getItem('isell_bg'+(App.acomp?App.acomp.company_id:0) ) + '") repeat fixed center top');
 	$("body").css('background-size', '100%');
+    } else {
+	$("body").css('background', '');	
     }
 };
 App.setBg = function () {

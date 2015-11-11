@@ -42,9 +42,7 @@ class User extends Catalog {
 	    'user_login'=>$this->Base->svar('user_login'),
 	    'user_level'=>$this->Base->svar('user_level'),
 	    'user_level_name'=>$this->Base->svar('user_level_name'),
-	    'active_company_id'=>$this->Base->acomp('company_id'),
-	    'active_company_name'=>$this->Base->acomp('company_name'),
-	    'active_label'=>$this->Base->acomp('label'),
+	    'acomp'=>$this->Base->svar('acomp'),
 	    'module_list'=>$this->getModuleList()
 	];
     }

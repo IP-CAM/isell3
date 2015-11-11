@@ -106,7 +106,11 @@ function (ready, dom, on, registry, Tooltip, DataGrid) {
     /* global App */
     App.HomeDocumentList={
         init:function(){
-            
+	    App.handler.progress(function(status){
+		if( status==="activeCompanySelected" ){
+		    $('#home_document_list_dg').datagrid('reload');
+		}
+	    });            
         },
 	loader:function (param, success, error) {
 	    $.get(App.uri('DocumentCore', 'listFetch', param.page, param.rows), {filterRules: param.filterRules}, function (xhr) {
@@ -127,6 +131,7 @@ function (ready, dom, on, registry, Tooltip, DataGrid) {
     };
     $(function(){
         setTimeout(function(){
+	    App.HomeDocumentList.init();
             $('#home_document_list_dg').datagrid('enableFilter');
         },500);
     });
