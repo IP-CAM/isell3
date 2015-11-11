@@ -208,7 +208,7 @@ class Stock extends Catalog {
 	$target=[];
 	$source=[];
 	for( $i=0;$i<count($trg);$i++ ){
-	    if( strpos($filter,$trg[$i]) && !empty($src[$i]) ){
+            if( strpos($filter,"/{$trg[$i]}/") && !empty($src[$i]) ){
                 if( $trg[$i]=='product_code' ){
                     $product_code_col=$src[$i];
                 }
@@ -219,9 +219,9 @@ class Stock extends Catalog {
 	}
 	$target_list=  implode(',', $target);
 	$source_list=  implode(',', $source);
-	$set_list=  count($set)?"ON DUPLICATE KEY UPDATE ".implode(',', $set):'';
-	$this->query("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data $set_list");
-	//print("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data $set_list");
+	$set_list=  implode(',', $set);
+	$this->query("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data ON DUPLICATE KEY UPDATE $set_list");
+	//print("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data ON DUPLICATE KEY UPDATE $set_list");
 	return $this->db->affected_rows();
     }
 }
