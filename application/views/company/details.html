@@ -77,14 +77,6 @@
     <div class="inp_group" style="width:340px;">
 	<input type="text" name="company_agreement_num" title="Номер договора"/>
 	<input type="text" name="company_agreement_date" title="Дата договора"/>
-	<div id="page_company_details_frm_hdn" style="display: none">
-	    <input type="text" name="company_vat_rate" title="Ставка НДС"/>
-	    <select name="language" title="Язык">
-		<option value="en">English</option>
-		<option value="ua">Українська</option>
-		<option value="ru">Русский</option>
-	    </select>
-	</div>
 	<div class="inp_rule"></div>
 	<input type="text" name="company_bank_account" title="Поточный счет"/>
 	<input type="text" name="company_bank_id" title="Код Банка"/>
@@ -105,6 +97,20 @@
     </div>
     <div class="inp_rule"></div>
     <textarea name="company_description" title="Дополнительно" style="width:550px;"></textarea>
+    <div class="inp_rule"></div>
+    <div id="page_company_details_frm_hdn" style="display: none">
+        <input type="text" name="company_vat_rate" title="Ставка НДС"/>
+        <select name="language" title="Язык">
+            <option value="en">English</option>
+            <option value="ua">Українська</option>
+            <option value="ru">Русский</option>
+        </select>
+        <select name="curr_code" title="Валюта">
+            <option value="UAH">Гривна UAH</option>
+            <option value="USD">Доллар USD</option>
+            <option value="RUB">Рубль RUB</option>
+        </select>
+    </div>
 </div>
 <style>
     #page_company_details_frm b{

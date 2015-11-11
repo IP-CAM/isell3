@@ -95,11 +95,11 @@ class Utils extends CI_Model {
 	$to=$this->input->get_post('to');
 	$subject=$this->input->get_post('subject');
 	$body=$this->input->get_post('body');
-	$doc_view_id=$this->input->get_post('doc_view_id');
+	$dump_id=$this->input->get_post('dump_id');
 	$fgenerator=$this->input->get_post('fgenerator');
         $out_type=$this->input->get_post('out_type');
         $send_file=$this->input->get_post('send_file');
-	$file=$send_file?$this->generateFile($fgenerator,$doc_view_id,$out_type,$subject):null;
+	$file=$send_file?$this->generateFile($fgenerator,$dump_id,$out_type,$subject):null;
 	return $this->sendEmail($to, $subject, $body, $file);
     }
     private $mimes=[
@@ -108,12 +108,17 @@ class Utils extends CI_Model {
         '.xlsx'=>'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         '.pdf'=>'application/pdf'
         ];
-    private function generateFile($fgenerator,$doc_view_id,$out_type='.xlsx',$subject='file'){
-        $file=[];
-        $Generator=$this->Base->load_model($fgenerator);
-        $file['data']=$Generator->viewFileGet($doc_view_id,$out_type);
-        $file['mime']=$this->mimes[$out_type];
-        $file['name']=  str_replace(' ', '_', $subject).$out_type;
-        return $file;
+    private function generateFile($fgenerator,$dump_id,$out_type='.xlsx',$subject='file'){
+        $ViewManager=$this->Base->load_model('ViewManager');
+	$file_data=$ViewManager->getFile($dump_id,$out_type);
+	if( $file_data ){
+	    return [
+		'data'=>$file_data,
+		'mime'=>$this->mimes[$out_type],
+		'name'=>str_replace(' ', '_', $subject).$out_type
+	    ];
+	}
+	$this->Base->response(0);
+        return null;
     }
 }

@@ -68,6 +68,9 @@
 	},
 	tnames:{
 	    init:function(){
+                Mark.pipes.undollar=function(str){
+                    return str.replace('$','&#36;');
+                };
 		if( Ledger.current_acc_code ){
 		    $.get("AccountsData/transNameListFetch/"+Ledger.current_acc_code,function(resp){
 			App.renderTpl('ledger_tnames',{tnames:App.json(resp)});
@@ -219,7 +222,7 @@
 		    out_type:out_type
 		};
 		var url='AccountsView/ledgerViewGet/?'+$.param( params );
-		if( out_type==='print' ){
+		if( out_type==='.print' ){
 		    window.open(url,'print_tab');
 		} else {
 		    location.href=url;
@@ -369,7 +372,7 @@
     <div id="ledger_tnames" class="covert">
 	<img src="img/edit_add.png" style="width:16px;height:16px;margin-bottom: 2px;"> Операции по счету
 	{{tnames}}
-	<button style="text-align: left;margin-bottom: 3px;width: 177px" onclick="Ledger.addTransaction('{{trans_type}}','{{trans_name}}')"><div class="tag">{{trans_type}}</div><br>{{trans_name}}</button>
+	<button style="text-align: left;margin-bottom: 3px;width: 177px" onclick="Ledger.addTransaction('{{trans_type}}','{{trans_name|undollar}}')"><div class="tag">{{trans_type}}</div><br>{{trans_name}}</button>
 	{{/tnames}}
 	<div><a href="javascript:Ledger.tnames.show()"><img src="img/edit-16.png"> Изменить список</a></div>
     </div>
@@ -414,7 +417,7 @@
 	    <span class="icon-24 icon-tablefilter" title="Фильтр таблицы" onclick="Ledger.list.toggleFilter()"> </span>
 	    <span class="icon-24 icon-refresh" title="Обновить" onclick="$('#account_ledger_dg').datagrid('reload')"> </span>
 	    <span class="icon-24" style="background-image: url(img/file_download.png);background-repeat: no-repeat" title="Скачать таблицу" onclick="Ledger.list.out('.xlsx');"> </span>
-	    <span class="icon-24 icon-print" title="Напечатать" onclick="Ledger.list.out('print');"> </span>
+	    <span class="icon-24 icon-print" title="Напечатать" onclick="Ledger.list.out('.print');"> </span>
 	</div>
     </div>
     <table id="account_ledger_dg" class="easyui-datagrid" style="width:765px;"

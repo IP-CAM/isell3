@@ -18,7 +18,7 @@
 	    
 	    App.renderTpl('DocEntEd_markup',this.data);
 	    App.setupForm("#document_ented_frm",this.data,'use_inp_values');
-	    $("input[name=product_price]").numberbox({precision:this.data.head.signs_after_dot});
+	    //$("input[name=product_price]").numberbox({precision:this.data.head.signs_after_dot});
 	    DocEntEd.getStats();
 	},
 	initAfter:function(){
@@ -87,16 +87,13 @@
 </div>
 <form id="document_ented_frm" onsubmit="DocEntEd.node.window('close');return false;">
     <div>
-	<input class="easyui-numberbox" name="product_quantity" id="dee_product_quantity" title="Кол-во" data-options="
-	       precision:0,
+	<input class="easyui-textbox" name="product_quantity" id="dee_product_quantity" title="Кол-во" data-options="
 	       onChange:function(val){DocEntEd.change('product_quantity',val)}
 	       " />
 	<span id="DocEntEd_qty_markup" class="covert" title="Кол-во на складе">Склад: {{product_quantity}} {{unit}}</span>
     </div>
     <div>
-	<input class="easyui-numberbox" name="product_price" id="doc_ent_price" title="Цена" data-options="
-	   groupSeparator:' ',
-	   decimalSeparator:',',
+	<input class="easyui-textbox" name="product_price" id="doc_ent_price" title="Цена" data-options="
 	   onChange:function(val){DocEntEd.change('product_price',val);}
 	   " />
     <span id="DocEntEd_price_markup" class="covert" title="Стандартная цена">Цена: <b style="color:'{{color}}'">{{price}} {{curr_symbol}}</b></span>

@@ -5,9 +5,9 @@ class Maintain extends CI_Model {
     public function getCurrentVersionStamp(){
 	$this->dirWork = realpath('.');
 	if( file_exists($this->dirWork.'/.git') ){
-	    return date(time());
+	    return ['stamp'=>date ("Y-m-d\TH:i:s\Z", time()),'branch'=>$this->getGitBranch()];
 	}
-	return date ("Y-m-d\TH:i:s\Z", filemtime($this->dirWork));
+	return ['stamp'=>date ("Y-m-d\TH:i:s\Z", filemtime($this->dirWork)),'branch'=>$this->getGitBranch()];
     }
     
     private function setupUpdater(){
@@ -39,8 +39,8 @@ class Maintain extends CI_Model {
 	if ($action == 'unpack') {
 	    return $this->updateUnpack();
 	}
-	if ($action == 'swap') {
-	    return $this->updateSwap();
+	if ($action == 'prepare') {
+	    return $this->updateSwapPrepare();
 	}
 	if ($action == 'install') {
 	    return $this->updateInstall();
@@ -67,62 +67,25 @@ class Maintain extends CI_Model {
 	}
     }
     
-    private function safeRename( $old, $new ){
-	error_reporting(E_ERROR | E_PARSE);
-	$this->delTree($new);
-	$atempt=10;
-	while( $atempt-- ){
-            if( rename($old,$new) ){
-                return true;
-            }
-            $output=[];$code=0;
-            exec("move $old $new",$output,$code);
-            if( $code==0 ){
-                return true;
-            }
-	    sleep(1);
+    private function updateSwap() {
+	if( file_exists($this->dirWork) && file_exists($this->zipSubFolder) ){
+            return  $this->swapSafeRename($this->dirWork, $this->dirBackup) && 
+		    $this->swapSafeRename($this->zipSubFolder, $this->dirWork) &&
+		    $this->delTree($this->dirUnpack);
 	}
 	return false;
     }
     
-    private function safeRename2( $old, $new ){
-	error_reporting(E_ERROR | E_PARSE);
-	if( file_exists($old) ){
-	    $this->delTree($new);
-	    if( rename($old,$new) ){
-		return true;
-	    } else {
-		exec("move $old $new",$output,$code);
-		return $code==0;
-	    }
-	}
+    private function updateSwapFinisherCheck(){
+	return copy( 'application/models/MaintainSwapper.php', $this->dirParent.'/MaintainSwapper.php');
     }
     
-//    private function xcopy($source, $dest, $permissions = 0755){
-//        if (is_link($source)) {
-//            return symlink(readlink($source), $dest);
-//        }
-//        if (is_file($source)) {
-//            return copy($source, $dest);
-//        }
-//        if (!is_dir($dest)) {
-//            mkdir($dest, $permissions);
-//        }
-//        $dir = dir($source);
-//        while (false !== $entry = $dir->read()) {
-//            if ($entry == '.' || $entry == '..') {
-//                continue;
-//            }
-//            $this->xcopy("$source/$entry", "$dest/$entry", $permissions);
-//        }
-//        $dir->close();
-//        return true;
-//    }
-    
-    private function updateSwap() {
-	if( file_exists($this->dirWork) && file_exists($this->zipSubFolder) ){
-            return  $this->safeRename($this->dirWork, $this->dirBackup) && 
-		    $this->safeRename($this->zipSubFolder, $this->dirWork) &&
+    private function updateSwapPrepare() {
+	if( file_exists($this->zipSubFolder) ){
+	    $this->delTree($this->dirWork."_new");
+	    $this->updateSwapFinisherCheck();
+            return  rename($this->zipSubFolder, $this->dirWork."_new") && 
+		    $this->delTree($this->dirBackup) &&
 		    $this->delTree($this->dirUnpack);
 	}
 	return false;
@@ -130,7 +93,7 @@ class Maintain extends CI_Model {
 
     private function delTree($dir) {
 	if( !file_exists ($dir) ){
-	    return false;
+	    return true;
 	}
 	$files = array_diff(scandir($dir), array('.', '..'));
 	foreach ($files as $file) {

@@ -21,6 +21,7 @@
 	initSelector:function(){
 	    this.assigned={};
 	    App.renderTpl('page_dialog_importer_selector',this.data);
+	    this.initRequired();
 	    App.setupForm("#page_dialog_importer_frm").change(function(){
 		App.page_dialog_importer.assigned[this.name]=this.value;
 	    });
@@ -29,12 +30,21 @@
                 App.page_dialog_importer.submit();
             });
         },
+	initRequired:function(){
+	    var config=this.data.fields_to_import;
+	    for(var i in config){
+		if( config[i].required ){
+		    console.log("#page_dialog_importer_frm input[name="+config[i].field+"]");
+		    $("#page_dialog_importer_frm select[name="+config[i].field+"]").prop('required','required');
+		}
+	    }
+	},
         submit:function(){
             var fvalue=App.collectForm("#page_dialog_importer_frm");
 	    var split={source:[],target:[]};
 	    var missed=[];
             for(var i in fvalue){
-                if( !fvalue[i] ){
+                if( !fvalue[i] && $("#page_dialog_importer_frm select[name="+i+"]").attr('required') ){
                     var title=$("#page_dialog_importer_frm select[name="+i+"]").attr('title');
 		    missed.push(title);
                 }
@@ -132,7 +142,7 @@
             <img src="img/database.png" style="height: 90px;width: auto;"><br>Импортировать
         </button>
         {{fields_to_import}}
-	<select name="{{field}}" title="{{name}} " style="width:50px;" required="required">
+	<select name="{{field}}" title="{{name}} " style="width:50px;">
 	    <option>A</option>
 	    <option>B</option>
 	    <option>C</option>
