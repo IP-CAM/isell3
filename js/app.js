@@ -53,7 +53,7 @@ var App = {
         this.title = title||this.title;
         var title_data={
             acomp_name:App.user.props.active_label,
-            pcomp_name:App.pcomp?App.pcomp.label:'-',
+            pcomp_name:App.pcomp?App.pcomp.label:'',
             module_name:this.title
         };
         App.renderTpl("module_title",title_data);

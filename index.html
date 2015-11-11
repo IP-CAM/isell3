@@ -74,12 +74,21 @@
 		},
 		loginFormHide: function () {
 		    $("#loginScreen,#loginOverlay").hide();
-		}
+		},
+                acompSwitch:function(){
+                    $.get("Company/switchActiveCompany",function(resp){
+                        var company=App.json(resp);
+                        App.user.props.active_company_id=company.company_id;
+                        App.user.props.active_company_name=company.company_name;
+                        App.user.props.active_label=company.label;
+                        App.handler.notify('activeCompanySelected');
+                    });
+                }
 	    };
 	    App.onReady = function () {
 		App.user.getData();
                 App.handler.progress(function(status){
-                    if( status==='passiveCompanySelected' ){
+                    if( status==='passiveCompanySelected' || status==='activeCompanySelected' ){
                         App.setTitle();
                     }
                 });
@@ -161,10 +170,12 @@
     <body class=" claro ">
 	<div id="ApplicationBar" class="transparent">
 	    <img src="img/plusLogo.png" style="vertical-align:top;height: 40px;width:auto;margin: 1px;" />
-	    <div style="color:#009;padding:8px;display: inline-block;font-size: 18px;" id="module_title">
+	    <div style="color:#009;margin-top:10px;display: inline-block;font-size: 18px;white-space: nowrap;" id="module_title">
                 {{module_name}}: 
-                <img src="img/home.png" style="margin-top: -4px;"> <span class="link_button">{{acomp_name}}</span> / 
-                <img src="img/gray.png"> {{pcomp_name}}
+                <img src="img/home.png" style="margin-top: -4px;"> <span class="link_button" onclick="App.user.acompSwitch()">{{acomp_name}}</span>
+                {{if pcomp_name}}
+                / <img src="img/gray.png"> {{pcomp_name}}
+                {{/if}}
             </div>
 	    <div id="holder_user_panel">
 		<img src="img/user-32.png" style="margin: 4px;"/>

@@ -130,10 +130,30 @@ class Company extends Catalog{
 	$this->Base->svar('pcomp',$company);
 	return $company;
     }
+    
     public function selectActiveCompany( $company_id ){
 	$company=$this->companyGet( $company_id );
 	$this->Base->svar('acomp',$company);
 	return $company;
+    }
+    
+    public function switchActiveCompany(){
+        /*
+         * TODO support for acomps more than 2
+         */
+        
+        $current_acomp_id=$this->Base->acomp('company_id');
+        $sql="SELECT 
+                company_id 
+            FROM 
+                companies_list
+            WHERE 
+                is_active=1 
+                AND company_id<>'$current_acomp_id' 
+            ORDER BY company_id
+            LIMIT 1";
+        $company_id=$this->get_value($sql);
+        return $this->selectActiveCompany($company_id);
     }
     
     public function companyPrefsGet(){

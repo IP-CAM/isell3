@@ -6,10 +6,10 @@
 	},
 	initAfter: function () {
             App.handler.progress(function(status,pcomp){
-                if( status==='passiveCompanySelected' ){
+                if( status==='passiveCompanySelected' || status==='activeCompanySelected' ){
                     $('#document_list_dg').datagrid('reload');
                     DocList.doc.load(0);
-		    $("#doc_list_pcompname").text(pcomp.label);
+		    $("#doc_list_pcompname").text(App.pcomp.label);
                 }
             });
 	},
