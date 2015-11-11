@@ -84,6 +84,9 @@
 				App.flash("Свойства пользователя сохранены");
 				PrefJs.user.checkUserChanged(user_data);
 			    } else {
+				if( ok==='LAST_ADMIN' ){
+				    alert("Должен остаться хотя бы один администратор.");
+				}
 				App.flash("Не удалось сохранить свойства пользователя");
 			    }
 			});

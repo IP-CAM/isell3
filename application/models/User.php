@@ -103,8 +103,13 @@ class User extends Catalog {
 	    $fields['id_date']=$this->request('id_date');	    
 	}
 	if( $current_level>=4 ){
-	    $fields['user_level']=$this->request('user_level');
+	    $fields['user_level']=$this->request('user_level','int');
 	    $fields['user_assigned_path']=$this->request('user_assigned_path');
+	    
+	    $admin=$this->adminLastCheck($user_id);
+	    if( $admin==='last' && $fields['user_level']<4 ){
+		return 'LAST_ADMIN';
+	    }
 	}
 	if( $user_id===0 ){
 	    return $this->create(BAY_DB_MAIN.".user_list", $fields);
@@ -115,10 +120,13 @@ class User extends Catalog {
     public function remove( $user_id ){
 	$this->Base->set_level(4);
 	$this->check($user_id,'int');
-	$admin=$this->get_value("SELECT IF(user_level=4 AND (SELECT COUNT(*)=1 FROM user_list WHERE user_level=4),'last','not_last') FROM user_list WHERE user_id='$user_id'");
+	$admin=$this->adminLastCheck($user_id);
 	if( $admin==='last' ){
 	    return 'LAST_ADMIN';
 	}
 	return $this->delete(BAY_DB_MAIN.".user_list", ['user_id'=>$user_id]);
+    }
+    private function adminLastCheck($user_id){
+	return $this->get_value("SELECT IF(user_level=4 AND (SELECT COUNT(*)=1 FROM user_list WHERE user_level=4),'last','not_last') FROM user_list WHERE user_id='$user_id'");
     }
 }
