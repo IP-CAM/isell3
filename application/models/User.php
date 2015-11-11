@@ -115,6 +115,10 @@ class User extends Catalog {
     public function remove( $user_id ){
 	$this->Base->set_level(4);
 	$this->check($user_id,'int');
+	$admin=$this->get_value("SELECT IF(user_level=4 AND (SELECT COUNT(*)=1 FROM user_list WHERE user_level=4),'last','not_last') FROM user_list WHERE user_id='$user_id'");
+	if( $admin==='last' ){
+	    return 'LAST_ADMIN';
+	}
 	return $this->delete(BAY_DB_MAIN.".user_list", ['user_id'=>$user_id]);
     }
 }

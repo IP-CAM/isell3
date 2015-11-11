@@ -55,6 +55,9 @@
                        if( ok*1 ){
                            App.flash("Пользователь "+user.user_login+" удален");
                        } else {
+			   if( ok==='LAST_ADMIN' ){
+			       alert("Должен остаться хотя бы один администратор.");
+			   }
                            App.flash("Пользователь не удален");
                        }
                        $('#pref_user_dg').datagrid('reload');
