@@ -56,6 +56,7 @@ var App = {
             pcomp_name:App.pcomp?App.pcomp.label:'',
             module_name:this.title
         };
+	console.log(title_data);
         App.renderTpl("module_title",title_data);
         document.title = this.title + ': ' +  App.user.props.active_company_name;
     },
