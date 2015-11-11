@@ -95,7 +95,7 @@ class Company extends Catalog{
 	}
 	$sql="UPDATE 
 		companies_list
-	    LEFT JOIN 
+	    JOIN 
 		companies_tree USING(branch_id) 
 	    SET $field='$value' 
 	    WHERE 

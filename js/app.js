@@ -50,9 +50,14 @@ var App = {
 	}
     },
     setTitle:function( title ){
-        this.title = title;
-        $("#module_title").html('<span style="color:#b09"><b>' + App.user.props.active_company_name + '</b></span> - ' + this.title);
-        document.title = this.title + ' / ' +  App.user.props.active_company_name;
+        this.title = title||this.title;
+        var title_data={
+            acomp_name:App.user.props.active_label,
+            pcomp_name:App.pcomp?App.pcomp.label:'-',
+            module_name:this.title
+        };
+        App.renderTpl("module_title",title_data);
+        document.title = this.title + ': ' +  App.user.props.active_company_name;
     },
     initTabs: function (tab_id) {
 	$('#' + tab_id).tabs({

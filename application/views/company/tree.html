@@ -76,7 +76,7 @@
 	    var newlabel=(new_branch_type === 'leaf')?prompt("Введите Короткое название новой компании",'Новая компания'):prompt("Введите название новой группы",'Новая группа');
 	    if( newlabel && newlabel.indexOf(',')===-1 ){
 		$.post('Company/companyTreeCreate/'+App.uri(parent_id,newlabel,new_branch_type),function(company_id){
-		    if(new_branch_type === 'leaf' && confirm("Компания '"+newlabel+"' создана.\n\nВвести реквизиты сейчас?\n\n")){
+		    if(new_branch_type === 'leaf' && confirm("Компания '"+newlabel+"' создана.\nВвести реквизиты сейчас?\n\n")){
 			Ctree.updateDetails(company_id,parent_target);
 		    }
 		    $('#Ctree_tree').tree('reload',parent_target);
@@ -185,7 +185,9 @@
 	    for(var i in data){
 		data[i].id=data[i].branch_id;
 		data[i].text=data[i].label;
-		if(data[i].level!=0){
+		if(data[i].is_active*1){
+		    data[i].iconCls='icon-home';
+		} else if(data[i].level!=0){
 		    data[i].iconCls='icon-lock';
 		}
 		else if( data[i].is_leaf*1 ){

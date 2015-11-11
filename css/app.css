@@ -249,6 +249,9 @@ button img{
 .icon-eye{
     background:url('../img/eye.png') no-repeat center center;
 }
+.icon-home{
+    background:url('../img/home.png') no-repeat center center;
+}
 .icon-create{
     background:url('../img/edit_add.png') no-repeat center center;
 }
@@ -335,6 +338,14 @@ button img{
 }
 .icon-comp {
     background:url('../img/gray.png') no-repeat center center;
+}
+.link_button:hover{
+    padding: 5px;
+    margin: -6px;
+    border: 1px solid #0dd;
+    border-radius: 5px;
+    background-color: #cef;
+    cursor: pointer;
 }
 .covert{
     visibility: hidden;

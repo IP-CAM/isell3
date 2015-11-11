@@ -7,7 +7,7 @@
 	<link rel="stylesheet" type="text/css" href="js/jquery-easyui-1.4/themes/default/easyui.css"/>
 	<link rel="stylesheet" type="text/css" href="js/jquery-easyui-1.4/themes/icon.css"/>
 	<link rel="stylesheet" type="text/css" href="js/jquery-easyui-1.4/themes/color.css"/>
-	<link href="css/app.css" rel="stylesheet" type="text/css" />
+	<link rel="stylesheet" type="text/css" href="css/app.css" />
 	<script type="text/javascript" src="js/markup.min.js"></script>
 	<script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
 	<script type="text/javascript" src="js/jquery-easyui-1.4/jquery.easyui.min.js"></script>
@@ -78,6 +78,11 @@
 	    };
 	    App.onReady = function () {
 		App.user.getData();
+                App.handler.progress(function(status){
+                    if( status==='passiveCompanySelected' ){
+                        App.setTitle();
+                    }
+                });
 	    };
 	    App.module={
 		legacy:["Companies","Accounts","Lists","Data","Home"],//,"Stock"
@@ -155,8 +160,12 @@
     </head>
     <body class=" claro ">
 	<div id="ApplicationBar" class="transparent">
-	    <img src="img/plusLogo.png" style="vertical-align:top;width:150px;height: auto; max-height: 50px;margin: 2px;" />
-	    <div style="color:#009;padding:8px;display: inline-block;font-size: 18px;" id="module_title">&nbsp;</div>
+	    <img src="img/plusLogo.png" style="vertical-align:top;height: 40px;width:auto;margin: 1px;" />
+	    <div style="color:#009;padding:8px;display: inline-block;font-size: 18px;" id="module_title">
+                {{module_name}}: 
+                <img src="img/home.png" style="margin-top: -4px;"> <span class="link_button">{{acomp_name}}</span> / 
+                <img src="img/gray.png"> {{pcomp_name}}
+            </div>
 	    <div id="holder_user_panel">
 		<img src="img/user-32.png" style="margin: 4px;"/>
 		<div id="div_user_panel">
