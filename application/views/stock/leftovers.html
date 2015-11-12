@@ -110,6 +110,7 @@
 			$.post("Stock/import/",split,function(ok){
 			    App.flash("Добавлено "+ok);
 			    Leftovers.list.reload();
+                            App.page_dialog_importer && App.page_dialog_importer.reload();
 			});
 		    }
 		});

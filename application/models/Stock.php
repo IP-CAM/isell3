@@ -170,26 +170,6 @@ class Stock extends Catalog {
 	    $prev_concat=$concat;
 	}
     }
-    public function import_(){
-        $parent_id=$this->request('parent_id','int');
-        $pcode_col=$this->request('product_code');
-        $label=$this->request('label');
-	$where=$label?"AND label='$label'":'';
-        $sql="
-	    INSERT INTO ".BAY_DB_MAIN.".stock_entries(product_code,parent_id)
-            SELECT
-                product_code,
-		'$parent_id'
-            FROM
-                imported_data
-                    JOIN
-                prod_list ON product_code=$pcode_col
-            WHERE
-                product_code NOT IN (SELECT product_code FROM ".BAY_DB_MAIN.".stock_entries)
-		$where";
-	$this->query($sql);
-        return $this->db->affected_rows();
-    }
     public function import(){
 	$source = array_map('addslashes',$this->request('source','raw'));
 	$target = array_map('addslashes',$this->request('target','raw'));
@@ -208,20 +188,16 @@ class Stock extends Catalog {
 	$target=[];
 	$source=[];
 	for( $i=0;$i<count($trg);$i++ ){
-            if( strpos($filter,"/{$trg[$i]}/") && !empty($src[$i]) ){
-                if( $trg[$i]=='product_code' ){
-                    $product_code_col=$src[$i];
-                }
+            if( strpos($filter,"/{$trg[$i]}/")!==false && !empty($src[$i]) ){
 		$target[]=$trg[$i];
 		$source[]=$src[$i];
-		$set[]="{$trg[$i]}=$src[$i]";//$trg[$i]!='product_code'?:'';
+		$set[]="{$trg[$i]}=$src[$i]";
 	    }
 	}
 	$target_list=  implode(',', $target);
 	$source_list=  implode(',', $source);
 	$set_list=  implode(',', $set);
 	$this->query("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data ON DUPLICATE KEY UPDATE $set_list");
-	//print("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data ON DUPLICATE KEY UPDATE $set_list");
 	return $this->db->affected_rows();
     }
 }

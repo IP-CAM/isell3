@@ -115,13 +115,16 @@
 	},
 	filter:function( node ){
 	    App.page_dialog_importer.label=node.value||'';
-	    $('#page_dialog_importer_dg').datagrid('reload');
+            App.page_dialog_importer.reload();
 	},
 	loader:function(param, success, error){
 	    $.post('Importer/getRows/'+App.page_dialog_importer.label,param,function(xhr){
 		success(App.json(xhr));
 	    });
-	}
+	},
+        reload:function(){
+	    $('#page_dialog_importer_dg').datagrid('reload');
+        }
     };
 </script>
 <style>
