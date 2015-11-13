@@ -274,8 +274,8 @@ App.setHTML=function( query, html ){
 };
 App.updaterCheck=function ( skip_release_check ){ 
     var handler=$.Deferred();
-    $.get('Maintain/getCurrentVersionStamp',function(info){
-	var info=App.json(info);
+    $.get('Maintain/getCurrentVersionStamp',function(resp){
+	var info=App.json(resp);
 	$.getJSON('https://api.github.com/repos/baycik/isell3/commits?since='+info.stamp+'&sha='+info.branch+'&callback=?',function(resp){
 	    try{
 		var is_release=false;
@@ -307,9 +307,9 @@ App.updaterInit=function(){
 		App.loadWindow('page/dialog/updater',{updates:list});
 	    });
 	});
-	setTimeout(App.updaterCheck,1000*5);
+	setTimeout(App.updaterCheck,1000*1);
     } else {
-	setTimeout(App.updaterInit,1000*10);
+	setTimeout(App.updaterInit,1000*5);
     }
 };
 App.chatCheck=function(){
@@ -325,7 +325,7 @@ App.chatCheck=function(){
     setTimeout(App.chatCheck,1000*60);
 };
 App.chatInit=function(){
-    setTimeout(App.chatCheck,1000*5);
+    setTimeout(App.chatCheck,1000*3);
 };
 //////////////////////////////////////////////////
 //AJAX SETUP
