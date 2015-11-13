@@ -289,8 +289,7 @@
 	    ];
 	    App.loadWindow('page/dialog/importer',{label:'документ',fields_to_import:config}).progress(function(status,fvalue,Importer){
 		if( status==='submit' ){
-		    fvalue.doc_id=Doc.head.props.doc_id;
-		    $.post("DocumentItems/import/",fvalue,function(ok){
+		    $.post("DocumentItems/import/"+Doc.head.props.doc_id,fvalue,function(ok){
 			App.flash("Добавлено "+ok);
 			Importer.reload();
 		    });
