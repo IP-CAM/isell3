@@ -89,7 +89,7 @@
 	    Doc.head.typeComboFormatterIcon(Doc.head.props.doc_type);
 	},
 	hightlightCommited:function(){
-	    $('#Doc_commit_btn').css('visibility',(Doc.head.props.is_commited*1?"hidden":"visible"));
+	    $('#Doc_commit_btn').css('display',(Doc.head.props.is_commited*1?"none":""));
 	    $('#Doc_type_cmb,#Doc_notcount_cmb,#Doc_pci').combobox(Doc.head.props.is_commited*1?'disable':'enable');
 	    var color='';
 	    if( Doc.head.props.is_commited*1 ){

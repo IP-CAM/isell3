@@ -31,8 +31,11 @@
 	    }
 	},
 	removeBg:function(){
-	    localStorage.removeItem('isell_bg'+App.getUrlParent());
+	    localStorage.removeItem('isell_bg'+(App.acomp?App.acomp.company_id:0));
 	    $("body").css('background', '');
+	},
+	clearLs:function(){
+	    localStorage.clear();
 	}
     };
 </script>
@@ -44,5 +47,6 @@
 <div style="clear: both;text-align: center;margin-top: 40px;">
 	<button type="button" onclick="App.page_dialog_background_setter.node.window('close')"><img src="img/apply24.png" style="vertical-align: middle"> Ок</button>
 	<button onclick="App.page_dialog_background_setter.removeBg()"><img src="img/delete.png" style="vertical-align: middle"> Удалить фон</button>
+	<button onclick="App.page_dialog_background_setter.clearLs()"><img src="img/truncate.png" style="vertical-align: middle"> Очистить память</button>
     </div>
 </p>

@@ -39,6 +39,9 @@
 		setProps:function( userProps ){
 		    App.user.props=userProps;
 		    App.acomp=userProps.acomp;
+		    setTimeout(function(){
+			App.loadBg();
+		    },0);
 		    if( userProps && userProps.user_level>0 ){
 			App.renderTpl('div_user_panel', App.user.props || '');	
 			App.renderTpl('div_module_list', App.user.props || '');
@@ -81,7 +84,9 @@
                         var company=App.json(resp);
 			App.acomp=company;
                         App.handler.notify('activeCompanySelected',company);
-			App.loadBg();
+			setTimeout(function(){
+			    App.loadBg();
+			},0);
                     });
                 }
 	    };
