@@ -277,11 +277,25 @@
 	    }
 	},
 	import:function(){
-	    if( !Doc.head.props.is_commited*1 ){
-		
-	    } else {
-		
+	    if( Doc.head.props.is_commited*1 ){
+		App.flash("Документ должен быть не проведен");
+		return;
 	    }
+	    var config=[
+		{name:'Код товара',field:'product_code',required:true},
+		{name:'Кол-во',field:'product_quantity'},
+		{name:'Цена',field:'invoice_price'},
+		{name:'Партия',field:'party_label'}		    
+	    ];
+	    App.loadWindow('page/dialog/importer',{label:'документ',fields_to_import:config}).progress(function(status,fvalue,Importer){
+		if( status==='submit' ){
+		    fvalue.doc_id=Doc.head.props.doc_id;
+		    $.post("DocumentItems/import/",fvalue,function(ok){
+			App.flash("Добавлено "+ok);
+			Importer.reload();
+		    });
+		}
+	    });
 	}
     };
     /////////////////////////////////////////////

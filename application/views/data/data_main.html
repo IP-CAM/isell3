@@ -55,11 +55,12 @@
 	};
 	DataJs.tables.data_grid.onUpload = function (request) {
 	    var f=DataJs.tables.data_grid._structure.columns;
-            App.loadWindow('page/dialog/importer',{label:'данные',fields_to_import:f}).progress(function(status,fvalue,split){
+            App.loadWindow('page/dialog/importer',{label:'данные',fields_to_import:f}).progress(function(status,fvalue,Importer){
                 if( status==='submit' ){
-                    $.post("Data/import/"+request.table_name,split,function(ok){
+                    $.post("Data/import/"+request.table_name,fvalue,function(ok){
 			App.flash("Добавлено строк "+ok);
                         DataJs.tables.data_grid.loadGrid();
+			Importer.reload();
                     });
                 }
             });

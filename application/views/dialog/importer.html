@@ -41,22 +41,23 @@
 	},
         submit:function(){
             var fvalue=App.collectForm("#page_dialog_importer_frm");
-	    var split={source:[],target:[]};
+	    fvalue.source=[];
+	    fvalue.target=[];
 	    var missed=[];
             for(var i in fvalue){
                 if( !fvalue[i] && $("#page_dialog_importer_frm select[name="+i+"]").attr('required') ){
                     var title=$("#page_dialog_importer_frm select[name="+i+"]").attr('title');
 		    missed.push(title);
                 }
-		split.source.push(fvalue[i]);
-		split.target.push(i);
+		fvalue.source.push(fvalue[i]);
+		fvalue.target.push(i);
             }
 	    if( missed.length>0 ){
 		alert( "Поле не сопоставлено: "+missed.join(',') );
 		return;
 	    }
             fvalue.label=App.page_dialog_importer.label;
-            App.page_dialog_importer.handler.notify('submit',fvalue,split);
+            App.page_dialog_importer.handler.notify('submit',fvalue,App.page_dialog_importer);
         },
 	up:function(filelist){
 	    if( filelist.length ){
@@ -115,6 +116,9 @@
 	},
 	filter:function( node ){
 	    App.page_dialog_importer.label=node.value||'';
+	    App.page_dialog_importer.reload();
+	},
+	reload:function(){
 	    $('#page_dialog_importer_dg').datagrid('reload');
 	},
 	loader:function(param, success, error){
