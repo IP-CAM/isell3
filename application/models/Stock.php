@@ -191,36 +191,34 @@ class Stock extends Catalog {
         return $this->db->affected_rows();
     }
     public function import(){
+	$label=$this->request('label');
 	$source = array_map('addslashes',$this->request('source','raw'));
 	$target = array_map('addslashes',$this->request('target','raw'));
 	
         $source[]=$this->request('parent_id','int');
         $target[]='parent_id';
 	
-	$this->importInTable('prod_list', $source, $target, '/product_code/ru/ua/en/product_spack/product_bpack/product_weight/product_volume/product_unit/product_uktzet/barcode/');
-	$this->importInTable('price_list', $source, $target, '/product_code/sell/buy/curr_code/');
-	$this->importInTable('stock_entries', $source, $target, '/product_code/parent_id/');
+	$this->importInTable('prod_list', $source, $target, '/product_code/ru/ua/en/product_spack/product_bpack/product_weight/product_volume/product_unit/product_uktzet/barcode/', $label);
+	$this->importInTable('price_list', $source, $target, '/product_code/sell/buy/curr_code/', $label);
+	$this->importInTable('stock_entries', $source, $target, '/product_code/parent_id/', $label);
 	$this->query("DELETE FROM imported_data WHERE {$source[0]} IN (SELECT product_code FROM stock_entries)");
         return  $this->db->affected_rows();
     }
-    private function importInTable( $table, $src, $trg, $filter ){
+    private function importInTable( $table, $src, $trg, $filter, $label ){
 	$set=[];
 	$target=[];
 	$source=[];
 	for( $i=0;$i<count($trg);$i++ ){
-            if( strpos($filter,"/{$trg[$i]}/") && !empty($src[$i]) ){
-                if( $trg[$i]=='product_code' ){
-                    $product_code_col=$src[$i];
-                }
+            if( strpos($filter,"/{$trg[$i]}/")!==false && !empty($src[$i]) ){
 		$target[]=$trg[$i];
 		$source[]=$src[$i];
-		$set[]="{$trg[$i]}=$src[$i]";//$trg[$i]!='product_code'?:'';
+		$set[]="{$trg[$i]}=$src[$i]";
 	    }
 	}
 	$target_list=  implode(',', $target);
 	$source_list=  implode(',', $source);
 	$set_list=  implode(',', $set);
-	$this->query("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data ON DUPLICATE KEY UPDATE $set_list");
+	$this->query("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data WHERE label='$label' ON DUPLICATE KEY UPDATE $set_list");
 	//print("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data ON DUPLICATE KEY UPDATE $set_list");
 	return $this->db->affected_rows();
     }
