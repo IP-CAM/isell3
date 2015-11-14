@@ -212,9 +212,34 @@ class DocumentItems extends DocumentCore{
     public function import( $doc_id ){
 	$this->check($doc_id,'int');
 	$this->selectDoc($doc_id);
-	if( !$this->isCommited() ){
-	    
+	if( $this->isCommited() ){
+	    return false;
 	}
-	return false;
+	$label=$this->request('label');
+	$source = array_map('addslashes',$this->request('source','raw'));
+	$target = array_map('addslashes',$this->request('target','raw'));
+	
+        $source[]=$this->doc('doc_id');
+        $target[]='doc_id';
+	$this->importInTable('document_entries', $source, $target, '/product_code/product_quantity/invoice_price/party_label/doc_id/', $label);
+	$this->query("DELETE FROM imported_data WHERE {$source[0]} IN (SELECT product_code FROM document_entries WHERE doc_id={$doc_id})");
+        return  $this->db->affected_rows();
+    }
+    private function importInTable( $table, $src, $trg, $filter, $label ){
+	$set=[];
+	$target=[];
+	$source=[];
+	for( $i=0;$i<count($trg);$i++ ){
+            if( strpos($filter,"/{$trg[$i]}/")!==false && !empty($src[$i]) ){
+		$target[]=$trg[$i];
+		$source[]=$src[$i];
+		$set[]="{$trg[$i]}=$src[$i]";
+	    }
+	}
+	$target_list=  implode(',', $target);
+	$source_list=  implode(',', $source);
+	$set_list=  implode(',', $set);
+	$this->query("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data WHERE label='$label' ON DUPLICATE KEY UPDATE $set_list");
+	return $this->db->affected_rows();
     }
 }

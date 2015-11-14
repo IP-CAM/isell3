@@ -55,4 +55,5 @@ class Importer extends Catalog{
 	$this->query("DELETE FROM imported_data $where");
 	return $this->db->affected_rows();
     }
+    
 }

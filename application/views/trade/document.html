@@ -44,16 +44,20 @@
 	    Doc.data.open_in==='panel'?Doc.node.panel('close'):Doc.node.window('close');
 	},
 	create:function(){
-	    
-	},
-	createThenAddEntry:function ( code, qty ){
 	    $.post('DocumentItems/createDocument',function(doc_id){
 		if( doc_id*1 ){
 		     Doc.head.load(doc_id);
-		     Doc.entries.add( code, qty );
 		     Doc.handler.notify('created',doc_id);
 		} else {
 		    App.flash("Не удалось создать документ");
+		}
+	    });
+	    return Doc.handler.promise();
+	},
+	createThenAddEntry:function ( code, qty ){
+	    Doc.create().progress(function(status){
+		if( status==='created' ){
+		    Doc.entries.add( code, qty );
 		}
 	    });
 	}
@@ -277,10 +281,6 @@
 	    }
 	},
 	import:function(){
-	    if( Doc.head.props.is_commited*1 ){
-		App.flash("Документ должен быть не проведен");
-		return;
-	    }
 	    var config=[
 		{name:'Код товара',field:'product_code',required:true},
 		{name:'Кол-во',field:'product_quantity'},
@@ -289,11 +289,27 @@
 	    ];
 	    App.loadWindow('page/dialog/importer',{label:'документ',fields_to_import:config}).progress(function(status,fvalue,Importer){
 		if( status==='submit' ){
-		    $.post("DocumentItems/import/"+Doc.head.props.doc_id,fvalue,function(ok){
-			App.flash("Добавлено "+ok);
-			Importer.reload();
-		    });
+		    if( Doc.head.props.doc_id>0 ){
+			Doc.head.importDo(fvalue,Importer);
+		    } else {
+			Doc.create().progress(function(status){
+			    if( status==='created' ){
+				Doc.head.importDo(fvalue,Importer);
+			    }
+			});
+		    }
 		}
+	    });
+	},
+	importDo:function(fvalue,Importer){
+	    if( Doc.head.props.is_commited*1 ){
+		App.flash("Документ должен быть не проведен");
+		return;
+	    }
+	    $.post("DocumentItems/import/"+Doc.head.props.doc_id,fvalue,function(ok){
+		App.flash("Добавлено "+ok);
+		Importer.reload();
+		Doc.entries.reload();
 	    });
 	}
     };
