@@ -136,8 +136,11 @@ class Company extends Catalog{
     
     public function selectActiveCompany( $company_id ){
 	$company=$this->companyGet( $company_id );
-	$this->Base->svar('acomp',$company);
-	return $company;
+	if( $company->is_active ){
+	    $this->Base->svar('acomp',$company);
+	    return $company;
+	}
+	return null;
     }
     
     public function switchActiveCompany(){

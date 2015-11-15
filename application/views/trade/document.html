@@ -307,7 +307,7 @@
 		return;
 	    }
 	    $.post("DocumentItems/import/"+Doc.head.props.doc_id,fvalue,function(ok){
-		App.flash("Добавлено "+ok);
+		App.flash("Импортировано "+ok);
 		Importer.reload();
 		Doc.entries.reload();
 	    });
@@ -349,19 +349,23 @@
 		}
 	    }
 	},
-	edit:function(){
+	edit:function(index,field,value){
 	    var row=$("#Doc_entry_dg").datagrid('getSelected');
 	    if( !row ){
 		App.flash("Строка не выбрана!");
 		return;
 	    }
 	    row.head=Doc.head.props;
+	    row.focus=field;
 	    App.loadWindow('page/trade/document_entry_edit',row).progress(function(state){
 		if(state==='change'){
 		    Doc.entries.reload();
 		}
 		if( state==='close' ){
 		    $('#Doc_entry_dg').datagrid('getPanel').panel('panel').focus();
+		}
+		if( state==='delete' ){
+		    Doc.entries.delete();
 		}
 	    });
 	},
@@ -543,7 +547,11 @@
 	    var i=$(node).attr('data-view-i');
 	    var view=Doc.view.views[i];
 	    if( view.doc_view_id ){
-		App.loadWindow('page/trade/view_settings',view);
+		App.loadWindow('page/trade/view_settings',view).progress(function(status){
+		    if( status==='deleted' || status==='changed' ){
+			Doc.view.loadTile();
+		    }
+		});
 	    }
 	},
 	create:function(view_type_id){
@@ -708,7 +716,7 @@
 	       autoRowHeight:false,
 	       loader:Doc.entries.loader,
 	       method:'get',
-	       onDblClickRow:Doc.entries.edit,
+	       onDblClickCell:Doc.entries.edit,
 	       onRowContextMenu: Doc.entries.onRowContextMenu
 	       ">
 	    <thead>
@@ -762,7 +770,7 @@
 	    <img src="img/edit-16.png" title="Изменено пользователем" style="vertical-align: middle"> {{modified_by}}
 	</div>
 	<!-- DOCUMENT VIEWS -->
-        <div id="Doc_view_tile" style="clear:both;vertical-align: top;" class="covert">
+        <div id="Doc_view_tile" style="clear:both;vertical-align: top;text-align: justify" class="covert">
 	    {{if views}}
 		{{views}}
 		<div class="view_button {{if view_hidden|equals>1}}view_is_hidden{{/if}}" 
@@ -831,9 +839,9 @@
 	border: 1px #bbb solid;
 	color: #369;
 	border-radius: 3px;
-	width:160px;
+	width:155px;
 	min-height: 32px;
-	margin: 0px 5px 5px 0px;
+	margin: 0px 0px 6px 0px;
 	text-align: center;
 	background-image: linear-gradient(rgba(255,255,255,0.75) 0%,  rgba(255,255,255,0) 100%);
 	background-color:#e0eeff;
