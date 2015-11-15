@@ -38,10 +38,7 @@
 		},
 		setProps:function( userProps ){
 		    App.user.props=userProps;
-		    App.acomp=userProps.acomp;
-		    setTimeout(function(){
-			App.loadBg();
-		    },0);
+		    App.user.setActiveComp(userProps.acomp);
 		    if( userProps && userProps.user_level>0 ){
 			App.renderTpl('div_user_panel', App.user.props || '');	
 			App.renderTpl('div_module_list', App.user.props || '');
@@ -82,13 +79,20 @@
                 acompSwitch:function(){
                     $.get("Company/switchActiveCompany",function(resp){
                         var company=App.json(resp);
-			App.acomp=company;
-                        App.handler.notify('activeCompanySelected',company);
+			App.user.setActiveComp(company);
+                    });
+                },
+		setActiveComp:function(company){
+		    App.acomp=company;
+		    if( company ){
+			App.handler.notify('activeCompanySelected',company);
 			setTimeout(function(){
 			    App.loadBg();
 			},0);
-                    });
-                }
+		    } else {
+			App.handler.notify('activeCompanyReset');
+		    }
+		}
 	    };
 	    App.onReady = function () {
 		App.user.getData();

@@ -50,14 +50,14 @@ var App = {
 	}
     },
     setTitle:function( title ){
-        this.title = title||this.title;
+        this.title = title||this.title||'';
         var title_data={
-            acomp_name:App.acomp.label,
+            acomp_name:App.acomp?App.acomp.label:'',
             pcomp_name:App.pcomp?App.pcomp.label:'',
             module_name:this.title
         };
         App.renderTpl("module_title",title_data);
-        document.title = this.title + ': ' +  App.acomp.company_name;
+        document.title = this.title + ': ' +  (App.acomp?App.acomp.company_name:'');
     },
     initTabs: function (tab_id) {
 	$('#' + tab_id).tabs({
