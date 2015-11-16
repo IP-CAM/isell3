@@ -671,22 +671,17 @@ UNLOCK TABLES;
 DROP TABLE IF EXISTS `pref_list`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
+
+
 CREATE TABLE `pref_list` (
   `pref_name` varchar(45) NOT NULL,
   `pref_value` text NOT NULL,
-  PRIMARY KEY (`pref_name`)
+  `active_company_id` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`pref_name`),
+  KEY `fk_pref_list_companies_list1_idx` (`active_company_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping data for table `pref_list`
---
 
-LOCK TABLES `pref_list` WRITE;
-/*!40000 ALTER TABLE `pref_list` DISABLE KEYS */;
-INSERT INTO `pref_list` VALUES ('accountant_name','Иванов Иван Иванович'),('accountant_tin','0000000000'),('clientbank_fields','client-code,\nclient-bank-code,\nclient-account,\n-,\ntransaction-date,\n-,\ncorrespondent-bank-code,\ncorrespondent-bank-name,\ncorrespondent-account,\ncorrespondent-code,\ncorrespondent-name,\nnumber,\ndate,\ndebit-amount,\ncredit-amount,\nassignment'),('default_debt_limit','200000'),('director_name','Иванов Иван Иванович'),('director_tin','0000000000'),('usd_ratio','22.5');
-/*!40000 ALTER TABLE `pref_list` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `price_list`
@@ -1272,3 +1267,16 @@ DELIMITER ;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2015-11-11 20:59:51
+
+
+
+
+ALTER TABLE `isell3`.`pref_list` 
+ADD COLUMN `active_company_id` INT(10) UNSIGNED NOT NULL AFTER `pref_value`,
+ADD INDEX `fk_pref_list_companies_list1_idx` (`active_company_id` ASC)
+ALTER TABLE `isell3`.`pref_list` 
+ADD CONSTRAINT `fk_pref_list_companies_list1`
+  FOREIGN KEY (`active_company_id`)
+  REFERENCES `isell3`.`companies_list` (`company_id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION

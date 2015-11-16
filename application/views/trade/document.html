@@ -674,15 +674,20 @@
 	       onDblClickRow:Doc.entries.edit,
 	       onRowContextMenu: Doc.entries.onRowContextMenu
 	       ">
+            <thead data-options="frozen:true">
+                <tr>
+		    <th data-options="field:'product_code',width:80">Код</th>                    
+                </tr>
+            </thead>
 	    <thead>
 		<tr>
-		    <th data-options="field:'product_code',width:80">Код</th>
 		    <th data-options="field:'product_name',width:310">Название</th>
 		    <th data-options="field:'product_quantity',width:50,align:'right'">Кол-во</th>
 		    <th data-options="field:'product_unit',width:40,align:'center'">Ед.</th>
 		    <th data-options="field:'product_price',width:55,align:'right',formatter:Doc.entries.calculate">Цена</th>
 		    <th data-options="field:'product_sum',width:65,align:'right'">Сумма</th>
 		    <th data-options="field:'row_status',width:24,align:'center',formatter:App.datagrid.tooltip">!</th>
+		    <th data-options="field:'party_label',width:40">Партия</th>
 		</tr>
 	    </thead>
 	</table>
