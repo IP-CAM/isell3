@@ -4,6 +4,12 @@
 	init:function(){
 	    this.initDetails();
 	    this.initPrefs();
+            this.initFormOnce();
+            App.handler.progress(function(status,data){
+                if( status==="activeCompanySelected" ){
+                    PrefJs.initPrefs();
+                }
+            });
 	},
 	initDetails:function(){
 	    var data={
@@ -17,12 +23,19 @@
 	initPrefs:function(){
 	    $.get("Pref/getPrefs/",function(text){
 		PrefJs.prefData=App.json(text);
-		App.setupForm('#AcompPrefs',PrefJs.prefData).change(function(){
-		    var node=this;
-		    PrefJs.updateField(node.name,node.value,node.title);
-		});
+		App.setupForm('#AcompPrefs',PrefJs.prefData);
 	    });
 	},
+        initFormOnce:function(){
+            if( this.formInited ){
+                return;
+            }
+            this.formInited=true;
+            App.formElements("#AcompPrefs").change(function () {
+		var node=this;
+		PrefJs.updateField(node.name,node.value,node.title);
+	    });
+        },
 	initClientbankFields:function(){
 	    
 	},

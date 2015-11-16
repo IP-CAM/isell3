@@ -19,7 +19,18 @@
 	    Cdet.autoselect_label=Cdet.data.autoselect_label;
 	    this.checkActive();
 	    Cdet.load(Cdet.data.company_id);
+            this.initFormOnce();
 	},
+        initFormOnce:function(){
+            if( this.formInited ){
+                return;
+            }
+            this.formInited=true;
+            App.formElements("#page_company_details_frm").change(function () {
+		var node=this;
+		Cdet.updateField(node.name,node.value,node.title);
+	    });
+        },
 	checkActive:function(){
 	    if( this.data.is_active ){
 		this.node.find("#page_company_details_passive_details").hide();
@@ -60,10 +71,7 @@
 	    });
 	},
 	setup:function(){
-	    App.setupForm("#page_company_details_frm", Cdet.data).change(function () {
-		var node=this;
-		Cdet.updateField(node.name,node.value,node.title);
-	    });
+	    App.setupForm("#page_company_details_frm", Cdet.data);
 	    if( this.autoselect_label ){
 		this.node.find('input[name=label]').select();
 	    }
