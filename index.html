@@ -83,8 +83,13 @@
                     });
                 },
 		setActiveComp:function(company){
+                    var old_acomp=App.acomp;
 		    App.acomp=company;
 		    if( company ){
+                        if( company.company_id===old_acomp.company_id ){
+                            App.handler.notify('activeCompanyReloaded',company);
+                            return;
+                        }
 			App.handler.notify('activeCompanySelected',company);
 			setTimeout(function(){
 			    App.loadBg();
