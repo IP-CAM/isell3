@@ -44,16 +44,20 @@
 	    Doc.data.open_in==='panel'?Doc.node.panel('close'):Doc.node.window('close');
 	},
 	create:function(){
-	    
-	},
-	createThenAddEntry:function ( code, qty ){
 	    $.post('DocumentItems/createDocument',function(doc_id){
 		if( doc_id*1 ){
 		     Doc.head.load(doc_id);
-		     Doc.entries.add( code, qty );
 		     Doc.handler.notify('created',doc_id);
 		} else {
 		    App.flash("Не удалось создать документ");
+		}
+	    });
+	    return Doc.handler.promise();
+	},
+	createThenAddEntry:function ( code, qty ){
+	    Doc.create().progress(function(status){
+		if( status==='created' ){
+		    Doc.entries.add( code, qty );
 		}
 	    });
 	}
@@ -89,7 +93,7 @@
 	    Doc.head.typeComboFormatterIcon(Doc.head.props.doc_type);
 	},
 	hightlightCommited:function(){
-	    $('#Doc_commit_btn').css('visibility',(Doc.head.props.is_commited*1?"hidden":"visible"));
+	    $('#Doc_commit_btn').css('display',(Doc.head.props.is_commited*1?"none":""));
 	    $('#Doc_type_cmb,#Doc_notcount_cmb,#Doc_pci').combobox(Doc.head.props.is_commited*1?'disable':'enable');
 	    var color='';
 	    if( Doc.head.props.is_commited*1 ){
@@ -275,6 +279,38 @@
 		    }
 		});
 	    }
+	},
+	import:function(){
+	    var config=[
+		{name:'Код товара',field:'product_code',required:true},
+		{name:'Кол-во',field:'product_quantity'},
+		{name:'Цена',field:'invoice_price'},
+		{name:'Партия',field:'party_label'}		    
+	    ];
+	    App.loadWindow('page/dialog/importer',{label:'документ',fields_to_import:config}).progress(function(status,fvalue,Importer){
+		if( status==='submit' ){
+		    if( Doc.head.props.doc_id>0 ){
+			Doc.head.importDo(fvalue,Importer);
+		    } else {
+			Doc.create().progress(function(status){
+			    if( status==='created' ){
+				Doc.head.importDo(fvalue,Importer);
+			    }
+			});
+		    }
+		}
+	    });
+	},
+	importDo:function(fvalue,Importer){
+	    if( Doc.head.props.is_commited*1 ){
+		App.flash("Документ должен быть не проведен");
+		return;
+	    }
+	    $.post("DocumentItems/import/"+Doc.head.props.doc_id,fvalue,function(ok){
+		App.flash("Импортировано "+ok);
+		Importer.reload();
+		Doc.entries.reload();
+	    });
 	}
     };
     /////////////////////////////////////////////
@@ -313,19 +349,23 @@
 		}
 	    }
 	},
-	edit:function(){
+	edit:function(index,field,value){
 	    var row=$("#Doc_entry_dg").datagrid('getSelected');
 	    if( !row ){
 		App.flash("Строка не выбрана!");
 		return;
 	    }
 	    row.head=Doc.head.props;
+	    row.focus=field;
 	    App.loadWindow('page/trade/document_entry_edit',row).progress(function(state){
 		if(state==='change'){
 		    Doc.entries.reload();
 		}
 		if( state==='close' ){
 		    $('#Doc_entry_dg').datagrid('getPanel').panel('panel').focus();
+		}
+		if( state==='delete' ){
+		    Doc.entries.delete();
 		}
 	    });
 	},
@@ -507,7 +547,11 @@
 	    var i=$(node).attr('data-view-i');
 	    var view=Doc.view.views[i];
 	    if( view.doc_view_id ){
-		App.loadWindow('page/trade/view_settings',view);
+		App.loadWindow('page/trade/view_settings',view).progress(function(status){
+		    if( status==='deleted' || status==='changed' ){
+			Doc.view.loadTile();
+		    }
+		});
 	    }
 	},
 	create:function(view_type_id){
@@ -653,6 +697,7 @@
 		<span class="icon-24 icon-lorry" title="Добавить в распорядок" onclick="Doc.head.addEvent();"> </span>
 		<span class="icon-24 icon-sms" title="Отправить СМС" onclick="Doc.head.sendSms();"> </span>
 		<span class="icon-24 icon-calc" title="Перерасчитать цены" onclick="Doc.entries.initRecalculate();"> </span>
+		<span class="icon-24 icon-import" title="Импортировать" onclick="Doc.head.import();"> </span>
 		<span class="icon-24 icon-duplicate" title="Копировать" onclick="Doc.head.duplicate();"> </span>
 		<span class="icon-24 icon-utils" title="Дополнительные свойства" onclick="$('#Doc_utils').toggle('slow')"> </span>
 		<span class="icon-24 icon-refresh" title="Обновить" onclick="Doc.entries.reload();"> </span>
@@ -671,7 +716,7 @@
 	       autoRowHeight:false,
 	       loader:Doc.entries.loader,
 	       method:'get',
-	       onDblClickRow:Doc.entries.edit,
+	       onDblClickCell:Doc.entries.edit,
 	       onRowContextMenu: Doc.entries.onRowContextMenu
 	       ">
             <thead data-options="frozen:true">
@@ -730,7 +775,7 @@
 	    <img src="img/edit-16.png" title="Изменено пользователем" style="vertical-align: middle"> {{modified_by}}
 	</div>
 	<!-- DOCUMENT VIEWS -->
-        <div id="Doc_view_tile" style="clear:both;vertical-align: top;" class="covert">
+        <div id="Doc_view_tile" style="clear:both;vertical-align: top;text-align: justify" class="covert">
 	    {{if views}}
 		{{views}}
 		<div class="view_button {{if view_hidden|equals>1}}view_is_hidden{{/if}}" 
@@ -799,9 +844,9 @@
 	border: 1px #bbb solid;
 	color: #369;
 	border-radius: 3px;
-	width:160px;
+	width:155px;
 	min-height: 32px;
-	margin: 0px 5px 5px 0px;
+	margin: 0px 0px 6px 0px;
 	text-align: center;
 	background-image: linear-gradient(rgba(255,255,255,0.75) 0%,  rgba(255,255,255,0) 100%);
 	background-color:#e0eeff;

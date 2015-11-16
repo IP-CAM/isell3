@@ -70,8 +70,11 @@
 	    $('#Ctree_combo').combobox('setText','');
 	},
 	create:function( new_branch_type ){
+	    var parent_id=0;
 	    var selected=$('#Ctree_tree').tree('getSelected');
-	    var parent_id=selected.is_leaf*1?selected.parent_id:selected.branch_id;
+	    if( selected ){
+		parent_id=selected.is_leaf*1?selected.parent_id:selected.branch_id;
+	    }
 	    var parent_target=parent_id>0?$('#Ctree_tree').tree('find', parent_id).target:null;
 	    var newlabel=(new_branch_type === 'leaf')?prompt("Введите Короткое название новой компании",'Новая компания'):prompt("Введите название новой группы",'Новая группа');
 	    if( newlabel && newlabel.indexOf(',')===-1 ){
@@ -135,7 +138,7 @@
 	    var node=$('#Ctree_tree').tree('getSelected');
 	    if( node && confirm("Удалить выделенные компании?")  && confirm("ВНИМАНИЕ ЭТОТ ПРОЦЕСС НЕ ОБРАТИМ!\n\nБУДУТ УДАЛЕНЫ ВСЕ ДОКУМЕНТЫ, ШАБЛОНЫ ПЕЧАТИ, ПРОВОДКИ, ОПЛАТЫ\nА ТАК ЖЕ ВСЯ ИНФОРМАЦИЯ СВЯЗАННАЯ С КОМПАНИЯМИ!\n\n") ){
 		$.post("Company/companyTreeDelete/"+node.branch_id,function(ok){
-		    if( ok*1 ){
+		    if( ok>0 ){
 			App.flash("Удалено: "+node.label);
 			$('#Ctree_tree').tree('remove', node.target);
 		    } else {
@@ -210,8 +213,8 @@
     </ul>
 </div>
 <div style="text-align: left;padding: 2px;" class="tiny_button">
-    <button class="folder tiny_button" disabled="disabled" onclick="Ctree.create('leaf')" title="Добавить компанию"><img src="img/edit_add.png"></button>
-    <button class="folder tiny_button" disabled="disabled" onclick="Ctree.create('folder')" title="Добавить папку"><img src="img/FolderAdd-24.png"></button>
+    <button class="tiny_button" onclick="Ctree.create('leaf')" title="Добавить компанию"><img src="img/edit_add.png"></button>
+    <button class="tiny_button" onclick="Ctree.create('folder')" title="Добавить папку"><img src="img/FolderAdd-24.png"></button>
     <button class="folder tiny_button" disabled="disabled" onclick="Ctree.update()" title="Редактировать"><img src="img/Edit-24.png"></button>
     <button class="folder tiny_button" disabled="disabled" onclick="Ctree.delete()" title="Удалить"><img src="img/delete.png"></button>
     <button class="folder tiny_button" disabled="disabled" onclick="Ctree.lock()" title="Скрыть"><img src="img/lock.png"></button>

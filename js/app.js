@@ -50,14 +50,14 @@ var App = {
 	}
     },
     setTitle:function( title ){
-        this.title = title||this.title;
+        this.title = title||this.title||'';
         var title_data={
-            acomp_name:App.acomp.label,
+            acomp_name:App.acomp?App.acomp.label:'',
             pcomp_name:App.pcomp?App.pcomp.label:'',
             module_name:this.title
         };
         App.renderTpl("module_title",title_data);
-        document.title = this.title + ': ' +  App.acomp.company_name;
+        document.title = this.title + ': ' +  (App.acomp?App.acomp.company_name:'');
     },
     initTabs: function (tab_id) {
 	$('#' + tab_id).tabs({
@@ -274,8 +274,8 @@ App.setHTML=function( query, html ){
 };
 App.updaterCheck=function ( skip_release_check ){ 
     var handler=$.Deferred();
-    $.get('Maintain/getCurrentVersionStamp',function(info){
-	var info=App.json(info);
+    $.get('Maintain/getCurrentVersionStamp',function(resp){
+	var info=App.json(resp);
 	$.getJSON('https://api.github.com/repos/baycik/isell3/commits?since='+info.stamp+'&sha='+info.branch+'&callback=?',function(resp){
 	    try{
 		var is_release=false;
@@ -307,9 +307,9 @@ App.updaterInit=function(){
 		App.loadWindow('page/dialog/updater',{updates:list});
 	    });
 	});
-	setTimeout(App.updaterCheck,1000*5);
+	setTimeout(App.updaterCheck,1000*1);
     } else {
-	setTimeout(App.updaterInit,1000*10);
+	setTimeout(App.updaterInit,1000*6);
     }
 };
 App.chatCheck=function(){
@@ -325,7 +325,7 @@ App.chatCheck=function(){
     setTimeout(App.chatCheck,1000*60);
 };
 App.chatInit=function(){
-    setTimeout(App.chatCheck,1000*5);
+    setTimeout(App.chatCheck,1000*3);
 };
 //////////////////////////////////////////////////
 //AJAX SETUP

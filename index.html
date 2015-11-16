@@ -38,7 +38,7 @@
 		},
 		setProps:function( userProps ){
 		    App.user.props=userProps;
-		    App.acomp=userProps.acomp;
+		    App.user.setActiveComp(userProps.acomp);
 		    if( userProps && userProps.user_level>0 ){
 			App.renderTpl('div_user_panel', App.user.props || '');	
 			App.renderTpl('div_module_list', App.user.props || '');
@@ -79,11 +79,20 @@
                 acompSwitch:function(){
                     $.get("Company/switchActiveCompany",function(resp){
                         var company=App.json(resp);
-			App.acomp=company;
-                        App.handler.notify('activeCompanySelected',company);
-			App.loadBg();
+			App.user.setActiveComp(company);
                     });
-                }
+                },
+		setActiveComp:function(company){
+		    App.acomp=company;
+		    if( company ){
+			App.handler.notify('activeCompanySelected',company);
+			setTimeout(function(){
+			    App.loadBg();
+			},0);
+		    } else {
+			App.handler.notify('activeCompanyReset');
+		    }
+		}
 	    };
 	    App.onReady = function () {
 		App.user.getData();
@@ -170,7 +179,7 @@
     <body class=" claro ">
 	<div id="ApplicationBar" class="transparent">
 	    <img src="img/plusLogo.png" style="vertical-align:top;height: 40px;width:auto;margin: 1px;" />
-	    <div style="color:#009;margin-top:10px;display: inline-block;font-size: 18px;white-space: nowrap;" id="module_title">
+	    <div style="color:#009;margin-top:10px;display: inline-block;font-size: 18px;white-space: nowrap;" class="covert" id="module_title">
                 {{module_name}}: 
                 <img src="img/home.png" style="margin-top: -4px;"> <span class="link_button" onclick="App.user.acompSwitch()">{{acomp_name}}</span>
                 {{if pcomp_name}}
@@ -185,6 +194,13 @@
 		    <button onclick="App.user.signOut()"><img src="img/logout.png"/> Выход</button>
 		</div>
 	    </div>
+	    <span id="chat_panel" class="covert" style="margin: 4px;cursor: pointer;float:right" onclick="App.loadWindow('page/dialog/chat')">
+		{{if count|more>0}}
+		<img src="img/chat_no.png" style="vertical-align: middle" class="blink" title="Есть новые сообщения" />{{count}}
+		{{else}}
+		<img src="img/chat_no.png" style="vertical-align: middle" title="Новых сообщений нет" />
+		{{/if}}	    
+	    </span>
 	    <span id="sync_panel" class="covert" style="margin: 4px;cursor: pointer;float:right">
 		{{if updates}}
 		{{if is_release}}
@@ -196,13 +212,6 @@
 		{{else}}
 		<img src="img/update_yes.png" style="vertical-align: middle" title="Обновлений нет" />
 		{{/if}}
-	    </span>
-	    <span id="chat_panel" class="covert" style="margin: 4px;cursor: pointer;float:right" onclick="App.loadWindow('page/dialog/chat')">
-		{{if count|more>0}}
-		<img src="img/chat_no.png" style="vertical-align: middle" class="blink" title="Есть новые сообщения" />{{count}}
-		{{else}}
-		<img src="img/chat_no.png" style="vertical-align: middle" title="Новых сообщений нет" />
-		{{/if}}	    
 	    </span>
 	</div>
 	<table style="border-spacing: 0px;border-collapse: separate;">

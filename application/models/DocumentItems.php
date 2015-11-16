@@ -32,6 +32,21 @@ class DocumentItems extends DocumentCore{
 	    ";
 	return $this->get_list($sql);
     }
+    private function calcCorrections() {
+	$doc_id=$this->doc('doc_id');
+	$curr_code=$this->Base->pcomp('curr_code');
+	$native_curr=($this->Base->pcomp('curr_code') == $this->Base->acomp('curr_code'))?1:0;
+	$sql="SELECT 
+		@vat_ratio:=1+vat_rate/100 vat_ratio,
+		@vat_correction:=IF(use_vatless_price,1,@vat_ratio) vat_correction,
+		@curr_correction:=IF($native_curr,1,1/doc_ratio) curr_correction,
+		@curr_symbol:=(SELECT curr_symbol FROM curr_list WHERE curr_code='$curr_code') curr_symbol
+	    FROM
+		document_list
+	    WHERE
+		doc_id=$doc_id";
+	return $this->get_row($sql);
+    }
     private function footerGet(){
 	$doc_id=$this->doc('doc_id');
 	//$curr_symbol=$this->Base->pcomp('curr_symbol');
@@ -98,7 +113,7 @@ class DocumentItems extends DocumentCore{
 	$quantity=$this->request('quantity','int');
 	return $this->entryAdd($doc_id, $code, $quantity);
     }
-    public function entryUpdate( $doc_id, $doc_entry_id, $name, $value ){
+    public function entryUpdate( $doc_id, $doc_entry_id, $name, $value='' ){
 	$this->check($doc_id,'int');
 	$this->selectDoc($doc_id);
 	$Document2=$this->Base->bridgeLoad('Document');
@@ -194,19 +209,37 @@ class DocumentItems extends DocumentCore{
 	$this->duplicateHead($new_doc_id, $old_doc_id);
 	return $new_doc_id;
     }
-    private function calcCorrections() {
-	$doc_id=$this->doc('doc_id');
-	$curr_code=$this->Base->pcomp('curr_code');
-	$native_curr=($this->Base->pcomp('curr_code') == $this->Base->acomp('curr_code'))?1:0;
-	$sql="SELECT 
-		@vat_ratio:=1+vat_rate/100 vat_ratio,
-		@vat_correction:=IF(use_vatless_price,1,@vat_ratio) vat_correction,
-		@curr_correction:=IF($native_curr,1,1/doc_ratio) curr_correction,
-		@curr_symbol:=(SELECT curr_symbol FROM curr_list WHERE curr_code='$curr_code') curr_symbol
-	    FROM
-		document_list
-	    WHERE
-		doc_id=$doc_id";
-	return $this->get_row($sql);
+    public function import( $doc_id ){
+	$this->check($doc_id,'int');
+	$this->selectDoc($doc_id);
+	if( $this->isCommited() ){
+	    return false;
+	}
+	$label=$this->request('label');
+	$source = array_map('addslashes',$this->request('source','raw'));
+	$target = array_map('addslashes',$this->request('target','raw'));
+	
+        $source[]=$this->doc('doc_id');
+        $target[]='doc_id';
+	$this->importInTable('document_entries', $source, $target, '/product_code/product_quantity/invoice_price/party_label/doc_id/', $label);
+	$this->query("DELETE FROM imported_data WHERE {$source[0]} IN (SELECT product_code FROM document_entries WHERE doc_id={$doc_id})");
+        return  $this->db->affected_rows();
+    }
+    private function importInTable( $table, $src, $trg, $filter, $label ){
+	$set=[];
+	$target=[];
+	$source=[];
+	for( $i=0;$i<count($trg);$i++ ){
+            if( strpos($filter,"/{$trg[$i]}/")!==false && !empty($src[$i]) ){
+		$target[]=$trg[$i];
+		$source[]=$src[$i];
+		$set[]="{$trg[$i]}=$src[$i]";
+	    }
+	}
+	$target_list=  implode(',', $target);
+	$source_list=  implode(',', $source);
+	$set_list=  implode(',', $set);
+	$this->query("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data WHERE label='$label' ON DUPLICATE KEY UPDATE $set_list");
+	return $this->db->affected_rows();
     }
 }
