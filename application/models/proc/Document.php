@@ -477,6 +477,8 @@ class Document extends Data {
 	}
 	$passive['ag_date'] = date('dmY', strtotime($passive['company_agreement_date']));
 	$passive['ag_date_dot'] = date('d.m.Y', strtotime($passive['company_agreement_date']));
+	$view['view_num_fill'] = str_pad($view['view_num'], 7, ' ', STR_PAD_LEFT);
+	$view['vat_percent'] = ($this->vat_rate - 1) * 100;
         // END MOVE
         
 	$view['a'] = $active;
@@ -490,11 +492,9 @@ class Document extends Data {
 	$view['user_position'] = $this->Base->svar('user_position');
 
 	$view['loc_date'] = $this->Base->Utils->getLocalDate($view['tstamp']);
-	$view['vat_percent'] = ($this->vat_rate - 1) * 100;
 	$view['date'] = date('dmY', strtotime($view['tstamp']));
 	$view['date_dot'] = date('d.m.Y', strtotime($view['tstamp']));
 	$view['extra'] = json_decode($view['view_efield_values']);
-	$view['view_num_fill'] = str_pad($view['view_num'], 7, ' ', STR_PAD_LEFT);
 	$view['entries_num'] = count($entries['rows']);
 	$view['head'] = $head;
 	$view['entries'] = $entries['rows'];

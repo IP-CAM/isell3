@@ -88,44 +88,67 @@ class DocumentView extends DocumentItems{
 	return true;
     }
     
-    public function docViewGet(){
+    public function documentViewGet(){
         $doc_view_id=$this->request('doc_view_id', 'int');
         $out_type=$this->request('out_type');
-        $doc_view=$this->get_row("SELECT doc_view_id,doc_id FROM document_view_list WHERE doc_view_id='$doc_view_id'");
-        $doc_id=$doc_view['doc_id'];
-        $this->selectDoc($doc_id);
-        $doc_view=  $this->docViewCompile($doc_view_id);
-        
-        //$Company=$this->Base->load_model("Company");
-        
-        $acomp=$this->Base->svar('acomp');
-        $pcomp=$this->Base->svar('pcomp');
-        
+        $dump=$this->fillDump($doc_view_id);
+	
+	print_r($dump);
+	exit;
+    }
+    
+    private function viewGet( $doc_view_id ){
+	$sql="SELECT
+		*
+	    FROM 
+		document_view_list
+		    JOIN
+		document_view_types USING (view_type_id)
+	    WHERE 
+		doc_view_id='$doc_view_id'";
+	return $this->get_row($sql);
+    }
+    
+    private function fillDump($doc_view_id){
+        $Utils=$this->Base->load_model('Utils');
+	$Company=$this->Base->load_model('Company');
+	$doc_view=$this->viewGet($doc_view_id);
+	if( !$doc_view ){
+	    return null;
+	}
+	//$doc_id=$doc_view->doc_id;
+	
+        //$this->selectDoc($doc_id);
+	$head=$this->headGet($doc_view->doc_id);
+	$rows=$this->entriesFetch();
+	$footer=$this->footerGet();
+        $acomp=$Company->companyGet( $this->doc('active_company_id') );
+        $pcomp=$Company->companyGet( $this->doc('passive_company_id') );
+	
+        $doc_view->total_spell=$Utils->spellAmount($footer->total);
+        $doc_view->loc_date=$Utils->getLocalDate($doc_view->tstamp);
+        $doc_view->extra=json_decode($doc_view->view_efield_values);
+	$doc_view->user_sign=$this->Base->svar('user_sign');
+	$doc_view->user_position=$this->Base->svar('user_position');
+	$doc_view->date=date('dmY', strtotime($doc_view->tstamp));
+	$doc_view->date_dot=date('d.m.Y', strtotime($doc_view->tstamp));
+	$doc_view->entries_num=count($rows);
         $dump=[
-	    'tpl_files'=>$this->Base->acomp('language').'/StockValidation.xlsx',
-	    'title'=>"Залишки на складі",
+	    'tpl_files'=>$doc_view->view_tpl,
+	    'title'=>$doc_view->view_name,
 	    'user_data'=>[
-		'email'=>$this->Base->svar('pcomp')?$this->Base->svar('pcomp')->company_email:'',
+		'email'=>$pcomp->company_email,
 		'text'=>'Доброго дня'
 	    ],
             'view'=>[
-                'head'=>$this->headGet($doc_id),
-                'rows'=>$this->entriesFetch(),
-                'footer'=>$this->footerGet(),
-                'doc_view'=>$doc_view
+		'doc_view'=>$doc_view,
+		'a'=>$acomp,
+		'p'=>$pcomp,
+                'head'=>$head,
+                'rows'=>$rows,
+                'footer'=>$footer,
             ]
         ];
-        $dump=$this->docViewDumpPrepare($dump);
-    }
-    
-    private function docViewDumpPrepare($dump){
-        $Utils=$this->Base->load_model('Utils');
-        
-        $doc_view->total_spell=$Utils->spellAmount(152.36);
-        $doc_view->loc_date=$Utils->getLocalDate($doc_view->tstamp);
-        $doc_view->extra=json_decode($doc_view);
-        
-        
         return $dump;
     }
 }
