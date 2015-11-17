@@ -35,10 +35,6 @@ class DocumentView extends DocumentItems{
 	}
 
     }
-    public function viewUpdate2222( $doc_view_id, $field, $value, $is_extra=0 ){
-	$Document2=$this->Base->bridgeLoad('Document');
-	return $Document2->updateView($doc_view_id, $field, $value, $is_extra);
-    }
     public function viewUpdate($doc_view_id, $is_extra, $field, $value='') {
 	$this->check($doc_view_id,'int');
 	$this->check($field);
@@ -90,5 +86,46 @@ class DocumentView extends DocumentItems{
 	$html = addslashes($html);
 	$this->query("UPDATE document_view_list SET freezed=1, html='$html' WHERE doc_view_id='$doc_view_id'");
 	return true;
+    }
+    
+    public function docViewGet(){
+        $doc_view_id=$this->request('doc_view_id', 'int');
+        $out_type=$this->request('out_type');
+        $doc_view=$this->get_row("SELECT doc_view_id,doc_id FROM document_view_list WHERE doc_view_id='$doc_view_id'");
+        $doc_id=$doc_view['doc_id'];
+        $this->selectDoc($doc_id);
+        $doc_view=  $this->docViewCompile($doc_view_id);
+        
+        //$Company=$this->Base->load_model("Company");
+        
+        $acomp=$this->Base->svar('acomp');
+        $pcomp=$this->Base->svar('pcomp');
+        
+        $dump=[
+	    'tpl_files'=>$this->Base->acomp('language').'/StockValidation.xlsx',
+	    'title'=>"Залишки на складі",
+	    'user_data'=>[
+		'email'=>$this->Base->svar('pcomp')?$this->Base->svar('pcomp')->company_email:'',
+		'text'=>'Доброго дня'
+	    ],
+            'view'=>[
+                'head'=>$this->headGet($doc_id),
+                'rows'=>$this->entriesFetch(),
+                'footer'=>$this->footerGet(),
+                'doc_view'=>$doc_view
+            ]
+        ];
+        $dump=$this->docViewDumpPrepare($dump);
+    }
+    
+    private function docViewDumpPrepare($dump){
+        $Utils=$this->Base->load_model('Utils');
+        
+        $doc_view->total_spell=$Utils->spellAmount(152.36);
+        $doc_view->loc_date=$Utils->getLocalDate($doc_view->tstamp);
+        $doc_view->extra=json_decode($doc_view);
+        
+        
+        return $dump;
     }
 }

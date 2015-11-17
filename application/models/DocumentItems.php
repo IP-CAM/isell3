@@ -47,7 +47,7 @@ class DocumentItems extends DocumentCore{
 		doc_id=$doc_id";
 	return $this->get_row($sql);
     }
-    private function footerGet(){
+    protected function footerGet(){
 	$doc_id=$this->doc('doc_id');
 	//$curr_symbol=$this->Base->pcomp('curr_symbol');
 	$this->calcCorrections();
@@ -72,7 +72,7 @@ class DocumentItems extends DocumentCore{
 		WHERE doc_id='$doc_id') t";
 	return $this->get_row($sql);
     }
-    private function entriesFetch(){
+    protected function entriesFetch(){
 	$doc_id=$this->doc('doc_id');
 	$this->calcCorrections();
 	$company_lang = $this->Base->pcomp('language');

@@ -463,6 +463,9 @@ class Document extends Data {
     public function makeViewOut($view, $head, $entries, $footer, $active, $passive) {
 	$this->Base->LoadClass('Utils');
 	$footer['total_spell'] = $this->Base->Utils->spellAmount($footer['total']);
+        
+        
+        //MOVE TO TAX BILL CUSTOM SCRIPT
 	$footer['vatless'] = number_format($footer['vatless'], 2, ',', '');
 	$footer['vat'] = number_format($footer['vat'], 2, ',', '');
 	$footer['total'] = number_format($footer['total'], 2, ',', '');
@@ -474,6 +477,8 @@ class Document extends Data {
 	}
 	$passive['ag_date'] = date('dmY', strtotime($passive['company_agreement_date']));
 	$passive['ag_date_dot'] = date('d.m.Y', strtotime($passive['company_agreement_date']));
+        // END MOVE
+        
 	$view['a'] = $active;
 	$view['p'] = $passive;
 
