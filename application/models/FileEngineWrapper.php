@@ -87,7 +87,7 @@ if ( isset($word_header) ) {
     </head>
 
     <body>
-	<?php if ($show_controls && !isset($word_header) ) { ?>
+	<?php if (isset($show_controls) && $show_controls && !isset($word_header) ) { ?>
 	<link rel="stylesheet" type="text/css" href="../../css/app.css" />
 	<style type="text/css">
 	    @media all{

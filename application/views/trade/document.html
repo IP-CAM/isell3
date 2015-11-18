@@ -563,11 +563,11 @@
 	    });
 	},
 	open:function(doc_view_id){
-	    window.open("./?mod=Companies&rq=DocumentOut&doc_view_id="+doc_view_id, '_new');
+	    window.open("./DocumentView/documentViewGet/?out_type=.print&doc_view_id="+doc_view_id, '_new');
 	},
 	click:function( node ){
 	    var doc_view_id=$(node).attr('data-view-id');
-	    var view_type_id=$(node).attr('data-view-type-id')
+	    var view_type_id=$(node).attr('data-view-type-id');
 	    if( doc_view_id*1 ){
 		Doc.view.open(doc_view_id);
 	    }
@@ -583,7 +583,7 @@
 	}
     };
 </script>
-<form id="Doc_head_frm" onsubmit="return false;" style="user-select:none;">
+<form id="Doc_head_frm" onsubmit="return false;" style="-moz-user-select:none;">
     <!-- DOCUMENT HEADER -->
     <div style="width: 658px;margin: auto;padding-top: 10px;">
 	<div>

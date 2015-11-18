@@ -49,7 +49,7 @@ class FileEngine {
             $this->Worksheet = $this->PHPexcel->getActiveSheet();
         } else if ($this->tpl_ext == '.html' || $this->tpl_ext == '.xml') {
             $this->compilator = 'Rain';
-            include 'libraries/report/RainTPL.php';
+            include 'application/libraries/report/RainTPL.php';
             $this->tpl_file = substr($file_name, strrpos($file_name, '/') + 1, strrpos($file_name, '.') - strrpos($file_name, '/') - 1);
             $this->tpl_dir = 'application/'.substr($file_name, 0, strrpos($file_name, '/') + 1);
             $this->rain = new RainTPL();

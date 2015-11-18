@@ -93,8 +93,11 @@ class DocumentView extends DocumentItems{
         $out_type=$this->request('out_type');
         $dump=$this->fillDump($doc_view_id);
 	
-	print_r($dump);
-	exit;
+	//print_r($dump);
+	//exit;
+	$ViewManager=$this->Base->load_model('ViewManager');
+	$ViewManager->store($dump);
+	$ViewManager->outRedirect($out_type);
     }
     
     private function viewGet( $doc_view_id ){

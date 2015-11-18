@@ -13,23 +13,23 @@
       <tr>
         <td width="120" align="left" valign="top"><b><u>Постачальник</u></b></td>
         <td align="left">
-        {$v.a.allbr}
+        {$v->a->allbr}
         </td>
       </tr>
       <tr>
         <td align="left" valign="top"><b><u>Одержувач</u></b></td>
         <td align="left">
-        {$v.p.allbr}
+        {$v->p->allbr}
     </td>
       </tr>
       <tr>
         <td align="left" valign="top"><b><u>Платник</u></b></td>
         <td align="left">той самий</td>
       </tr>
-      {if condition="$v.extra->sell_condition"}
+      {if condition="isset($v->doc_view->extra->sell_condition)"}
       <tr>
         <td align="left" valign="top"><b><u>Умова продажу</u></b></td>
-        <td align="left">{$v.extra->sell_condition}</td>
+        <td align="left">{$v->doc_view->extra->sell_condition}</td>
       </tr>
       {/if}
     </table></td>
@@ -38,8 +38,8 @@
     <td align="center"><table border="0" cellpadding="3" cellspacing="0">
       <tr>
         <td align="center">
-        <span class="large"><b>Рахунок-фактура № {$v.view_num}<br />
-         від {$v.loc_date} р.</b></span>
+        <span class="large"><b>Рахунок-фактура № {$v->doc_view->view_num}<br />
+         від {$v->doc_view->loc_date} р.</b></span>
         </td>
       </tr>
     </table></td>
@@ -55,35 +55,35 @@
         <td width="95" align="center" nowrap="nowrap" bgcolor="#aaaaaa"><b>Цiна без ПДВ</b></td>
         <td width="100" align="center" nowrap="nowrap" bgcolor="#aaaaaa"><b>Сума без ПДВ</b></td>
       </tr>
-      {loop name="v.entries"}
+      {loop name="v->rows"}
       <tr>
         <td align="right" valign="top">{$counter+1}</td>
-        <td align="left" valign="top">{$value.2}</td>
-        <td align="center" valign="top">{$value.5}</td>
-        <td align="right" valign="top">{$value.4}</td>
-        <td align="right" valign="top">{$value.6}</td>
-        <td align="right" valign="top">{$value.7}</td>
+        <td align="left" valign="top">{$value->product_name}</td>
+        <td align="center" valign="top">{$value->product_unit}</td>
+        <td align="right" valign="top">{$value->product_quantity}</td>
+        <td align="right" valign="top">{$value->product_price}</td>
+        <td align="right" valign="top">{$value->product_sum}</td>
       </tr>
       {/loop}
       <tr>
         <td colspan="5" align="right" style="border:none"><b>Разом без ПДВ: </b></td>
-        <td align="right">{$v.footer.vatless}</td>
+        <td align="right">{$v->footer->vatless}</td>
       </tr>
       <tr>
         <td colspan="5" align="right" style="border:none"><b>ПДВ: </b></td>
-        <td align="right">{$v.footer.vat}</td>
+        <td align="right">{$v->footer->vat}</td>
       </tr>
       <tr>
         <td colspan="5" align="right" style="border:none"><b>Всього з ПДВ: </b></td>
-        <td align="right">{$v.footer.total}</td>
+        <td align="right">{$v->footer->total}</td>
       </tr>
     </table></td>
   </tr>
   <tr>
     <td align="center"><table width="680" border="0" cellspacing="0">
       <tr>
-        <td width="350" align="left" valign="top"><b>Всього на суму:<br />{$v.footer.total_spell}<br /></b><b><br />
-        ПДВ: {$v.footer.vat}<br />
+        <td width="350" align="left" valign="top"><b>Всього на суму:<br />{$v->doc_view->total_spell}<br /></b><b><br />
+        ПДВ: {$v->footer->vat}<br />
           </b></td>
         <td align="right" valign="bottom"><table width="320" border="0" cellspacing="0">
           <tr>
@@ -92,7 +92,7 @@
           </tr>
           <tr>
             <td>&nbsp;</td>
-            <td align="center">{$v.user_sign}</td>
+            <td align="center">{$v->doc_view->user_sign}</td>
           </tr>
         </table></td>
       </tr>
