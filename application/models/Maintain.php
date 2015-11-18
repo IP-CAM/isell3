@@ -109,7 +109,7 @@ class Maintain extends CI_Model {
     }
 
     private function setupConf(){
-	$conf_file=  tempnam($this->dirWork,'hah');
+	$conf_file=  $this->dirWork."/conf".rand(1,1000);
 	$conf='[client]
 	    user="'.BAY_DB_USER.'"
 	    password="'.BAY_DB_PASS.'"';
