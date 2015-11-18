@@ -325,7 +325,7 @@ App.chatCheck=function(){
     setTimeout(App.chatCheck,1000*60);
 };
 App.chatInit=function(){
-    setTimeout(App.chatCheck,1000*3);
+    setTimeout(App.chatCheck,1000*4);
 };
 //////////////////////////////////////////////////
 //AJAX SETUP
@@ -334,8 +334,8 @@ $.ajaxSetup({
     cache: true
 });
 $(document).ajaxComplete(function (event, xhr, settings) {
+    $("body").css('cursor', '');
     if( settings.crossDomain===false ){
-	$(document).css('cursor', '');
 	var type = xhr.getResponseHeader('X-isell-type');
 	var msg = xhr.getResponseHeader('X-isell-msg');
 	if (msg) {
@@ -354,6 +354,7 @@ $(document).ajaxComplete(function (event, xhr, settings) {
     }
 });
 $(document).ajaxError(function (event, xhr, settings) {
+    $("body").css('cursor', '');
     var type = xhr.getResponseHeader('X-isell-type');
     if (type && type.indexOf('OK') > -1 || settings.crossDomain===true) {
 	return;
@@ -361,7 +362,7 @@ $(document).ajaxError(function (event, xhr, settings) {
     console.log("error url: " + settings.url + xhr.responseText);
 });
 $(document).ajaxSend(function () {
-    $(document).css('cursor', 'wait');
+    $("body").css('cursor', 'wait');
 });
 $.fn.pagination.defaults.layout=['list','sep','first','prev','sep','links','sep','next','sep'];
 $.fn.pagination.defaults.displayMsg="{from}-{to}/{total}";

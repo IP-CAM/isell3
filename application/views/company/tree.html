@@ -69,6 +69,17 @@
 	unselectCombo:function(){
 	    $('#Ctree_combo').combobox('setText','');
 	},
+        loaderCombo:function(param, success, error){
+	    if( param.q===undefined ){
+		success([]);
+		return ;
+	    }
+	    $.get('Company/listFetch/', param, function (xhr) {
+		var resp = App.json(xhr);
+		success(resp[0] ? resp : []);
+	    });
+            
+        },
 	create:function( new_branch_type ){
 	    var parent_id=0;
 	    var selected=$('#Ctree_tree').tree('getSelected');
@@ -173,12 +184,11 @@
     <input class="easyui-combobox" id="Ctree_combo" style="width:100%" data-options="
        valueField: 'company_id',
        textField: 'label',
-       url:'Company/listFetch/',
+       loader:Ctree.loaderCombo,
        hasDownArrow:false,
        panelHeight:'auto',
        selectOnNavigation:false,
        mode: 'remote',
-       method:'get',
        onSelect: Ctree.selectCombo
        ">
     <ul class="easyui-tree" id="Ctree_tree" data-options="
