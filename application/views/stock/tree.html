@@ -30,6 +30,9 @@
 	enableButtons:function( leaf ){
 	    Stree.node.find('.folder,.ok').prop('disabled',false);
 	},
+	disableButtons:function( leaf ){
+	    Stree.node.find('.folder,.ok').prop('disabled',true);
+	},
 	click:function(node){
 	    if( node.state==='closed' ) {
 		$(this).tree('expand',node.target);
@@ -110,6 +113,7 @@
 		    if( ok*1 ){
 			App.flash("Удалено: "+node.label);
 			$('#Stree_tree').tree('remove', node.target);
+			Stree.disableButtons();
 		    } else {
 			App.flash("Удаление не удалось!");
 		    }
