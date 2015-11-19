@@ -37,6 +37,9 @@
 	    }
 	    Ctree.node.find('.folder').prop('disabled',false);
 	},
+        disableButtons:function(){
+            Ctree.node.find('.folder,.ok').prop('disabled',true);
+        },
 	click:function(node){
 	    if( node.state==='closed' ) {
 		$(this).tree('expand',node.target);
@@ -78,7 +81,6 @@
 		var resp = App.json(xhr);
 		success(resp[0] ? resp : []);
 	    });
-            
         },
 	create:function( new_branch_type ){
 	    var parent_id=0;
@@ -152,6 +154,8 @@
 		    if( ok>0 ){
 			App.flash("Удалено: "+node.label);
 			$('#Ctree_tree').tree('remove', node.target);
+                        Ctree.disableButtons();
+                        Ctree.handler.notify('deleted',node.company_id?'company':'folder');
 		    } else {
 			App.flash("Удаление не удалось!");
 		    }
@@ -177,7 +181,25 @@
 	reload:function(){
 	    $('#Ctree_tree').tree('reload');
 	    Ctree.node.find('.ok,.folder').prop('disabled',true);
-	}
+	},
+        loaderTree:function(param, success, error){
+            $.get('Company/branchFetch/',param,function(resp){
+                var data=App.json(resp);
+                for(var i in data){
+                    data[i].id=data[i].branch_id;
+                    data[i].text=data[i].label;
+                    if(data[i].is_active*1){
+                        data[i].iconCls='icon-home';
+                    } else if( data[i].level!=0 ){
+                        data[i].iconCls='icon-lock';
+                    } else if( data[i].is_leaf*1 ){
+                        data[i].iconCls='icon-comp';
+                    }
+                }
+                success(data);
+                Ctree.handler.notify('treeLoaded');
+            });
+        }
     };
 </script>
 <div style="width:100%;height: calc(100% - 70px);overflow: auto">
@@ -192,23 +214,7 @@
        onSelect: Ctree.selectCombo
        ">
     <ul class="easyui-tree" id="Ctree_tree" data-options="
-	url:'Company/branchFetch/',
-	method:'get',
-	loadFilter:function(data){
-	    for(var i in data){
-		data[i].id=data[i].branch_id;
-		data[i].text=data[i].label;
-		if(data[i].is_active*1){
-		    data[i].iconCls='icon-home';
-		} else if(data[i].level!=0){
-		    data[i].iconCls='icon-lock';
-		}
-		else if( data[i].is_leaf*1 ){
-		    data[i].iconCls='icon-comp';
-		}
-	    }
-	    return data;
-	},
+        loader:Ctree.loaderTree,
 	onSelect:Ctree.click,
 	onDrop:Ctree.drop,
 	onDragOver:function(target,source){

@@ -46,8 +46,8 @@
 	create:function(){
 	    $.post('DocumentItems/createDocument',function(doc_id){
 		if( doc_id*1 ){
-		     Doc.head.load(doc_id);
-		     Doc.handler.notify('created',doc_id);
+		    Doc.head.load(doc_id);
+                    Doc.handler.notify('created',doc_id);
 		} else {
 		    App.flash("Не удалось создать документ");
 		}
@@ -68,6 +68,9 @@
     Doc.head = {
 	props:{},
 	load: function (doc_id,load_only_head) {
+            if( doc_id===null ){
+                return;
+            }
 	    Doc.head.props.doc_id=doc_id;
 	    Doc.isCreated=!!doc_id;
 	    $.get('DocumentItems/headGet/' + Doc.head.props.doc_id, function (xhr) {
@@ -79,6 +82,7 @@
 		    Doc.entries.reload();
 		    Doc.view.loadTile();
 		}
+                Doc.handler.notify('head_loaded',doc_id);
 	    });
 	},
 	reload:function(){
@@ -126,7 +130,19 @@
 	update:function( field, value, oldval ){
 	    if( Doc.head.allowUpdate && value!==oldval ){
 		if( !Doc.isCreated ){
-		    App.flash("Не возможно изменить настройки. Документ пуст.");
+                    Doc.create().progress(function(status){
+                        if( status==='head_loaded' ){
+                            Doc.isCreated=true;
+                            console.log('head_loaded retry update');
+                            Doc.head.update( field, value, oldval );
+                        }
+                    });
+	
+
+                    
+                    
+                    
+		    //App.flash("Не возможно изменить настройки. Документ пуст.");
 		    return;
 		}
 		$.post('DocumentItems/headUpdate/'+App.uri(field,value),function(ok){
@@ -191,6 +207,16 @@
 	    }
 	    return label;
 	},
+        pcompLoader:function(param, success, error){
+	    if( param.q===undefined ){
+		success([{company_id:Doc.head.props.passive_company_id,label:Doc.head.props.label}]);
+		return;
+	    }
+	    $.get('Company/listFetch/', param, function (xhr) {
+		var resp = App.json(xhr);
+		success(resp[0] ? resp : []);
+	    });   
+        },
 	pcompTree:function(){
 	    if( !Doc.isCreated ){
 		App.flash("Не возможно изменить настройки. Документ пуст.");
@@ -613,9 +639,10 @@
 	    <input class="easyui-combobox" name="passive_company_id" id="Doc_pci" title="Контрагент" data-options="
 		    valueField: 'company_id',
 		    textField: 'label',
-		    url: 'Company/listFetch/selected_passive_if_empty',
+                    loader:Doc.head.pcompLoader,
+		    url1: 'Company/listFetch/selected_passive_if_empty',
 		    mode: 'remote',
-		    method:'get',
+		    method1:'get',
 		    hasDownArrow:false,
 		    formatter:Doc.head.companyListFrm,
 		    onSelect: function(company){Doc.head.update('passive_company_id',company.company_id)},

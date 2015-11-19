@@ -4,7 +4,7 @@
     TradeJs = {
         init: function () {
 	    this.ctreeInlineInit();
-            setTimeout(function(){TradeJs.initTabsOnce()},3000);
+            //setTimeout(function(){TradeJs.initTabsOnce()},3000);
 	},
         initTabsOnce:function(){
             if( this.tabsInited ){
@@ -27,6 +27,14 @@
                     $("#trade_main_tabs_info").hide();
                     $("#trade_main_tabs_content").css('visibility','visible');
                     TradeJs.selectPassiveCompany(company);
+                }
+                if( status==='treeLoaded' ){
+                    TradeJs.initTabsOnce();
+                }
+                if( status==='deleted' && company==='company' ){
+                    $("#trade_main_tabs_info").show();
+                    $("#trade_main_tabs_content").css('visibility','hidden');
+                    App.pcomp={};
                 }
 	    });
 	}
