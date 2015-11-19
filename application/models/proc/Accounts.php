@@ -520,8 +520,8 @@ class Accounts extends Data {
             $this->cached_fields[$table_name] = $this->getTableStructure($table_name, 'field', 'fromdb');
         }
         if ($check['client-code'] != $this->Base->acomp('company_code')) {
-            $this->Base->response("Платежное поручение от другого предприятия!\nКОД: {$check['client-code']}");
-            return false;
+            //$this->Base->response("Платежное поручение от другого предприятия!\nЕГРПОУ: {$check['client-code']}");
+            //return false;
         }
         $fields = $this->cached_fields[$table_name]['columns'];
 	$active_company_id=$this->Base->acomp('company_id');
