@@ -131,6 +131,7 @@ class DocumentCore extends DocumentUtils{
             'doc_date'=>date('d.m.Y'),
             'doc_num'=>0,
             'doc_ratio'=>'',
+            'label'=>$this->Base->pcomp('label'),
             'passive_company_id'=>$passive_company_id,
             'curr_code'=>$this->Base->pcomp('curr_code'),
             'vat_rate'=>$this->Base->acomp('company_vat_rate'),
@@ -165,6 +166,7 @@ class DocumentCore extends DocumentUtils{
 	    SELECT
 		doc_id,
 		passive_company_id,
+                (SELECT label FROM companies_tree JOIN companies_list USING(branch_id) WHERE company_id=passive_company_id) label,
 		IF(is_reclamation,-doc_type,doc_type) doc_type,
 		is_reclamation,
 		is_commited,

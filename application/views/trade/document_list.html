@@ -1,20 +1,22 @@
 <script type="text/javascript">
     /* global App,DocList,TradeJs,CtreeInline */
     DocList = App.page_trade_document_list = {
-	show_only_pcomp_docs: false,
 	init: function () {
+            DocList.doc.init();
 	},
 	initAfter: function () {
             App.handler.progress(function(status,pcomp){
                 if( status==='passiveCompanySelected' || status==='activeCompanySelected' ){
+                    if( !$.isEmptyObject(App.acomp) && !$.isEmptyObject(App.pcomp) ){
+                        DocList.doc.load(0);
+                    }
                     $('#document_list_dg').datagrid('reload');
-                    DocList.doc.load(0);
 		    $("#doc_list_pcompname").text(App.pcomp.label);
                 }
             });
 	},
 	doc:{
-	    doc_id:0,
+	    doc_id:null,
 	    init:function(){
 		App.loadModule('page/trade/document',{doc_id:DocList.doc.doc_id,open_in:'panel'},'DocInline',/(Doc|page_trade_document)([^\w]|_)/g,"DocInline$2").progress(function(status,param){
 		    switch( status ){
