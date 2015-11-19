@@ -30,6 +30,7 @@
 			    $('#document_list_dg').datagrid('reload');
 			    break;
 			case 'created':
+			    DocList.doc.doc_id=param;
 			    DocList.list.selectedDocId=param;
 			    DocList.list.suppressOnSelect=true;
 			    $('#document_list_dg').datagrid('reload');

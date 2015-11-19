@@ -44,15 +44,17 @@
 	    Doc.data.open_in==='panel'?Doc.node.panel('close'):Doc.node.window('close');
 	},
 	create:function(){
+	    var createDef=$.Deferred();
 	    $.post('DocumentItems/createDocument',function(doc_id){
 		if( doc_id*1 ){
-		    Doc.head.load(doc_id);
+                    createDef.notify('created');
+		    Doc.head.load(doc_id,false,createDef);
                     Doc.handler.notify('created',doc_id);
 		} else {
 		    App.flash("Не удалось создать документ");
 		}
 	    });
-	    return Doc.handler.promise();
+	    return createDef;
 	},
 	createThenAddEntry:function ( code, qty ){
 	    Doc.create().progress(function(status){
@@ -67,7 +69,7 @@
     /////////////////////////////////////////////
     Doc.head = {
 	props:{},
-	load: function (doc_id,load_only_head) {
+	load: function (doc_id,load_only_head,createDef) {
             if( doc_id===null ){
                 return;
             }
@@ -78,15 +80,15 @@
 		Doc.head.setPropsForm(Doc.head.props);
 		Doc.setTitle();
 		App.renderTpl('Doc_owners',Doc.head.props);
-		if( !load_only_head ){
 		    Doc.entries.reload();
 		    Doc.view.loadTile();
+		if( !load_only_head ){
 		}
-                Doc.handler.notify('head_loaded',doc_id);
+                createDef && createDef.notify('head_loaded',doc_id);
 	    });
 	},
 	reload:function(){
-	    Doc.head.load(Doc.head.props.doc_id,true);
+	    Doc.head.load(Doc.head.props.doc_id,false);
 	},
 	setPropsForm:function(props){
 	    Doc.head.allowUpdate=false;
@@ -129,25 +131,22 @@
 	},
 	update:function( field, value, oldval ){
 	    if( Doc.head.allowUpdate && value!==oldval ){
-		if( !Doc.isCreated ){
-                    Doc.create().progress(function(status){
-                        if( status==='head_loaded' ){
-                            Doc.isCreated=true;
-                            console.log('head_loaded retry update');
+		if( Doc.isCreated ){
+                    $.post('DocumentItems/headUpdate/'+App.uri(field,value),function(ok){
+			Doc.head.afterUpdate( ok, field, value, oldval );
+		    });
+		} else {
+		    if( field==='passive_company_id' ){
+			Doc.handler.notify('pcomp_changed',value);
+			return;
+		    }
+		    Doc.create().progress(function(status){
+                        if( status==='created' ){
+			    Doc.isCreated=true;
                             Doc.head.update( field, value, oldval );
                         }
-                    });
-	
-
-                    
-                    
-                    
-		    //App.flash("Не возможно изменить настройки. Документ пуст.");
-		    return;
+                    });	    
 		}
-		$.post('DocumentItems/headUpdate/'+App.uri(field,value),function(ok){
-		    Doc.head.afterUpdate( ok, field, value, oldval );
-		});
 	    }
 	},
 	afterUpdate:function( ok, field, value, oldval ){
@@ -218,10 +217,6 @@
 	    });   
         },
 	pcompTree:function(){
-	    if( !Doc.isCreated ){
-		App.flash("Не возможно изменить настройки. Документ пуст.");
-		return;
-	    }
 	    App.loadWindow('page/company/tree',{}).progress(function(status,comp){
 		if( status==='select' ){
 		    $("#Doc_pci").combobox('setValue',comp.company_id);
@@ -296,6 +291,10 @@
 	    });
 	},
 	duplicate:function(){
+	    if( !Doc.isCreated ){
+		App.flash("Документ пуст.");
+		return;
+	    }
 	    if( confirm("Создать копию этого документа?") ){
 		$.post("DocumentItems/duplicate/"+Doc.head.props.doc_id,function(doc_id){
 		    if( doc_id*1 ){
@@ -307,6 +306,14 @@
 	    }
 	},
 	import:function(){
+	    if( !Doc.isCreated ){
+		Doc.create().progress(function(status){
+		    if( status==='created' ){
+			Doc.isCreated=true;
+			Doc.head.import();
+		    }
+		});
+	    }
 	    var config=[
 		{name:'Код товара',field:'product_code',required:true},
 		{name:'Кол-во',field:'product_quantity'},
@@ -437,6 +444,10 @@
 	    App.renderTpl('Doc_footer',data);
 	},
 	initRecalculate:function(){
+	    if( !Doc.isCreated ){
+		App.flash("Документ пуст.");
+		return;
+	    }
 	    App.loadWindow('page/trade/document_recalculate').progress(function(state,data){
 		if( state==='submit' ){
 		    $.post("DocumentItems/recalc/"+Doc.head.props.doc_id+'/'+(data.recalc_proc*1||0), function ( xhr ) {
@@ -640,10 +651,9 @@
 		    valueField: 'company_id',
 		    textField: 'label',
                     loader:Doc.head.pcompLoader,
-		    url1: 'Company/listFetch/selected_passive_if_empty',
 		    mode: 'remote',
-		    method1:'get',
 		    hasDownArrow:false,
+		    selectOnNavigation:false,
 		    formatter:Doc.head.companyListFrm,
 		    onSelect: function(company){Doc.head.update('passive_company_id',company.company_id)},
 		    icons: [{
