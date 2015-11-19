@@ -53,8 +53,11 @@
 	    this.selectTree();
 	},
 	create:function( new_branch_type ){
+	    var parent_id=0;
 	    var selected=$('#Stree_tree').tree('getSelected');
-	    var parent_id=selected.is_leaf*1?selected.parent_id:selected.branch_id;
+	    if( selected ){
+		parent_id=selected.is_leaf*1?selected.parent_id:selected.branch_id;
+	    }
 	    var parent_target=parent_id>0?$('#Stree_tree').tree('find', parent_id).target:null;
 	    var newlabel=prompt("Введите название категории",'Новая категория');
 	    if( newlabel ){
@@ -148,7 +151,7 @@
     </ul>
 </div>
 <div style="text-align: left;padding: 2px;" class="tiny_button">
-    <button class="folder tiny_button" disabled="disabled" onclick="Stree.create('folder')" title="Добавить папку"><img src="img/FolderAdd-24.png"></button>
+    <button class="tiny_button" onclick="Stree.create('folder')" title="Добавить папку"><img src="img/FolderAdd-24.png"></button>
     <button class="folder tiny_button" disabled="disabled" onclick="Stree.update()" title="Редактировать"><img src="img/Edit-24.png"></button>
     <button class="folder tiny_button" disabled="disabled" onclick="Stree.delete()" title="Удалить"><img src="img/delete.png"></button>
     <button class="folder tiny_button" disabled="disabled" onclick="Stree.up()" title="Переместить в корень"><img src="img/up.png"></button>
