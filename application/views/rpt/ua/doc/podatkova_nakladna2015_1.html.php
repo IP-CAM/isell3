@@ -1,25 +1,32 @@
 <?php 
-if( empty($this->view['p']['company_vat_id']) ){
-    $this->view['p']['company_name']="Неплатник податку";
-    $this->view['p']['company_jaddress']="-";
-    if( empty($this->view['extra']->type_of_reason) ){
-	$this->view['extra']->type_of_reason="02";
+if( empty($this->view->p->company_vat_id) ){
+    $this->view->p->company_name="Неплатник податку";
+    $this->view->p->company_jaddress="-";
+    if( empty($this->view->doc_view->extra->type_of_reason) ){
+	$this->view->doc_view->extra->type_of_reason="02";
     }
-    $this->view['p']['company_vat_id']="100000000000";
+    $this->view->p->company_vat_id="100000000000";
 }
-if( $this->view['extra']->type_of_reason ){
-    $this->view['stay_at_seller']='X';
+if( $this->view->doc_view->extra->type_of_reason ){
+    $this->view->doc_view->stay_at_seller='X';
 }
 
-$this->view['agreement_type']='договір поставки';
-$this->view['payment_type']='оплата з поточного рахунка';
+$this->view->doc_view->agreement_type='договір поставки';
+$this->view->doc_view->payment_type='оплата з поточного рахунка';
+$this->view->doc_view->rows_num=count($this->view->rows);
 
-$unit_codes=array(
-    'шт'=>2009,
-    'м'=>0101,
-    'кг'=>0301,
-    'г'=>0303
-);
-foreach( $this->view['entries'] as &$entry ){
-    $entry['product_unit_code']=$unit_codes[$entry['product_unit']];
+if (!$this->view->p->company_agreement_date && !$this->view->p->company_agreement_num) {
+    $this->view->p->company_agreement_date = $this->view->doc_view->tstamp;
+    $this->view->p->company_agreement_num = '-';
+}
+$this->view->p->ag_date_dot=date('d.m.Y',  strtotime($this->view->p->company_agreement_date));
+
+$unit_codes=[
+    'шт'=>'2009',
+    'м'=>'0101',
+    'кг'=>'0301',
+    'г'=>'0303'
+];
+foreach( $this->view->rows as &$row ){
+    $row->product_unit_code=$unit_codes[$row->product_unit];
 }

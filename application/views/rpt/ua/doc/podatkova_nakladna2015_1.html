@@ -146,7 +146,7 @@
 	    </tr>
 	    <tr class="row1">
 		<td class="style2" colspan="13" rowspan="2">Усі примірники залишаються у продавця (тип причини) </td>
-		<td class="style7 ">{$v[stay_at_seller]}</td>
+		<td class="style7 ">{$v->doc_view->stay_at_seller}</td>
 		<td class="style4"></td>
 		<td class="style4"></td>
 		<td class="style4"></td>
@@ -157,7 +157,7 @@
 		<td>&nbsp;</td>
 	    </tr>
 	    <tr class="row2">
-		<td class="style8"> {$v[extra]->type_of_reason}</td>
+		<td class="style8"> {$v->doc_view->extra->type_of_reason}</td>
 		<td class="style4"></td>
 		<td class="style4"></td>
 		<td class="style4"></td>
@@ -216,10 +216,10 @@
 	    </tr>
 	    <tr class="row5">
 		<td class="style10" colspan="11">Дата складання податкової накладної </td>
-		<td class="style11" colspan="5">{$v[date_dot]}</td>
+		<td class="style11" colspan="5">{$v->doc_view->date_dot}</td>
 		<td>&nbsp;</td>
 		<td class="style10 " colspan="5" style="border:none;">Порядковий номер</td>
-		<td class="style11" colspan="4"> {$v[view_num]}</td>
+		<td class="style11" colspan="4"> {$v->doc_view->view_num}</td>
 		<td class="style13">/</td>
 		<td class="style14"></td>
 		<td class="style13">/</td>
@@ -270,11 +270,11 @@
 	    <tr class="row7">
 		<td class="style15" colspan="5" rowspan="2">Особа (платник <br />
 		    податку) - продавець</td>
-		<td class="style16" colspan="11" rowspan="2">{$v[a][company_name]}</td>
+		<td class="style16" colspan="11" rowspan="2">{$v->a->company_name}</td>
 		<td>&nbsp;</td>
 		<td class="style6" colspan="5" rowspan="2">Особа (платник <br />
 		    податку) - покупець</td>
-		<td class="style16" colspan="10" rowspan="2">{$v[p][company_name]}</td>
+		<td class="style16" colspan="10" rowspan="2">{$v->p->company_name}</td>
 		<td>&nbsp;</td>
 	    </tr>
 	    <tr class="row8">
@@ -317,14 +317,14 @@
 		<td>&nbsp;</td>
 		<td>&nbsp;</td>
 		<td class="style29"></td>
-		<td class="style30" colspan="11"> {$v[a][company_vat_id]}</td>
+		<td class="style30" colspan="11"> {$v->a->company_vat_id}</td>
 		<td>&nbsp;</td>
 		<td>&nbsp;</td>
 		<td>&nbsp;</td>
 		<td>&nbsp;</td>
 		<td class="style29"></td>
 		<td class="style29"></td>
-		<td class="style30" colspan="10"> {$v[p][company_vat_id]}</td>
+		<td class="style30" colspan="10"> {$v->p->company_vat_id}</td>
 		<td>&nbsp;</td>
 	    </tr>
 	    <tr class="row12">
@@ -345,10 +345,10 @@
 	    </tr>
 	    <tr class="row13">
 		<td class="style6" colspan="6">Місцезнаходження (податкова адреса) продавця </td>
-		<td class="style37" colspan="10">{$v[a][company_jaddress]}</td>
+		<td class="style37" colspan="10">{$v->a->company_jaddress}</td>
 		<td>&nbsp;</td>
 		<td class="style6" colspan="5">Місцезнаходження (податкова адреса) покупця </td>
-		<td class="style37" colspan="10">{$v[p][company_jaddress]}</td>
+		<td class="style37" colspan="10">{$v->p->company_jaddress}</td>
 		<td>&nbsp;</td>
 	    </tr>
 	    <tr class="row14">
@@ -357,10 +357,10 @@
 	    </tr>
 	    <tr class="row14">
 		<td class="style6" colspan="10">Номер телефону (продавця) </td>
-		<td class="style30" colspan="6" style="height:20px;">{$v[a][company_phone]}</td>
+		<td class="style30" colspan="6" style="height:20px;">{$v->a->company_phone}</td>
 		<td>&nbsp;</td>
 		<td class="style6" colspan="8">Номер телефону (покупця) </td>
-		<td class="style30" colspan="7">{$v[p][company_phone]}</td>
+		<td class="style30" colspan="7">{$v->p->company_phone}</td>
 		<td>&nbsp;</td>
 	    </tr>
 	    <tr class="row14">
@@ -398,11 +398,11 @@
 		<td>&nbsp;</td>
 	    </tr>
 	    <tr class="row16">
-		<td class="style40" colspan="14">{$v[agreement_type]}</td>
+		<td class="style40" colspan="14">{$v->doc_view->agreement_type}</td>
 		<td class="style42" colspan="2">від</td>
-		<td class="style11" colspan="5">{$v[p][ag_date_dot]}</td>
+		<td class="style11" colspan="5">{$v->p->ag_date_dot}</td>
 		<td class="style5">№</td>
-		<td class="style11" colspan="4">{$v[p][company_agreement_num]}</td>
+		<td class="style11" colspan="4">{$v->p->company_agreement_num}</td>
 		<td>&nbsp;</td>
 	    </tr>
 	    <tr class="row17">
@@ -430,7 +430,7 @@
 	    <tr class="row18">
 		<td class="style6" colspan="6">Форма проведених <br />
 		    розрахунків </td>
-		<td class="style40" colspan="14">{$v[payment_type]}</td>
+		<td class="style40" colspan="14">{$v->doc_view->payment_type}</td>
 		<td>&nbsp;</td>
 		<td>&nbsp;</td>
 		<td>&nbsp;</td>
@@ -513,25 +513,25 @@
 		<td class="style69" colspan="2">13</td>
 		<td>&nbsp;</td>
 	    </tr>
-	    {loop name="v.entries"}
+	    {loop name="v->rows"}
 	    <tr class="row25">
 		{if condition="$counter==0"}
-		<td class="style70 style81" rowspan="{$v.entries_num+1}">I</td>
+		<td class="style70 style81" rowspan="{$v->doc_view->rows_num+1}">I</td>
 		{/if}
-		<td class="style71" colspan="3">{$v[date]}</td>
-		<td class="style74" colspan="8">{$value[product_name]}</td>
-		<td class="style40" colspan="2"> {$value[product_uktzet]}</td>
-		<td class="style76">{$value[product_unit]}</td>
-		<td class="style76 n"> {$value[product_unit_code]}</td>
-		<td class="style71" colspan="2">{$value[product_quantity]}</td>
-		<td class="style77" colspan="2">{$value[product_price]}</td>
-		<td class="style78" colspan="2">{$value[product_sum]}</td>
+		<td class="style71" colspan="3">{$v->doc_view->date}</td>
+		<td class="style74" colspan="8">{$value->product_name}</td>
+		<td class="style40" colspan="2"> {$value->product_uktzet}</td>
+		<td class="style76">{$value->product_unit}</td>
+		<td class="style76 n"> {$value->product_unit_code}</td>
+		<td class="style71" colspan="2">{$value->product_quantity}</td>
+		<td class="style77" colspan="2">{$value->product_price}</td>
+		<td class="style78" colspan="2">{$value->product_sum}</td>
 		<td class="style79" colspan="2"></td>
 		<td class="style79" colspan="2"></td>
 		<td class="style79" colspan="2"></td>
 		<td class="style79" colspan="2"></td>
 		{if condition="$counter==0"}
-		<td class="style80" colspan="2" rowspan="{$v.entries_num+1}">{$v[footer][vatless]}</td>
+		<td class="style80" colspan="2" rowspan="{$v->doc_view->rows_num+1}">{$v->footer->vatless}</td>
 		{/if}
 		<td>&nbsp;</td>
 	    </tr>
@@ -543,7 +543,7 @@
 		<td class="style7">x</td>
 		<td class="style11" colspan="2">x</td>
 		<td class="style11" colspan="2">x</td>
-		<td class="style85 style86" colspan="2">{$v[footer][vatless]}</td>
+		<td class="style85 style86" colspan="2">{$v->footer->vatless}</td>
 		<td class="style11" colspan="2"></td>
 		<td class="style11" colspan="2"></td>
 		<td class="style11" colspan="2"></td>
@@ -574,12 +574,12 @@
 		<td class="style7">x</td>
 		<td class="style11" colspan="2">x</td>
 		<td class="style11" colspan="2">x</td>
-		<td class="style90 style90" colspan="2">{$v[footer][vat]}</td>
+		<td class="style90 style90" colspan="2">{$v->footer->vat}</td>
 		<td class="style11" colspan="2"></td>
 		<td class="style11" colspan="2"></td>
 		<td class="style11" colspan="2"></td>
 		<td class="style11" colspan="2">x</td>
-		<td class="style90 style91" colspan="2"><span class="style90 style90">{$v[footer][vat]}</span></td>
+		<td class="style90 style91" colspan="2"><span class="style90 style90">{$v->footer->vat}</span></td>
 		<td>&nbsp;</td>
 	    </tr>
 	    <tr class="row31">
@@ -590,12 +590,12 @@
 		<td class="style97">x</td>
 		<td class="style98" colspan="2">x</td>
 		<td class="style98" colspan="2">x</td>
-		<td class="style99" colspan="2">{$v[footer][total]}</td>
+		<td class="style99" colspan="2">{$v->footer->total}</td>
 		<td class="style98" colspan="2"></td>
 		<td class="style98" colspan="2"></td>
 		<td class="style98" colspan="2"></td>
 		<td class="style98" colspan="2"></td>
-		<td class="style100" colspan="2">{$v[footer][total]}</td>
+		<td class="style100" colspan="2">{$v->footer->total}</td>
 		<td>&nbsp;</td>
 	    </tr>
 	    <tr class="row32">
@@ -655,7 +655,7 @@
 		<td>&nbsp;</td>
 		<td>&nbsp;</td>
 		<td>&nbsp;</td>
-		<td class="style40" colspan="16">{$v.extra->sign}</td>
+		<td class="style40" colspan="16">{$v->doc_view->extra->sign}</td>
 		<td>&nbsp;</td>
 	    </tr>
 	    <tr class="row36">
