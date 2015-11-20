@@ -344,7 +344,7 @@
 	margin-bottom: 5px;
 	border: 1px solid #999;
 	border-right: none;
-	background: linear-gradient(90deg,rgba(255,255,255,1),rgba(255,255,255,0));
+	background: linear-gradient(90deg,rgba(255,255,255,1),rgba(255,255,255,0.5));
     }
     .left_label:hover{
 	background: linear-gradient(90deg,rgba(255,255,200,1),rgba(255,255,255,0.5));;
@@ -353,7 +353,6 @@
     }
     .left_label_selected,.left_label_selected:hover{
 	background: #FF9;
-	font-weight: bold;
     }
     #Ledger_acc_props{
 	width:200px;
@@ -368,23 +367,23 @@
 	display: inline;
     }
 </style>
-<div style="width:180px;display: inline-block;vertical-align: top;">
+<div style="width:180px;display: inline-block;vertical-align: top;border-right:1px solid #999;">
     <div id="ledger_favorites" class="covert">
 	<img src="img/heart2.png" style="width:16px;height:16px;margin-bottom: 2px;"> Избранные счета
 	{{favs}}
-	<div class="left_label" onclick="Ledger.fav.select(this)" data-code="{{acc_code}}"><div class="tag">{{acc_code}}</div> {{label}} <br><span style="color:#058">{{balance|blank|format}}</span></div>
+        <div class="left_label" onclick="Ledger.fav.select(this)" data-code="{{acc_code}}" style="min-height: 40px"><div class="tag">{{acc_code}}</div> {{label}} <br><span style="color:#058">{{balance|blank|format}}</span></div>
 	{{/favs}}
     </div>
     <div id="ledger_tnames" class="covert">
 	<img src="img/edit_add.png" style="width:16px;height:16px;margin-bottom: 2px;"> Операции по счету
 	{{tnames}}
-	<button style="text-align: left;margin-bottom: 3px;width: 177px" onclick="Ledger.addTransaction('{{trans_type}}','{{trans_name|undollar}}')"><div class="tag">{{trans_type}}</div><br>{{trans_name}}</button>
+        <button style="text-align: left;margin-bottom: 3px;width: 177px" onclick="Ledger.addTransaction('{{trans_type}}','{{trans_name|undollar}}')"><div class="tag" style="font-weight: normal">{{trans_type}}</div><br>{{trans_name}}</button>
 	{{/tnames}}
 	<div><a href="javascript:Ledger.tnames.show()"><img src="img/edit-16.png"> Изменить список</a></div>
     </div>
 </div>
 
-<div style="display: inline-block;border-left:1px solid #999;margin-left:-4px;padding-left:3px">
+<div style="display: inline-block;margin-left:-4px;padding-left:3px">
     <div id="Ledger_acc_props" class="covert">
 	<div class="tag" style="font-size: 2.2em;float: left;margin-right: 2px;cursor: pointer" onclick="Ledger.showTree()" title="Выбрать другой счет">{{acc_code}}</div><span style="font-size: 1.2em;">{{label}}</span>
 	<div style="clear: both;padding-top: 2px;">
