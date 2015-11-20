@@ -62,7 +62,7 @@ class AccountsData extends AccountsCore{
 	$res->free_result();
 	return $branches;
     }
-    public function accountTreeUpdate($branch_id,$field,$value) {
+    public function accountTreeUpdate($branch_id,$field,$value='') {
 	$this->Base->set_level(3);
 	$this->check($branch_id,'int');
 	$this->check($field);

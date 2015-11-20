@@ -103,8 +103,8 @@ class AccountsCore extends Catalog{
 	    return [];
 	}
         $default_curr_id=$this->Base->acomp('curr_id');
-        $using_alt_currency=$default_curr_id!=$props->curr_id;
-	$this->ledgerCreate($acc_code, $using_alt_currency, $use_passive_filter );
+        $using_alt_amount=$default_curr_id*1!=$props->curr_id*1;
+	$this->ledgerCreate($acc_code, $using_alt_amount, $use_passive_filter );
 	
 	$having=$this->decodeFilterRules();
 	$offset=$page>0?($page-1)*$rows:0;
@@ -117,7 +117,7 @@ class AccountsCore extends Catalog{
 	$total_estimate=$offset+(count($result_rows)==$rows?$rows+1:count($result_rows));
 	
 	$sub_totals=$this->ledgerGetSubtotals($idate, $fdate);
-	return ['rows'=>$result_rows,'total'=>$total_estimate,'props'=>$props,'sub_totals'=>$sub_totals,'using_alt_currency'=>$using_alt_currency];
+	return ['rows'=>$result_rows,'total'=>$total_estimate,'props'=>$props,'sub_totals'=>$sub_totals,'using_alt_currency'=>$using_alt_amount];
     }
     public function ledgerPaymentFetch( $acc_code, $idate='', $fdate='', $page=1, $rows=30 ){
 	return $this->ledgerFetch($acc_code, $idate, $fdate, $page, $rows, true);
