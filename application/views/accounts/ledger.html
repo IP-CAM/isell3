@@ -6,11 +6,12 @@
 	acc_props: {},
 	initAfter: function () {
 	    this.date.initRange();
-	    this.fav.init();
+            if( !$.isEmptyObject(App.acomp) && !$.isEmptyObject(App.pcomp) ){
+                this.fav.init();
+            }
 	    App.handler.progress(function(status){
 		if( status==="activeCompanySelected" ){
 		    Ledger.fav.init();
-		    Ledger.reload();
 		}
 	    });
 	},
@@ -38,7 +39,9 @@
 		}
 	    });
 	},
-	addTransaction:function( trans_type, trans_name ){
+	addTransaction:function( node ){
+            var trans_type=$(node).attr('data-trans-type');
+            var trans_name=$(node).attr('data-trans-name');
 	    this.list.rowCreate(trans_type, trans_name);
 	},
 	fav:{
@@ -49,20 +52,24 @@
 		$.get("AccountsData/accountFavoritesFetch/"+(Ledger.data.passive_filter?1:0),function(resp){
 		    var favs=App.json(resp);
 		    if( favs[0] ){
-			if( !Ledger.current_acc_code ){
-			    Ledger.load(favs[0].acc_code);
-			}
-			App.renderTpl('ledger_favorites',{favs:favs});	    
+			App.renderTpl('ledger_favorites',{favs:favs});	
+                        setTimeout(function(){
+                            Ledger.current_acc_code=Ledger.current_acc_code||favs[0].acc_code;
+                            Ledger.fav.select(Ledger.current_acc_code);
+                        },0);
 		    } else if(!Ledger.current_acc_code){
 			alert("Нет избранных счетов. Выберите счет из диалога.");
 			Ledger.showTree();
 		    }
 		});
 	    },
-	    select:function(node){
-		$('.left_label_selected').removeClass('left_label_selected');
-		$(node).addClass('left_label_selected');
-		Ledger.load( $(node).attr('data-code') );
+	    select:function( fav ){
+                if( typeof fav==='object' ){
+                    fav=$(fav).attr('data-code');
+                }
+                $('#ledger_favorites .left_label_selected').removeClass('left_label_selected');
+		$('#ledger_favorites div[data-code='+fav+']').addClass('left_label_selected');
+		Ledger.load( fav );
 	    },
 	    toggle:function(){
 		Ledger.acc_props.is_favorite=Ledger.acc_props.is_favorite?0:1;
@@ -377,7 +384,7 @@
     <div id="ledger_tnames" class="covert">
 	<img src="img/edit_add.png" style="width:16px;height:16px;margin-bottom: 2px;"> Операции по счету
 	{{tnames}}
-        <button style="text-align: left;margin-bottom: 3px;width: 177px" onclick="Ledger.addTransaction('{{trans_type}}','{{trans_name|undollar}}')"><div class="tag" style="font-weight: normal">{{trans_type}}</div><br>{{trans_name}}</button>
+        <button style="text-align: left;margin-bottom: 3px;width: 177px" onclick="Ledger.addTransaction(this)" data-trans-type="{{trans_type}}" data-trans-name="{{trans_name|undollar}}"><div class="tag" style="font-weight: normal">{{trans_type}}</div><br>{{trans_name}}</button>
 	{{/tnames}}
 	<div><a href="javascript:Ledger.tnames.show()"><img src="img/edit-16.png"> Изменить список</a></div>
     </div>
