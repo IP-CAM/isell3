@@ -106,7 +106,8 @@ class Utils extends CI_Model {
         '.html'=>'text/html',
         '.xls'=>'application/vnd.ms-excel',
         '.xlsx'=>'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        '.pdf'=>'application/pdf'
+        '.pdf'=>'application/pdf',
+        '.xml'=>'text/xml'
         ];
     private function generateFile($fgenerator,$dump_id,$out_type='.xlsx',$subject='file'){
         $ViewManager=$this->Base->load_model('ViewManager');
