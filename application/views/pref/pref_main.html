@@ -100,7 +100,7 @@
 				if( ok==='LAST_ADMIN' ){
 				    alert("Должен остаться хотя бы один администратор.");
 				}
-				App.flash("Не удалось сохранить свойства пользователя");
+				App.flash("Свойства пользователя не изменены");
 			    }
 			});
 		    }
@@ -127,6 +127,8 @@
 	    <input name="director_tin" title="Руководитель ИНН">
 	    <input name="accountant_name" title="Бухгалтер ФИО">
 	    <input name="accountant_tin" title="Бухгалтер ИНН">
+	    <div class="inp_rule"></div>
+	    <input name="digital_signature" title="Цифровая подпись">
 	</div>
 	<div class="inp_group" style="width:200px;">
 	    Поля в файле .csv клиент банка

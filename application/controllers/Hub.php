@@ -63,14 +63,22 @@ class HubBase extends CI_Controller{
 	session_start();
     }
     
-    public function acomp($name){
+    public function acomp($name){/*@TODO move to lazy loading of pcomp/acomp in v4.0*/
 	$acomp=$this->svar('acomp');
 	return isset($acomp->$name)?$acomp->$name:NULL;
     }
     
-    public function pcomp($name){
+    public function pcomp($name){/*@TODO move to lazy loading of pcomp/acomp in v4.0*/
 	$pcomp=$this->svar('pcomp');
 	return isset($pcomp->$name)?$pcomp->$name:NULL;
+    }
+    
+    public function pref($name){
+	if( !isset($this->pref) ){
+	    $Pref=$this->load_model('Pref');
+	    $this->pref=$Pref->getPrefs();
+	}
+	return isset($this->pref->$name)?$this->pref->$name:NULL;
     }
     
     public function svar($name, $value = NULL) {
