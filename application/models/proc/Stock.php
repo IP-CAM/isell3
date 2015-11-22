@@ -54,7 +54,7 @@ class Stock extends Data {
                 WHERE
                     product_code='{$this->productCode}'";
             $this->Base->query($sql);
-            if (mysql_affected_rows()) {
+            if ( !mysql_errno() ) {
                 return true;
             }
         }
