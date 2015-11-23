@@ -167,7 +167,7 @@
 		    break;
 		case 'doc_type':
 		    if( ok ){
-			Doc.head.load(Doc.head.doc_id);
+			Doc.head.reload();
 			Doc.entries.reload();
 		    } else {
 			App.flash("Сменить тип документа можно только у не проведенного документа.",'alert');
@@ -313,6 +313,7 @@
 			Doc.head.import();
 		    }
 		});
+		return;
 	    }
 	    var config=[
 		{name:'Код товара',field:'product_code',required:true},
