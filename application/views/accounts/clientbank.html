@@ -1,0 +1,36 @@
+<script>
+    Cbank=App.page_accounts_clientbank={
+        init:function(){
+            
+        },
+        list:{
+            
+        }
+    };
+</script>
+<div style="width:350px;display: inline-block;vertical-align: top;border-right:1px solid #999;">
+    sdasd
+</div>
+<div style="display: inline-block;vertical-align: top;">
+    <table id="account_clientbank_dg" class="easyui-datagrid" style="width:740px;"
+	   data-options="
+	   idField:'check_id',
+	   url:'AccountsData/clientBankGet/311/',
+	   rowStyler:Cbank.list.rowStyler,
+	   pagination:true,
+	   pageSize:25,
+	   pageList:[25,50,100,500,1000],
+	   singleSelect:true,
+	   remoteFilter:true,
+	   onSelect:function(){$('#account_clientbank_dg').datagrid('resize');},
+	   onLoadSuccess:function(){$('#account_clientbank_dg').datagrid('resize');}">
+        <thead>
+            <th data-options="width:25,field:'status',formatter:App.datagrid.tooltip"></th>
+            <th data-options="width:70,field:'tdate'"></th>
+            <th data-options="width:250,field:'correspondent_name'"></th>
+            <th data-options="width:250,field:'assignment'"></th>
+            <th data-options="width:70,field:'debit'"></th>
+            <th data-options="width:70,field:'credit'"></th>
+        </thead>
+    </table>
+</div>
