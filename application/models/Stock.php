@@ -149,7 +149,7 @@ class Stock extends Catalog {
                     LEFT JOIN
                 companies_tree USING(branch_id)
             WHERE
-                is_commited
+                is_commited AND NOT notcount
             HAVING $having
             ORDER BY dl.cstamp DESC
             LIMIT $rows OFFSET $offset";
