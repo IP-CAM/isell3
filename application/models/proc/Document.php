@@ -166,9 +166,17 @@ class Document extends Data {
     }
 
     protected function getProductDiscount($company_id, $product_code) {
-	$sql = "SELECT discount 
-              FROM companies_discounts cd JOIN stock_tree st ON(cd.branch_id=st.top_id) JOIN stock_entries se ON(st.branch_id=se.parent_id)
-              WHERE se.product_code='$product_code' AND cd.company_id='$company_id'";
+	$sql = "SELECT 
+                    discount 
+                FROM 
+                    companies_discounts cd 
+                        JOIN 
+                    stock_tree st ON(cd.branch_id=st.top_id) 
+                        JOIN 
+                    stock_entries se ON(st.branch_id=se.parent_id)
+                WHERE 
+                    se.product_code='$product_code' 
+                    AND cd.company_id='$company_id'";
 	$discount = $this->Base->get_row($sql, 0);
 	return $discount !== NULL ? $discount : 1;
     }

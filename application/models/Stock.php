@@ -9,14 +9,14 @@ class Stock extends Catalog {
 	$this->Base->set_level(2);
 	$this->check($parent_id,'int');
 	$this->check($label);
-	return $this->treeCreate('stock_tree', 'folder', $parent_id, $label);
+	return $this->treeCreate('stock_tree', 'folder', $parent_id, $label, 'calc_top_id');
     }
     public function stockTreeUpdate($branch_id,$field,$value) {
 	$this->Base->set_level(2);
 	$this->check($branch_id,'int');
 	$this->check($field);
 	$this->check($value);
-	return $this->treeUpdate('stock_tree', $branch_id, $field, $value);
+	return $this->treeUpdate('stock_tree', $branch_id, $field, $value, 'calc_top_id');
     }
     public function stockTreeDelete( $branch_id ){
 	$this->Base->set_level(4);
