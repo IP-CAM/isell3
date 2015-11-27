@@ -21,9 +21,11 @@ class User extends Catalog {
 	    $this->Base->svar('user_login', $user_data->user_login);
 	    $this->Base->svar('user_sign', $user_data->user_sign);
 	    $this->Base->svar('user_position', $user_data->user_position);
-	    if ( method_exists($this, 'initLoggedUser') ) {
-		$this->initLoggedUser($user_data);
-	    }
+            $this->Base->svar('user_assigned_stat',$user_data->user_assigned_stat);
+            $this->Base->svar('user_assigned_path',$user_data->user_assigned_path);
+            
+            $Company=$this->Base->load_model("Company");
+            $Company->selectActiveCompany($user_data->company_id);
 	    return $this->getUserData();
 	}
 	return false;
