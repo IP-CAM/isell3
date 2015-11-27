@@ -3,34 +3,103 @@
         init:function(){
             
         },
+        renderCheckView:function( check ){
+            App.renderTpl("Cbank_check_view",check);
+            this.renderCorrespondent(check);
+        },
+        renderCorrespondent:function( check ){
+            $.post("AccountsBank/getCorrespondentStats/",{company_code:check.correspondent_code},function(resp){
+                App.renderTpl("Cbank_check_corresp",resp);
+            });
+        },
         list:{
-            
+            styler:function(value, row, index) {
+                return row.debit>0?"color:red;font-weight:bold":"color:green;font-weight:bold";
+	    },
+            onSelect:function(){
+                var row=$('#account_clientbank_dg').datagrid('getSelected');
+                if( row ){
+                    Cbank.renderCheckView(row);
+                }
+                $('#account_clientbank_dg').datagrid('resize');
+            }
         }
     };
 </script>
-<div style="width:350px;display: inline-block;vertical-align: top;border-right:1px solid #999;">
-    sdasd
+<div style="width:350px;display: inline-block;vertical-align: top;">
+    <div class="easyui-panel" title="Корреспондент" id="Cbank_check_corresp" style="margin-bottom: 3px;">
+        
+    </div>
+    <div class="easyui-panel" title="Платежное поручение" id="Cbank_check_view">
+        <table>
+            <tr>
+                <td class="bank_property_name">Контрагент:</td>
+                <td class="bank_property_value">{{correspondent_name}}</td>
+            </tr>
+            <tr>
+                <td class="bank_property_name">Код:</td>
+                <td class="bank_property_value">{{correspondent_code}}</td>
+            </tr>
+            <tr>
+                <td class="bank_property_name">Счет:</td>
+                <td class="bank_property_value">{{correspondent_account}}</td>
+            </tr>
+            <tr>
+                <td class="bank_property_name">Банк:</td>
+                <td class="bank_property_value"><i>{{correspondent_bank_code}}</i> {{correspondent_bank_name}}</td>
+            </tr>
+            <tr>
+                <td colspan="2" align="center" height="30">&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="bank_property_name">Номер:</td>
+                <td class="bank_property_value">№{{number}} от <b>{{tdate}}</b></td>
+            </tr>
+            <tr>
+                <td class="bank_property_name">Сумма:</td>
+                <td class="bank_property_value"><b><span style="color:red">{{debit}}</span><span style="color:green">{{credit}}</span>грн</b></td>
+            </tr>
+            <tr>
+                <td class="bank_property_name">Назначение:</td>
+                <td class="bank_property_value">{{assignment}}</td>
+            </tr>
+        </table>
+    </div>
 </div>
 <div style="display: inline-block;vertical-align: top;">
+    <div style="clear:both">
+	<div style="float: left;font-weight: bold;padding-top: 8px;">
+	    <img src="img/table16.png" style="width:16px;height: 16px;"> Платежные поручения
+	</div>
+	<div style="float: right">
+	    <span class="icon-24 icon-create" title="Добавить" onclick="Ledger.list.rowCreate();"> </span>
+	    <span class="icon-24 icon-change" title="Изменить" onclick="Ledger.list.rowUpdate();"> </span>
+	    <span class="icon-24 icon-delete" title="Удалить" onclick="Ledger.list.rowDelete();"> </span>
+	    <span class="icon-24 icon-tablefilter" title="Фильтр таблицы" onclick="Ledger.list.toggleFilter()"> </span>
+	    <span class="icon-24 icon-refresh" title="Обновить" onclick="$('#account_ledger_dg').datagrid('reload')"> </span>
+	    <span class="icon-24" style="background-image: url(img/file_download.png);background-repeat: no-repeat" title="Скачать таблицу" onclick="Ledger.list.out('.xlsx');"> </span>
+	    <span class="icon-24 icon-print" title="Напечатать" onclick="Ledger.list.out('.print');"> </span>
+	</div>
+    </div>
     <table id="account_clientbank_dg" class="easyui-datagrid" style="width:740px;"
 	   data-options="
 	   idField:'check_id',
-	   url:'AccountsData/clientBankGet/311/',
+	   url:'AccountsBank/clientBankGet/311/',
 	   rowStyler:Cbank.list.rowStyler,
 	   pagination:true,
 	   pageSize:25,
 	   pageList:[25,50,100,500,1000],
 	   singleSelect:true,
 	   remoteFilter:true,
-	   onSelect:function(){$('#account_clientbank_dg').datagrid('resize');},
+	   onSelect:Cbank.list.onSelect,
 	   onLoadSuccess:function(){$('#account_clientbank_dg').datagrid('resize');}">
         <thead>
             <th data-options="width:25,field:'status',formatter:App.datagrid.tooltip"></th>
-            <th data-options="width:70,field:'tdate'"></th>
-            <th data-options="width:250,field:'correspondent_name'"></th>
-            <th data-options="width:250,field:'assignment'"></th>
-            <th data-options="width:70,field:'debit'"></th>
-            <th data-options="width:70,field:'credit'"></th>
+            <th data-options="width:70,field:'tdate'">Дата</th>
+            <th data-options="width:200,field:'correspondent_name'">Корреспондент</th>
+            <th data-options="width:300,field:'assignment'">Назначение</th>
+            <th data-options="width:70,field:'debit',formatter:App.formatNum,align:'right',styler:Cbank.list.styler">Дебит</th>
+            <th data-options="width:70,field:'credit',formatter:App.formatNum,align:'right',styler:Cbank.list.styler">Кредит</th>
         </thead>
     </table>
 </div>

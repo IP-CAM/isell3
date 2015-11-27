@@ -68,6 +68,17 @@ class Company extends Catalog{
 	return $this->get_row($sql);
     }
     
+    public function companyFindByCode( $company_code=null, $company_vat_id=null ){
+        $sql="SELECT 
+                company_id 
+            FROM 
+                companies_list 
+            WHERE 
+                IF('$company_code',company_code='$company_code',0) 
+                OR IF('$company_vat_id',company_vat_id='$company_vat_id',0)";
+        return $this->get_value($sql);
+    }
+    
     public function companyUpdate($company_id, $field, $value='') {
 	$this->Base->set_level(2);
 	$this->check($field,'[a-z_]+');
