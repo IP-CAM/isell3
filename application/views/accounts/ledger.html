@@ -23,7 +23,7 @@
 	    $('#account_ledger_dg').datagrid('reload');
 	    Ledger.tnames.init();
 	},
-	showTree:function( field ){
+	showTree:function(){
 	    App.loadWindow('page/accounts/acc_tree',{}).progress(function(status,data){
 		if( status==='select' ){
 		    Ledger.load(data.acc_code);
@@ -33,7 +33,6 @@
 	showAccForm:function(){
 	    App.loadWindow('page/accounts/acc_form',Ledger.acc_props).progress(function(status,data){
 		if( status==='change' ){
-		    $('#account_ledger_dg').datagrid('reload');
 		    App.renderTpl('Ledger_acc_props',data);
 		    Ledger.fav.init();
 		}
@@ -169,11 +168,11 @@
 		    $.get(App.uri('AccountsCore', 'ledgerFetch', Ledger.current_acc_code, App.toIso(Ledger.idate), App.toIso(Ledger.fdate), Ledger.current_page, Ledger.current_rows), {filterRules: param.filterRules}, function (xhr) {
 			var resp = App.json(xhr);
 			if( resp.sub_totals ){
-			    success(Ledger.list.addBalanceRows(resp));
 			    Ledger.sub_totals = resp.sub_totals;
 			    Ledger.acc_props = resp.props;
 			    Ledger.using_alt_currency=resp.using_alt_currency;
 			    Ledger.onListLoaded();
+			    success(Ledger.list.addBalanceRows(resp));
 			} else {
 			    success([]);
 			}

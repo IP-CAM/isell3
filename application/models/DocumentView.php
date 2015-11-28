@@ -130,12 +130,17 @@ class DocumentView extends DocumentItems{
 	
         $doc_view->total_spell=$Utils->spellAmount($footer->total);
         $doc_view->loc_date=$Utils->getLocalDate($doc_view->tstamp);
-        $doc_view->extra=json_decode($doc_view->view_efield_values);
 	$doc_view->user_sign=$this->Base->svar('user_sign');
 	$doc_view->user_position=$this->Base->svar('user_position');
 	$doc_view->date=date('dmY', strtotime($doc_view->tstamp));
 	$doc_view->date_dot=date('d.m.Y', strtotime($doc_view->tstamp));
 	$doc_view->entries_num=count($rows);
+	if( $doc_view->view_efield_values ){
+	    $doc_view->extra=json_decode($doc_view->view_efield_values);
+	} else {
+	    $doc_view->extra=json_decode("{}");
+	}
+        
         $dump=[
 	    'tpl_files'=>$doc_view->view_tpl,
 	    'title'=>$doc_view->view_name,

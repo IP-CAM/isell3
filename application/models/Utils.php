@@ -96,19 +96,20 @@ class Utils extends CI_Model {
 	$subject=$this->input->get_post('subject');
 	$body=$this->input->get_post('body');
 	$dump_id=$this->input->get_post('dump_id');
-	$fgenerator=$this->input->get_post('fgenerator');
+	//$fgenerator=$this->input->get_post('fgenerator');
         $out_type=$this->input->get_post('out_type');
         $send_file=$this->input->get_post('send_file');
-	$file=$send_file?$this->generateFile($fgenerator,$dump_id,$out_type,$subject):null;
+	$file=$send_file?$this->generateFile($dump_id,$out_type,$subject):null;
 	return $this->sendEmail($to, $subject, $body, $file);
     }
     private $mimes=[
         '.html'=>'text/html',
         '.xls'=>'application/vnd.ms-excel',
         '.xlsx'=>'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        '.pdf'=>'application/pdf'
+        '.pdf'=>'application/pdf',
+        '.xml'=>'text/xml'
         ];
-    private function generateFile($fgenerator,$dump_id,$out_type='.xlsx',$subject='file'){
+    private function generateFile($dump_id,$out_type='.xlsx',$subject='file'){
         $ViewManager=$this->Base->load_model('ViewManager');
 	$file_data=$ViewManager->getFile($dump_id,$out_type);
 	if( $file_data ){

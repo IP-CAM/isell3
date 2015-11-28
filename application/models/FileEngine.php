@@ -1,7 +1,11 @@
 <?php
-
+error_reporting(E_ERROR | E_WARNING | E_PARSE);
 class FileEngine {
-    private $conversion_table = array();
+    private $conversion_table = [
+	'.html'=>['.html' => 'Веб Страница', '.doc' => 'Word Документ'],
+	'.xlsx'=>['.xlsx' => 'Excel 2007', '.xls' => 'Excel 2003', '.html' => 'Веб Страница'],
+	'.xml'=>['.xml' => 'XML Экспорт Данных']
+    ];
     private $view;
     private $tpl_files;
     private $export_types = array();
@@ -13,12 +17,6 @@ class FileEngine {
     public $user_data;
     public $file_name_override;
     public $tplModifier;
-
-    public function FileEngine() {
-        $this->conversion_table['.html'] = array('.html' => 'Веб Страница', '.doc' => 'Word Документ');
-        $this->conversion_table['.xml'] = array('.xml' => 'XML Экспорт Данных');
-        $this->conversion_table['.xlsx'] = array('.xlsx' => 'Excel 2007', '.xls' => 'Excel 2003', '.html' => 'Веб Страница');
-    }
     
     private function header($text){
         if( $this->header_mode==='send_headers' ){
