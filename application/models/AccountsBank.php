@@ -37,4 +37,7 @@ class AccountsBank extends AccountsData{
         }
         return null;
     }
+    private function get(){
+	
+    }
 }
