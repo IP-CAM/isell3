@@ -10,7 +10,7 @@ class AccountsBank extends AccountsData{
         
 	$having=$this->decodeFilterRules();
 	$offset=$page>0?($page-1)*$rows:0;
-	$sql="SELECT *,
+	$sql="SELECT check_id,number,correspondent_name,correspondent_code,correspondent_account,correspondent_bank_name,correspondent_bank_code,assignment,
 		    IF(trans_id,'ok Проведен','gray Непроведен') AS status,
 		    IF(debit_amount,ROUND(debit_amount,2),'') AS debit,
 		    IF(credit_amount,ROUND(credit_amount,2),'') AS credit,
@@ -38,7 +38,7 @@ class AccountsBank extends AccountsData{
 	$pcomp=$Company->selectPassiveCompany($company_id);
 	$favs=$this->accountFavoritesFetch(true);
 	foreach($favs as $acc){
-	    $this->appendSuggestions($acc);
+	    $this->appendSuggestions($acc,$check);
 	}
 	return [
 	    'pcomp'=>$pcomp,
@@ -48,8 +48,18 @@ class AccountsBank extends AccountsData{
     private function getCheck( $check_id ){
 	return $this->get_row("SELECT * FROM acc_check_list WHERE check_id=$check_id");
     }
-    private function appendSuggestions( &$acc ){
-	
+    private function appendSuggestions( &$acc, $check ){
+	$active_company_id=$this->Base->acomp('company_id');
+	$sql="SELECT 
+		    at.* 
+		FROM 
+		    acc_trans  at
+			JOIN
+		    acc_check_list acl ON acl.check_id={$check->check_id}
+		WHERE 
+		    at.active_company_id=$active_company_id
+		    AND (debit_amount=amount OR credit_amount=amount)";
+	$acc->suggs=$this->get_list($sql);
 	return $acc;
     }
 }
