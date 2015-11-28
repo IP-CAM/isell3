@@ -644,7 +644,8 @@ class Document extends Data {
 	}
 	if ($view_type_props['view_role'] == 'tax_bill') {
 	    if (!$this->isCommited()) {
-		$this->Base->response_wrn('Сначала сохраните документ!');
+		$this->Base->msg('Сначала сохраните документ!');
+		return;
 	    }
 	    if ($this->Base->pcomp('company_vat_id') && (
 		    !$this->Base->pcomp('company_name') ||

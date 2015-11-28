@@ -167,7 +167,7 @@
 		    break;
 		case 'doc_type':
 		    if( ok ){
-			Doc.head.load(Doc.head.doc_id);
+			Doc.head.reload();
 			Doc.entries.reload();
 		    } else {
 			App.flash("Сменить тип документа можно только у не проведенного документа.",'alert');
@@ -313,6 +313,7 @@
 			Doc.head.import();
 		    }
 		});
+		return;
 	    }
 	    var config=[
 		{name:'Код товара',field:'product_code',required:true},
@@ -817,7 +818,7 @@
 		    <div>{{view_name}}</div>
 		    {{if doc_view_id}}
 		    <img src="img/settings.png" data-view-i="{{#}}" onclick="Doc.view.settings(this);event.stopPropagation()" style="float:right;" title="Настройки">
-			№{{view_num}} {{view_date}}
+		    <b>№{{view_num}} {{view_date}}</b>
 			<div class="view_efields">
 			{{if efields}}
 			    {{efields}}
@@ -847,7 +848,7 @@
 	height:30px;
 	margin-left:0px;
 	margin-top: 3px;
-	background-color: #dfd
+	background-color: #cfd
     }
     .footer_table {
 	background-image: linear-gradient(#fff 0%,  #e0eeff 100%);
@@ -874,16 +875,19 @@
     .view_button{
 	display: inline-block;
 	border: 1px #bbb solid;
-	color: #369;
+	color: #333;
 	border-radius: 3px;
 	width:155px;
 	min-height: 32px;
 	margin: 0px 0px 6px 0px;
 	text-align: center;
-	background-image: linear-gradient(rgba(255,255,255,0.75) 0%,  rgba(255,255,255,0) 100%);
-	background-color:#e0eeff;
+	background-image: linear-gradient(rgba(255,255,255,0.9) 0%,  rgba(255,255,255,0.1) 100%);
+	background-color:#cfd;
 	cursor: pointer;
 	vertical-align: top;
+    }
+    .view_button b{
+	color:#090;
     }
     .view_button img{
 	visibility: hidden;
@@ -893,6 +897,8 @@
 	visibility: visible;
     }
     .view_button:hover{
+	border: 1px #5c5 solid;
+	background-image: none;
 	z-index:100;	
     }
     .view_button:hover .view_efields{
@@ -903,8 +909,8 @@
 	position: absolute;
 	margin-top:1px;
 	text-align: left;
-	width:160px;
-	border: 1px #bbb solid;
+	width:155px;
+	border: 1px #5c5 solid;
 	overflow: hidden;
 	display: none;
 	margin-left:-1px;

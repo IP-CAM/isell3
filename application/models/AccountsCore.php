@@ -10,6 +10,7 @@ class AccountsCore extends Catalog{
     public $min_level=1;
     protected function getAccountProperties( $acc_code, $calc_balance=false, $use_passive_filter=false ) {
 	$active_company_id=$this->Base->acomp('company_id');
+	$default_curr_id=$this->Base->acomp('curr_id');
 	$balance='';
 	if( $calc_balance ){
 	    $passive_filter="";
@@ -20,26 +21,26 @@ class AccountsCore extends Catalog{
 		SELECT 
 		    SUM(ROUND(IF(at.acc_code=acc_debit_code,amount,-amount),2))
 		FROM acc_trans
-		WHERE (acc_debit_code=at.acc_code OR acc_credit_code=at.acc_code) AND active_company_id=$active_company_id $passive_filter) balance";
+		WHERE (acc_debit_code=at.acc_code OR acc_credit_code=at.acc_code) AND active_company_id=$active_company_id $passive_filter)*IF(acc_type='P',-1,1) balance";
 	}
         $sql="SELECT
 		* $balance
 	    FROM 
 		acc_tree at
-		    JOIN curr_list cl ON IF(at.curr_id,cl.curr_id=at.curr_id,cl.curr_id=1)
+		    JOIN curr_list cl ON IF(at.curr_id,cl.curr_id=at.curr_id,cl.curr_id='$default_curr_id')
             WHERE acc_code='$acc_code'";
         return $this->get_row($sql);
     }
-    private function ledgerCreate( $acc_code, $use_alt_amount=false, $use_passive_filter=false ){
+    private function ledgerCreate( $acc_code, $using_alt_currency=false, $use_passive_filter=false ){
 	$this->check($acc_code);
-	$this->check($use_alt_amount,'bool');
+	$this->check($using_alt_currency,'bool');
 	$active_company_id=$this->Base->acomp('company_id');
 	$passive_filter="";
 	if( $use_passive_filter ){
 	    $passive_filter=" AND passive_company_id='".$this->Base->pcomp('company_id')."'";
 	}
 	
-	$this->db->query("SET @acc_code:=?, @use_alt_amount=?;",[$acc_code,$use_alt_amount]);
+	$this->db->query("SET @acc_code:=?, @use_alt_amount=?;",[$acc_code,$using_alt_currency]);
 	$this->db->query("DROP TEMPORARY TABLE IF EXISTS tmp_ledger;");
 	$sql="CREATE TEMPORARY TABLE tmp_ledger ( INDEX(cstamp) ) ENGINE=MyISAM AS (
 	    SELECT 
@@ -102,9 +103,12 @@ class AccountsCore extends Catalog{
 	if( !$acc_code || !$idate || !$fdate ){
 	    return [];
 	}
-        $default_curr_id=$this->Base->acomp('curr_id');
-        $using_alt_amount=$default_curr_id*1!=$props->curr_id*1;
-	$this->ledgerCreate($acc_code, $using_alt_amount, $use_passive_filter );
+	$using_alt_currency=false;
+	if( $props->curr_id ){
+	    $default_curr_id=$this->Base->acomp('curr_id');
+	    $using_alt_currency=$default_curr_id!=$props->curr_id;
+	}
+	$this->ledgerCreate($acc_code, $using_alt_currency, $use_passive_filter );
 	
 	$having=$this->decodeFilterRules();
 	$offset=$page>0?($page-1)*$rows:0;
@@ -117,12 +121,12 @@ class AccountsCore extends Catalog{
 	$total_estimate=$offset+(count($result_rows)==$rows?$rows+1:count($result_rows));
 	
 	$sub_totals=$this->ledgerGetSubtotals($idate, $fdate);
-	return ['rows'=>$result_rows,'total'=>$total_estimate,'props'=>$props,'sub_totals'=>$sub_totals,'using_alt_currency'=>$using_alt_amount];
+	return ['rows'=>$result_rows,'total'=>$total_estimate,'props'=>$props,'sub_totals'=>$sub_totals,'using_alt_currency'=>$using_alt_currency];
     }
     public function ledgerPaymentFetch( $acc_code, $idate='', $fdate='', $page=1, $rows=30 ){
 	return $this->ledgerFetch($acc_code, $idate, $fdate, $page, $rows, true);
     }
-    public function accountBalanceTreeFetch( $parent_id=0, $idate='', $fdate='', $show_unused=0 ){
+    public function accountBalanceTreeFetch( $parent_id=0, $idate='', $fdate='', $show_unused=1 ){
 	$this->Base->set_level(3);
 	$this->check($parent_id,'int');
 	$this->check($idate,'\d\d\d\d-\d\d-\d\d');
@@ -157,10 +161,9 @@ class AccountsCore extends Catalog{
 		    LEFT JOIN 
 		acc_tree subtree ON subtree.path LIKE CONCAT(tree.path,'%')
 		    LEFT JOIN
-		acc_trans dtrans ON dtrans.acc_debit_code = subtree.acc_code
+		acc_trans dtrans ON dtrans.acc_debit_code = subtree.acc_code AND active_company_id='$active_company_id'
 	    WHERE
 		tree.parent_id=@parent_id
-		AND active_company_id='$active_company_id'
 	    GROUP BY tree.branch_id) d
 	JOIN
 	    (SELECT 
@@ -173,16 +176,15 @@ class AccountsCore extends Catalog{
 		    LEFT JOIN 
 		acc_tree subtree ON subtree.path LIKE CONCAT(tree.path,'%')
 		    LEFT JOIN
-		acc_trans ctrans ON ctrans.acc_credit_code = subtree.acc_code
+		acc_trans ctrans ON ctrans.acc_credit_code = subtree.acc_code AND active_company_id='$active_company_id'
 	    WHERE
 		tree.parent_id=@parent_id
-		AND active_company_id='$active_company_id'
 	    GROUP BY tree.branch_id) c 
 	ON (d.branch_id=c.branch_id) 
-	HAVING IF( $show_unused, 1, open_bal OR  period_d OR period_c OR close_bal )
+	HAVING IF( '$show_unused', 1, open_bal OR  period_d OR period_c OR close_bal )
 	ORDER BY acc_code";
         $balance=$this->get_list($sql);
-	return $balance?$balance:array();
+	return $balance?$balance:[];
     }
     public function accountBalanceTreeCreate( $parent_id, $label ){
 	$this->Base->set_level(3);

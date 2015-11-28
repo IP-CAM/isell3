@@ -97,7 +97,14 @@ class Company extends Catalog{
 		    AND
 		company_id=$company_id";
 	$this->query($sql);
-	return $this->db->affected_rows()>0?1:0;
+	$ok=$this->db->affected_rows()>0?1:0;
+	if( $this->Base->acomp('company_id')==$company_id ){/*@TODO move to lazy loading of pcomp/acomp in v4.0*/
+	    $this->selectActiveCompany($company_id);
+	}
+	if( $this->Base->pcomp('company_id')==$company_id ){
+	    $this->selectPassiveCompany($company_id);
+	}
+	return $ok;
     }    
     
     public function companyTreeCreate($parent_id,$label,$branch_type){
