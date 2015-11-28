@@ -9,7 +9,7 @@
             this.renderCorrespondent(check);
         },
         renderCorrespondent:function( check ){
-            $.post("AccountsBank/getCorrespondentStats/",{company_code:check.correspondent_code},function(resp){
+            $.post("AccountsBank/getCorrespondentStats/",{company_code:check.check_id},function(resp){
 		var corr_data=App.json(resp);
                 App.renderTpl("Cbank_check_corresp",corr_data);
             });
