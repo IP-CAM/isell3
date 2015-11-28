@@ -26,32 +26,30 @@ class AccountsBank extends AccountsData{
 	return ['rows'=>$result_rows,'total'=>$total_estimate];
     }
     public function getCorrespondentStats(){
-	$check_id=$this->request('check_id','int');
+	$check_id=$this->request('check_id','int',0);
 	$check=$this->getCheck($check_id);
 	
         $Company=$this->Base->load_model("Company");
         $company_id=$Company->companyFindByCode( $check->correspondent_code );
-	$pcomp=$Company->selectPassiveCompany($company_id);
-	
-	
-	$favs=$this->accountFavoritesFetch(true);
-	foreach($favs as $acc){
-	    
+	if( !$company_id ){
+	    return null;
 	}
 	
-        if( $company_id ){
-            return [
-                'pcomp'=>$pcomp,
-                'sugg'=>$suggestions
-            ];
-        }
-        return null;
+	$pcomp=$Company->selectPassiveCompany($company_id);
+	$favs=$this->accountFavoritesFetch(true);
+	foreach($favs as $acc){
+	    $this->appendSuggestions($acc);
+	}
+	return [
+	    'pcomp'=>$pcomp,
+	    'favs'=>$favs
+	];
     }
     private function getCheck( $check_id ){
 	return $this->get_row("SELECT * FROM acc_check_list WHERE check_id=$check_id");
     }
-    private function getSuggestions( $acc ){
+    private function appendSuggestions( &$acc ){
 	
-	return $suggestions;
+	return $acc;
     }
 }
