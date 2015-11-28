@@ -50,15 +50,18 @@ class AccountsBank extends AccountsData{
     }
     private function appendSuggestions( &$acc, $check ){
 	$active_company_id=$this->Base->acomp('company_id');
+	$passive_company_id=$this->Base->pcomp('company_id');
 	$sql="SELECT 
-		    at.* 
+		    at.*,DATE_FORMAT(tstamp,'%d.%m.%Y') date
 		FROM 
 		    acc_trans  at
 			JOIN
-		    acc_check_list acl ON acl.check_id={$check->check_id}
+		    acc_check_list acl ON debit_amount=amount OR credit_amount=amount
 		WHERE 
 		    at.active_company_id=$active_company_id
-		    AND (debit_amount=amount OR credit_amount=amount)";
+		    AND at.passive_company_id=$passive_company_id
+                    AND IF(debit_amount>0,acc_credit_code='{$acc->acc_code}',acc_debit_code='{$acc->acc_code}')
+		    AND acl.check_id={$check->check_id}";
 	$acc->suggs=$this->get_list($sql);
 	return $acc;
     }

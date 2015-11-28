@@ -24,20 +24,75 @@
                     Cbank.renderCheckView(row);
                 }
                 $('#account_clientbank_dg').datagrid('resize');
-            }
+            },
+	    transCreate:function( trans_type, amount, trans_ref ){
+		var data={
+		    trans_id:0,
+		    trans_date:App.today(),
+		    amount:amount||0,
+		    trans_ref:trans_ref||null,
+		    trans_type:trans_type||'',
+		    description:trans_name||'',
+		    passive_company_id:App.pcomp?App.pcomp.company_id:0,
+		    current_acc_code:Ledger.current_acc_code,
+		    using_alt_currency:Ledger.using_alt_currency
+		};
+		if(App.pcomp){
+		    data.passive_company_id=App.pcomp.company_id || 0;
+		    data.label=App.pcomp.label || '?';
+		}
+		App.loadWindow('page/accounts/trans_edit',data).progress(function(status,data){
+		    if( status==='save' || status==='delete' ){
+			$('#account_ledger_dg').datagrid('reload');
+		    }
+		});
+	    },
+	    payTrans:function(){
+		var row=$('#account_ledger_dg').datagrid('getSelected');
+		if( row.trans_status ){
+		    var status=row.trans_status.split(' ')[0];
+		    if( "unpayed partly payed".indexOf(status)>-1 ){
+			this.rowCreate(null,null,row.debit||row.credit,row.trans_id);
+		    } else if( "closing closed".indexOf(status)>-1 ){
+			App.flash("Проводка уже связана.");
+		    }
+		}
+	    }
         }
     };
 </script>
 <div style="width:350px;display: inline-block;vertical-align: top;">
     <div class="easyui-panel" title="Корреспондент" id="Cbank_check_corresp" style="margin-bottom: 3px;">
-        <h3>{{pcomp.company_name}}</h3>
+        <h4>{{pcomp.company_name}}</h4>
 	<div>
 	    {{favs}}
 	    <div class="rounded">
-		<b class="tag">{{acc_code}}</b> {{label}} <b>{{balance}}</b>
+                <b class="tag">{{acc_code}}</b> {{label}} {{if balance}}(<b>{{balance}}</b>){{/if}} 
+                <button class="tiny_button" style="float: right;">Провести</button>
+                {{if suggs}}
+                <table style="width: 100%" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <th style="width:70px">Дата</th>
+                        <th>Назначение</th>
+                        <th style="width:70px">Сумма</th>
+                        <th style="width:50px"></th>
+                    </tr>
+                    {{suggs}}
+                    <tr>
+                        <td>{{date}}</td>
+                        <td>{{description}}</td>
+                        <td>{{amount}}</td>
+                        <td><button class="tiny_button">Оплатить</button></td>
+                    </tr>
+                    {{/suggs}}
+                </table>
+                {{/if}}
 		<hr>
 	    </div>
 	    {{/favs}}
+            <div style="text-align: center;padding: 3px;">
+                <button class="tiny_button">Провести по другому счету</button>
+            </div>
 	</div>
     </div>
     <div class="easyui-panel" title="Платежное поручение" id="Cbank_check_view">
