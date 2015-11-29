@@ -52,9 +52,14 @@ class AccountsBank extends AccountsData{
 	$active_company_id=$this->Base->acomp('company_id');
 	$passive_company_id=$this->Base->pcomp('company_id');
 	$sql="SELECT 
-		    at.*,DATE_FORMAT(tstamp,'%d.%m.%Y') date
+		    at.*,
+		    DATE_FORMAT(tstamp,'%d.%m.%Y') date,
+		    code,
+		    descr
 		FROM 
 		    acc_trans  at
+		        JOIN
+		    acc_trans_status USING (trans_status)
 			JOIN
 		    acc_check_list acl ON debit_amount=amount OR credit_amount=amount
 		WHERE 

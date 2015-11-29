@@ -7,35 +7,41 @@
             
         },
         renderCheckView:function(){
-            App.renderTpl("Cbank_check_view",this.current_check);
-            this.renderCorrespondent();
+           App.renderTpl("Cbank_check_view",this.current_check);
+           this.renderCorrespondent();
         },
         renderCorrespondent:function(){
             $.post("AccountsBank/getCorrespondentStats/",{check_id:this.current_check.check_id},function(resp){
 		var corr_data=App.json(resp);
+		App.user.setPassiveCompany(corr_data.pcomp);
                 App.renderTpl("Cbank_check_corresp",corr_data);
             });
         },
         transClick:function(node){
+	    var trans_type,amount;
+	    var date=this.current_check.date;
+	    var description=this.current_check.description;
             var acc_code=$(node).attr('data-acc-code');
             if( this.current_check.debit_amount ){
-                var trans_type=acc_code+"_"+this.main_acc_code;
+                trans_type=acc_code+"_"+this.main_acc_code;
+		amount=this.current_check.debit_amount;
             } else {
-                var trans_type=this.main_acc_code+"_"+acc_code;
+                trans_type=this.main_acc_code+"_"+acc_code;
+		amount=this.current_check.credit_amount;
             }
-            alert(trans_type);
+            this.transCreate(trans_type,description,amount,0,date);
         },
-        transCreate:function( trans_type, amount, trans_ref ){
+        transCreate:function( trans_type, description, amount, trans_ref, date ){
             var data={
                 trans_id:0,
-                trans_date:App.today(),
-                amount:amount||0,
+                trans_date:date,
+                amount:amount,
                 trans_ref:trans_ref||null,
                 trans_type:trans_type||'',
-                description:trans_name||'',
+                description:description||'',
                 passive_company_id:App.pcomp?App.pcomp.company_id:0,
-                current_acc_code:Ledger.current_acc_code,
-                using_alt_currency:Ledger.using_alt_currency
+                current_acc_code:Cbank.main_acc_code,
+                using_alt_currency:false
             };
             if(App.pcomp){
                 data.passive_company_id=App.pcomp.company_id || 0;
@@ -73,7 +79,32 @@
         }
     };
 </script>
-<div style="width:350px;display: inline-block;vertical-align: top;">
+<style>
+    .trans_pay_table{
+	display:table;
+	width: 100%;
+	border-right: 1px solid #9cd;
+	border-top: 1px solid #9cd;
+	margin-top: 8px;
+    }
+    .trans_pay_table_head div{
+	display: table-cell;
+	border-bottom: 1px solid #9cd;
+	border-left: 1px solid #9cd;
+	padding: 2px;
+    }
+    .trans_pay_table_row div{
+	display: table-cell;
+	border-bottom: 1px solid #9cd;
+	border-left: 1px solid #9cd;
+	padding: 4px;
+    }
+    .trans_pay_table_row:hover{
+	background-color: #ffa;
+	cursor: pointer;
+    }
+</style>
+<div style="width:400px;display: inline-block;vertical-align: top;">
     <div class="easyui-panel" title="Корреспондент" id="Cbank_check_corresp" style="margin-bottom: 3px;">
         <h4>{{pcomp.company_name}}</h4>
 	<div>
@@ -84,22 +115,22 @@
                         data-acc-code="{{acc_code}}" 
                         onclick="Cbank.transClick(this)">Провести</button>
                 {{if suggs}}
-                <table style="width: 100%" cellspacing="0" cellpadding="0">
-                    <tr>
-                        <th style="width:70px">Дата</th>
-                        <th>Назначение</th>
-                        <th style="width:70px">Сумма</th>
-                        <th style="width:50px"></th>
-                    </tr>
+                <div class="trans_pay_table">
+		    <div style="display: table-row;font-weight: bold;" class="trans_pay_table_head">
+                        <div style="width:22px;text-align: center">!</div>
+                        <div style="width:70px;">Дата</div>
+                        <div style="display: table-cell">Пояснение</div>
+                        <div style="width:50px;">Сумма</div>
+                    </div>
                     {{suggs}}
-                    <tr>
-                        <td>{{date}}</td>
-                        <td>{{description}}</td>
-                        <td>{{amount}}</td>
-                        <td><button class="tiny_button">Оплатить</button></td>
-                    </tr>
+		    <div style="display: table-row;" class="trans_pay_table_row">
+                        <div style="text-align: center"><img src="img/{{code}}.png" title="{{descr}}"></div>
+                        <div>{{date}}</div>
+                        <div>{{description}}</div>
+                        <div style="text-align: right">{{amount}}</div>
+                    </div>
                     {{/suggs}}
-                </table>
+                </div>
                 {{/if}}
 		<hr>
 	    </div>

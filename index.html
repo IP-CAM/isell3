@@ -97,6 +97,10 @@
 		    } else {
 			App.handler.notify('activeCompanyReset');
 		    }
+		},
+		setPassiveCompany:function(company){
+		    App.pcomp=company;
+		    App.handler.notify('passiveCompanySelected',App.pcomp);
 		}
 	    };
 	    App.onReady = function () {
