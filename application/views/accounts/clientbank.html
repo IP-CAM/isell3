@@ -1,18 +1,62 @@
 <script>
     /*global App,Cbank*/
     Cbank=App.page_accounts_clientbank={
+        main_acc_code:311,
+        current_check:{},
         init:function(){
             
         },
-        renderCheckView:function( check ){
-            App.renderTpl("Cbank_check_view",check);
-            this.renderCorrespondent(check);
+        renderCheckView:function(){
+            App.renderTpl("Cbank_check_view",this.current_check);
+            this.renderCorrespondent();
         },
-        renderCorrespondent:function( check ){
-            $.post("AccountsBank/getCorrespondentStats/",{check_id:check.check_id},function(resp){
+        renderCorrespondent:function(){
+            $.post("AccountsBank/getCorrespondentStats/",{check_id:this.current_check.check_id},function(resp){
 		var corr_data=App.json(resp);
                 App.renderTpl("Cbank_check_corresp",corr_data);
             });
+        },
+        transClick:function(node){
+            var acc_code=$(node).attr('data-acc-code');
+            if( this.current_check.debit_amount ){
+                var trans_type=acc_code+"_"+this.main_acc_code;
+            } else {
+                var trans_type=this.main_acc_code+"_"+acc_code;
+            }
+            alert(trans_type);
+        },
+        transCreate:function( trans_type, amount, trans_ref ){
+            var data={
+                trans_id:0,
+                trans_date:App.today(),
+                amount:amount||0,
+                trans_ref:trans_ref||null,
+                trans_type:trans_type||'',
+                description:trans_name||'',
+                passive_company_id:App.pcomp?App.pcomp.company_id:0,
+                current_acc_code:Ledger.current_acc_code,
+                using_alt_currency:Ledger.using_alt_currency
+            };
+            if(App.pcomp){
+                data.passive_company_id=App.pcomp.company_id || 0;
+                data.label=App.pcomp.label || '?';
+            }
+            App.loadWindow('page/accounts/trans_edit',data).progress(function(status,data){
+                if( status==='save' || status==='delete' ){
+                    $('#account_ledger_dg').datagrid('reload');
+                }
+            });
+        },
+        payTrans:function(){
+            var row=$('#account_ledger_dg').datagrid('getSelected');
+            if( row.trans_status ){
+                var status=row.trans_status.split(' ')[0];
+                if( "unpayed partly payed".indexOf(status)>-1 ){
+                    this.rowCreate(null,null,row.debit||row.credit,row.trans_id);
+                } else if( "closing closed".indexOf(status)>-1 ){
+                    App.flash("Проводка уже связана.");
+                }
+            }
         },
         list:{
             styler:function(value, row, index) {
@@ -21,43 +65,11 @@
             onSelect:function(){
                 var row=$('#account_clientbank_dg').datagrid('getSelected');
                 if( row ){
-                    Cbank.renderCheckView(row);
+                    Cbank.current_check=row;
+                    Cbank.renderCheckView();
                 }
                 $('#account_clientbank_dg').datagrid('resize');
-            },
-	    transCreate:function( trans_type, amount, trans_ref ){
-		var data={
-		    trans_id:0,
-		    trans_date:App.today(),
-		    amount:amount||0,
-		    trans_ref:trans_ref||null,
-		    trans_type:trans_type||'',
-		    description:trans_name||'',
-		    passive_company_id:App.pcomp?App.pcomp.company_id:0,
-		    current_acc_code:Ledger.current_acc_code,
-		    using_alt_currency:Ledger.using_alt_currency
-		};
-		if(App.pcomp){
-		    data.passive_company_id=App.pcomp.company_id || 0;
-		    data.label=App.pcomp.label || '?';
-		}
-		App.loadWindow('page/accounts/trans_edit',data).progress(function(status,data){
-		    if( status==='save' || status==='delete' ){
-			$('#account_ledger_dg').datagrid('reload');
-		    }
-		});
-	    },
-	    payTrans:function(){
-		var row=$('#account_ledger_dg').datagrid('getSelected');
-		if( row.trans_status ){
-		    var status=row.trans_status.split(' ')[0];
-		    if( "unpayed partly payed".indexOf(status)>-1 ){
-			this.rowCreate(null,null,row.debit||row.credit,row.trans_id);
-		    } else if( "closing closed".indexOf(status)>-1 ){
-			App.flash("Проводка уже связана.");
-		    }
-		}
-	    }
+            }
         }
     };
 </script>
@@ -68,7 +80,9 @@
 	    {{favs}}
 	    <div class="rounded">
                 <b class="tag">{{acc_code}}</b> {{label}} {{if balance}}(<b>{{balance}}</b>){{/if}} 
-                <button class="tiny_button" style="float: right;">Провести</button>
+                <button class="tiny_button" style="float: right;" 
+                        data-acc-code="{{acc_code}}" 
+                        onclick="Cbank.transClick(this)">Провести</button>
                 {{if suggs}}
                 <table style="width: 100%" cellspacing="0" cellpadding="0">
                     <tr>
