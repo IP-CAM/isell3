@@ -19,16 +19,17 @@
         },
         transClick:function(node){
 	    var trans_type,amount;
-	    var date=this.current_check.date;
-	    var description=this.current_check.description;
+	    var date=this.current_check.tdate;
+	    var description=this.current_check.assignment;
             var acc_code=$(node).attr('data-acc-code');
-            if( this.current_check.debit_amount ){
+            if( this.current_check.debit ){
                 trans_type=acc_code+"_"+this.main_acc_code;
-		amount=this.current_check.debit_amount;
+		amount=this.current_check.debit;
             } else {
                 trans_type=this.main_acc_code+"_"+acc_code;
-		amount=this.current_check.credit_amount;
+		amount=this.current_check.credit;
             }
+	    console.log(this.current_check);
             this.transCreate(trans_type,description,amount,0,date);
         },
         transCreate:function( trans_type, description, amount, trans_ref, date ){
@@ -43,6 +44,7 @@
                 current_acc_code:Cbank.main_acc_code,
                 using_alt_currency:false
             };
+	    console.log(data);
             if(App.pcomp){
                 data.passive_company_id=App.pcomp.company_id || 0;
                 data.label=App.pcomp.label || '?';

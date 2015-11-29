@@ -374,6 +374,9 @@ $.fn.datebox.defaults.parser = function (input) {
     if (input instanceof Date) {
 	return input;
     }
+//    if( !input ){
+//	return new Date();
+//    }
     var parts=input.replace(/[^\d]/g, '').replace(/^(\d\d)(\d\d)(\d\d\d\d)$/, "$2/$1/$3").substr(0,10);
     var date=Date.parse(parts);
     if( parts.length===10 && !isNaN(Date.parse(parts)) ){
