@@ -289,7 +289,17 @@ class AccountsCore extends Catalog{
             $this->transPaymentCalculate($trans['passive_company_id'], $this->payment_account);
         }
     }
-    private function transCheckLink($trans_id,$trans){
+    private function checkTransLink($trans_id,$trans) {
+	if( $trans['check_id'] ){
+	    $this->update('acc_check_list',['trans_id'=>$trans_id],['check_id'=>$trans['check_id']]);
+	}
+    }
+    private function checkTransBreakLink( $check_id ){
+	if( isset($check_id) ){
+	    $this->update('acc_check_list',['trans_id'=>0]);
+	}	
+    }
+    private function transCrossLink($trans_id,$trans){
 	if( $trans['trans_ref'] ){
 	    $this->update('acc_trans', ['trans_ref'=>$trans['trans_ref'],'trans_status'=>5], ['trans_id'=>$trans_id]);
 	    $this->update('acc_trans', ['trans_ref'=>$trans_id,'trans_status'=>4], ['trans_id'=>$trans['trans_ref']]);
@@ -312,12 +322,14 @@ class AccountsCore extends Catalog{
 	    $this->create('acc_trans', $trans);
 	    $trans_id= $this->db->insert_id();
 	}
-	$this->transCheckLink($trans_id,$trans);
+	$this->checkTransLink($trans_id,$trans);
+	$this->transCrossLink($trans_id,$trans);
 	$this->transCheckCalculate($trans);
 	return $trans_id;	
     }
     public function transPostCreateUpdate(){
 	$trans_id=$this->request('trans_id','int',0);
+	$check_id=$this->request('check_id','int');
 	$passive_company_id=$this->request('passive_company_id','int');
 	$trans_type=$this->request('trans_type');
 	$trans_date=$this->request('trans_date','\d\d\d\d-\d\d-\d\d');
@@ -334,6 +346,7 @@ class AccountsCore extends Catalog{
 	}
 	$trans=[
 	    'trans_ref'=>$trans_ref,
+	    'check_id'=>$check_id,
 	    'passive_company_id'=>$passive_company_id,
 	    'acc_debit_code'=>$acc_codes[0],
 	    'acc_credit_code'=>$acc_codes[1],
@@ -351,6 +364,7 @@ class AccountsCore extends Catalog{
 	if( $trans && $this->transCheckLevel($trans->acc_debit_code.'_'.$trans->acc_credit_code) ){
 	    $this->delete('acc_trans',['trans_id'=>$trans_id,'editable'=>1]);
             $ok=$this->db->affected_rows()>0?true:false;
+	    $this->checkTransBreakLink($trans->check_id);
 	    $this->transBreakLink($trans->trans_ref);
             if( $trans->acc_debit_code==$this->payment_account || $trans->acc_credit_code==$this->payment_account ){
                 $this->transPaymentCalculate($trans->passive_company_id, $this->payment_account);
@@ -360,4 +374,5 @@ class AccountsCore extends Catalog{
 	$this->Base->msg('access denied');
 	return false;
     }
+
 }

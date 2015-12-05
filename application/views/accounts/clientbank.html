@@ -6,6 +6,14 @@
         init:function(){
             
         },
+	renderCheck:function(){
+	    var row=$('#account_clientbank_dg').datagrid('getSelected');
+	    if( row ){
+		Cbank.current_check=row;
+		Cbank.renderCheckView();
+	    }
+	    $('#account_clientbank_dg').datagrid('resize');	    
+	},
         renderCheckView:function(){
            App.renderTpl("Cbank_check_view",this.current_check);
            this.renderCorrespondent();
@@ -18,25 +26,28 @@
             });
         },
         transClick:function(node){
-	    var trans_type,amount;
+	    var trans_type,amount,acc_code;
 	    var date=this.current_check.tdate;
 	    var description=this.current_check.assignment;
-            var acc_code=$(node).attr('data-acc-code');
+	    var trans_ref=$(node).attr('data-trans-id') || 0;
             if( this.current_check.debit ){
+		acc_code=$(node).attr('data-credit-code')||$(node).attr('data-acc-code');
                 trans_type=acc_code+"_"+this.main_acc_code;
 		amount=this.current_check.debit;
             } else {
+		acc_code=$(node).attr('data-debit-code')||$(node).attr('data-acc-code');
                 trans_type=this.main_acc_code+"_"+acc_code;
 		amount=this.current_check.credit;
             }
 	    console.log(this.current_check);
-            this.transCreate(trans_type,description,amount,0,date);
+            this.transCreate(trans_type,description,amount,trans_ref,this.current_check.check_id,date);
         },
-        transCreate:function( trans_type, description, amount, trans_ref, date ){
+        transCreate:function( trans_type, description, amount, trans_ref, check_id, date ){
             var data={
                 trans_id:0,
                 trans_date:date,
                 amount:amount,
+		check_id:check_id,
                 trans_ref:trans_ref||null,
                 trans_type:trans_type||'',
                 description:description||'',
@@ -52,6 +63,7 @@
             App.loadWindow('page/accounts/trans_edit',data).progress(function(status,data){
                 if( status==='save' || status==='delete' ){
                     $('#account_ledger_dg').datagrid('reload');
+		    Cbank.renderCheck();
                 }
             });
         },
@@ -71,12 +83,7 @@
                 return row.debit>0?"color:red;font-weight:bold":"color:green;font-weight:bold";
 	    },
             onSelect:function(){
-                var row=$('#account_clientbank_dg').datagrid('getSelected');
-                if( row ){
-                    Cbank.current_check=row;
-                    Cbank.renderCheckView();
-                }
-                $('#account_clientbank_dg').datagrid('resize');
+		Cbank.renderCheck();
             }
         }
     };
@@ -125,7 +132,11 @@
                         <div style="width:50px;">Сумма</div>
                     </div>
                     {{suggs}}
-		    <div style="display: table-row;" class="trans_pay_table_row">
+		    <div style="display: table-row;" class="trans_pay_table_row" 
+			data-debit-code="{{acc_debit_code}}" 
+			data-credit-code="{{acc_credit_code}}" 
+			data-trans-id="{{trans_id}}" 
+			onclick="Cbank.transClick(this)">
                         <div style="text-align: center"><img src="img/{{code}}.png" title="{{descr}}"></div>
                         <div>{{date}}</div>
                         <div>{{description}}</div>
