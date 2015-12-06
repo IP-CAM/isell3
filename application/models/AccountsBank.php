@@ -10,7 +10,7 @@ class AccountsBank extends AccountsData{
         
 	$having=$this->decodeFilterRules();
 	$offset=$page>0?($page-1)*$rows:0;
-	$sql="SELECT check_id,number,correspondent_name,correspondent_code,correspondent_account,correspondent_bank_name,correspondent_bank_code,assignment,
+	$sql="SELECT check_id,trans_id,number,correspondent_name,correspondent_code,correspondent_account,correspondent_bank_name,correspondent_bank_code,assignment,
 		    IF(trans_id,'ok Проведен','gray Непроведен') AS status,
 		    IF(debit_amount,ROUND(debit_amount,2),'') AS debit,
 		    IF(credit_amount,ROUND(credit_amount,2),'') AS credit,
@@ -41,6 +41,7 @@ class AccountsBank extends AccountsData{
 	    $this->appendSuggestions($acc,$check);
 	}
 	return [
+	    'trans_id'=>$check->trans_id,
 	    'pcomp'=>$pcomp,
 	    'favs'=>$favs
 	];
@@ -66,6 +67,7 @@ class AccountsBank extends AccountsData{
 		    at.active_company_id=$active_company_id
 		    AND at.passive_company_id=$passive_company_id
                     AND IF(debit_amount>0,acc_credit_code='{$acc->acc_code}',acc_debit_code='{$acc->acc_code}')
+		    AND trans_status IN(1,2,3)
 		    AND acl.check_id={$check->check_id}";
 	$acc->suggs=$this->get_list($sql);
 	return $acc;

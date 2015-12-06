@@ -296,7 +296,7 @@ class AccountsCore extends Catalog{
     }
     private function checkTransBreakLink( $check_id ){
 	if( isset($check_id) ){
-	    $this->update('acc_check_list',['trans_id'=>0]);
+	    $this->update('acc_check_list',['trans_id'=>0],['check_id'=>$check_id]);
 	}	
     }
     private function transCrossLink($trans_id,$trans){

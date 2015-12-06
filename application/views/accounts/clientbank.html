@@ -39,7 +39,6 @@
                 trans_type=this.main_acc_code+"_"+acc_code;
 		amount=this.current_check.credit;
             }
-	    console.log(this.current_check);
             this.transCreate(trans_type,description,amount,trans_ref,this.current_check.check_id,date);
         },
         transCreate:function( trans_type, description, amount, trans_ref, check_id, date ){
@@ -55,18 +54,25 @@
                 current_acc_code:Cbank.main_acc_code,
                 using_alt_currency:false
             };
-	    console.log(data);
             if(App.pcomp){
                 data.passive_company_id=App.pcomp.company_id || 0;
                 data.label=App.pcomp.label || '?';
             }
             App.loadWindow('page/accounts/trans_edit',data).progress(function(status,data){
                 if( status==='save' || status==='delete' ){
-                    $('#account_ledger_dg').datagrid('reload');
+                    $('#account_clientbank_dg').datagrid('reload');
 		    Cbank.renderCheck();
                 }
             });
         },
+	transEdit:function( trans_id ){
+	    App.loadWindow('page/accounts/trans_edit',{trans_id:trans_id}).progress(function(status,data){
+                if( status==='save' || status==='delete' ){
+                    $('#account_clientbank_dg').datagrid('reload');
+		    Cbank.renderCheck();
+                }
+            });
+	},
         payTrans:function(){
             var row=$('#account_ledger_dg').datagrid('getSelected');
             if( row.trans_status ){
@@ -117,40 +123,47 @@
     <div class="easyui-panel" title="Корреспондент" id="Cbank_check_corresp" style="margin-bottom: 3px;">
         <h4>{{pcomp.company_name}}</h4>
 	<div>
-	    {{favs}}
-	    <div class="rounded">
-                <b class="tag">{{acc_code}}</b> {{label}} {{if balance}}(<b>{{balance}}</b>){{/if}} 
-                <button class="tiny_button" style="float: right;" 
-                        data-acc-code="{{acc_code}}" 
-                        onclick="Cbank.transClick(this)">Провести</button>
-                {{if suggs}}
-                <div class="trans_pay_table">
-		    <div style="display: table-row;font-weight: bold;" class="trans_pay_table_head">
-                        <div style="width:22px;text-align: center">!</div>
-                        <div style="width:70px;">Дата</div>
-                        <div style="display: table-cell">Пояснение</div>
-                        <div style="width:50px;">Сумма</div>
-                    </div>
-                    {{suggs}}
-		    <div style="display: table-row;" class="trans_pay_table_row" 
-			data-debit-code="{{acc_debit_code}}" 
-			data-credit-code="{{acc_credit_code}}" 
-			data-trans-id="{{trans_id}}" 
-			onclick="Cbank.transClick(this)">
-                        <div style="text-align: center"><img src="img/{{code}}.png" title="{{descr}}"></div>
-                        <div>{{date}}</div>
-                        <div>{{description}}</div>
-                        <div style="text-align: right">{{amount}}</div>
-                    </div>
-                    {{/suggs}}
-                </div>
-                {{/if}}
-		<hr>
-	    </div>
-	    {{/favs}}
-            <div style="text-align: center;padding: 3px;">
-                <button class="tiny_button">Провести по другому счету</button>
-            </div>
+	    {{if trans_id|more>0}}
+		<div style="background-color: #dfd;padding: 5px; margin-bottom: 5px; border: 1px solid #ccc;text-align: center">
+		    Платежное поручение проведено<br>
+		    <button class="tiny_button" onclick="Cbank.transEdit('{{trans_id}}')">Редактировать проводку</button>
+		</div>
+	    {{else}}
+		{{favs}}
+		<div class="rounded">
+		    <b class="tag">{{acc_code}}</b> {{label}} {{if balance}}(<b>{{balance}}</b>){{/if}} 
+		    <button class="tiny_button" style="float: right;" 
+			    data-acc-code="{{acc_code}}" 
+			    onclick="Cbank.transClick(this)">Провести</button>
+		    {{if suggs}}
+		    <div class="trans_pay_table">
+			<div style="display: table-row;font-weight: bold;" class="trans_pay_table_head">
+			    <div style="width:22px;text-align: center">!</div>
+			    <div style="width:70px;">Дата</div>
+			    <div style="display: table-cell">Пояснение</div>
+			    <div style="width:50px;">Сумма</div>
+			</div>
+			{{suggs}}
+			<div style="display: table-row;" class="trans_pay_table_row" 
+			    data-debit-code="{{acc_debit_code}}" 
+			    data-credit-code="{{acc_credit_code}}" 
+			    data-trans-id="{{trans_id}}" 
+			    onclick="Cbank.transClick(this)">
+			    <div style="text-align: center"><img src="img/{{code}}.png" title="{{descr}}"></div>
+			    <div>{{date}}</div>
+			    <div>{{description}}</div>
+			    <div style="text-align: right">{{amount}}</div>
+			</div>
+			{{/suggs}}
+		    </div>
+		    {{/if}}
+		    <hr>
+		</div>
+		{{/favs}}
+		<div style="text-align: center;padding: 3px;">
+		    <button class="tiny_button" onclick="Cbank.transClick(this)">Провести по другому счету</button>
+		</div>
+	    {{/if}}
 	</div>
     </div>
     <div class="easyui-panel" title="Платежное поручение" id="Cbank_check_view">

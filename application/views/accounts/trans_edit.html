@@ -125,8 +125,8 @@
 			acc_debit_code: Tedit.data.trans_type.split('_')[0],
 			acc_credit_code:  Tedit.data.trans_type.split('_')[1],
 			trans_type:  Tedit.data.trans_type,
-			trans_name: Tedit.data.trans_name,
-			trans_type_name: Tedit.data.trans_name+' '+Tedit.data.trans_type,
+			trans_name: Tedit.data.trans_name||'',
+			trans_type_name: (Tedit.data.trans_name||'')+' '+Tedit.data.trans_type,
 			user_level: Tedit.data.user_level
 		    }]);		
 	    }
