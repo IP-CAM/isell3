@@ -56,7 +56,7 @@
 	    $("#Tedit_amount").next().find(".validatebox-text").focus();	    
 	},
 	initRefHighlight:function(){
-	    if( Tedit.data.trans_ref*1 ){
+	    if( Tedit.data.trans_ref*1 || Tedit.data.check_id*1 ){
 		$("#Tedit_amount,#Tedit_ratio,#Tedit_amount_alt").textbox('readonly',true);
 		$("#Tedit_amount").textbox('textbox').css('backgroundColor','#ddd');
 	    }
@@ -125,8 +125,8 @@
 			acc_debit_code: Tedit.data.trans_type.split('_')[0],
 			acc_credit_code:  Tedit.data.trans_type.split('_')[1],
 			trans_type:  Tedit.data.trans_type,
-			trans_name: Tedit.data.trans_name,
-			trans_type_name: Tedit.data.trans_name+' '+Tedit.data.trans_type,
+			trans_name: Tedit.data.trans_name||'',
+			trans_type_name: (Tedit.data.trans_name||'')+' '+Tedit.data.trans_type,
 			user_level: Tedit.data.user_level
 		    }]);		
 	    }
@@ -201,6 +201,7 @@
 <form id="trans_edit_frm" style="display:none">
     <input type="hidden" name="trans_id">
     <input type="hidden" name="trans_ref">
+    <input type="hidden" name="check_id">
     <div style="display: inline-block;width: 205px;float:left;">
 	<input style="width:95px" class="easyui-datebox" name="trans_date" title="Дата" data-options="required:true">
 	<input style="width:95px" class="easyui-textbox" name="amount" id="Tedit_amount" title="Сумма" data-options="
