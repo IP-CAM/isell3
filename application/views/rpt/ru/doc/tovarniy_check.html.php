@@ -1,62 +1,59 @@
 <?php
-    $this->view->doc_view->total_spell=  spellAmount($this->view->footer->total);
+    $this->view->doc_view->total_spell=  num2str($this->view->footer->total);
 
-    function spellAmount($number, $unit = NULL, $return_cents = true) {
-	if (!$unit) {
-	    $unit[0] = array('копейка', 'копейки', 'копеек');
-	    $unit[1] = array('рубль', 'рубля', 'рублей');
-	    $unit[2] = array('тысяча', 'тысячи', 'тысяч');
-	    $unit[3] = array('миллион', 'миллиона', 'миллионов');
+     /**
+ * Возвращает сумму прописью
+ * @author runcore
+ * @uses morph(...)
+ */
+function num2str($num) {
+	$nul='ноль';
+	$ten=array(
+		array('','один','два','три','четыре','пять','шесть','семь', 'восемь','девять'),
+		array('','одна','две','три','четыре','пять','шесть','семь', 'восемь','девять'),
+	);
+	$a20=array('десять','одиннадцать','двенадцать','тринадцать','четырнадцать' ,'пятнадцать','шестнадцать','семнадцать','восемнадцать','девятнадцать');
+	$tens=array(2=>'двадцать','тридцать','сорок','пятьдесят','шестьдесят','семьдесят' ,'восемьдесят','девяносто');
+	$hundred=array('','сто','двести','триста','четыреста','пятьсот','шестьсот', 'семьсот','восемьсот','девятьсот');
+	$unit=array( // Units
+		array('копейка' ,'копейки' ,'копеек',	 1),
+		array('рубль'   ,'рубля'   ,'рублей'    ,0),
+		array('тысяча'  ,'тысячи'  ,'тысяч'     ,1),
+		array('миллион' ,'миллиона','миллионов' ,0),
+		array('миллиард','милиарда','миллиардов',0),
+	);
+	//
+	list($rub,$kop) = explode('.',sprintf("%015.2f", floatval($num)));
+	$out = array();
+	if (intval($rub)>0) {
+		foreach(str_split($rub,3) as $uk=>$v) { // by 3 symbols
+			if (!intval($v)) continue;
+			$uk = sizeof($unit)-$uk-1; // unit key
+			$gender = $unit[$uk][3];
+			list($i1,$i2,$i3) = array_map('intval',str_split($v,1));
+			// mega-logic
+			$out[] = $hundred[$i1]; # 1xx-9xx
+			if ($i2>1) $out[]= $tens[$i2].' '.$ten[$gender][$i3]; # 20-99
+			else $out[]= $i2>0 ? $a20[$i3] : $ten[$gender][$i3]; # 10-19 | 1-9
+			// units without rub & kop
+			if ($uk>1) $out[]= morph($v,$unit[$uk][0],$unit[$uk][1],$unit[$uk][2]);
+		} //foreach
 	}
-	$millions = getNumberPosition($number, 1000000, 100);
-	$thousands = getNumberPosition($number, 1000, 100);
-	$ones = getNumberPosition($number, 1, 100);
-	$cents = getNumberPosition($number * 100, 1, 10);
+	else $out[] = $nul;
+	$out[] = morph(intval($rub), $unit[1][0],$unit[1][1],$unit[1][2]); // rub
+	$out[] = $kop.' '.morph($kop,$unit[0][0],$unit[0][1],$unit[0][2]); // kop
+	return trim(preg_replace('/ {2,}/', ' ', join(' ',$out)));
+}
 
-	$str = spellNumber($millions, $unit[3]) . ' ' . spellNumber($thousands, $unit[2]) . ' ' . spellNumber($ones, $unit[1]) . ' ' . spellNumber($cents, $unit[0], $return_cents);
-	$str = trim($str);
-	return mb_strtoupper(mb_substr($str, 0, 1, 'utf-8'), 'utf-8') . mb_substr($str, 1, mb_strlen($str) - 1, 'utf-8');
-    }
-
-    function spellNumber($number, $units=null, $ret_number = false) {
-	$hundreds_i = getNumberPosition($number, 100, 1);
-	$tens_i = getNumberPosition($number, 10, 1);
-	$ones_i = getNumberPosition($number, 1, 1);
-	if (!($hundreds_i || $tens_i || $ones_i) && !$ret_number){
-	    return '';
-	}
-	if( $units ){
-	    if ($ones_i === 1 && $tens_i != 1){
-		$unit = $units[0];
-	    } else 
-	    if ($ones_i > 1 && $ones_i < 5){
-		$unit = $units[1];
-	    } else {
-		$unit = $units[2];
-	    }
-	    if ($ret_number) {
-		if ($number < 10)
-		    return "0$number $unit";
-		return "$number $unit";
-	    }
-	} else {
-	    $unit='';
-	}
-
-	$ones = array("", "один", "два", "три", "четыре", "пять", "шесть", "сем", "восем", "девять");
-	$tens = array("", "десять", "двадцать", "тридцать", "сорок", "пятдесят", "шестдесят", "семдесят", "восемдесят", "девяносто");
-	$teens = array("", "одинадцать", "двенадцать", "тринадцать", "четырнадцать", "пятнадцать", "шестнадцать", "семнадцать", "восемнадцать", "девятнадцать");
-	$hundreds = array("", "сто", "двести", "триста", "четыреста", "пятсот", "шестсот", "семсот", "восемсот", "девятсот");
-
-	if ($tens_i == 1){
-	    return "$hundreds[$hundreds_i] $teens[$ones_i] $unit";
-	}
-	else{
-	    return "$hundreds[$hundreds_i] $tens[$tens_i] $ones[$ones_i] $unit";
-	}
-    }
-
-    function getNumberPosition($number, $position, $range = 1) {//DEPRECATED
-	$number-=$position * 10 * $range * floor($number / $position / 10 / $range);
-	return floor($number / $position);
-    }
+/**
+ * Склоняем словоформу
+ * @ author runcore
+ */
+function morph($n, $f1, $f2, $f5) {
+	$n = abs(intval($n)) % 100;
+	if ($n>10 && $n<20) return $f5;
+	$n = $n % 10;
+	if ($n>1 && $n<5) return $f2;
+	if ($n==1) return $f1;
+	return $f5;
+}

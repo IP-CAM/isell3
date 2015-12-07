@@ -1,3 +1,11 @@
+<style type="text/css" media="print">
+    @page { 
+        size: landscape;
+    }
+    body { 
+        writing-mode: tb-rl;
+    }
+</style>
 <div class="page">
   <STYLE>
 
@@ -51,7 +59,7 @@
 </HEAD>
 <BODY>
 <FORM>
-<TABLE cellpadding=0 cellspacing=0  style="width:1348px;height:855px" class=c0 >
+<TABLE cellpadding=0 cellspacing=0  style1="width:1348px;height:855px" class=c0 >
  <TR style="height:0px" >
   <TD style="width:0px">
  </TD>
@@ -1554,7 +1562,7 @@
   <SPAN CLASS=c1>-</SPAN>
  </TD>
   <TD colspan=5 CLASS=c34>
-  <SPAN CLASS=c5>14</SPAN>
+  <SPAN CLASS=c5>{$v->total_qty}</SPAN>
  </TD>
   <TD CLASS=c35>
   <SPAN CLASS=c3></SPAN>
@@ -1566,13 +1574,13 @@
   <TD>
  </TD>
   <TD colspan=12 CLASS=c32>
-  <SPAN CLASS=c5>2027.35</SPAN>
+  <SPAN CLASS=c5>{$v->footer->vatless}</SPAN>
  </TD>
   <TD colspan=11 CLASS=c34>
-  <SPAN CLASS=c5>364.92</SPAN>
+  <SPAN CLASS=c5>{$v->footer->vat}</SPAN>
  </TD>
   <TD colspan=6 CLASS=c34>
-  <SPAN CLASS=c5>2392.27</SPAN>
+  <SPAN CLASS=c5>{$v->footer->total}</SPAN>
  </TD>
   <TD CLASS=c35>
   <SPAN CLASS=c3></SPAN>
@@ -1650,7 +1658,7 @@
   <SPAN CLASS=c1>-</SPAN>
  </TD>
   <TD colspan=5 CLASS=c29>
-  <SPAN CLASS=c5>14</SPAN>
+  <SPAN CLASS=c5>{$v->total_qty}</SPAN>
  </TD>
   <TD CLASS=c31>
   <SPAN CLASS=c3></SPAN>
@@ -1659,13 +1667,13 @@
   <SPAN CLASS=c3></SPAN>
  </TD>
   <TD colspan=12 CLASS=c37>
-  <SPAN CLASS=c5>2027.35</SPAN>
+  <SPAN CLASS=c5>{$v->footer->vatless}</SPAN>
  </TD>
   <TD colspan=11 CLASS=c29>
-  <SPAN CLASS=c5>364.92</SPAN>
+  <SPAN CLASS=c5>{$v->footer->vat}</SPAN>
  </TD>
   <TD colspan=6 CLASS=c29>
-  <SPAN CLASS=c5>2392.27</SPAN>
+  <SPAN CLASS=c5>{$v->footer->total}</SPAN>
  </TD>
   <TD CLASS=c35>
   <SPAN CLASS=c3></SPAN>
@@ -2090,7 +2098,7 @@
   <SPAN CLASS=c3>Всего отпущено на сумму</SPAN>
  </TD>
   <TD colspan=26 CLASS=c6>
-  <SPAN CLASS=c5>Две тысячи триста девяносто два рубля 27 копеек</SPAN>
+  <SPAN CLASS=c5>{$v->doc_view->total_spell}</SPAN>
  </TD>
   <TD>
  </TD>
@@ -2428,7 +2436,7 @@
   <TD>
  </TD>
   <TD colspan=14 CLASS=c25>
-  <SPAN CLASS=c3>Байчиков Р. Э.</SPAN>
+  <SPAN CLASS=c3>{$v->a->company_director}</SPAN>
  </TD>
   <TD>
  </TD>
@@ -2629,7 +2637,7 @@
   <TD>
  </TD>
   <TD colspan=14 CLASS=c25>
-  <SPAN CLASS=c3>Загута Л. А.</SPAN>
+  <SPAN CLASS=c3></SPAN>
  </TD>
   <TD>
  </TD>
