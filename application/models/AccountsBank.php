@@ -3,9 +3,9 @@ require_once 'AccountsData.php';
 class AccountsBank extends AccountsData{
     public $min_level=3;
     public function clientBankGet( $main_acc_code=0, $page=1, $rows=30 ){
+        $this->check($main_acc_code);
         $this->check($page,'int');
         $this->check($rows,'int');
-        $this->check($main_acc_code);
 	$active_company_id=$this->Base->acomp('company_id');
         
 	$having=$this->decodeFilterRules();
@@ -22,7 +22,6 @@ class AccountsBank extends AccountsData{
 		LIMIT $rows OFFSET $offset";
 	$result_rows=$this->get_list($sql);
 	$total_estimate=$offset+(count($result_rows)==$rows?$rows+1:count($result_rows));
-        
 	return ['rows'=>$result_rows,'total'=>$total_estimate];
     }
     public function getCorrespondentStats(){
