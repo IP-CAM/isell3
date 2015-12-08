@@ -30,22 +30,24 @@
             });
         },
         transClick:function(node){
-	    var trans_type,amount,acc_code;
+	    var trans_type,amount,acc_code,current_acc_code;
 	    var date=this.current_check.tdate;
 	    var description=this.current_check.assignment;
 	    var trans_ref=$(node).attr('data-trans-id') || 0;
             if( this.current_check.debit ){
-		acc_code=$(node).attr('data-credit-code')||$(node).attr('data-acc-code');
+		acc_code=$(node).attr('data-credit-code')||$(node).attr('data-acc-code')||'';
                 trans_type=acc_code?acc_code+"_"+this.main_acc_code:'';
+		current_acc_code="_"+this.main_acc_code;
 		amount=this.current_check.debit;
             } else {
-		acc_code=$(node).attr('data-debit-code')||$(node).attr('data-acc-code');
+		acc_code=$(node).attr('data-debit-code')||$(node).attr('data-acc-code')||'';
                 trans_type=acc_code?this.main_acc_code+"_"+acc_code:'';
+		current_acc_code=this.main_acc_code+"_";
 		amount=this.current_check.credit;
             }
-            this.transCreate(trans_type,description,amount,trans_ref,this.current_check.check_id,date);
+            this.transCreate(trans_type,description,amount,trans_ref,this.current_check.check_id,date,current_acc_code);
         },
-        transCreate:function( trans_type, description, amount, trans_ref, check_id, date ){
+        transCreate:function( trans_type, description, amount, trans_ref, check_id, date, current_acc_code ){
             var data={
                 trans_id:0,
                 trans_date:date,
@@ -55,7 +57,7 @@
                 trans_type:trans_type||'',
                 description:description||'',
                 passive_company_id:App.pcomp?App.pcomp.company_id:0,
-                current_acc_code:Cbank.main_acc_code,
+                current_acc_code:current_acc_code,
                 using_alt_currency:false
             };
             if(App.pcomp){

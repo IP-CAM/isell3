@@ -3,8 +3,7 @@ require_once 'AccountsCore.php';
 class AccountsData extends AccountsCore{
     public $min_level=2;
     public function transNameListFetch($selected_acc=null){
-	$q=$this->input->get('q');
-	$this->check($q);
+	$q=  str_replace(["_","%"], ["\_","\%"], $this->request('q'));
 	$this->check($selected_acc);
 	$user_level = $this->Base->svar('user_level');
 	$curr_id=$this->Base->acomp('curr_id');
@@ -23,7 +22,7 @@ class AccountsData extends AccountsCore{
 		    JOIN
 		acc_tree atc ON atc.acc_code=acc_credit_code
 	    WHERE 
-		user_level<='$user_level' AND IF('$selected_acc',acc_debit_code='$selected_acc' OR acc_credit_code='$selected_acc',1)
+		user_level<='$user_level' AND CONCAT(acc_debit_code,'_',acc_credit_code) LIKE '%$selected_acc%'
 	    HAVING trans_type_name LIKE '%$q%'
 	    ORDER BY trans_name";
 	return $this->get_list($sql);
