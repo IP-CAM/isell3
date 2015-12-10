@@ -1,14 +1,14 @@
 <style type="text/css" media="print">
-    @page { 
-        size: landscape;
-    }
-    body { 
-        writing-mode: tb-rl;
+    .page
+    {
+     -webkit-transform: rotate(-90deg); 
+     -moz-transform:rotate(-90deg);
+     filter:progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
     }
 </style>
 <div class="page">
   <STYLE>
-
+@media print{@page {size: landscape}}
 .c0 { border-collapse:collapse } 
 .c1 { font-family : 'Arial'; font-size : 8pt; font-weight : normal; font-style : normal;  text-decoration : none ; color : #000000 } 
 .c2 { border:none #000000;  vectical-align:text-top; text-align:right; } 
@@ -3021,7 +3021,7 @@
   <TD>
  </TD>
   <TD colspan=24 CLASS=c38>
-  <SPAN CLASS=c3>&lt;3&gt; &nbsp;декабря 2015 года</SPAN>
+  <SPAN CLASS=c3>{$v->doc_view->date_spell}</SPAN>
  </TD>
   <TD>
  </TD>

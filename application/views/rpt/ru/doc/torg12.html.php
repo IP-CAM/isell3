@@ -1,5 +1,6 @@
 <?php
     $this->view->doc_view->total_spell=  num2str($this->view->footer->total);
+    $this->view->doc_view->date_spell= daterus($this->view->doc_view->date_dot);
     $this->view->p->all=getAll($this->view->p);
     $this->view->a->all=getAll($this->view->a);
     
@@ -26,6 +27,15 @@
         $all.=$comp->company_phone?", тел.:{$comp->company_phone}":'';
         return $all;
     }
+    
+
+    function daterus($dmy) {
+        $dmy=  explode('.', $dmy);
+        $months = array('нулября', 'января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря');
+        return ' &lt;' .$dmy[0] . '&gt; ' . $months[$dmy[1]*1] . ' ' . $dmy[2] . ' года';
+    }
+
+
 /**
  * Возвращает сумму прописью
  * @author runcore
