@@ -175,8 +175,12 @@ class Stock extends Catalog {
 	$source = array_map('addslashes',$this->request('source','raw'));
 	$target = array_map('addslashes',$this->request('target','raw'));
 	
-        $source[]=$this->request('parent_id','int');
-        $target[]='parent_id';
+        $parent_id=$this->request('parent_id','int');
+        if( $parent_id ){
+            $source[]=$parent_id;
+            $target[]='parent_id';
+        }
+        
 	
 	$this->importInTable('prod_list', $source, $target, '/product_code/ru/ua/en/product_spack/product_bpack/product_weight/product_volume/product_unit/product_uktzet/barcode/', $label);
 	$this->importInTable('price_list', $source, $target, '/product_code/sell/buy/curr_code/', $label);
