@@ -1,7 +1,9 @@
 <?php
 require_once 'AccountsData.php';
 class AccountsBank extends AccountsData{
+    
     public $min_level=3;
+    
     public function clientBankGet( $main_acc_code=0, $page=1, $rows=30 ){
         $this->check($main_acc_code);
         $this->check($page,'int');
@@ -24,6 +26,7 @@ class AccountsBank extends AccountsData{
 	$total_estimate=$offset+(count($result_rows)==$rows?$rows+1:count($result_rows));
 	return ['rows'=>$result_rows,'total'=>$total_estimate];
     }
+    
     public function getCorrespondentStats(){
 	$check_id=$this->request('check_id','int',0);
 	$check=$this->getCheck($check_id);
@@ -45,9 +48,11 @@ class AccountsBank extends AccountsData{
 	    'favs'=>$favs
 	];
     }
+    
     private function getCheck( $check_id ){
 	return $this->get_row("SELECT * FROM acc_check_list WHERE check_id=$check_id");
     }
+    
     private function appendSuggestions( &$acc, $check ){
 	$active_company_id=$this->Base->acomp('company_id');
 	$passive_company_id=$this->Base->pcomp('company_id');
@@ -71,53 +76,66 @@ class AccountsBank extends AccountsData{
 	$acc->suggs=$this->get_list($sql);
 	return $acc;
     }
+    
+    public function checkDelete( $check_id ){
+	$this->check($check_id,'int');
+	$check=$this->getCheck($check_id);
+	if( $check->trans_id ){
+	    $this->transDelete($check->trans_id);
+	}
+	return $this->delete('acc_check_list',['check_id'=>$check_id]);
+    }
+    
     /*
      * IMPORT OF FILE .csv or .xml
      */
     
     public function up( $label='' ){
 	if( $_FILES['upload_file'] && !$_FILES['upload_file']['error'] ){
-	    return $this->parseImport($_FILES['upload_file']);
+	    if ( strrpos($_FILES['upload_file']['name'], '.xml') ){
+		return $this->parseXML( $_FILES['upload_file']['tmp_name'] );
+	    }
+	    if ( strrpos($_FILES['upload_file']['name'], '.csv') ){
+		return $this->parseCSV( $_FILES['upload_file']['tmp_name'] );
+	    }
 	}
         return 'error'.$_FILES['upload_file']['error'];
     }
     
-    
-    
-    private function parseImport( $UPLOADED_FILE ){
-        if (strrpos($UPLOADED_FILE['name'], '.xml')) {
-            $xml = file_get_contents($UPLOADED_FILE['tmp_name']);
-            $report = new SimpleXMLElement($xml);
-            foreach ($report->{'document-group'}->document as $document) {
-                $this->addCheckDocument($document, $main_acc_code);
-            }
-	    return 'imported';
-        } else if (strrpos($UPLOADED_FILE['name'], '.csv')) {
-            $csv = file_get_contents($UPLOADED_FILE['tmp_name']);
-            $csv = iconv('Windows-1251', 'UTF-8', $csv);
-            $csv_lines = explode("\n", $csv);
-            array_shift($csv_lines);
-            $this->Base->LoadClass('Pref');
-            $prefs=$this->Base->Pref->prefGet();
-            $csv_sequence=explode(",",$prefs['clientbank_fields']);
-            foreach ($csv_lines as $line) {
-                if (!$line)
-                    continue;
-                $vals = str_getcsv($line, ';');
-                $doc = array();
-                $i=0;
-                foreach($csv_sequence as $field){
-                    $doc[trim($field)]=$vals[$i++];
-                }
-                $this->addCheckDocument($doc, $main_acc_code);
-            }
-	    return 'imported';
-        }
-	return 'error'."Формат должен быть .xml .csv";
+    private function parseXML( $UPLOADED_FILE ){
+	$xml = file_get_contents($UPLOADED_FILE);
+	$report = new SimpleXMLElement($xml);
+	foreach ($report->{'document-group'}->document as $document) {
+	    $this->addCheckDocument($document, $main_acc_code);
+	}
+	return 'imported';	
     }
+    
+    private function parseCSV( $UPLOADED_FILE ){
+	$csv_raw = file_get_contents($UPLOADED_FILE);
+	$csv = iconv('Windows-1251', 'UTF-8', $csv_raw);
+	$csv_lines = explode("\n", $csv);
+	array_shift($csv_lines);
+	$this->Base->LoadClass('Pref');
+	$prefs=$this->Base->Pref->prefGet();
+	$csv_sequence=explode(",",$prefs['clientbank_fields']);
+	foreach ($csv_lines as $line) {
+	    if (!$line)
+		continue;
+	    $vals = str_getcsv($line, ';');
+	    $doc = array();
+	    $i=0;
+	    foreach($csv_sequence as $field){
+		$doc[trim($field)]=$vals[$i++];
+	    }
+	    $this->addCheckDocument($doc, $main_acc_code);
+	}
+	return 'imported';	
+    }
+    
     private function addCheckDocument($check, $main_acc_code) {
-        $fields = ['check_id','trans_id','main_acc_code','number','date','value_date','debit_amount','credit_amount','assumption_date','currency','transaction_date','client_name','client_code','client_account','client_bank_name','client_bank_code','correspondent_name','correspondent_code','correspondent_account','correspondent_bank_name','correspondent_bank_code','assignment','active_company_id'];
 	$active_company_id=$this->Base->acomp('company_id');
+        $fields = ['check_id','trans_id','main_acc_code','number','date','value_date','debit_amount','credit_amount','assumption_date','currency','transaction_date','client_name','client_code','client_account','client_bank_name','client_bank_code','correspondent_name','correspondent_code','correspondent_account','correspondent_bank_name','correspondent_bank_code','assignment','active_company_id'];
         $set = ['active_company_id'=>$active_company_id];
         $check['main-acc-code'] = $main_acc_code;
         foreach ($fields as $field) {
@@ -135,15 +153,7 @@ class AccountsBank extends AccountsData{
             }
             $set[] = "$field='" . addslashes($val) . "' ";
         }
-        $this->Base->query("INSERT INTO acc_check_list SET " . implode(',', $set), false);
+        $this->query("INSERT INTO acc_check_list SET " . implode(',', $set), false);
         return true;
-    }
-    public function checkDelete( $check_id ){
-	$this->check($check_id,'int');
-	$check=$this->getCheck($check_id);
-	if( $check->trans_id ){
-	    $this->transDelete($check->trans_id);
-	}
-	return $this->delete('acc_check_list',['check_id'=>$check_id]);
     }
 }
