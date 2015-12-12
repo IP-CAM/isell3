@@ -1,9 +1,7 @@
 <?php
 require_once 'AccountsData.php';
 class AccountsBank extends AccountsData{
-    
     public $min_level=3;
-    
     public function clientBankGet( $main_acc_code=0, $page=1, $rows=30 ){
         $this->check($main_acc_code);
         $this->check($page,'int');
@@ -12,11 +10,12 @@ class AccountsBank extends AccountsData{
         
 	$having=$this->decodeFilterRules();
 	$offset=$page>0?($page-1)*$rows:0;
-	$sql="SELECT check_id,trans_id,number,correspondent_name,correspondent_code,correspondent_account,correspondent_bank_name,correspondent_bank_code,assignment,
+	$sql="SELECT *,
 		    IF(trans_id,'ok Проведен','gray Непроведен') AS status,
 		    IF(debit_amount,ROUND(debit_amount,2),'') AS debit,
 		    IF(credit_amount,ROUND(credit_amount,2),'') AS credit,
-		    DATE_FORMAT(transaction_date,'%d.%m.%Y') AS tdate
+		    DATE_FORMAT(transaction_date,'%d.%m.%Y') AS tdate,
+		    DATE_FORMAT(date,'%d.%m.%Y') AS date
                 FROM acc_check_list 
 		WHERE main_acc_code='$main_acc_code' AND active_company_id='$active_company_id'
 		HAVING $having
@@ -24,7 +23,17 @@ class AccountsBank extends AccountsData{
 		LIMIT $rows OFFSET $offset";
 	$result_rows=$this->get_list($sql);
 	$total_estimate=$offset+(count($result_rows)==$rows?$rows+1:count($result_rows));
-	return ['rows'=>$result_rows,'total'=>$total_estimate];
+	return ['rows'=>$result_rows,'total'=>$total_estimate,'sub_totals'=>$this->clientBankGetTotals( $result_rows )];
+    }
+    private function clientBankGetTotals( $rows ){
+	$totals=['tdebit'=>0,'tcredit'=>0];
+        foreach ($rows as $row) {
+	    $totals['tdebit']+=$row->debit;
+	    $totals['tcredit']+=$row->credit;
+        }
+	$totals['tdebit']=$totals['tdebit']?round($totals['tdebit'],2):'';
+	$totals['tcredit']=$totals['tcredit']?round($totals['tcredit'],2):'';
+	return $totals;
     }
     
     public function getCorrespondentStats(){
@@ -87,7 +96,7 @@ class AccountsBank extends AccountsData{
     }
     
     /*
-     * IMPORT OF FILE .csv or .xml
+     * IMPORT OF FILE .csv
      */
     
     public function up( $main_acc_code ){
@@ -117,7 +126,7 @@ class AccountsBank extends AccountsData{
 	    }
 	    $this->addCheckDocument($check, $main_acc_code);
 	}
-	return 'imported';	
+	return 'imported';
     }
     
     private function addCheckDocument($check, $main_acc_code) {
@@ -138,5 +147,39 @@ class AccountsBank extends AccountsData{
         }
         $this->query("INSERT INTO acc_check_list SET " . implode(',', $set), false);
         return true;
+    }
+    
+    /*
+     * VIEW OUT
+     */
+
+    public function cbankViewGet(){
+	$page=$this->request('page','int');
+	$rows=$this->request('rows','int');
+	$main_acc_code=$this->request('main_acc_code','int');
+	$out_type=$this->request('out_type');
+	
+	$dump=$this->fillDump($main_acc_code, $page, $rows);
+	
+	$ViewManager=$this->Base->load_model('ViewManager');
+	$ViewManager->store($dump);
+	$ViewManager->outRedirect($out_type);	
+    }
+    private function fillDump($main_acc_code, $page, $rows){
+	$table=$this->clientBankGet($main_acc_code, $page, $rows);
+	$dump=[
+	    'tpl_files'=>$this->Base->acomp('language').'/CheckList.xlsx',
+	    'title'=>"Платежные поручения",
+	    'user_data'=>[
+		'email'=>$this->Base->svar('pcomp')?$this->Base->svar('pcomp')->company_email:'',
+		'text'=>'Доброго дня'
+	    ],
+	    'view'=>[
+		'a'=>$this->Base->svar('acomp'),
+		'user_sign'=>$this->Base->svar('user_sign'),
+		'table'=>$table
+	    ]
+	];
+	return $dump;	
     }
 }

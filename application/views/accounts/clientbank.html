@@ -8,7 +8,7 @@
         },
 	renderCheck:function(){
 	    var row=$('#account_clientbank_dg').datagrid('getSelected');
-	    if( row ){
+	    if( row && row.check_id ){
 		Cbank.current_check=row;
 		Cbank.renderCheckView();
 	    }
@@ -122,14 +122,29 @@
 		    Cbank.filterRules=param.filterRules,
 		    $.get(App.uri('AccountsBank', 'clientBankGet', Cbank.main_acc_code, Cbank.current_page, Cbank.current_rows), {filterRules: param.filterRules}, function (xhr) {
 			var resp = App.json(xhr);
-			success(resp);
+			var rows=Cbank.list.addBalanceRows(resp);
+			success(rows);
 		    });
 		} else {
 		    success([]);
 		}
 	    },
+	    addBalanceRows: function (resp) {
+		var sub_row = {
+		    assignment: "Оборот за период",
+		    debit: resp.sub_totals.tdebit,
+		    credit: resp.sub_totals.tcredit
+		};
+		resp.rows.unshift(sub_row);
+		return resp;
+	    },
 	    styler:function(value, row, index) {
                 return row.debit>0?"color:red;font-weight:bold":"color:green;font-weight:bold";
+	    },
+	    rowStyler: function (value, row, index) {
+		if (!row.check_id) {
+		    return "background-color:rgba(128,128,128,.1);color:darkblue";
+		}
 	    },
             onSelect:function(){
 		Cbank.renderCheck();
@@ -330,7 +345,7 @@
 	    <span class="icon-24 icon-print" title="Напечатать" onclick="Cbank.list.out('.print');"> </span>
 	</div>
     </div>
-    <table id="account_clientbank_dg" class="easyui-datagrid" style="width:740px;"
+    <table id="account_clientbank_dg" class="easyui-datagrid" style="width:760px;"
 	   data-options="
 	   idField:'check_id',
 	   loader:Cbank.list.loader,
@@ -347,8 +362,8 @@
             <th data-options="width:70,field:'tdate'">Дата</th>
             <th data-options="width:200,field:'correspondent_name'">Корреспондент</th>
             <th data-options="width:300,field:'assignment'">Назначение</th>
-            <th data-options="width:70,field:'debit',formatter:App.formatNum,align:'right',styler:Cbank.list.styler">Дебит</th>
-            <th data-options="width:70,field:'credit',formatter:App.formatNum,align:'right',styler:Cbank.list.styler">Кредит</th>
+            <th data-options="width:80,field:'debit',formatter:App.formatNum,align:'right',styler:Cbank.list.styler">Дебит</th>
+            <th data-options="width:80,field:'credit',formatter:App.formatNum,align:'right',styler:Cbank.list.styler">Кредит</th>
         </thead>
     </table>
 </div>
