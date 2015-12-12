@@ -347,7 +347,7 @@ $(document).ajaxComplete(function (event, xhr, settings) {
 		App.flash(msg);
 	    }
 	}
-	else if (!type || type.indexOf('error') > -1) {
+	else if (!type || type.indexOf('error') > -1 || type.indexOf('OK') === -1) {
 	    //alert( xhr.responseText );
 	    App.flash("<h3>url: " + settings.url + "</h3><big>" + xhr.responseText+"</big>", 'error');
 	}

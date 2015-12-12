@@ -526,7 +526,7 @@ class Accounts extends Data {
         $fields = $this->cached_fields[$table_name]['columns'];
 	$active_company_id=$this->Base->acomp('company_id');
 	
-        $set = ['active_company_id'=>$active_company_id];
+        $set = ["active_company_id='$active_company_id'"];
         $check['main-acc-code'] = $main_acc_code;
         foreach ($fields as $field) {
             if ($field == 'check_id' || $field == 'status') {

@@ -30,7 +30,7 @@ class Pref extends Catalog {
 	    $where = "WHERE active_company_id='$active_company_id'";
 	}
         $prefs = $this->get_row("SELECT GROUP_CONCAT(pref_value SEPARATOR '|') pvals,GROUP_CONCAT(pref_name SEPARATOR '|') pnames FROM pref_list  $where");
-        return array_combine(explode('|', $prefs->pnames), explode('|', $prefs->pvals));
+        return (object) array_combine(explode('|', $prefs->pnames), explode('|', $prefs->pvals));
     }
     public function setPrefs($field,$value) {
 	$active_company_id=$this->Base->acomp('company_id');

@@ -90,68 +90,51 @@ class AccountsBank extends AccountsData{
      * IMPORT OF FILE .csv or .xml
      */
     
-    public function up( $label='' ){
+    public function up( $main_acc_code ){
 	if( $_FILES['upload_file'] && !$_FILES['upload_file']['error'] ){
-	    if ( strrpos($_FILES['upload_file']['name'], '.xml') ){
-		return $this->parseXML( $_FILES['upload_file']['tmp_name'] );
-	    }
 	    if ( strrpos($_FILES['upload_file']['name'], '.csv') ){
-		return $this->parseCSV( $_FILES['upload_file']['tmp_name'] );
+		return $this->parseCSV( $_FILES['upload_file']['tmp_name'], $main_acc_code );
 	    }
 	}
         return 'error'.$_FILES['upload_file']['error'];
     }
     
-    private function parseXML( $UPLOADED_FILE ){
-	$xml = file_get_contents($UPLOADED_FILE);
-	$report = new SimpleXMLElement($xml);
-	foreach ($report->{'document-group'}->document as $document) {
-	    $this->addCheckDocument($document, $main_acc_code);
-	}
-	return 'imported';	
-    }
-    
-    private function parseCSV( $UPLOADED_FILE ){
+    private function parseCSV( $UPLOADED_FILE, $main_acc_code ){
 	$csv_raw = file_get_contents($UPLOADED_FILE);
 	$csv = iconv('Windows-1251', 'UTF-8', $csv_raw);
 	$csv_lines = explode("\n", $csv);
 	array_shift($csv_lines);
-	$this->Base->LoadClass('Pref');
-	$prefs=$this->Base->Pref->prefGet();
-	$csv_sequence=explode(",",$prefs['clientbank_fields']);
+	$csv_sequence=explode(',',str_replace( '-', '_', $this->Base->pref('clientbank_fields') ));
 	foreach ($csv_lines as $line) {
-	    if (!$line)
+	    if ( !$line ){
 		continue;
-	    $vals = str_getcsv($line, ';');
-	    $doc = array();
-	    $i=0;
-	    foreach($csv_sequence as $field){
-		$doc[trim($field)]=$vals[$i++];
 	    }
-	    $this->addCheckDocument($doc, $main_acc_code);
+	    $i=0;
+	    $check = [];
+	    $vals = str_getcsv($line, ';');
+	    foreach($csv_sequence as $field){
+		$check[trim($field)]=$vals[$i++];
+	    }
+	    $this->addCheckDocument($check, $main_acc_code);
 	}
 	return 'imported';	
     }
     
     private function addCheckDocument($check, $main_acc_code) {
+	error_reporting(E_ERROR | E_WARNING | E_PARSE);
 	$active_company_id=$this->Base->acomp('company_id');
-        $fields = ['check_id','trans_id','main_acc_code','number','date','value_date','debit_amount','credit_amount','assumption_date','currency','transaction_date','client_name','client_code','client_account','client_bank_name','client_bank_code','correspondent_name','correspondent_code','correspondent_account','correspondent_bank_name','correspondent_bank_code','assignment','active_company_id'];
-        $set = ['active_company_id'=>$active_company_id];
-        $check['main-acc-code'] = $main_acc_code;
+        $fields = ['number','date','value_date','debit_amount','credit_amount','assumption_date','currency','transaction_date','client_name','client_code','client_account','client_bank_name','client_bank_code','correspondent_name','correspondent_code','correspondent_account','correspondent_bank_name','correspondent_bank_code','assignment'];
+        $set = ["active_company_id='$active_company_id'","main_acc_code='$main_acc_code'"];
         foreach ($fields as $field) {
-            if ($field == 'check_id') {
-                continue;
-            }
-            $xml_field = str_replace('_', '-', $field);
-            $val = isset($check[$xml_field]) ? $check[$xml_field] : $check->$xml_field;
+	    $value = isset($check[$field])?$check[$field]:'';
             if ($field == 'debit_amount' || $field == 'credit_amount') {
-                $val = str_replace(',', '.', $val);
+                $value = str_replace(',', '.', $value);
             }
             if (strpos($field, 'date') !== false) {
-                preg_match_all('/(\d{2})[^\d](\d{2})[^\d](\d{4})( \d\d:\d\d(:\d\d)?)?/i', $val, $matches);
-                $val = "{$matches[3][0]}-{$matches[2][0]}-{$matches[1][0]}{$matches[4][0]}";
+                preg_match_all('/(\d{2})[^\d](\d{2})[^\d](\d{4})( \d\d:\d\d(:\d\d)?)?/i', $value, $matches);
+                $value = "{$matches[3][0]}-{$matches[2][0]}-{$matches[1][0]}{$matches[4][0]}";
             }
-            $set[] = "$field='" . addslashes($val) . "' ";
+	    $set[] = "$field='" . addslashes($value) . "' ";
         }
         $this->query("INSERT INTO acc_check_list SET " . implode(',', $set), false);
         return true;
