@@ -1,150 +1,158 @@
 <script language="javascript">
     AccountsJs.reports={};
-require(["dojo/dom", "dijit/registry", "dojo/on", "dojo/date/locale","dojo/parser", "baycik/grid/DataGrid"],
-    function (dom, registry, on, locale,parser) {
-	    parser.parse('accounts_reports_div');
-        AccountsJs.reports.init = function () {
-            this.initDocRegistry();
-            this.initRegForm();
-        };
-        AccountsJs.reports.initRegForm = function () {
-            var now = new Date();
-            var month = now.getMonth() + 1;
-            registry.byId("rep_invreg_year").set('value', now.getFullYear());
-            registry.byId("rep_invreg_month").set('value', month < 10 ? ('0' + month) : month);
-            AccountsJs.reports.loadPeriodRegistry('sell');
+    
+    App.loadDojo().progress(function(status){
+        if (status==='dojoloaded'){
+            require(["dojo/dom", "dijit/registry", "dojo/on", "dojo/date/locale","dojo/parser", "baycik/grid/DataGrid"],
+            function (dom, registry, on, locale,parser) {
+                parser.parse('accounts_reports_div');
+            AccountsJs.reports.init = function () {
+                this.initDocRegistry();
+                this.initRegForm();
+            };
+            AccountsJs.reports.initRegForm = function () {
+                var now = new Date();
+                var month = now.getMonth() + 1;
+                registry.byId("rep_invreg_year").set('value', now.getFullYear());
+                registry.byId("rep_invreg_month").set('value', month < 10 ? ('0' + month) : month);
+                AccountsJs.reports.loadPeriodRegistry('sell');
 
-            on(registry.byId("rep_invreg_form"), "submit", function (e) {
-                e.preventDefault();
-                AccountsJs.reports.sInvoiceUpdate(registry.byId("rep_invreg_form").get('value'));
-            });
-            on(registry.byId("rep_invreg_year"), "change", function () {
-                AccountsJs.reports.loadPeriodRegistry(AccountsJs.reports.lastDirection);
-            });
-            on(registry.byId("rep_invreg_month"), "change", function () {
-                AccountsJs.reports.loadPeriodRegistry(AccountsJs.reports.lastDirection);
-            });
-        };
-        AccountsJs.reports.loadPeriodRegistry = function (direction) {
-            var month = registry.byId("rep_invreg_month").get('value');
-            if (month == 0)
-                month = '';
-            AccountsJs.reports.currentPeriod = registry.byId("rep_invreg_year").get('value') + '-' + month;
-            AccountsJs.reports.registry_grid.addToRequest({
-                period: AccountsJs.reports.currentPeriod,
-                direction: direction
-            });
-            AccountsJs.reports.registry_grid.loadGrid();
-            AccountsJs.reports.lastDirection = direction;
-        };
-        AccountsJs.reports.initDocRegistry = function () {
-            AccountsJs.reports.registry_grid = new baycik.grid.DataGrid({}, 'acc_doc_registry');
-            with(AccountsJs.reports.registry_grid) {
-                addToRequest({
-                    table_name: 'document_registry',
-                    limit: 200
+                on(registry.byId("rep_invreg_form"), "submit", function (e) {
+                    e.preventDefault();
+                    AccountsJs.reports.sInvoiceUpdate(registry.byId("rep_invreg_form").get('value'));
                 });
-                onStructure = function (request) {
-                    request.mod = 'Data';
-                    request.rq = 'GridStructure';
-                    Connector.addRequest(request, this, 'setStructure');
-                };
-                onRequest = function (request) {
-                    request.mod = 'Accounts';
-                    request.rq = 'DocumentRegistry';
-                    Connector.addRequest(request, function (resp) {
-                        AccountsJs.reports.registry_grid.setData(resp.entries);
-                        Acc.renderTpl('acc_docreg_summary', resp);
+                on(registry.byId("rep_invreg_year"), "change", function () {
+                    AccountsJs.reports.loadPeriodRegistry(AccountsJs.reports.lastDirection);
+                });
+                on(registry.byId("rep_invreg_month"), "change", function () {
+                    AccountsJs.reports.loadPeriodRegistry(AccountsJs.reports.lastDirection);
+                });
+            };
+            AccountsJs.reports.loadPeriodRegistry = function (direction) {
+                var month = registry.byId("rep_invreg_month").get('value');
+                if (month == 0)
+                    month = '';
+                AccountsJs.reports.currentPeriod = registry.byId("rep_invreg_year").get('value') + '-' + month;
+                AccountsJs.reports.registry_grid.addToRequest({
+                    period: AccountsJs.reports.currentPeriod,
+                    direction: direction
+                });
+                AccountsJs.reports.registry_grid.loadGrid();
+                AccountsJs.reports.lastDirection = direction;
+            };
+            AccountsJs.reports.initDocRegistry = function () {
+                AccountsJs.reports.registry_grid = new baycik.grid.DataGrid({}, 'acc_doc_registry');
+                with(AccountsJs.reports.registry_grid) {
+                    addToRequest({
+                        table_name: 'document_registry',
+                        limit: 200
                     });
-                };
-                onUpdate = function (request) {
-                    request.mod = 'Accounts';
-                    request.rq = 'DocumentRegistryUpdate';
-                    Connector.addRequest(request, this, 'loadGrid');
-                };
-                onDblClick = function (data) {
-                    var fvalue = data.rowData;
-                    var regparts = fvalue.reg.split('-');
-                    fvalue.rep_invreg_year = regparts[0];
-                    fvalue.rep_invreg_month = regparts[1];
-                    AccountsJs.reports.currentDocId = fvalue.doc_id;
+                    onStructure = function (request) {
+                        request.mod = 'Data';
+                        request.rq = 'GridStructure';
+                        Connector.addRequest(request, this, 'setStructure');
+                    };
+                    onRequest = function (request) {
+                        request.mod = 'Accounts';
+                        request.rq = 'DocumentRegistry';
+                        Connector.addRequest(request, function (resp) {
+                            AccountsJs.reports.registry_grid.setData(resp.entries);
+                            Acc.renderTpl('acc_docreg_summary', resp);
+                        });
+                    };
+                    onUpdate = function (request) {
+                        request.mod = 'Accounts';
+                        request.rq = 'DocumentRegistryUpdate';
+                        Connector.addRequest(request, this, 'loadGrid');
+                    };
+                    onDblClick = function (data) {
+                        var fvalue = data.rowData;
+                        var regparts = fvalue.reg.split('-');
+                        fvalue.rep_invreg_year = regparts[0];
+                        fvalue.rep_invreg_month = regparts[1];
+                        AccountsJs.reports.currentDocId = fvalue.doc_id;
+                        registry.byId("rep_invreg_form").set('value', fvalue);
+                        registry.byId('rep_sinvoice_dialog').show();
+                        companyStore.fetch({
+                            onComplete: function () {
+                                registry.byId('rep_pcomp_id').set('value', data.rowData.pcomp_id);
+                            }
+                        });
+                        if (data.rowData['icon'].indexOf('servicein') === -1) {
+                            registry.byId("rep_pcomp_id").set('disabled', true);
+                            registry.byId("rep_invoice_total").set('disabled', true);
+                            //registry.byId("reg_doc_num").set('disabled', true);
+                            //registry.byId("reg_given").set('disabled', true);
+                        } else {
+                            registry.byId("rep_pcomp_id").set('disabled', false);
+                            registry.byId("rep_invoice_total").set('disabled', false);
+                            registry.byId("reg_doc_num").set('disabled', false);
+                            registry.byId("reg_given").set('disabled', false);
+                        }
+                    };
+                    onPrint = function (request) {
+                        request.mod = 'Accounts';
+                        request.rq = 'DocumentRegistry';
+                        request.out_type = '.print';
+                        Acc.printOut(request);
+                    };
+                    onDownload = function (request) {
+                        request.mod = 'Accounts';
+                        request.rq = 'DocumentRegistry';
+                        request.out_type = '.xml';
+                        Connector.addRedirection(request);
+                    };
+                    startup();
+                }
+                AccountsJs.reports.registry_grid.addInvoice = function (request) {
+                    var fvalue = {
+                        doc_id: 0
+                    };
+                    fvalue.rep_invreg_year = registry.byId("rep_invreg_year").get('value');
+                    fvalue.rep_invreg_month = registry.byId("rep_invreg_month").get('value');
+                    registry.byId("rep_invreg_form").reset();
                     registry.byId("rep_invreg_form").set('value', fvalue);
                     registry.byId('rep_sinvoice_dialog').show();
-                    companyStore.fetch({
-                        onComplete: function () {
-                            registry.byId('rep_pcomp_id').set('value', data.rowData.pcomp_id);
-                        }
-                    });
-                    if (data.rowData['icon'].indexOf('servicein') === -1) {
-                        registry.byId("rep_pcomp_id").set('disabled', true);
-                        registry.byId("rep_invoice_total").set('disabled', true);
-                        //registry.byId("reg_doc_num").set('disabled', true);
-                        //registry.byId("reg_given").set('disabled', true);
-                    } else {
-                        registry.byId("rep_pcomp_id").set('disabled', false);
-                        registry.byId("rep_invoice_total").set('disabled', false);
-                        registry.byId("reg_doc_num").set('disabled', false);
-                        registry.byId("reg_given").set('disabled', false);
-                    }
                 };
-                onPrint = function (request) {
-                    request.mod = 'Accounts';
-                    request.rq = 'DocumentRegistry';
-                    request.out_type = '.print';
-                    Acc.printOut(request);
+                AccountsJs.reports.registry_grid.deleteInvoice = function () {
+                    var selected = this.getSelected();
+                    if (!selected || selected[0]['icon'].indexOf('servicein') == -1)
+                        return;
+                    AccountsJs.reports.currentDocId = selected[0]['doc_id'];
+                    AccountsJs.reports.sInvoiceDelete();
                 };
-                onDownload = function (request) {
-                    request.mod = 'Accounts';
-                    request.rq = 'DocumentRegistry';
-                    request.out_type = '.xml';
-                    Connector.addRedirection(request);
-                };
-                startup();
-            }
-            AccountsJs.reports.registry_grid.addInvoice = function (request) {
-                var fvalue = {
-                    doc_id: 0
-                };
-                fvalue.rep_invreg_year = registry.byId("rep_invreg_year").get('value');
-                fvalue.rep_invreg_month = registry.byId("rep_invreg_month").get('value');
-                registry.byId("rep_invreg_form").reset();
-                registry.byId("rep_invreg_form").set('value', fvalue);
-                registry.byId('rep_sinvoice_dialog').show();
             };
-            AccountsJs.reports.registry_grid.deleteInvoice = function () {
-                var selected = this.getSelected();
-                if (!selected || selected[0]['icon'].indexOf('servicein') == -1)
-                    return;
-                AccountsJs.reports.currentDocId = selected[0]['doc_id'];
-                AccountsJs.reports.sInvoiceDelete();
-            };
-        };
-        AccountsJs.reports.sInvoiceUpdate = function (fvalue) {
-            var request = fvalue;
-            request.reg_date = fvalue.rep_invreg_year + '-' + fvalue.rep_invreg_month;
-            request.mod = "Accounts";
-            request.rq = "DocumentRegistryUpdateSinvoice";
-            Connector.addRequest(request, function (resp) {
-                registry.byId("rep_invreg_form").reset();
-                registry.byId('rep_sinvoice_dialog').hide();
-                AccountsJs.reports.registry_grid.loadGrid();
-            });
-        };
-        AccountsJs.reports.sInvoiceDelete = function () {
-            if( confirm("Удалить документ?") ){
-                var request = {};
+            AccountsJs.reports.sInvoiceUpdate = function (fvalue) {
+                var request = fvalue;
+                request.reg_date = fvalue.rep_invreg_year + '-' + fvalue.rep_invreg_month;
                 request.mod = "Accounts";
-                request.rq = "DocumentRegistryDeleteSinvoice";
-                request.doc_id = AccountsJs.reports.currentDocId;
+                request.rq = "DocumentRegistryUpdateSinvoice";
                 Connector.addRequest(request, function (resp) {
-                    registry.byId('rep_sinvoice_dialog').hide();
                     registry.byId("rep_invreg_form").reset();
+                    registry.byId('rep_sinvoice_dialog').hide();
                     AccountsJs.reports.registry_grid.loadGrid();
                 });
-            }
-        };
-	AccountsJs.reports.init();
+            };
+            AccountsJs.reports.sInvoiceDelete = function () {
+                if( confirm("Удалить документ?") ){
+                    var request = {};
+                    request.mod = "Accounts";
+                    request.rq = "DocumentRegistryDeleteSinvoice";
+                    request.doc_id = AccountsJs.reports.currentDocId;
+                    Connector.addRequest(request, function (resp) {
+                        registry.byId('rep_sinvoice_dialog').hide();
+                        registry.byId("rep_invreg_form").reset();
+                        AccountsJs.reports.registry_grid.loadGrid();
+                    });
+                }
+            };
+            AccountsJs.reports.init();
+        });
+        }
     });
+    
+    
+
 </script>
 <style type="text/css">
     .bank_property_name {
