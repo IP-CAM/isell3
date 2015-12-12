@@ -172,12 +172,16 @@
 			    Ledger.acc_props = resp.props;
 			    Ledger.using_alt_currency=resp.using_alt_currency;
 			    Ledger.onListLoaded();
-			    success(Ledger.list.addBalanceRows(resp));
+			    var rows=Ledger.list.addBalanceRows(resp);
+			    console.log(rows);
+			    success(rows);
 			} else {
+			    console.log('emptyu');
 			    success([]);
 			}
 		    });
 		} else {
+		    console.log('empty1');
 		    success([]);
 		}
 	    },
@@ -435,8 +439,7 @@
 	   remoteFilter:true,
 	   onSelect:Ledger.list.onSelect,
 	   onDblClickRow:Ledger.list.rowUpdate,
-	   onLoadSuccess:function(){$('#account_ledger_dg').datagrid('resize');},
-	   method:'get'">
+	   onLoadSuccess:function(){$('#account_ledger_dg').datagrid('resize');}">
 	<thead>
 	    <tr>
 		<th data-options="width:25,field:'editable',align:'center',formatter:Ledger.list.rowTooltip"></th>

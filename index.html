@@ -99,8 +99,17 @@
 		    }
 		},
 		setPassiveCompany:function(company){
+                    var old_pcomp_id=App.pcomp?App.pcomp.company_id:0;
 		    App.pcomp=company;
-		    App.handler.notify('passiveCompanySelected',App.pcomp);
+		    if( company ){
+                        if( company.company_id===old_pcomp_id ){
+                            App.handler.notify('passiveCompanyReloaded',company);
+                            return;
+                        }
+			App.handler.notify('passiveCompanySelected',company);
+		    } else {
+			App.handler.notify('passiveCompanyReset');
+		    }
 		}
 	    };
 	    App.onReady = function () {

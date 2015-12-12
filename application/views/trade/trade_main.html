@@ -12,7 +12,21 @@
             }
             this.tabsInited=true;
             App.initTabs('trade_main_tabs');
+	    App.handler.progress(function(status){
+		if( status==='passiveCompanySelected' ){
+		    TradeJs.showTabs(true);
+		}
+	    });
         },
+	showTabs:function( show ){
+	    if( show ){
+		$("#trade_main_tabs_info").hide();
+		$("#trade_main_tabs_content").css('visibility','visible');		
+	    } else {
+		$("#trade_main_tabs_info").show();
+                $("#trade_main_tabs_content").css('visibility','hidden');
+	    }
+	},
         selectPassiveCompany: function ( company ) {
             if ( company.company_id && company.company_id!==App.pcomp.company_id ) {
                 $.post('Company/selectPassiveCompany/' + company.company_id, function (xhr) {
@@ -23,16 +37,14 @@
 	ctreeInlineInit:function(){
 	    App.loadModule('page/company/tree',{inline:true,clickselect:true},'CtreeInline',/(Ctree|page_company_tree)([^\w]|_)/g,"CtreeInline$2").progress(function(status,company){
                 if( status==='select' ){
-                    $("#trade_main_tabs_info").hide();
-                    $("#trade_main_tabs_content").css('visibility','visible');
+		    TradeJs.showTabs(true);
                     TradeJs.selectPassiveCompany(company);
                 }
                 if( status==='treeLoaded' ){
                     TradeJs.initTabsOnce();
                 }
                 if( status==='deleted' && company==='company' ){
-                    $("#trade_main_tabs_info").show();
-                    $("#trade_main_tabs_content").css('visibility','hidden');
+                    TradeJs.showTabs(false);
                     App.pcomp={};
                 }
 	    });
