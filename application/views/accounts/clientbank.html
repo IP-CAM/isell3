@@ -239,6 +239,21 @@
 	background-color: #ffa;
 	cursor: pointer;
     }
+    .left_label{
+	padding: 3px;
+	margin-bottom: 5px;
+	border: 1px solid #999;
+	border-right: none;
+	background: linear-gradient(90deg,rgba(255,255,255,1),rgba(255,255,255,0.5));
+    }
+    .left_label:hover{
+	background: linear-gradient(90deg,rgba(255,255,200,1),rgba(255,255,255,0.5));;
+	-border-color: #afa;
+	cursor: pointer;
+    }
+    .left_label_selected,.left_label_selected:hover{
+	background: #FF9;
+    }
 </style>
 <div style="width:400px;display: inline-block;vertical-align: top;">
     <div class="easyui-panel covert" title="Контрагент" id="Cbank_check_corresp" style="margin-bottom: 3px;">
@@ -332,6 +347,12 @@
     </div>
 </div>
 <div style="display: inline-block;vertical-align: top;">
+    <div id="cbank_favorites" class="covert">
+	<img src="img/heart2.png" style="width:16px;height:16px;margin-bottom: 2px;"> Избранные счета
+	{{favs}}
+        <div class="left_label" onclick="Ledger.fav.select(this)" data-code="{{acc_code}}" style="min-height: 40px"><div class="tag">{{acc_code}}</div> {{label}} <br><span style="color:#058">{{balance|blank|format}}</span></div>
+	{{/favs}}
+    </div>
     <input type="file" id="clientbank_uploader" style="display:none" onchange="Cbank.list.up(this.files)">
     <div style="clear:both">
 	<div style="float: left;font-weight: bold;padding-top: 8px;">
