@@ -4,8 +4,13 @@
         main_acc_code:0,
         current_check:{},
         init:function(){
-            this.fav.load();
-        },
+            //this.fav.load();
+	    App.handler.progress(function(status){
+		if( status==="activeCompanySelected" ){
+		    Cbank.fav.load();
+		}
+	    });
+	},
 	renderCheck:function(){
 	    var row=$('#account_clientbank_dg').datagrid('getSelected');
 	    if( row && row.check_id ){
