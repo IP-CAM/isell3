@@ -71,11 +71,12 @@ class AccountsData extends AccountsCore{
     public function balanceTreeDelete( $branch_id ){
 	return $this->treeDelete('acc_tree',$branch_id);
     }
-    public function accountFavoritesFetch( $use_passive_filter=false ){
+    public function accountFavoritesFetch( $use_passive_filter=false, $get_client_bank_accs=false ){
 	if( $use_passive_filter ){
 	    $acc_list=$this->Base->pcomp('company_acc_list');
 	} else {
-	    $acc_list= $this->get_value("SELECT GROUP_CONCAT(acc_code SEPARATOR ',') FROM acc_tree WHERE is_favorite=1");
+	    $where=$get_client_bank_accs?'use_clientbank=1':'is_favorite=1';
+	    $acc_list= $this->get_value("SELECT GROUP_CONCAT(acc_code SEPARATOR ',') FROM acc_tree WHERE $where");
 	}
 	$accs=explode(',',$acc_list);
 	$favs=[];
