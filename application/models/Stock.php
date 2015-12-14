@@ -82,6 +82,22 @@ class Stock extends Catalog {
 	$q=$this->request('q','string',0);
 	return $this->get_list("SELECT branch_id,label FROM stock_tree WHERE label LIKE '%$q%'");
     }
+    
+    public function productGet(){
+	$product_code=$this->request('product_code');
+	$sql="SELECT
+		    *
+		FROM
+		    stock_entries se
+			JOIN
+		    prod_list USING(product_code)
+			LEFT JOIN
+		    price_list USING(product_code)
+		WHERE 
+		    product_code='{$product_code}'";
+	return $this->get_row($sql);
+    }
+
     public function productSave(){
 	$this->Base->set_level(2);
 	$product_code=$this->request('product_code');

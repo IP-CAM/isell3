@@ -47,7 +47,7 @@
 	    },
 	    load:function( doc_id ){
 		this.doc_id=doc_id;
-		if( App.DocInline ){
+		if( App.DocInline && App.DocInline.data ){
 		    App.DocInline.data.doc_id=this.doc_id;
 		    App.DocInline.init();
 		} else {

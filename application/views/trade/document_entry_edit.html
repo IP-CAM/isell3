@@ -70,6 +70,17 @@
 	},
 	delete:function(){
 	    DocEntEd.handler.notify('delete');
+	},
+	showProductCard:function(){
+	    if( App.user.props.user_level<2 ){
+		alert("Доступ ограничен");
+		return;
+	    }
+	    App.loadWindow('page/stock/product_card',DocEntEd.data.product_code).progress(function(status,fvalue){
+		if( status==='save' ){
+		    DocEntEd.handler.notify('change');
+		}
+	    });	    
 	}
     };
 </script>
@@ -80,7 +91,8 @@
 		Товар:
 	    </td>
 	    <td>
-		<strong title="Код">{{product_code}}</strong> <span title="Название">{{product_name}}</span><br>
+		<strong title="Код">{{product_code}}</strong> <span title="Название">{{product_name}}</span>
+		<img onclick="DocEntEd.showProductCard();" style="cursor: pointer;vertical-align: middle" src="img/settings.png" title="Изменить свойства товара"><br>
 		<i class="hover_show" title="Таможенный код">Таможенный код: {{product_uktzet}}</i>
 	    </td>
 	</tr>

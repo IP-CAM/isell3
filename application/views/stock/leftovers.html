@@ -150,15 +150,8 @@
 		    return;
 		}
 		App.loadWindow('page/stock/product_card',fvalue).progress(function(status,fvalue){
-		    if( status==='submit' ){
-			$.post('Stock/productSave/',fvalue,function(ok){
-			    if( ok*1 ){
-				App.flash("Свойства товара сохранены");
-				Leftovers.list.reload();
-			    } else {
-				App.flash("Свойства товара не изменились");
-			    }
-			});
+		    if( status==='save' ){
+			Leftovers.list.reload();
 		    }
 		});
 	    },
