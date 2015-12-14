@@ -229,17 +229,25 @@ class DocumentItems extends DocumentCore{
 	$set=[];
 	$target=[];
 	$source=[];
+	$this->calcCorrections();
 	for( $i=0;$i<count($trg);$i++ ){
-            if( strpos($filter,"/{$trg[$i]}/")!==false && !empty($src[$i]) ){
-		$target[]=$trg[$i];
-		$source[]=$src[$i];
-		$set[]="{$trg[$i]}=$src[$i]";
+            if( strpos($filter,"/{$trg[$i]}/")===false || empty($src[$i]) ){
+		continue;
 	    }
+	    if( $trg[$i]=='product_code' ){
+		$product_code_source=$src[$i];
+	    }
+	    if( $trg[$i]=='invoice_price' ){
+		$src[$i]=$src[$i].'*@curr_correction/@vat_correction';
+	    }
+	    $target[]=$trg[$i];
+	    $source[]=$src[$i];
+	    $set[]="{$trg[$i]}=$src[$i]";
 	}
 	$target_list=  implode(',', $target);
 	$source_list=  implode(',', $source);
 	$set_list=  implode(',', $set);
-	$this->query("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data WHERE label='$label' ON DUPLICATE KEY UPDATE $set_list");
+	$this->query("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data WHERE label='$label' AND $product_code_source IN (SELECT product_code FROM stock_entries) ON DUPLICATE KEY UPDATE $set_list");
 	return $this->db->affected_rows();
     }
 }
