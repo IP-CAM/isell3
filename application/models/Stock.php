@@ -72,6 +72,7 @@ class Stock extends Catalog {
 	    $where
 	    GROUP BY se.product_code
 	    HAVING $having
+            ORDER BY se.parent_id,se.product_code
 	    LIMIT $rows OFFSET $offset";
 	$result_rows=$this->get_list($sql);
 	$total_estimate=$offset+(count($result_rows)==$rows?$rows+1:count($result_rows));
