@@ -143,41 +143,53 @@ class Catalog extends CI_Model {
 	$res->free_result();
 	return $branches;
     }
-    protected function treeCreate($table,$type,$parent_id,$label=''){
+    protected function treeCreate($table,$type,$parent_id,$label='',$calc_top_id=false){
 	if( $this->treeisLeaf($table,$parent_id) || !$label ){
 	    return false;
 	}
-	$branch_id=$this->create($table,array(
+	$branch_id=$this->create($table,[
 	    'parent_id'=>$parent_id,
 	    'is_leaf'=>($type=='leaf'),
 	    'path'=>'/-newbranch-/'
-	    ));
-	$this->treeUpdate($table, $branch_id, 'label', $label);
+	    ]);
+	$this->treeUpdate($table, $branch_id, 'label', $label, $calc_top_id);
 	return $branch_id;
     }
-    protected function treeUpdate($table,$branch_id,$field,$value) {
+    protected function treeUpdate($table,$branch_id,$field,$value,$calc_top_id=false) {
 	if( $field=='parent_id' && $this->treeisLeaf($table,$value) || $field=='label' && !$value ){
 	    /*parent must be not leaf and label should not be empty*/
 	    return false;
 	}
-	$this->update($table, array($field => $value),array('branch_id' => $branch_id));
+	$this->update($table, [$field => $value],['branch_id' => $branch_id]);
 	$this->treeUpdatePath($table, $branch_id);
+        if( $calc_top_id ){
+            $this->treeUpdateTopId($table, $branch_id);
+        }
 	return true;
     }
     private function treeUpdatePath($table, $branch_id) {
-	$this->db->query(
+	$this->query(
 		"SELECT @old_path:=COALESCE(t1.path, ''),@new_path:=CONCAT(COALESCE(t2.path, '/'), t1.label, '/')
 		FROM $table t1
 			LEFT JOIN
 		    $table t2 ON t1.parent_id = t2.branch_id 
 		WHERE
 		    t1.branch_id = $branch_id");
-	$this->db->query(
+	$this->query(
 		"UPDATE $table 
 		SET 
 		    path = IF(@old_path,REPLACE(path, @old_path, @new_path),@new_path)
 		WHERE
 		    IF(@old_path,path LIKE CONCAT(@old_path, '%'),branch_id=$branch_id)");
+    }
+    private function treeUpdateTopId($table, $branch_id){
+        $path=$this->get_value("SELECT path FROM $table WHERE branch_id='$branch_id'");
+        $chunks=explode("/",$path);
+        if( $chunks[1] ){
+            $top_id=$this->get_value("SELECT branch_id FROM $table WHERE label='$chunks[1]'");
+            return $this->update($table,['top_id'=>$top_id],['branch_id'=>$branch_id]);
+        }
+        return false;
     }
     protected function treeDelete($table,$branch_id){
 	$branch_ids=$this->treeGetSub($table, $branch_id);
