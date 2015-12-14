@@ -84,7 +84,7 @@ class Stock extends Catalog {
     public function productSave(){
 	$this->Base->set_level(2);
 	$product_code=$this->request('product_code');
-        $product_code_new=$this->request('product_code_new','^[\p{L}\d\. ,-]+$');
+        $product_code_new=$this->request('product_code_new','^[\p{L}\d\. ,-_]+$');
         if( !$product_code_new ){
             return false;
         }
@@ -112,7 +112,7 @@ class Stock extends Catalog {
 	    $this->create(BAY_DB_MAIN.'.price_list', ['product_code'=>$product_code_new]);
 	    $this->create(BAY_DB_MAIN.'.stock_entries', ['product_code'=>$product_code_new]);
 	}
-	return $this->update(BAY_DB_MAIN.'.stock_entries JOIN '.BAY_DB_MAIN.'.prod_list USING(product_code) LEFT JOIN '.BAY_DB_MAIN.'.price_list USING(product_code)', $product, ['product_code'=>$product_code]);
+        return $this->update(BAY_DB_MAIN.'.stock_entries JOIN '.BAY_DB_MAIN.'.prod_list USING(product_code) LEFT JOIN '.BAY_DB_MAIN.'.price_list USING(product_code)', $product, ['product_code'=>$product_code]);
     }
     public function productDelete(){
 	$product_code=$this->request('product_code');
