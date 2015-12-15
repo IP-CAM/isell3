@@ -211,7 +211,7 @@ class Company extends Catalog{
 		);
     }
     
-    public function companyPrefsUpdate( $type, $field, $value ){
+    public function companyPrefsUpdate( $type, $field, $value='' ){
 	$this->Base->set_level(2);
 	switch( $type ){
 	    case 'discount':
@@ -219,7 +219,7 @@ class Company extends Catalog{
 	    case 'other':
 		if( in_array($field, array('deferment','curr_code','manager_id','is_supplier','company_acc_list','language')) ){
 		    $passive_company_id = $this->Base->pcomp('company_id');
-		    return $this->db->query("UPDATE companies_list SET $field='$value' WHERE company_id=$passive_company_id");
+		    return $this->query("UPDATE companies_list SET $field='$value' WHERE company_id=$passive_company_id");
 		}
 		return false;
 	}

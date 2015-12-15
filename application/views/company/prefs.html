@@ -11,6 +11,9 @@
 		}
 	    });
 	    $('#cpref_manager_id').combobox();
+	    App.formElements("#CompPrefs_other").change(function(node){
+		CompPrefs.update('other',this.name,App.val(this));
+	    });
 	},
 	focus:function(){
 	    this.load();
@@ -61,9 +64,6 @@
 	},
 	processOthers:function(data){
 	    $("#CompPrefs_other").form('load',data.other);
-	    App.formElements("#CompPrefs_other").change(function(node){
-		CompPrefs.update('other',this.name,this.value);
-	    });
 	},
 	managerLoader:function(param,success,error){
 	    $.get('Pref/getStaffList',function(text){
