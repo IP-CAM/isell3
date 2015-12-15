@@ -238,7 +238,7 @@ class DocumentItems extends DocumentCore{
 		$product_code_source=$src[$i];
 	    }
 	    if( $trg[$i]=='invoice_price' ){
-		$src[$i]=$src[$i].'*@curr_correction/@vat_correction';
+		$src[$i]=$src[$i].'/@curr_correction/@vat_correction';
 	    }
 	    $target[]=$trg[$i];
 	    $source[]=$src[$i];
