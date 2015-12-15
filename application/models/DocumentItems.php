@@ -88,15 +88,16 @@ class DocumentItems extends DocumentCore{
                 party_label,
                 product_uktzet,
                 self_price,
-		(invoice_price * @vat_correction * @curr_correction)<IF(is_commited,self_price,
-                    (SELECT self_price FROM stock_entries se WHERE se.product_code=de.product_code)
-                ) is_loss
+		IF(doc_type=1,invoice_price<buy/@curr_correction,invoice_price>buy/@curr_correction) is_loss,
+                buy
             FROM
                 document_list
 		    JOIN
 		document_entries de USING(doc_id)
 		    JOIN 
 		prod_list pl USING(product_code)
+                    LEFT JOIN
+                price_list prl USING(product_code)
             WHERE
                 doc_id='$doc_id'
             ORDER BY pl.product_code";
