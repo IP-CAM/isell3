@@ -10,9 +10,9 @@
 		    CompPrefs.load();
 		}
 	    });
-	    $('#cpref_manager_id').combobox();
+	    //$('#cpref_manager_id').combobox();
 	    App.formElements("#CompPrefs_other").change(function(node){
-		CompPrefs.update('other',this.name,App.val(this));
+		CompPrefs.update('other',this.title,this.name,App.val(this));
 	    });
 	},
 	focus:function(){
@@ -27,10 +27,10 @@
 		}
 	    });
 	},
-	update:function(type, id, value){
+	update:function(type, title, id, value){
 	    $.post( App.uri('Company','companyPrefsUpdate', type, id, value), function(ok){
 		if( ok*1 ){
-		    App.flash("Измененние сохранено!");
+		    App.flash("Сохранено: "+title);
 		} else {
 		    CompPrefs.load();
 		}
@@ -63,7 +63,8 @@
 	    CompPrefs.update('discount',branch_id,ratio);
 	},
 	processOthers:function(data){
-	    $("#CompPrefs_other").form('load',data.other);
+	    //$("#CompPrefs_other").form('load',data.other);
+            App.setupForm("#CompPrefs_other",data.other);
 	},
 	managerLoader:function(param,success,error){
 	    $.get('Pref/getStaffList',function(text){
@@ -98,8 +99,7 @@
     <div id="CompPrefs_other" class="easyui-panel" title="Другие настройки" style="width:360px;padding: 3px;">
 	<input name="deferment" title="Отсрочка">
 	<input name="debt_limit" title="Лимит долга">
-	<input name="company_acc_list" title="Бух счета">
-	<input id="cpref_manager_id" name="manager_id" title="Ответственный" data-options="
+        <input class="easyui-combobox" id="cpref_manager_id" name="manager_id" title="Ответственный" data-options="
 	       valueField: 'user_id',
 	       textField:'full_name',
 	       loader:CompPrefs.managerLoader,
@@ -119,7 +119,7 @@
 	</select>
 	<textarea name="path" title="Путь" disabled="disabled"></textarea>
 	<div>
-	    <input type="checkbox" name="is_suplier" title="Обновлять закуп. цены">
+	    <input type="checkbox" name="is_supplier" title="Обновлять закуп. цены">
 	</div>
     </div>
 </div>

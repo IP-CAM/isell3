@@ -219,7 +219,8 @@ class Company extends Catalog{
 	    case 'other':
 		if( in_array($field, array('deferment','curr_code','manager_id','is_supplier','company_acc_list','language')) ){
 		    $passive_company_id = $this->Base->pcomp('company_id');
-		    return $this->query("UPDATE companies_list SET $field='$value' WHERE company_id=$passive_company_id");
+		    $this->query("UPDATE companies_list SET $field='$value' WHERE company_id=$passive_company_id");
+                    return $this->db->affected_rows();
 		}
 		return false;
 	}
