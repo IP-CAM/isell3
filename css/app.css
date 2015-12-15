@@ -218,6 +218,9 @@ button img{
 .slider-rule span{
     border-color: #000;
 }
+div .combobox-item-hover{
+    background-color: #cdf;
+}
 
 .transparent{
     opacity:0.6;
