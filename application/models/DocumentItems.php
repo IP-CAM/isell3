@@ -156,11 +156,13 @@ class DocumentItems extends DocumentCore{
     private function entryPriceGet( $product_code ){
 	$Document2=$this->Base->bridgeLoad('Document');
 	$invoice=$Document2->getProductInvoicePrice($product_code);
-	$invoice=round($invoice,$this->doc('signs_after_dot'));
-	if( !$this->doc('use_vatless_price') ){
-	    $invoice*=1+$this->doc('vat_rate')/100;
-	}
-	return round($invoice,$this->doc('signs_after_dot'));
+        $this->calcCorrections();
+        return $this->get_value("SELECT REPLACE(FORMAT($invoice * @vat_correction * @curr_correction,".$this->doc('signs_after_dot')."),',','') AS product_price");
+//	$invoice=round($invoice,$this->doc('signs_after_dot'));
+//	if( !$this->doc('use_vatless_price') ){
+//	    $invoice*=1+$this->doc('vat_rate')/100;
+//	}
+//	return round($invoice,$this->doc('signs_after_dot'));
     }
     public function entryDocumentGet( $doc_id ){
 	$this->check($doc_id,'int');
