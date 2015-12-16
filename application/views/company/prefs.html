@@ -60,7 +60,7 @@
 	    var ratio=1+sign*inp.value/100;
 	    var pair_name=(sign>0?'minus_':'plus_')+branch_id;
 	    $("input[name="+pair_name+"]").val('');
-	    CompPrefs.update('discount',branch_id,ratio);
+	    CompPrefs.update('discount',branch_id,ratio,inp.title+' '+inp.value);
 	},
 	processOthers:function(data){
 	    //$("#CompPrefs_other").form('load',data.other);
@@ -88,8 +88,8 @@
 	    {{discounts}}
 	    <div style="padding: 2px;border-top: 1px #ccf solid">
 		<span style="width:110px;display: inline-block">{{label}}:</span> 
-		<input type="text" value="{{minus}}" name="minus_{{branch_id}}" class="discount_inp" onchange="CompPrefs.disctUpdate(this);"> 
-		<input type="text" value="{{plus}}" name="plus_{{branch_id}}" class="discount_inp" onchange="CompPrefs.disctUpdate(this);">
+                <input type="text" title="Скидка {{label}}" value="{{minus}}" name="minus_{{branch_id}}" class="discount_inp" onchange="CompPrefs.disctUpdate(this);"> 
+		<input type="text" title="Наценка {{label}}" value="{{plus}}" name="plus_{{branch_id}}" class="discount_inp" onchange="CompPrefs.disctUpdate(this);">
 	    </div>
 	    {{/discounts}}	
 	</div>
