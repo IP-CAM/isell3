@@ -70,7 +70,34 @@
 		    $.get("User/SignOut");
 		    this.setProps({});
 		},
-		loginFormShow: function () {
+                edit:function(){
+                    $.post("User/userFetch",function(resp){
+                        var props=App.json(resp);
+                        App.user.promptEditor(props);
+                    });
+                },
+                promptEditor:function( user ){
+                    if( App.user.getLevel()<3 ){
+                        App.flash("Доступ ограничен");
+                        return;
+                    }
+                    App.loadWindow('page/dialog/user_edit',user).progress(function(status,user_data){
+                        if( status==='submit' ){
+                            $.post("User/save",user_data,function(ok){
+                                if( ok*1 ){
+                                    App.user.getData();
+                                    App.flash("Свойства пользователя сохранены");
+                                } else {
+                                    if( ok==='LAST_ADMIN' ){
+                                        alert("Должен остаться хотя бы один администратор.");
+                                    }
+                                    App.flash("Свойства пользователя не изменены");
+                                }
+                            });
+                        }
+                    });
+                },
+                loginFormShow: function () {
 		    $("#loginScreen,#loginOverlay").show();
 		},
 		loginFormHide: function () {
@@ -209,7 +236,8 @@
 		<div id="div_user_panel">
 		    <div style="color:red">{{user_level_name}}</div>
 		    <div style="font-weight:bold;color:#000">{{user_login}}</div> 
-		    <button onclick="App.user.signOut()"><img src="img/logout.png"/> Выход</button>
+		    <button onclick="App.user.edit()"><img src="img/Edit-24.png"/> Редактировать</button>
+                    <button onclick="App.user.signOut()"><img src="img/logout.png"/> Выход</button>
 		</div>
 	    </div>
 	    <span id="chat_panel" class="covert" style="margin: 4px;cursor: pointer;float:right" onclick="App.loadWindow('page/dialog/chat')">

@@ -64,6 +64,18 @@ class User extends Catalog {
         $this->Base->svar('user_assigned_stat',$user_data->user_assigned_stat);
         $this->Base->svar('user_assigned_path',$user_data->user_assigned_path);
     }
+    public function userFetch(){
+	$user_id = $this->Base->svar('user_id');
+        $sql="SELECT
+		user_id,user_login,user_level,user_sign,user_position,
+		first_name,middle_name,last_name,nick,
+		id_type,id_serial,id_number,id_given_by,id_date,
+		user_assigned_path,
+		CONCAT(last_name,' ',first_name,' ',middle_name) AS full_name 
+	    FROM ".BAY_DB_MAIN.".user_list
+		WHERE user_id='$user_id'";
+        return $this->get_row($sql);
+    }
     public function listFetch(){
 	$user_id = $this->Base->svar('user_id');
         $where = ($this->Base->svar('user_level') < 4) ? "WHERE user_id='$user_id'" : "";
