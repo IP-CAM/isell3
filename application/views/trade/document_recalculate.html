@@ -6,34 +6,34 @@
 		title: 'Перерасчет документа',
 		width: 350,
 		height: 'auto',
+		shadow:false,
 		onClose: function () {
 		    DocRec.handler.notify('close');
 		    delete App.page_trade_document_recalculate,DocRec;
 		}
 	    });
 	    this.node.window('center');
-	    this.data={recalc_proc:-0.00001};
-	    App.setupForm("#document_recalc_frm",this.data);
+	    this.data={recalc_proc:'0'};
+	    this.node.window('hcenter');
+	    this.node.window('window').css('position','fixed');
+	    this.node.window('window').css('top','40px');
+            
+            App.setupForm("#document_recalc_frm",this.data);
+            $("#document_recalc_frm input[name=recalc_proc]").select();
 	    $("#document_recalc_frm").submit(function(event){
 		event.preventDefault();
 		DocRec.handler.notify('submit',App.collectForm("#document_recalc_frm"));
 	    });
-		    
 	}
     };
 </script>
 <form id="document_recalc_frm">
 
     <div class="inp_rule">
-	Наценку введите со знаком (+);<br>
-	Скидку со знаком (-);
+	Наценку в % введите со знаком (+);<br>
+	Скидку в % со знаком (-);
     </div>
-    <input class="easyui-numberspinner" name="recalc_proc" title="Скидка" data-options="
-	   precision:2,
-	   groupSeparator:' ',
-	   decimalSeparator:',',
-	   suffix:'%'
-	   " />
+    <input name="recalc_proc" title="Скидка"/>
     <div style="text-align: center">
 	<button type="submit"><img src="img/recalc.png" style="vertical-align: middle"> Пересчитать</button>
 	<button type="button" onclick="DocRec.node.window('close')"><img src="img/close24.png" style="vertical-align: middle"> Закрыть</button>
