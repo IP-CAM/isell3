@@ -47,8 +47,8 @@
 	    var createDef=$.Deferred();
 	    $.post('DocumentItems/createDocument',function(doc_id){
 		if( doc_id*1 ){
+		    Doc.head.load(doc_id,true,createDef);
                     createDef.notify('created');
-		    Doc.head.load(doc_id,false,createDef);
                     Doc.handler.notify('created',doc_id);
 		} else {
 		    App.flash("Не удалось создать документ");
@@ -59,6 +59,7 @@
 	createThenAddEntry:function ( code, qty ){
 	    Doc.create().progress(function(status){
 		if( status==='created' ){
+                    Doc.isCreated=true;
 		    Doc.entries.add( code, qty );
 		}
 	    });
@@ -80,9 +81,9 @@
 		Doc.head.setPropsForm(Doc.head.props);
 		Doc.setTitle();
 		App.renderTpl('Doc_owners',Doc.head.props);
-		    Doc.entries.reload();
 		    Doc.view.loadTile();
 		if( !load_only_head ){
+		    Doc.entries.reload();
 		}
                 createDef && createDef.notify('head_loaded',doc_id);
 	    });

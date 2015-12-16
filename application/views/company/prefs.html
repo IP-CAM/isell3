@@ -12,7 +12,7 @@
 	    });
 	    //$('#cpref_manager_id').combobox();
 	    App.formElements("#CompPrefs_other").change(function(node){
-		CompPrefs.update('other',this.title,this.name,App.val(this));
+		CompPrefs.update('other',this.name,App.val(this),this.title);
 	    });
 	},
 	focus:function(){
@@ -27,7 +27,7 @@
 		}
 	    });
 	},
-	update:function(type, title, id, value){
+	update:function(type, id, value, title){
 	    $.post( App.uri('Company','companyPrefsUpdate', type, id, value), function(ok){
 		if( ok*1 ){
 		    App.flash("Сохранено: "+title);
