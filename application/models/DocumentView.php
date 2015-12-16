@@ -103,9 +103,10 @@ class DocumentView extends DocumentItems{
     
     private function viewGet( $doc_view_id ){
 	$sql="SELECT
-		*
+		*,
+                (SELECT doc_data FROM document_list dl WHERE dl.doc_id=dvl.doc_id) doc_data
 	    FROM 
-		document_view_list
+		document_view_list dvl
 		    JOIN
 		document_view_types USING (view_type_id)
 	    WHERE 
