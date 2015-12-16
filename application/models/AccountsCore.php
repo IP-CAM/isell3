@@ -329,7 +329,7 @@ class AccountsCore extends Catalog{
     }
     public function transPostCreateUpdate(){
 	$trans_id=$this->request('trans_id','int',0);
-	$check_id=$this->request('check_id','int',null);
+	$check_id=$this->request('check_id','int');
 	$passive_company_id=$this->request('passive_company_id','int');
 	$trans_type=$this->request('trans_type');
 	$trans_date=$this->request('trans_date','\d\d\d\d-\d\d-\d\d');
