@@ -77,10 +77,6 @@
                     });
                 },
                 promptEditor:function( user ){
-                    if( App.user.getLevel()<3 ){
-                        App.flash("Доступ ограничен");
-                        return;
-                    }
                     App.loadWindow('page/dialog/user_edit',user).progress(function(status,user_data){
                         if( status==='submit' ){
                             $.post("User/save",user_data,function(ok){
