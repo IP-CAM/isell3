@@ -219,7 +219,7 @@ class Accounts extends Data {
         $select[] = "CONCAT(acc_debit_code,' ',acc_credit_code) AS transfer";
         $select[] = "CONCAT(uc.nick,' ',um.nick) AS byuser";
         $select = implode(',', $select);
-        $table = "SELECT $select FROM acc_trans LEFT JOIN " . BAY_DB_MAIN . ".user_list uc ON uc.user_id=created_by LEFT JOIN " . BAY_DB_MAIN . ".user_list um ON um.user_id=modified_by WHERE (acc_debit_code=$acc_code OR acc_credit_code=$acc_code) AND active_company_id='$active_company_id' $passive_case";
+        $table = "SELECT $select FROM acc_trans LEFT JOIN " . BAY_DB_MAIN . ".user_list uc ON uc.user_id=created_by LEFT JOIN " . BAY_DB_MAIN . ".user_list um ON um.user_id=modified_by WHERE (acc_debit_code='$acc_code' OR acc_credit_code='$acc_code') AND active_company_id='$active_company_id' $passive_case";
         return $table;
     }
 
@@ -552,7 +552,7 @@ class Accounts extends Data {
         return $balance;
     }
 
-    public function getCheckListData($main_acc_code = 311, $grid_query) {
+    public function getCheckListData($main_acc_code = 0, $grid_query) {
 	$active_company_id=$this->Base->acomp('company_id');
         $select = "
 		    *,
@@ -561,7 +561,7 @@ class Accounts extends Data {
 		    IF(credit_amount,ROUND(credit_amount,2),'') AS credit,
 		    DATE_FORMAT(transaction_date,'%d.%m.%Y') AS tdate
 		    ";
-        return $this->getGridData('acc_check_list', $grid_query, $select, "main_acc_code=$main_acc_code AND active_company_id=$active_company_id", 'ORDER BY transaction_date DESC');
+        return $this->getGridData('acc_check_list', $grid_query, $select, "main_acc_code='$main_acc_code' AND active_company_id=$active_company_id", 'ORDER BY transaction_date DESC');
     }
 
     public function checkListDelete($check_id) {

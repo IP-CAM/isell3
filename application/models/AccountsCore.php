@@ -86,7 +86,7 @@ class AccountsCore extends Catalog{
     public function ledgerFetch( $acc_code, $idate='', $fdate='', $page=1, $rows=30, $use_passive_filter=false ){
 	$this->check($idate,'\d\d\d\d-\d\d-\d\d');
 	$this->check($fdate,'\d\d\d\d-\d\d-\d\d');
-	$this->check($acc_code,'int');
+	$this->check($acc_code);
 	$this->check($page,'int');
 	$this->check($rows,'int');
 	$idate.=' 00:00:00';

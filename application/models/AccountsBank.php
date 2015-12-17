@@ -156,7 +156,7 @@ class AccountsBank extends AccountsData{
     public function cbankViewGet(){
 	$page=$this->request('page','int');
 	$rows=$this->request('rows','int');
-	$main_acc_code=$this->request('main_acc_code','int');
+	$main_acc_code=$this->request('main_acc_code');
 	$out_type=$this->request('out_type');
 	
 	$dump=$this->fillDump($main_acc_code, $page, $rows);
