@@ -173,15 +173,12 @@
 			    Ledger.using_alt_currency=resp.using_alt_currency;
 			    Ledger.onListLoaded();
 			    var rows=Ledger.list.addBalanceRows(resp);
-			    console.log(rows);
 			    success(rows);
 			} else {
-			    console.log('emptyu');
 			    success([]);
 			}
 		    });
 		} else {
-		    console.log('empty1');
 		    success([]);
 		}
 	    },
