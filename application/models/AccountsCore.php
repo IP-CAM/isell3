@@ -23,8 +23,15 @@ class AccountsCore extends Catalog{
 		FROM acc_trans
 		WHERE (acc_debit_code=at.acc_code OR acc_credit_code=at.acc_code) AND active_company_id=$active_company_id $passive_filter)*IF(acc_type='P',-1,1) balance";
 	}
+        if( $use_passive_filter ){
+            $acc_list=$this->Base->pcomp('company_acc_list');
+            $is_favorite=strpos($acc_list,$acc_code)!==false?1:0;
+        } else {
+            $is_favorite="is_favorite";
+        }
+        
         $sql="SELECT
-		* $balance
+		* $balance, $is_favorite is_favorite
 	    FROM 
 		acc_tree at
 		    JOIN curr_list cl ON IF(at.curr_id,cl.curr_id=at.curr_id,cl.curr_id='$default_curr_id')
@@ -92,7 +99,7 @@ class AccountsCore extends Catalog{
 	$idate.=' 00:00:00';
 	$fdate.=' 23:59:59';
         
-	$props=$this->getAccountProperties( $acc_code );
+	$props=$this->getAccountProperties( $acc_code, false, $use_passive_filter );
 	if( $use_passive_filter ){
 	    $this->Base->set_level(1);
             $props->curr_id=$this->Base->pcomp('curr_id');
