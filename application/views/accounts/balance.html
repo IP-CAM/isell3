@@ -73,6 +73,11 @@
 			$('#page_accounts_balance_dg').treegrid('reload');
 		    }
 		}});
+            App.handler.progress(function(status){
+		if( status==="activeCompanySelected" ){
+		    $('#page_accounts_balance_dg').treegrid('reload');
+		}
+	    });
 	},
 	formatNum: function (value) {
 	    return App.formatNum(value, 'clear');
