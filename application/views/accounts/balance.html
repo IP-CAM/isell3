@@ -33,7 +33,7 @@
     Начало периода: <input type="date" id="page_accounts_balance_idate" title="Начало периода" class="easyui-datebox" style="width:100px" />
     Конец периода:  <input type="date" id="page_accounts_balance_fdate" title="Конец периода" class="easyui-datebox" style="width:100px" />
     <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-reload',plain:true" onclick="$('#page_accounts_balance_dg').treegrid('reload')">Обновить</a>
-    <a href="javascript:App.page_accounts_balance.show_unused()" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-ok',toggle:true">Показать неиспользуемые счета</a>
+    <a href="javascript:App.page_accounts_balance.show_unused()" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-ok',toggle:true">Скрыть неиспользуемые счета</a>
 </div>
 <div id="page_accounts_balance_menu" class="easyui-menu" style="width:170px;">
     <div onclick="App.page_accounts_balance.showLedger()">Проводки по счету</div>
@@ -48,7 +48,7 @@
 <script type="text/javascript">
     /* global App,AccountsJs */
     App.page_accounts_balance = {
-	unused_shown:false,
+	unused_shown:true,
 	init: function () {
 	    if (this.data && this.data.inwindow) {
 		$('#page_accounts_balance').window({
@@ -131,7 +131,7 @@
 			App.flash(label + ' добавлен');
 		    }
 		    else {
-			App.flash("Добавление не удалось", 'alert');
+			App.flash("Добавление не удалось");
 		    }
 		}
 	    });
@@ -144,13 +144,11 @@
 		parent_id = selected_row.branch_id;
 		label=selected_row['label'];
 	    }
-	    $.messager.prompt('Добавление', 'Введите название субсчета "' + label + '":', function (label) {
-		if (label === undefined || label === '') {
-		    return false;
-		}
-		App.page_accounts_balance.CRUD.create(parent_id, label);
-	    });
-	    $("input.messager-input").select();
+            var label=prompt('Введите название субсчета "' + label);
+            if( !label ){
+                return false;
+            }
+            App.page_accounts_balance.CRUD.create(parent_id, label);
 	},
 	update: function (branch_id, field, value) {
 	    $.ajax({
@@ -163,7 +161,7 @@
 			App.flash('Запись сохранена');
 		    }
 		    else {
-			App.flash("Сохранение не удалось", 'alert');
+			App.flash("Сохранение не удалось");
 		    }
 		}
 	    });
@@ -199,17 +197,15 @@
 		    App.flash("Удалено: " + resp + " записей " + label);
 		}
 		else {
-		    App.flash("Удаление не удалось", 'alert');
+		    App.flash("Удаление не удалось");
 		}
 	    });
 	},
 	deleteClick: function () {
-	    $.messager.confirm('Внимание', 'Удалить запись?', function (result) {
-		if (result) {
-		    var selected_row = $('#page_accounts_balance_dg').treegrid('getSelected');
-		    App.page_accounts_balance.CRUD.delete(selected_row.branch_id, selected_row.label);
-		}
-	    });
+            if( confirm('Удалить запись?') ){
+                var selected_row = $('#page_accounts_balance_dg').treegrid('getSelected');
+		App.page_accounts_balance.CRUD.delete(selected_row.branch_id, selected_row.label);
+            }
 	}
     };
 </script>
