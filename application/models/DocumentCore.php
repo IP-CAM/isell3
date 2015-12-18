@@ -20,6 +20,10 @@ class DocumentUtils extends Catalog{
     private function loadDoc($doc_id) {
         if( $doc_id ){
             $this->_doc = $this->get_row("SELECT *, DATE_FORMAT(cstamp,'%d.%m.%Y') AS doc_date FROM document_list WHERE doc_id='$doc_id'");
+            if( !$this->_doc ){
+                $this->Base->msg("Doc $doc_id not found");
+                $this->Base->response(0);
+            }
             $this->_doc->vat_ratio=1 + $this->_doc->vat_rate / 100;
             $this->checkPassiveLoad();
         } else {

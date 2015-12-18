@@ -120,9 +120,13 @@ class DocumentItems extends DocumentCore{
 	$Document2=$this->Base->bridgeLoad('Document');
 	switch( $name ){
 	    case 'product_quantity':
-		return $Document2->updateEntry($doc_entry_id, $value, NULL);
+                $ok=$Document2->updateEntry($doc_entry_id, $value, NULL);
+                $Document2->updateTrans();
+		return $ok;
 	    case 'product_price':
-		return $Document2->updateEntry($doc_entry_id, NULL, $value);
+		$ok=$Document2->updateEntry($doc_entry_id, NULL, $value);
+                $Document2->updateTrans();
+                return $ok;
 	    case 'party_label':
                 $this->query("UPDATE document_entries SET party_label='$value' WHERE doc_entry_id='$doc_entry_id'");
 		return true;
