@@ -1,78 +1,27 @@
-<table id="page_accounts_balance_dg" class="easyui-treegrid" 
-       data-options="
-       width:870,
-       fitColums:true,
-       singleSelect:true,
-       toolbar:'#toolbar',
-       idField:'branch_id',
-       treeField:'label',
-       fitColumns:false,
-       loader:App.page_accounts_balance.loadBranch,
-       onDblClickRow:App.page_accounts_balance.showLedger,
-       onBeforeDrop:App.page_accounts_balance.CRUD.updateDrop,
-       onLoadSuccess: function(row){
-	$(this).treegrid('enableDnd');
-       },
-       onContextMenu: App.page_accounts_balance.onContextMenu">
-    <thead>
-	<tr>
-	    <th data-options="field:'acc_code',width:30,align:'right'">Код</th>
-	    <th data-options="field:'label',width:350">Название</th>
-	    <th data-options="field:'open_bal',width:90,align:'right',formatter:App.page_accounts_balance.formatNum">Вх. остаток</th>
-	    <th data-options="field:'period_d',width:90,align:'right',formatter:App.page_accounts_balance.formatNum">Оборот дебит</th>
-	    <th data-options="field:'period_c',width:90,align:'right',formatter:App.page_accounts_balance.formatNum">Оборот кредит</th>
-	    <th data-options="field:'close_bal',width:90,align:'right',formatter:App.page_accounts_balance.formatNum">Исх. остаток</th>
-	    <th data-options="field:'curr_symbol',width:30,align:'center'">Валюта</th>
-	    <th data-options="field:'acc_type',width:30,align:'center'">Тип</th>
-	    <th data-options="field:'is_favorite',width:30,align:'center',formatter:App.page_accounts_balance.formatBool">Избранный</th>
-	    <th data-options="field:'use_clientbank',width:30,align:'center',formatter:App.page_accounts_balance.formatBool">Клиент банк</th>
-	</tr>
-    </thead>
-</table>
-<div id="toolbar">
-    Начало периода: <input type="date" id="page_accounts_balance_idate" title="Начало периода" class="easyui-datebox" style="width:100px" />
-    Конец периода:  <input type="date" id="page_accounts_balance_fdate" title="Конец периода" class="easyui-datebox" style="width:100px" />
-    <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-reload',plain:true" onclick="$('#page_accounts_balance_dg').treegrid('reload')">Обновить</a>
-    <a href="javascript:App.page_accounts_balance.show_unused()" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-ok',toggle:true">Скрыть неиспользуемые счета</a>
-</div>
-<div id="page_accounts_balance_menu" class="easyui-menu" style="width:170px;">
-    <div onclick="App.page_accounts_balance.showLedger()">Проводки по счету</div>
-    <div class="menu-sep"></div>
-    <div onclick="App.page_accounts_balance.CRUD.createClick('folder')" data-options="iconCls:'icon-add'">Добавить Субсчет</div>
-    <div onclick="App.page_accounts_balance.CRUD.updateClick()" data-options="iconCls:'icon-edit'">Свойства</div>
-    <div onclick="App.page_accounts_balance.CRUD.deleteClick()" data-options="iconCls:'icon-remove'">Удалить</div>
-    <div class="menu-sep"></div>
-    <div onclick="$('#page_accounts_balance_dg').treegrid('unselectAll')" data-options="iconCls:'icon-undo'">Сбросить выделение</div>
-</div>
 <script type="text/javascript" src="js/jquery-easyui-1.4/treegrid-dnd.js"></script>
 <script type="text/javascript">
-    /* global App,AccountsJs */
+    /* global App */
     App.page_accounts_balance = {
 	unused_shown:true,
 	init: function () {
-	    if (this.data && this.data.inwindow) {
-		$('#page_accounts_balance').window({
-		    title: 'Остатки на счетах',
-		    width: 920,
-		    height: 600
-		});
-	    }
 	    var date = new Date();
 	    this.firstDay = App.toDmy(new Date(date.getFullYear(), date.getMonth(), 1));
 	    this.lastDay = App.toDmy(new Date(date.getFullYear(), date.getMonth() + 1, 0));
 
 	    $('#page_accounts_balance_idate').datebox({value: this.firstDay, onChange: function (newVal) {
-		    if (App.page_accounts_balance.firstDay !== newVal) {
-			App.page_accounts_balance.firstDay = newVal;
-			$('#page_accounts_balance_dg').treegrid('reload');
-		    }
-		}});
+		if (App.page_accounts_balance.firstDay !== newVal) {
+		    App.page_accounts_balance.firstDay = newVal;
+		    $('#page_accounts_balance_dg').treegrid('reload');
+		}
+	    }});
 	    $('#page_accounts_balance_fdate').datebox({value: this.lastDay, onChange: function (newVal) {
-		    if (App.page_accounts_balance.lastDay !== newVal) {
-			App.page_accounts_balance.lastDay = newVal;
-			$('#page_accounts_balance_dg').treegrid('reload');
-		    }
-		}});
+		if (App.page_accounts_balance.lastDay !== newVal) {
+		    App.page_accounts_balance.lastDay = newVal;
+		    $('#page_accounts_balance_dg').treegrid('reload');
+		}
+	    }});
+	},
+	initAfter:function(){
             App.handler.progress(function(status){
 		if( status==="activeCompanySelected" ){
 		    $('#page_accounts_balance_dg').treegrid('reload');
@@ -86,20 +35,17 @@
 	    return value * 1 ? '<img src="img/grn.png">' : '';
 	},
 	loadBranch: function (param, success, error) {
-	    $.ajax({
-		url: 'AccountsCore/accountBalanceTreeFetch/' + App.uri((param['id'] || 0), App.toIso(App.page_accounts_balance.firstDay), App.toIso(App.page_accounts_balance.lastDay),App.page_accounts_balance.unused_shown*1),
-		success: function (xhr) {
-		    try{
-			var resp=JSON.parse(xhr);
-			success(resp?resp:[]);
-		    }
-		    catch(e){}
-		}
-	    });
+	    if( App.page_accounts_balance.firstDay && App.page_accounts_balance.lastDay ){
+		var url='AccountsCore/accountBalanceTreeFetch/' + App.uri((param['id'] || 0), App.toIso(App.page_accounts_balance.firstDay), App.toIso(App.page_accounts_balance.lastDay),App.page_accounts_balance.unused_shown*1);
+		$.get(url,function(resp){
+		    var rows=App.json(resp);
+		    success(rows?rows:[]);
+		});
+	    }
 	},
 	showLedger: function () {
 	    var selected_row = $('#page_accounts_balance_dg').treegrid('getSelected');
-	    AccountsJs.selectTransTab(selected_row.acc_code);
+	    //AccountsJs.selectTransTab(selected_row.acc_code);
 	},
 	onContextMenu: function (e, row) {
 	    e.preventDefault();
@@ -109,12 +55,14 @@
 		top: e.pageY
 	    });
 	},
+	click:function(node){
+	    $(this).treegrid('expand',node.branch_id);
+	},
 	show_unused:function(){
 	    this.unused_shown=!this.unused_shown;
 	    $('#page_accounts_balance_dg').treegrid('reload');
 	}
     };
-    App.page_accounts_balance.init();
 
     //CRUD
     App.page_accounts_balance.CRUD = {
@@ -214,3 +162,50 @@
 	}
     };
 </script>
+<table id="page_accounts_balance_dg" class="easyui-treegrid" 
+       data-options="
+       width:870,
+       fitColums:true,
+       singleSelect:true,
+       toolbar:'#toolbar',
+       idField:'branch_id',
+       treeField:'label',
+       fitColumns:false,
+       loader:App.page_accounts_balance.loadBranch,
+       onClickRow:App.page_accounts_balance.click,
+       onDblClickRow:App.page_accounts_balance.showLedger,
+       onBeforeDrop:App.page_accounts_balance.CRUD.updateDrop,
+       onLoadSuccess: function(row){
+	$(this).treegrid('enableDnd');
+       },
+       onContextMenu: App.page_accounts_balance.onContextMenu">
+    <thead>
+	<tr>
+	    <th data-options="field:'acc_code',width:30,align:'right'">Код</th>
+	    <th data-options="field:'label',width:350">Название</th>
+	    <th data-options="field:'open_bal',width:90,align:'right',formatter:App.page_accounts_balance.formatNum">Вх. остаток</th>
+	    <th data-options="field:'period_d',width:90,align:'right',formatter:App.page_accounts_balance.formatNum">Оборот дебит</th>
+	    <th data-options="field:'period_c',width:90,align:'right',formatter:App.page_accounts_balance.formatNum">Оборот кредит</th>
+	    <th data-options="field:'close_bal',width:90,align:'right',formatter:App.page_accounts_balance.formatNum">Исх. остаток</th>
+	    <th data-options="field:'curr_symbol',width:30,align:'center'">Валюта</th>
+	    <th data-options="field:'acc_type',width:30,align:'center'">Тип</th>
+	    <th data-options="field:'is_favorite',width:30,align:'center',formatter:App.page_accounts_balance.formatBool">Избранный</th>
+	    <th data-options="field:'use_clientbank',width:30,align:'center',formatter:App.page_accounts_balance.formatBool">Клиент банк</th>
+	</tr>
+    </thead>
+</table>
+<div id="toolbar">
+    Начало периода: <input type="date" id="page_accounts_balance_idate" title="Начало периода" class="easyui-datebox" style="width:100px" />
+    Конец периода:  <input type="date" id="page_accounts_balance_fdate" title="Конец периода" class="easyui-datebox" style="width:100px" />
+    <a href="javascript:void(0)" class="easyui-linkbutton" data-options="iconCls:'icon-reload',plain:true" onclick="$('#page_accounts_balance_dg').treegrid('reload')">Обновить</a>
+    <a href="javascript:App.page_accounts_balance.show_unused()" class="easyui-linkbutton" data-options="plain:true,iconCls:'icon-ok',toggle:true">Скрыть неиспользуемые счета</a>
+</div>
+<div id="page_accounts_balance_menu" class="easyui-menu" style="width:170px;">
+    <div onclick="App.page_accounts_balance.showLedger()">Проводки по счету</div>
+    <div class="menu-sep"></div>
+    <div onclick="App.page_accounts_balance.CRUD.createClick('folder')" data-options="iconCls:'icon-add'">Добавить Субсчет</div>
+    <div onclick="App.page_accounts_balance.CRUD.updateClick()" data-options="iconCls:'icon-edit'">Свойства</div>
+    <div onclick="App.page_accounts_balance.CRUD.deleteClick()" data-options="iconCls:'icon-remove'">Удалить</div>
+    <div class="menu-sep"></div>
+    <div onclick="$('#page_accounts_balance_dg').treegrid('unselectAll')" data-options="iconCls:'icon-undo'">Сбросить выделение</div>
+</div>
