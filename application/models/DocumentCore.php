@@ -235,7 +235,7 @@ class DocumentCore extends DocumentUtils{
 	    case 'doc_type':
 		return $this->setType($new_val);
 	}
-	$new_val=  rawurldecode($new_val);
+	//$new_val=  rawurldecode($new_val);
 	$Document2=$this->Base->bridgeLoad('Document');
 	return $Document2->updateHead($new_val,$field);
     }
