@@ -89,7 +89,12 @@ class Utils extends CI_Model {
         if( $file ){
 	    $this->email->attach($file['data'], 'attachment', $file['name'], $file['mime']);
 	}
-        return $this->email->send();
+        $ok=$this->email->send(false);
+        if( !$ok ){
+            $err=$this->email->print_debugger(['headers', 'subject', 'body']);
+            $this->Base->msg($err);
+        }
+        return $ok;
     }
     public function postEmail(){
 	$to=$this->input->get_post('to');
