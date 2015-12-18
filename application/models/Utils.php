@@ -81,9 +81,10 @@ class Utils extends CI_Model {
 	    'smtp_port'=>BAY_SMTP_PORT,
 	    'smtp_crypto'=>BAY_SMTP_CRYPTO
         ]);
+	$this->email->set_newline("\r\n");
         $this->email->from(BAY_SMTP_SENDER_MAIL,BAY_SMTP_SENDER_NAME);
         $this->email->to($to);
-        $this->email->cc(BAY_SMTP_SENDER_MAIL);
+        //$this->email->cc(BAY_SMTP_SENDER_MAIL);
         $this->email->subject($subject);
         $this->email->message($body);
         if( $file ){
@@ -101,7 +102,6 @@ class Utils extends CI_Model {
 	$subject=$this->input->get_post('subject');
 	$body=$this->input->get_post('body');
 	$dump_id=$this->input->get_post('dump_id');
-	//$fgenerator=$this->input->get_post('fgenerator');
         $out_type=$this->input->get_post('out_type');
         $send_file=$this->input->get_post('send_file');
 	$file=$send_file?$this->generateFile($dump_id,$out_type,$subject):null;
