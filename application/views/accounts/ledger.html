@@ -71,7 +71,7 @@
 		Ledger.load( fav );
 	    },
 	    toggle:function(){
-		Ledger.acc_props.is_favorite=Ledger.acc_props.is_favorite?0:1;
+		Ledger.acc_props.is_favorite=Ledger.acc_props.is_favorite*1?0:1;
 		$.post("AccountsData/accountFavoritesToggle/"+App.uri(Ledger.acc_props.acc_code,Ledger.acc_props.is_favorite,Ledger.data.passive_filter?1:0),function(ok){
 		    Ledger.fav.init();
 		    App.renderTpl('Ledger_acc_props',Ledger.acc_props);
@@ -386,7 +386,7 @@
     <div id="Ledger_acc_props" class="covert">
 	<div class="tag" style="font-size: 2.2em;float: left;margin-right: 2px;cursor: pointer" onclick="Ledger.showTree()" title="Выбрать другой счет">{{acc_code}}</div><span style="font-size: 1.2em;">{{label}}</span>
 	<div style="clear: both;padding-top: 2px;">
-	    <button onclick="Ledger.fav.toggle()" title="{{if is_favorite}}Счет избранный{{else}}Добавить в избранное{{/if}}" class="{{if is_favorite}}{{else}}transparent{{/if}}"><img src="img/heart2.png" style="width:16px;height:16px"></button>
+	    <button onclick="Ledger.fav.toggle()" title="{{if is_favorite|equals>1}}Счет избранный{{else}}Добавить в избранное{{/if}}" class="{{if is_favorite|notequals>1}}transparent{{/if}}"><img src="img/heart2.png" style="width:16px;height:16px"></button>
 	    <button onclick="Ledger.showAccForm()" title="Свойства счета"><img src="img/edit-16.png"></button>
 	    <button onclick="Ledger.showTree()" title="Выбрать другой счет"><img src="img/settings.png"></button>
 	</div>
