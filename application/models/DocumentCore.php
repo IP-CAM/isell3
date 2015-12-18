@@ -134,7 +134,7 @@ class DocumentCore extends DocumentUtils{
 	    'doc_id'=>0,
             'doc_date'=>date('d.m.Y'),
             'doc_num'=>0,
-            'doc_ratio'=>'',
+            'doc_ratio'=>$this->Base->pref('usd_ratio'),
             'label'=>$this->Base->pcomp('label'),
             'passive_company_id'=>$passive_company_id,
             'curr_code'=>$this->Base->pcomp('curr_code'),
