@@ -81,7 +81,10 @@
 		    DocEntEd.handler.notify('change');
 		}
 	    });	    
-	}
+	},
+        parsePrice:function( node ){
+            node.value=eval(node.value.toString().replace(',','.').match( /[\(\d\.\)\*\/\+-]*/ ).toString()) || 0;
+        }
     };
 </script>
 <div id="DocEntEd_markup" class="covert">
@@ -104,7 +107,7 @@
 	<span id="DocEntEd_qty_markup" class="covert" title="Кол-во на складе">Склад: {{product_quantity}} {{unit}}</span>
     </div>
     <div>
-	<input name="product_price" title="Цена"/>
+        <input name="product_price" onchange="DocEntEd.parsePrice(this);" title="Цена"/>
     <span id="DocEntEd_price_markup" class="covert" title="Стандартная цена">Цена: <b style="color:'{{color}}'">{{price}} {{curr_symbol}}</b></span>
     </div>
  	<input name="party_label" title="Партия">
