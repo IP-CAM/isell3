@@ -1,4 +1,6 @@
 <?php
-    $info=[
+class Report extends Catalog{
+    public function getGui(){
 	
-    ];
+    }
+}
