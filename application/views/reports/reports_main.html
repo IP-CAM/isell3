@@ -11,10 +11,7 @@
 		$.get("ReportManager/listFetch/",function(resp){
 		    ReportsJs.tile.report_list=App.json(resp);
 		    App.renderTpl('reports_tile',{reports:ReportsJs.tile.report_list});
-		    
 		    ReportsJs.report.load(ReportsJs.tile.report_list[1]);
-		    
-		    
 		});
 	    },
 	    click:function(node){
@@ -23,8 +20,42 @@
 	    }
 	},
 	report:{
+	    current_report_info:{},
 	    load:function(rpt_info){
-		App.renderTpl('report_info',rpt_info);
+		this.current_report_info=rpt_info;
+		this.formLoad();
+		App.renderTpl('report_info',this.current_report_info);
+	    },
+	    formLoad:function(){
+		var report_id=this.current_report_info.report_id;
+		$.get("ReportManager/formGet/"+report_id,function(resp){
+		    $("#report_form_wrapper").html(resp);
+		    ReportsJs.report.formRender();
+		});
+	    },
+	    formRender:function(){
+		var standart_data=this.formGetInitials();
+		App.renderTpl("#report_form_wrapper",standart_data);
+		App.setupForm("#report_form_wrapper form");
+		$.parser.parse("#report_form_wrapper");//for easy ui
+		$("#report_form_wrapper form").submit(function(e){
+		    e.preventDefault();
+		    var fvalue=App.collectForm("#report_form_wrapper form");
+		    ReportsJs.report.formSubmit(fvalue);
+		});
+	    },
+	    formGetInitials:function(){
+		var now=new Date();
+		return {
+		    today:App.today(),
+		    first_day:App.toDmy(new Date(now.getFullYear(), now.getMonth(), 1))
+		}
+	    },
+	    formSubmit:function(fvalue){
+		var report_id=this.current_report_info.report_id;
+		$.post("ReportManager/formSubmit/"+report_id,function(resp){
+		    
+		});
 	    }
 	}
     };
@@ -58,10 +89,12 @@
 	border: 1px solid #999;
 	margin: 2px;
     }
-    #report_info{
+    #report_info, #report_form_wrapper{
 	padding: 2px;
+	margin: 2px;
 	background-color: rgba(255,255,255,0.4);
     }
+    
 </style>
 </style>
 <div id="reports_tile">
@@ -73,14 +106,17 @@
 </div>
 <div style="width:800px;float:left;overflow: auto">
     <div id="report_info">
-	<h2>{{title}}</h2>
-	<div style="display: inline-block;width: 300px;vertical-align: top;">
+	<img src="img/reportbig.png">
+	
+	<div style="display: inline-block;width: 450px;vertical-align: top;">
+	    <h2>{{title}}</h2>
 	    {{description}}
 	</div>
-	<div style="display: inline-block;width: 300px;vertical-align: top;">
+	<div style="display: inline-block;width: 200px;vertical-align: top;">
 	    <b>Автор:</b> {{author}}<br>
 	    <b>Версия:</b> {{version}}<br>
 	    {{if uri}}<b>Сайт:</b> <a href="{{uri}}" target="_blank">{{uri}}</a><br>{{/if}}
 	</div>
     </div>
+    <div id="report_form_wrapper"></div>
 </div>
