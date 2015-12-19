@@ -1,0 +1,20 @@
+<script>
+    ReportsJs={
+	init:function(){
+	    this.tile.load();
+	},
+	tile:{
+	    load:function(){
+		$.get("ReportManager/listFetch/",function(resp){
+		    var rpts=App.json(resp);
+		    App.renderTpl('reports_tile',rpts);
+		});
+	    }
+	}
+    };
+</script>
+<div id="reports_tile">
+    {{reports}}
+	{{title}}
+    {{/reports}}
+</div>
