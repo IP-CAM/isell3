@@ -3,13 +3,11 @@ class Sell_analyse extends Catalog{
     private $idate;
     private $fdate;
     private $all_active;
-    public function formSubmit( $fvalue ){
-	$this->check($fvalue['idate'],'\d\d.\d\d.\d\d\d\d');
-	$this->check($fvalue['fdate'],'\d\d.\d\d.\d\d\d\d');
-	$this->check($fvalue['all_active'],'bool');
-	$this->idate=$this->dmy2iso($fvalue['idate']);
-	$this->fdate=$this->dmy2iso($fvalue['fdate']);
-	$this->all_active=$fvalue['all_active'];
+    public function __construct() {
+	$this->idate=$this->dmy2iso( $this->request('idate','\d\d.\d\d.\d\d\d\d') );
+	$this->fdate=$this->dmy2iso( $this->request('fdate','\d\d.\d\d.\d\d\d\d') );
+	$this->all_active=$this->request('all_active','bool');	
+	parent::__construct();
     }
     private function dmy2iso( $dmy ){
 	$chunks=  explode('.', $dmy);
@@ -28,8 +26,7 @@ class Sell_analyse extends Catalog{
 	    WHERE 
 		cstamp>'$this->idate' AND cstamp<'$this->fdate'
 		AND doc_type=1 AND is_commited=1 $active_filter";
-	
-	$view=(object)[
+	$view=[
 		'rows'=>$this->get_list($sql)
 		];
 	return $view;	

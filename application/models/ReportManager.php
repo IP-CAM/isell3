@@ -34,15 +34,7 @@ class ReportManager extends Catalog {
     
     public function formSubmit( $report_id=null ){
 	$this->current_info=$this->infoGet($report_id);
-	$fvalue=$this->request('fvalue','raw');
-	
 	$Plugin=$this->Base->load_plugin('reports',$report_id);
-	$Plugin->formSubmit( $fvalue );
-	$view=$Plugin->viewGet();
-	
-	
-	
-	
 	$dump=[
 	    'tpl_files_folder'=>"plugins/reports/{$this->current_info['report_id']}/",
 	    'tpl_files'=>$this->current_info['template'],

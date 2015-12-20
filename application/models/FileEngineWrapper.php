@@ -151,9 +151,10 @@ if ( isset($word_header) ) {
 		    dump_id:'<?php echo isset($user_data['dump_id'])?$user_data['dump_id'] : isset($_GET['dump_id'])?$_GET['dump_id']:0; ?>',
 		    send_file:1
 		};
-		if (opener && opener.App) {
-		    opener.App.loadWindow('page/dialog/send_email',params);
-		    opener.alert("Файл '"+params.subject+fext+"' прикреплен к письму");
+		var main=opener||parent;
+		if (main && main.App) {
+		    main.App.loadWindow('page/dialog/send_email',params);
+		    main.alert("Файл '"+params.subject+fext+"' прикреплен к письму");
 		}
 	    }
 	</script>

@@ -34,15 +34,14 @@
 		});
 	    },
 	    formRender:function(){
+		var report_id=this.current_report_info.report_id;
 		var standart_data=this.formGetInitials();
 		App.renderTpl("report_form_wrapper",standart_data);
 		App.setupForm("#report_form_wrapper form",{},'use_inp_values');
+		$("#report_form_wrapper form").attr('action',"ReportManager/formSubmit/"+report_id);
+		$("#report_form_wrapper form").attr('target','report_viewport');
+		$("#report_form_wrapper form").attr('method','post');
 		$.parser.parse("#report_form_wrapper");//for easy ui
-		$("#report_form_wrapper form").submit(function(e){
-		    e.preventDefault();
-		    var fvalue=App.collectForm("#report_form_wrapper form");
-		    ReportsJs.report.formSubmit(fvalue);
-		});
 	    },
 	    formGetInitials:function(){
 		var now=new Date();
@@ -90,12 +89,15 @@
 	border: 1px solid #999;
 	margin: 2px;
     }
-    #report_info, #report_form_wrapper{
+    #report_info{
 	padding: 2px;
 	margin: 2px;
 	background-color: rgba(255,255,255,0.4);
     }
-    
+    #report_form_wrapper{
+	border-top:1px solid #fff;
+	margin-top: 4px;
+    }
 </style>
 </style>
 <div id="reports_tile">
@@ -105,23 +107,23 @@
     </div>
     {{/reports}}
 </div>
-<div style="width:800px;float:left;overflow: auto">
+<div style="width:1000px;float:left;overflow: auto">
     <div id="report_info">
-	<img src="img/reportbig.png" style="height: 100px;width:auto">
-	
-	<div style="display: inline-block;width: 450px;vertical-align: top;">
-	    <h2>{{title}}</h2>
-	    {{description}}
-	</div>
-	<div style="display: inline-block;width: 200px;vertical-align: top;">
+	<img src="img/reportbig.png" style="float:left">
+	<div style="float: right">
 	    <b>Автор:</b> {{author}}<br>
 	    <b>Версия:</b> {{version}}<br>
 	    {{if uri}}<b>Сайт:</b> <a href="{{uri}}" target="_blank">{{uri}}</a><br>{{/if}}
 	</div>
+	<div>
+	    <h2>{{title}}</h2>
+	    {{description}}
+	</div>
+	<div id="report_form_wrapper"></div>
     </div>
-    <div id="report_form_wrapper"></div>
+    
     <div style="margin:2px;">
-	<iframe id="report_viewport" style="border:none;width: 100%;background: none transparent"  allowtransparency="true"></iframe>
+	<iframe id="report_viewport" name="report_viewport" onload="$('#report_viewport').height( $('#report_viewport').contents().outerHeight() )" style="border:none;width: 100%;background: none transparent"  allowtransparency="true"></iframe>
     </div>
     
 </div>
