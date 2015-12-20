@@ -54,7 +54,8 @@
 	    formSubmit:function(fvalue){
 		var report_id=this.current_report_info.report_id;
 		$.post("ReportManager/formSubmit/"+report_id,{fvalue:fvalue},function(resp){
-		    $('#report_viewport').contents().find('html').html(resp);
+		    document.getElementById('report_viewport').contentWindow.document.write(resp);
+		    $('#report_viewport').height( $('#report_viewport').contents().outerHeight() );
 		});
 	    }
 	}
