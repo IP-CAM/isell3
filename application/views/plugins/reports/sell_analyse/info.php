@@ -8,5 +8,6 @@
 	'user_level'=>4,
 	'author'=>'baycik',
 	'author_uri'=>'',
-	'licence'=>''
+	'licence'=>'',
+	'template'=>'Sell_analyse.xlsx'
     ];

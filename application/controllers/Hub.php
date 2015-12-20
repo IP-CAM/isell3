@@ -97,6 +97,13 @@ class HubBase extends CI_Controller{
 	return $this->{$name};
     }
     
+    public function load_plugin( $subfolder, $name ){
+	require_once "application/views/plugins/$subfolder/$name/$name.php";
+	$Plugin=new $name();
+	$Plugin->Base=$this;
+	return $Plugin;
+    }
+    
     public function set_level($allowed_level) {
 	if ($this->svar('user_level') < $allowed_level) {
 	    if ($this->svar('user_level') == 0) {

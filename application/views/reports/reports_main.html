@@ -11,7 +11,7 @@
 		$.get("ReportManager/listFetch/",function(resp){
 		    ReportsJs.tile.report_list=App.json(resp);
 		    App.renderTpl('reports_tile',{reports:ReportsJs.tile.report_list});
-		    ReportsJs.report.load(ReportsJs.tile.report_list[1]);
+		    ReportsJs.report.load(ReportsJs.tile.report_list[2]);
 		});
 	    },
 	    click:function(node){
@@ -35,8 +35,8 @@
 	    },
 	    formRender:function(){
 		var standart_data=this.formGetInitials();
-		App.renderTpl("#report_form_wrapper",standart_data);
-		App.setupForm("#report_form_wrapper form");
+		App.renderTpl("report_form_wrapper",standart_data);
+		App.setupForm("#report_form_wrapper form",{},'use_inp_values');
 		$.parser.parse("#report_form_wrapper");//for easy ui
 		$("#report_form_wrapper form").submit(function(e){
 		    e.preventDefault();
@@ -49,12 +49,12 @@
 		return {
 		    today:App.today(),
 		    first_day:App.toDmy(new Date(now.getFullYear(), now.getMonth(), 1))
-		}
+		};
 	    },
 	    formSubmit:function(fvalue){
 		var report_id=this.current_report_info.report_id;
-		$.post("ReportManager/formSubmit/"+report_id,function(resp){
-		    
+		$.post("ReportManager/formSubmit/"+report_id,{fvalue:fvalue},function(resp){
+		    $('#report_viewport').contents().find('html').html(resp);
 		});
 	    }
 	}
@@ -119,4 +119,8 @@
 	</div>
     </div>
     <div id="report_form_wrapper"></div>
+    <div style="margin:2px;">
+	<iframe id="report_viewport" style="border:none;width: 100%;background: none transparent"  allowtransparency="true"></iframe>
+    </div>
+    
 </div>

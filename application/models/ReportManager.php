@@ -2,12 +2,12 @@
 require_once 'Catalog.php';
 class ReportManager extends Catalog {
     private $plugin_folder='application/views/plugins/reports/';
+    private $current_info;
     public function listFetch(){
 	$plugins=$this->scanFolder($this->plugin_folder);
 	$reports=[];
 	foreach($plugins as $plugin_folder){
-	    $info=include $this->plugin_folder.$plugin_folder."/info.php";
-	    $info['report_id']=$plugin_folder;
+	    $info=$this->infoGet($plugin_folder);
 	    $reports[]=$info;
 	}
 	return $reports;
@@ -18,6 +18,11 @@ class ReportManager extends Catalog {
 	arsort($files);
 	return array_values($files);	
     }
+    private function infoGet( $report_id=null ){
+	$info=include $this->plugin_folder.$report_id."/info.php";
+	$info['report_id']=$report_id;
+	return $info;
+    }
     
     public function formGet( $report_id=null ){
 	$this->check($report_id,'\w+');
@@ -25,5 +30,41 @@ class ReportManager extends Catalog {
 	    return file_get_contents($this->plugin_folder.$report_id.'/form.html');
 	}
 	show_error('X-isell-error: Report id is not supplied!', 500);
+    }
+    
+    public function formSubmit( $report_id=null ){
+	$this->current_info=$this->infoGet($report_id);
+	$fvalue=$this->request('fvalue','raw');
+	
+	$Plugin=$this->Base->load_plugin('reports',$report_id);
+	$Plugin->formSubmit( $fvalue );
+	$view=$Plugin->viewGet();
+	
+	//print_r($view);exit;
+	
+	return $this->out( $view );
+    }
+    
+    private function out( $view ){
+	$FileEngine=$this->Base->load_model('FileEngine');
+	$FileEngine->templateDefFolder="plugins/reports/{$this->current_info['report_id']}/";
+	$FileEngine->assign($view, $this->current_info['template']);
+//	if ( $out_type=='.print' ) {
+//	    $file_name = '.print';
+//	    $FileEngine->show_controls = false;
+//	    $FileEngine->user_data = [
+//		'title' => $this->dump->title,
+//		'msg' => $this->dump->user_data->text,
+//		'email' => $this->dump->user_data->email,
+//		'fgenerator'=>'ViewManager',
+//		'out_type'=>$out_type,
+//		'dump_id' => $this->dump->dump_id
+//		];
+//	} else {
+//	    $file_name = str_replace(' ','_',$this->dump->title).$out_type;
+//	}
+	$FileEngine->show_controls=false;
+	$FileEngine->header_mode='no_headers';
+	return $FileEngine->fetch('.html');
     }
 }
