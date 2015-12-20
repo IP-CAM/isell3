@@ -29,7 +29,7 @@ class Sell_analyse extends Catalog{
 		cstamp>'$this->idate' AND cstamp<'$this->fdate'
 		AND doc_type=1 AND is_commited=1 $active_filter";
 	
-	$view=[
+	$view=(object)[
 		'rows'=>$this->get_list($sql)
 		];
 	return $view;	
