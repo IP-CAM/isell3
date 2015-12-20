@@ -40,9 +40,26 @@ class ReportManager extends Catalog {
 	$Plugin->formSubmit( $fvalue );
 	$view=$Plugin->viewGet();
 	
+	
+	
+	
+	$dump=[
+	    'tpl_files_folder'=>"plugins/reports/{$this->current_info['report_id']}/",
+	    'tpl_files'=>$this->current_info['template'],
+	    'title'=>$this->current_info['title'],
+	    'user_data'=>[
+		'email'=>$this->Base->svar('pcomp')?$this->Base->svar('pcomp')->company_email:'',
+		'text'=>$this->current_info['title']
+	    ],
+	    'view'=>$Plugin->viewGet()
+	];
+	$ViewManager=$this->Base->load_model('ViewManager');
+	$ViewManager->store($dump);
+	$ViewManager->outRedirect('.print');
+	
 	//print_r($view);exit;
 	
-	return $this->out( $view );
+	//return $this->out( $view );
     }
     
     private function out( $view ){
