@@ -60,9 +60,9 @@ class Sell_analyse extends Catalog{
         $total_stock_qty=0;
         foreach( $rows as $row ){
             $total_sell+=$row->sell_sum;
+            $total_sell_qty+=$row->sell_sum_qty;
             $total_stock+=$row->stock_sum;
-            $total_sell+=$row->sell_sum;
-            $total_stock+=$row->stock_sum;
+            $total_stock_qty+=$row->stock_sum_qty;
         }
         foreach( $rows as $row ){
             $row->sell_proc=    round( $row->sell_sum/$total_sell, 4);
@@ -71,6 +71,8 @@ class Sell_analyse extends Catalog{
 	$view=[
                 'total_sell'=>round($total_sell,2),
                 'total_stock'=>round($total_stock,2),
+                'total_sell_qty'=>round($total_sell_qty,2),
+                'total_stock_qty'=>round($total_stock_qty,2),
 		'rows'=>$rows
 		];
 	return $view;	
