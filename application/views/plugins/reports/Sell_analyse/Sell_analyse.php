@@ -24,9 +24,10 @@ class Sell_analyse extends Catalog{
         $sell_buy_table="
             SELECT
                 product_code,
-                SUM( IF(doc_type=2,product_quantity,-product_quantity) ) leftover,
+                SUM( IF(doc_type=2,product_quantity,-product_quantity) ) stock_qty,
                 SUM( IF(doc_type=2,invoice_price*product_quantity,0) )/SUM( IF(doc_type=2,product_quantity,0) ) buy_avg,
-                SUM( IF(doc_type=1 AND cstamp>'$this->idate',invoice_price*product_quantity,0) ) sell_prod_sum
+                SUM( IF(doc_type=1 AND cstamp>'$this->idate',invoice_price*product_quantity,0) ) sell_prod_sum,
+                SUM( IF(doc_type=1 AND cstamp>'$this->idate',product_quantity,0) ) sell_qty
             FROM
                 document_entries de
                     JOIN
@@ -38,7 +39,9 @@ class Sell_analyse extends Catalog{
             SELECT 
                 IF('$this->group_by'='parent_id',(SELECT label FROM stock_tree WHERE branch_id=se.parent_id),$this->group_by) group_by,
                 SUM(sell_prod_sum) sell_sum,
-                SUM(buy_avg*leftover) stock_sum
+                SUM(buy_avg*stock_qty) stock_sum,
+                SUM(stock_qty) stock_sum_qty,
+                SUM(sell_qty) sell_sum_qty
             FROM
                 stock_entries se
                     JOIN
@@ -52,8 +55,12 @@ class Sell_analyse extends Catalog{
         
         $rows=$this->get_list($sql);
         $total_sell=0;
+        $total_sell_qty=0;
         $total_stock=0;
+        $total_stock_qty=0;
         foreach( $rows as $row ){
+            $total_sell+=$row->sell_sum;
+            $total_stock+=$row->stock_sum;
             $total_sell+=$row->sell_sum;
             $total_stock+=$row->stock_sum;
         }
