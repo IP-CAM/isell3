@@ -14,12 +14,14 @@ class ReportManager extends Catalog {
 	}
 	return $reports;
     }
+    
     private function scanFolder( $path ){
 	$this->Base->set_level(1);
 	$files = array_diff(scandir($path), array('.', '..'));
 	arsort($files);
 	return array_values($files);	
     }
+    
     private function infoGet( $report_id=null ){
 	$info=include $this->plugin_folder.$report_id."/info.php";
 	$info['report_id']=$report_id;
@@ -28,10 +30,10 @@ class ReportManager extends Catalog {
     
     public function formGet( $report_id=null ){
 	$this->check($report_id,'\w+');
-	if( $report_id ){
+	if( $report_id && file_exists($this->plugin_folder.$report_id.'/form.html') ){
 	    return file_get_contents($this->plugin_folder.$report_id.'/form.html');
 	}
-	show_error('X-isell-error: Report id is not supplied!', 500);
+	show_error('X-isell-error: Form not found!', 500);
     }
     
     public function formSubmit( $report_id=null ){
@@ -51,5 +53,4 @@ class ReportManager extends Catalog {
 	$ViewManager->store($dump);
 	$ViewManager->outRedirect('.print');
     }
-    
 }
