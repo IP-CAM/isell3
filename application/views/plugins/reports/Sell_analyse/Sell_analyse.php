@@ -20,6 +20,7 @@ class Sell_analyse extends Catalog{
     }
     public function viewGet(){
 	$active_filter=$this->all_active?'':' AND active_company_id='.$this->Base->acomp('company_id');
+        $having=$this->group_by_filter?"HAVING group_by LIKE '%$this->group_by_filter%'":"";
         $sell_buy_table="
             SELECT
                 product_code,
@@ -46,7 +47,9 @@ class Sell_analyse extends Catalog{
                 ($sell_buy_table) sellbuy USING(product_code)
             GROUP BY
 		$this->group_by
-            HAVING $this->group_by LIKE '%$this->group_by_filter%'";
+            $having";
+        //die($sql);
+        
         $rows=$this->get_list($sql);
         $total_sell=0;
         $total_stock=0;

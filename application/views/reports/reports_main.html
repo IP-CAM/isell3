@@ -126,7 +126,7 @@
     </div>
     
     <div style="margin:2px;">
-	<iframe id="report_viewport" name="report_viewport" onload="$('#report_viewport').height( $('#report_viewport').contents().outerHeight() )" style="border:none;width: 100%;background: none transparent"  allowtransparency="true"></iframe>
+	<iframe id="report_viewport" name="report_viewport" onload="this.style.height=this.contentDocument.body.scrollHeight +'px';" style="border:none;width: 100%;background: none transparent"  allowtransparency="true"></iframe>
     </div>
     
 </div>
