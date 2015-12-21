@@ -7,6 +7,7 @@ class Sell_analyse extends Catalog{
 	$this->idate=$this->dmy2iso( $this->request('idate','\d\d.\d\d.\d\d\d\d') ).' 23:59:59';
 	$this->fdate=$this->dmy2iso( $this->request('fdate','\d\d.\d\d.\d\d\d\d') ).' 00:00:00';
 	$this->all_active=$this->request('all_active','bool');
+	$this->count_reclamations=$this->request('count_reclamations','bool');
 	$this->group_by_filter=$this->request('group_by_filter');
 	$this->group_by=$this->request('group_by','\w+');
 	if( !in_array($this->group_by, ['parent_id','product_code','analyse_type','analyse_group','analyse_class','analyse_section']) ){
@@ -20,6 +21,7 @@ class Sell_analyse extends Catalog{
     }
     public function viewGet(){
 	$active_filter=$this->all_active?'':' AND active_company_id='.$this->Base->acomp('company_id');
+	$reclamation_filter=$this->count_reclamations?'':' AND is_reclamation=0';
         $having=$this->group_by_filter?"HAVING group_by LIKE '%$this->group_by_filter%'":"";
         $sell_buy_table="
             SELECT
@@ -33,7 +35,7 @@ class Sell_analyse extends Catalog{
                     JOIN
                 document_list dl USING(doc_id)
             WHERE
-                (doc_type=1 OR doc_type=2) AND cstamp<'$this->fdate' AND is_commited=1 $active_filter
+                (doc_type=1 OR doc_type=2) AND cstamp<'$this->fdate' AND is_commited=1 $active_filter $reclamation_filter
             GROUP BY product_code";
         $sql="
             SELECT 
