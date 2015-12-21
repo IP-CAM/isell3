@@ -11,7 +11,7 @@
 		$.get("ReportManager/listFetch/",function(resp){
 		    ReportsJs.tile.report_list=App.json(resp);
 		    App.renderTpl('reports_tile',{reports:ReportsJs.tile.report_list});
-		    ReportsJs.report.load(ReportsJs.tile.report_list[2]);
+		    ReportsJs.report.load(ReportsJs.tile.report_list[0]);
 		});
 	    },
 	    click:function(node){
