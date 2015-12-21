@@ -1,82 +1,81 @@
 <?php
-class Sell_analyse extends Catalog{
+class Sell_payment_analyse extends Catalog{
     private $idate;
     private $fdate;
     private $all_active;
+    private $deliveries;
+    private $payments;
     public function __construct() {
-	$this->idate=$this->dmy2iso( $this->request('idate','\d\d.\d\d.\d\d\d\d') ).' 23:59:59';
-	$this->fdate=$this->dmy2iso( $this->request('fdate','\d\d.\d\d.\d\d\d\d') ).' 00:00:00';
+	$this->idate=$this->dmy2iso( $this->request('idate','\d\d.\d\d.\d\d\d\d') ).' 00:00:00';
+	$this->fdate=$this->dmy2iso( $this->request('fdate','\d\d.\d\d.\d\d\d\d') ).' 23:59:59';
 	$this->all_active=$this->request('all_active','bool');
-	$this->count_reclamations=$this->request('count_reclamations','bool');
-	$this->group_by_filter=$this->request('group_by_filter');
-	$this->group_by=$this->request('group_by','\w+');
-	if( !in_array($this->group_by, ['parent_id','product_code','analyse_type','analyse_group','analyse_class','analyse_section']) ){
-	    $this->group_by='parent_id';
-	}
+	$this->deliveries=$this->request('deliveries','bool');
+	$this->payments=$this->request('payments','bool');
+	$this->filter_by=$this->request('filter_by','\w+');
+	$this->filter_value=$this->request('filter_value');
 	parent::__construct();
     }
     private function dmy2iso( $dmy ){
 	$chunks=  explode('.', $dmy);
 	return "$chunks[2]-$chunks[1]-$chunks[0]";
     }
+    private function getAssignedPathWhere(){
+        $assigned_path=$this->Base->svar('user_assigned_path');
+        return $assigned_path?"AND (path LIKE '".str_replace(',',"%' OR path LIKE '",$assigned_path.'')."%')":"";    
+    }
+    private function getDirectionFilter(){
+	$direction_filter=[];
+	if($this->deliveries){
+	    $direction_filter[]="acc_debit_code=361";
+	}
+	if($this->payments){
+	    $direction_filter[]="acc_credit_code=361";
+	}
+	return implode(' OR ', $direction_filter);
+    }
     public function viewGet(){
+	$direction_filter=$this->getDirectionFilter();
 	$active_filter=$this->all_active?'':' AND active_company_id='.$this->Base->acomp('company_id');
-	$reclamation_filter=$this->count_reclamations?'':' AND is_reclamation=0';
-        $having=$this->group_by_filter?"HAVING group_by LIKE '%$this->group_by_filter%'":"";
-        $sell_buy_table="
-            SELECT
-                product_code,
-                SUM( IF(doc_type=2,product_quantity,-product_quantity) ) stock_qty,
-                SUM( IF(doc_type=2,invoice_price*product_quantity,0) )/SUM( IF(doc_type=2,product_quantity,0) ) buy_avg,
-                SUM( IF(doc_type=1 AND cstamp>'$this->idate',invoice_price*product_quantity,0) ) sell_prod_sum,
-                SUM( IF(doc_type=1 AND cstamp>'$this->idate',product_quantity,0) ) sell_qty
-            FROM
-                document_entries de
-                    JOIN
-                document_list dl USING(doc_id)
-            WHERE
-                (doc_type=1 OR doc_type=2) AND cstamp<'$this->fdate' AND is_commited=1 $active_filter $reclamation_filter
-            GROUP BY product_code";
-        $sql="
-            SELECT 
-                IF('$this->group_by'='parent_id',(SELECT label FROM stock_tree WHERE branch_id=se.parent_id),$this->group_by) group_by,
-                SUM(sell_prod_sum) sell_sum,
-                SUM(buy_avg*stock_qty) stock_sum,
-                SUM(stock_qty) stock_sum_qty,
-                SUM(sell_qty) sell_sum_qty
-            FROM
-                stock_entries se
-                    JOIN
-                prod_list pl USING(product_code)
-                    LEFT JOIN
-                ($sell_buy_table) sellbuy USING(product_code)
-            GROUP BY
-		$this->group_by
-            $having";
-        //die($sql);
-        
-        $rows=$this->get_list($sql);
-        $total_sell=0;
-        $total_sell_qty=0;
-        $total_stock=0;
-        $total_stock_qty=0;
+        $user_level=$this->Base->svar('user_level');
+        $path_filter=$this->getAssignedPathWhere();
+        $having=$this->filter_value?"HAVING $this->filter_by LIKE '%$this->filter_value%'":"";
+	$sql="
+	    SELECT
+		DATE_FORMAT(cstamp,'%d.%m.%Y') cdate,
+                cstamp,
+                label,
+                description,
+                IF(acc_debit_code=361,ROUND(amount,2),'') AS debit,
+                IF(acc_credit_code=361,ROUND(amount,2),'') AS credit,
+		path
+	    FROM
+		companies_list
+		    JOIN 
+		companies_tree USING(branch_id)
+		    JOIN 
+		acc_trans ON company_id=passive_company_id
+	    WHERE
+		($direction_filter) 
+		AND cstamp>'$this->idate' 
+		AND cstamp<'$this->fdate' 
+		AND level<='$user_level'
+                $path_filter
+		$active_filter
+	    $having
+	    ORDER BY cstamp DESC";
+	$rows=$this->get_list($sql);
+	$total_debit=0;
+        $total_credit=0;
         foreach( $rows as $row ){
-            $total_sell+=$row->sell_sum;
-            $total_sell_qty+=$row->sell_sum_qty;
-            $total_stock+=$row->stock_sum;
-            $total_stock_qty+=$row->stock_sum_qty;
+            $total_debit+=$row->debit*1;
+            $total_credit+=$row->credit*1;
         }
-        foreach( $rows as $row ){
-            $row->sell_proc=    round( $row->sell_sum/$total_sell, 4);
-            $row->stock_proc=   round( $row->stock_sum/$total_stock, 4);
-        }
-	$view=[
-                'total_sell'=>round($total_sell,2),
-                'total_stock'=>round($total_stock,2),
-                'total_sell_qty'=>round($total_sell_qty,2),
-                'total_stock_qty'=>round($total_stock_qty,2),
-		'rows'=>$rows
-		];
-	return $view;	
+	$total_debit=round($total_debit,2);
+	$total_credit=round($total_credit,2);
+	return [
+	    'total_debit'=>$total_debit,
+	    'total_credit'=>$total_credit,
+	    'rows'=>$rows
+	];
     }
 }
