@@ -4,8 +4,8 @@ class Sell_analyse extends Catalog{
     private $fdate;
     private $all_active;
     public function __construct() {
-	$this->idate=$this->dmy2iso( $this->request('idate','\d\d.\d\d.\d\d\d\d') );
-	$this->fdate=$this->dmy2iso( $this->request('fdate','\d\d.\d\d.\d\d\d\d') );
+	$this->idate=$this->dmy2iso( $this->request('idate','\d\d.\d\d.\d\d\d\d') ).' 23:59:59';
+	$this->fdate=$this->dmy2iso( $this->request('fdate','\d\d.\d\d.\d\d\d\d') ).' 00:00:00';
 	$this->all_active=$this->request('all_active','bool');
 	$this->group_by_filter=$this->request('group_by_filter');
 	$this->group_by=$this->request('group_by','\w+');

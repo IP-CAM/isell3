@@ -8,12 +8,14 @@ class ReportManager extends Catalog {
 	$reports=[];
 	foreach($plugins as $plugin_folder){
 	    $info=$this->infoGet($plugin_folder);
-	    $reports[]=$info;
+	    if( $info['user_level']<=$this->Base->svar('user_level') ){
+		$reports[]=$info;
+	    }
 	}
 	return $reports;
     }
     private function scanFolder( $path ){
-	$this->Base->set_level(4);
+	$this->Base->set_level(1);
 	$files = array_diff(scandir($path), array('.', '..'));
 	arsort($files);
 	return array_values($files);	
@@ -48,32 +50,6 @@ class ReportManager extends Catalog {
 	$ViewManager=$this->Base->load_model('ViewManager');
 	$ViewManager->store($dump);
 	$ViewManager->outRedirect('.print');
-	
-	//print_r($view);exit;
-	
-	//return $this->out( $view );
     }
     
-    private function out( $view ){
-	$FileEngine=$this->Base->load_model('FileEngine');
-	$FileEngine->templateDefFolder="plugins/reports/{$this->current_info['report_id']}/";
-	$FileEngine->assign($view, $this->current_info['template']);
-//	if ( $out_type=='.print' ) {
-//	    $file_name = '.print';
-//	    $FileEngine->show_controls = false;
-//	    $FileEngine->user_data = [
-//		'title' => $this->dump->title,
-//		'msg' => $this->dump->user_data->text,
-//		'email' => $this->dump->user_data->email,
-//		'fgenerator'=>'ViewManager',
-//		'out_type'=>$out_type,
-//		'dump_id' => $this->dump->dump_id
-//		];
-//	} else {
-//	    $file_name = str_replace(' ','_',$this->dump->title).$out_type;
-//	}
-	$FileEngine->show_controls=false;
-	$FileEngine->header_mode='no_headers';
-	return $FileEngine->fetch('.html');
-    }
 }
