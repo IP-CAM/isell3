@@ -11,6 +11,9 @@ class Company extends Catalog{
 	$parent_id=$this->request('id','int',0);
 	$table = "companies_tree LEFT JOIN companies_list USING(branch_id)";
 	$assigned_path=  $this->Base->svar('user_assigned_path');
+        if( $assigned_path && $parent_id==0 ){
+            $parent_id=null;
+        }
 	$level=$this->Base->svar('user_level');
 	return $this->treeFetch($table, $parent_id, 'top', $assigned_path, $level);
     }
