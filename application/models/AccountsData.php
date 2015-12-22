@@ -1,7 +1,7 @@
 <?php
 require_once 'AccountsCore.php';
 class AccountsData extends AccountsCore{
-    public $min_level=2;
+    public $min_level=1;
     public function transNameListFetch($selected_acc=null){
 	$q=  str_replace(["_","%"], ["\_","\%"], $this->request('q'));
 	$this->check($selected_acc);
@@ -69,6 +69,7 @@ class AccountsData extends AccountsCore{
 	return $this->treeUpdate('acc_tree', $branch_id, $field, $value);
     }
     public function balanceTreeDelete( $branch_id ){
+	$this->Base->set_level(3);
 	return $this->treeDelete('acc_tree',$branch_id);
     }
     public function accountFavoritesFetch( $use_passive_filter=false, $get_client_bank_accs=false ){
@@ -88,6 +89,7 @@ class AccountsData extends AccountsCore{
 	return $favs;
    }
     public function accountFavoritesToggle( $acc_code, $is_favorite, $use_passive_filter=false ){
+	$this->Base->set_level(3);
 	$this->check($acc_code);
 	$this->check($is_favorite,'bool');
 	$this->check($use_passive_filter,'bool');
