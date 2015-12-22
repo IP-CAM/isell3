@@ -132,7 +132,7 @@ class Catalog extends CI_Model {
 	$res = $this->db->query("SELECT * FROM $table WHERE $where ORDER BY is_leaf,label");
 	$branches = array();
 	foreach ($res->result() as $row) {
-	    //$this->treeUpdatePath($table, $row->branch_id);
+	    $this->treeUpdatePath($table, $row->branch_id);
 	    if ($depth == 'top') {
 		$row->state = $row->is_leaf ? '' : 'closed';
 	    } else {
@@ -171,9 +171,9 @@ class Catalog extends CI_Model {
     private function treeUpdatePath($table, $branch_id) {
 	$this->query(
 		"SELECT @old_path:=COALESCE(t1.path, ''),@new_path:=CONCAT(COALESCE(t2.path, '/'), t1.label, '/')
-		FROM $table t1
+		FROM (SELECT * FROM $table) t1
 			LEFT JOIN
-		    $table t2 ON t1.parent_id = t2.branch_id 
+		    (SELECT * FROM $table) t2 ON t1.parent_id = t2.branch_id 
 		WHERE
 		    t1.branch_id = $branch_id");
 	$this->query(
