@@ -132,7 +132,7 @@ class Catalog extends CI_Model {
 	$res = $this->db->query("SELECT * FROM $table WHERE $where ORDER BY is_leaf,label");
 	$branches = array();
 	foreach ($res->result() as $row) {
-	    $this->treeUpdatePath($table, $row->branch_id);
+	    //$this->treeUpdatePath($table, $row->branch_id);
 	    if ($depth == 'top') {
 		$row->state = $row->is_leaf ? '' : 'closed';
 	    } else {
