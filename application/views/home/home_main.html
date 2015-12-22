@@ -155,31 +155,7 @@ function (ready, dom, on, registry, Tooltip, DataGrid) {
 <table>
     <tr>
 	<td style="vertical-align: top">
-	    <table id="home_document_list_dg" title="Журнал товарных операций" class="easyui-datagrid" style="width:620px"
-		   data-options="
-		   idField:'doc_id',
-		   loader:App.HomeDocumentList.loader,
-		   pagination:true,
-		   pageSize:25,
-		   pageList:[25,50,100,500,1000],
-		   singleSelect:true,
-		   remoteFilter:true,
-		   onSelect:function(){$('#home_document_list_dg').datagrid('resize');},
-		   onDblClickRow:App.HomeDocumentList.onClick">
-		<thead>
-		    <tr>
-			<th data-options="width:110,field:'company_name'">Компания</th>
-			<th data-options="width:25,field:'doc_type_icon',align:'center',formatter:App.datagrid.tooltip">Док</th>
-			<th data-options="width:45,field:'doc_num',align:'right'">Номер</th>
-			<th data-options="width:65,field:'doc_date'">Дата</th>
-			<th data-options="width:140,field:'doc_type_name'">Документ</th>
-			<th data-options="width:60,field:'amount',align:'right'">Сумма</th>
-			<th data-options="width:25,field:'commited',align:'center',formatter:App.datagrid.tooltip">Проведен</th>
-			<th data-options="width:25,field:'trans_status',align:'center',formatter:App.datagrid.tooltip">Оплачен</th>
-			<th data-options="width:120,field:'views'">Шаблоны печати</th>
-		    </tr>
-		</thead>
-	    </table>
+
 	</td>
 	<td style="vertical-align: top">
 	    <div class="report_frame">
