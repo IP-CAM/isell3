@@ -101,7 +101,7 @@
 	},
 	hightlightCommited:function(){
 	    $('#Doc_commit_btn').css('display',(Doc.head.props.is_commited*1?"none":""));
-	    $('#Doc_type_cmb,#Doc_notcount_cmb,#Doc_pci').combobox(Doc.head.props.is_commited*1?'disable':'enable');
+	    $('#Doc_type_cmb,#Doc_notcount_cmb,#Doc_pci').combobox(Doc.head.props.is_commited*1?'disable':'enable');//
 	    var color='';
 	    if( Doc.head.props.is_commited*1 ){
 		var doc_type=Math.abs(Doc.head.props.doc_type);
@@ -626,7 +626,7 @@
     <!-- DOCUMENT HEADER -->
     <div style="width: 658px;margin: auto;padding-top: 10px;">
 	<div>
-	    <select class="easyui-combobox" id="Doc_type_cmb" name="Doc_type" title="Вид" data-options="
+	    <select class="easyui-combobox" id="Doc_type_cmb" name="doc_type" title="Вид" data-options="
 		    editable:false,
 		    buttonText:'<img src=img/sell.png>',
 		    buttonAlign:'left',
