@@ -184,7 +184,7 @@ class Company extends Catalog{
 	$sql_disct="SELECT
 		st.branch_id,
 		label,
-		discount
+		ROUND(discount,3) discount
 	    FROM
 		stock_tree st
 	    LEFT JOIN
