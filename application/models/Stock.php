@@ -118,7 +118,7 @@ class Stock extends Catalog {
 	    'analyse_type'=>$this->request('analyse_type'),
 	    'analyse_group'=>$this->request('analyse_group'),
 	    'analyse_class'=>$this->request('analyse_class'),
-	    'analyse_division'=>$this->request('analyse_division'),            
+	    'analyse_section'=>$this->request('analyse_section'),            
 	    'barcode'=>$this->request('barcode'),
 	    'parent_id'=>$this->request('parent_id','int'),
 	    'product_wrn_quantity'=>$this->request('product_wrn_quantity','int'),
