@@ -127,4 +127,47 @@ class Utils extends CI_Model {
 	$this->Base->response(0);
         return null;
     }
+    /////////////////////////////
+    //TREE MAINTAINANCE FUNCTIONS
+    /////////////////////////////
+    public function treeRecalculate(){
+        foreach(['acc_tree','companies_tree','stock_tree'] as $table){
+            $this->treePathRecalculate($table, 0);
+            $this->treeTopRecalculate($table);
+        }
+    }
+    private function treeTopRecalculate($table){
+        $res = $this->db->query("SELECT branch_id,path FROM $table WHERE parent_id=0");
+	foreach ($res->result() as $row) {
+            $this->db->query("UPDATE $table SET top_id='{$row->branch_id}' WHERE path LIKE '{$row->path}%'");
+	}
+	$res->free_result();        
+    }
+    private function treePathRecalculate( $table, $parent_id = 0) {
+	$where="";
+	if( $parent_id!==null ){
+	    $where="parent_id=$parent_id";
+	}
+	$res = $this->db->query("SELECT * FROM $table WHERE $where");
+	foreach ($res->result() as $row) {
+	    $this->treeUpdatePath($table, $row->branch_id);
+            $this->treePathRecalculate($table, $row->branch_id);
+	}
+	$res->free_result();
+    }
+    private function treeUpdatePath($table, $branch_id) {
+	$this->db->query(
+		"SELECT @old_path:=COALESCE(t1.path, ''),@new_path:=CONCAT(COALESCE(t2.path, '/'), t1.label, '/')
+		FROM (SELECT * FROM $table) t1
+			LEFT JOIN
+		    (SELECT * FROM $table) t2 ON t1.parent_id = t2.branch_id 
+		WHERE
+		    t1.branch_id = $branch_id");
+	$this->db->query(
+		"UPDATE $table 
+		SET 
+		    path = IF(@old_path,REPLACE(path, @old_path, @new_path),@new_path)
+		WHERE
+		    IF(@old_path,path LIKE CONCAT(@old_path, '%'),branch_id=$branch_id)");
+    }
 }
