@@ -7,7 +7,8 @@ class Sell_analyse extends Catalog{
 	$this->idate=$this->dmy2iso( $this->request('idate','\d\d.\d\d.\d\d\d\d') ).' 00:00:00';
 	$this->fdate=$this->dmy2iso( $this->request('fdate','\d\d.\d\d.\d\d\d\d') ).' 23:59:59';
 	$this->all_active=$this->request('all_active','bool');
-	$this->count_reclamations=$this->request('count_reclamations','bool');
+	$this->count_reclamations=$this->request('count_reclamations','bool',0);
+	$this->in_alt_currency=$this->request('in_alt_currency','bool',0);
 	$this->group_by_filter=$this->request('group_by_filter');
 	$this->group_by=$this->request('group_by','\w+');
 	if( !in_array($this->group_by, ['parent_id','product_code','analyse_type','analyse_group','analyse_class','analyse_section']) ){
@@ -27,8 +28,8 @@ class Sell_analyse extends Catalog{
             SELECT
                 product_code,
                 SUM( IF(doc_type=2,product_quantity,-product_quantity) ) stock_qty,
-                SUM( IF(doc_type=2,invoice_price*product_quantity,0) )/SUM( IF(doc_type=2,product_quantity,0) ) buy_avg,
-                SUM( IF(doc_type=1 AND cstamp>'$this->idate',invoice_price*product_quantity,0) ) sell_prod_sum,
+                SUM( IF(doc_type=2,invoice_price/IF($this->in_alt_currency,doc_ratio,1)*product_quantity,0) )/SUM( IF(doc_type=2,product_quantity,0) ) buy_avg,
+                SUM( IF(doc_type=1 AND cstamp>'$this->idate',invoice_price/IF($this->in_alt_currency,doc_ratio,1)*product_quantity,0) ) sell_prod_sum,
                 SUM( IF(doc_type=1 AND cstamp>'$this->idate',product_quantity,0) ) sell_qty
             FROM
                 document_entries de
@@ -70,6 +71,13 @@ class Sell_analyse extends Catalog{
             $row->sell_proc=    round( $row->sell_sum/$total_sell, 4);
             $row->stock_proc=   round( $row->stock_sum/$total_stock, 4);
         }
+	function sort_bysell($a,$b){
+	    if( $a->sell_sum==$b->sell_sum ){
+		return 0;
+	    }
+	    return ($a->sell_sum>$b->sell_sum)?-1:1;
+	}
+	usort($rows,'sort_bysell');
 	$view=[
                 'total_sell'=>round($total_sell,2),
                 'total_stock'=>round($total_stock,2),
