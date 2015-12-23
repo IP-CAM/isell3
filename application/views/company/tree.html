@@ -16,7 +16,10 @@
 	init: function () {
 	    if (!this.data.inline) {
 		this.node.window(Ctree.properties);
-	    }
+                this.node.window('hcenter');
+                this.node.window('window').css('position','fixed');
+                this.node.window('window').css('top','40px');
+            }
 	    if( this.data.clickselect ){
 		this.node.find('button.ok').hide();
 	    }

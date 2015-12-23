@@ -41,7 +41,7 @@ class AccountsBank extends AccountsData{
 	$check=$this->getCheck($check_id);
 	
         $Company=$this->Base->load_model("Company");
-        $company_id=$Company->companyFindByCode( $check->correspondent_code );
+        $company_id=$Company->companyFindByCode( $check->correspondent_code, $check->correspondent_code );
 	if( !$company_id ){
 	    return null;
 	}

@@ -15,7 +15,14 @@
 	},
 	init:function () {
 	    var props=Cdet.properties;
-	    Cdet.data.inline?Cdet.node.panel(props):Cdet.node.window(props);
+            if(Cdet.data.inline){
+                Cdet.node.panel(props);
+            } else {
+                Cdet.node.window(props);
+        	this.node.window('hcenter');
+                this.node.window('window').css('position','fixed');
+                this.node.window('window').css('top','40px');
+            }
 	    Cdet.autoselect_label=Cdet.data.autoselect_label;
 	    this.checkActive();
 	    Cdet.load(Cdet.data.company_id);

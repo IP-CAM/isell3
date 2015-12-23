@@ -107,12 +107,20 @@
 	    });
 	},
 	correspondentFill:function(company_id){
-	    Cbank.updateField(company_id,'company_code',this.current_check.correspondent_code,'Код');
-	    Cbank.updateField(company_id,'company_bank_account',this.current_check.correspondent_account,'Счет');
-	    Cbank.updateField(company_id,'company_bank_id',this.current_check.correspondent_bank_code,'Код Банка');
-	    Cbank.updateField(company_id,'company_bank_name',this.current_check.correspondent_bank_name,'Название банка');
-	    $('#account_clientbank_dg').datagrid('reload');
-	    Cbank.renderCheck();
+            $.get("Pref/getPrefs/tax_id_in_checks",function(resp){
+                var pref=App.json(resp);
+                if( pref.tax_id_in_checks*1 ){
+                    Cbank.updateField(company_id,'company_vat_id',Cbank.current_check.correspondent_code,'Код');
+                } else {
+                    Cbank.updateField(company_id,'company_code',Cbank.current_check.correspondent_code,'Код');
+                }
+                Cbank.updateField(company_id,'company_bank_account',Cbank.current_check.correspondent_account,'Счет');
+                Cbank.updateField(company_id,'company_bank_corr_account',Cbank.current_check.correspondent_corr_account,'Корр. Счет');
+                Cbank.updateField(company_id,'company_bank_id',Cbank.current_check.correspondent_bank_code,'Код Банка');
+                Cbank.updateField(company_id,'company_bank_name',Cbank.current_check.correspondent_bank_name,'Название банка');
+                $('#account_clientbank_dg').datagrid('reload');
+                Cbank.renderCheck();
+            });
 	},
 	updateField:function(company_id,field,value,title){
 	    $.post('Company/companyUpdate/'+App.uri(company_id,field,value),function(ok){
@@ -313,7 +321,7 @@
 	    {{if trans_id|more>0}}
 		<div style="background-color: #dfd;padding: 5px; margin-bottom: 5px; border: 1px solid #ccc;text-align: center">
 		    Платежное поручение проведено<br>
-		    <button onclick="Cbank.transEdit('{{trans_id}}')">Редактировать проводку</button>
+		    <button data-trans-id="{{trans_id}}" onclick="Cbank.transEdit(this.dataset.transId)">Редактировать проводку</button>
 		</div>
 	    {{else}}
 		{{favs}}

@@ -33,7 +33,7 @@
             this.formInited=true;
             App.formElements("#AcompPrefs").change(function () {
 		var node=this;
-		PrefJs.updateField(node.name,node.value,node.title);
+		PrefJs.updateField(node.name,App.val(node),node.title);
 	    });
         },
 	initClientbankFields:function(){
@@ -136,8 +136,10 @@
 	    <input name="digital_signature" type="hidden" title="Цифровая подпись">
 	</div>
 	<div class="inp_group" style="width:200px;">
-	    Поля в файле .csv клиент банка
-	    <textarea name="clientbank_fields" style="height: 230px"></textarea>
+            Идентификатор в платежных поручениях ИНН
+            <input type="checkbox" name="tax_id_in_checks"> <br>
+	    Порядок полей в файле .csv клиент банка
+	    <textarea name="clientbank_fields" style="height: 200px"></textarea>
 	</div>
     </form>
 </div>
