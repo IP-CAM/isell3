@@ -1,5 +1,5 @@
 <?php
-    $this->a->all=  getAll($this->a);
+    $this->view->a->all=  getAll($this->view->a);
     $this->view->doc_view->total_spell=  num2str($this->view->footer->total);
     $this->view->doc_view->vat_spell=  num2str($this->view->footer->vat);
     $this->view->doc_view->loc_date=  russian_date($this->view->doc_view->date_dot);
