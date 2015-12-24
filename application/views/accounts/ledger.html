@@ -26,7 +26,8 @@
 	showTree:function(){
 	    App.loadWindow('page/accounts/acc_tree',{}).progress(function(status,data){
 		if( status==='select' ){
-		    Ledger.load(data.acc_code);
+		    //Ledger.load(data.acc_code);
+                    Ledger.fav.select(data.acc_code);
 		}
 	    });
 	},
@@ -44,6 +45,7 @@
 	    this.list.rowCreate(trans_type, trans_name);
 	},
 	fav:{
+            favs:[],
 	    init:function(){
 		if( Ledger.data.passive_filter && !App.pcomp.company_id ){
 		    return;//Pcomp not yet selected
@@ -51,6 +53,7 @@
 		$.get("AccountsData/accountFavoritesFetch/"+(Ledger.data.passive_filter?1:0),function(resp){
 		    var favs=App.json(resp);
 		    if( favs[0] ){
+                        Ledger.fav.favs=favs;
 			App.renderTpl('ledger_favorites',{favs:favs});	
                         setTimeout(function(){
                             Ledger.current_acc_code=Ledger.current_acc_code||favs[0].acc_code;
@@ -67,8 +70,8 @@
                     fav=$(fav).attr('data-code');
                 }
                 $('#ledger_favorites .left_label_selected').removeClass('left_label_selected');
-		$('#ledger_favorites div[data-code='+fav+']').addClass('left_label_selected');
-		Ledger.load( fav );
+                $('#ledger_favorites div[data-code='+fav+']').addClass('left_label_selected');
+                Ledger.load( fav );
 	    },
 	    toggle:function(){
 		Ledger.acc_props.is_favorite=Ledger.acc_props.is_favorite*1?0:1;
@@ -76,7 +79,16 @@
 		    Ledger.fav.init();
 		    App.renderTpl('Ledger_acc_props',Ledger.acc_props);
 		});
-	    }
+	    },
+            updateSelected:function( new_balance ){
+                for( var i in Ledger.fav.favs ){
+                    if( Ledger.fav.favs[i]['acc_code']===Ledger.current_acc_code ){
+                        Ledger.fav.favs[i]['balance']=new_balance;
+                    }
+                }
+                App.renderTpl('ledger_favorites',{favs:Ledger.fav.favs});
+                Ledger.fav.select(Ledger.current_acc_code);
+            }
 	},
 	tnames:{
 	    init:function(){
@@ -159,6 +171,7 @@
 	    $("#account_ledger_ibal").html(App.formatNum(Ledger.sub_totals.ibal||'-') + ' ' + Ledger.acc_props.curr_symbol);
 	    $("#account_ledger_fbal").html(App.formatNum(Ledger.sub_totals.fbal||'-') + ' ' + Ledger.acc_props.curr_symbol);
 	    App.renderTpl('Ledger_acc_props',Ledger.acc_props);
+            Ledger.fav.updateSelected(Ledger.sub_totals.fbal);
 	},
 	list: {
 	    loader: function (param, success, error) {
@@ -307,7 +320,7 @@
 	    },
 	    calculate: function (value, row) {
 		var positive = row.debit > 0 ? true : false;
-		positive = Ledger.acc_props.acc_type === 'A' ? positive : !positive;
+		positive = Ledger.acc_props.acc_type === 'P' ? !positive : positive;
 		value = App.formatNum(value, 'clear');
 		var color = 'darkblue';
 		if (row.trans_id > 0) {
