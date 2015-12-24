@@ -87,7 +87,7 @@
                     }
                 }
                 App.renderTpl('ledger_favorites',{favs:Ledger.fav.favs});
-                Ledger.fav.select(Ledger.current_acc_code);
+                $('#ledger_favorites div[data-code='+Ledger.current_acc_code+']').addClass('left_label_selected');
             }
 	},
 	tnames:{
