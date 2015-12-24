@@ -208,7 +208,7 @@ class Stock extends Catalog {
 	
 	$this->importInTable('prod_list', $source, $target, '/product_code/ru/ua/en/product_spack/product_bpack/product_weight/product_volume/product_unit/product_uktzet/barcode/', $label);
 	$this->importInTable('price_list', $source, $target, '/product_code/sell/buy/curr_code/', $label);
-	$this->importInTable('stock_entries', $source, $target, '/product_code/parent_id/', $label);
+	$this->importInTable('stock_entries', $source, $target, '/product_code/parent_id/party_label/', $label);
 	$this->query("DELETE FROM imported_data WHERE label='$label' AND {$source[0]} IN (SELECT product_code FROM stock_entries)");
         return  $this->db->affected_rows();
     }
