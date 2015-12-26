@@ -21,24 +21,24 @@ class Expired_debts extends Catalog{
     }
     private function getDirectionFilter(){
 	$direction_filter=[];
-	if($this->deliveries){
-	    $direction_filter[]="acc_debit_code=361";
+	if($this->our_debts){
+	    $direction_filter[]="buy<>0";
 	}
-	if($this->payments){
-	    $direction_filter[]="acc_credit_code=361";
+	if($this->their_debts){
+	    $direction_filter[]="exp<>0";
 	}
-	return $direction_filter?'('.implode(' OR ', $direction_filter).')':'0';
+	return $direction_filter?'HAVING ('.implode(' OR ', $direction_filter).')':'HAVING 0';
     }
     public function viewGet(){
-	//$direction_filter=$this->getDirectionFilter();
 	$active_filter=$this->all_active?'':' AND active_company_id='.$this->Base->acomp('company_id');
         $user_level=$this->Base->svar('user_level');
         $path_filter=$this->getAssignedPathWhere();
-        $having=$this->filter_value?"HAVING $this->filter_by LIKE '%$this->filter_value%'":"";
+	$having =$this->getDirectionFilter();
+        $having.=$this->filter_value?" AND $this->filter_by LIKE '%$this->filter_value%'":"";
 	$sql="
 	    SELECT
 		label,
-                path,
+		REPLACE(path,'/','/ ') path,
                 deferment,
 		phone,
                 buy,
@@ -70,8 +70,13 @@ class Expired_debts extends Catalog{
 		    $active_filter
 		    $path_filter
                 GROUP BY companies_list.company_id
-		HAVING (sell>allow OR buy<>0)
-		ORDER BY expday DESC) expired";
+		
+		ORDER BY expday DESC) expired
+		$having";
+	
+	//echo "<pre>$sql";
+	//die();
+	
 	$rows=$this->get_list($sql);
 
 	$total_our_debt=0;
@@ -81,16 +86,13 @@ class Expired_debts extends Catalog{
             $total_our_debt+=$row->buy;
             $total_their_debt+=$row->sell;
             $total_their_exp+=$row->exp;
-	    $row->buy=$row->buy>0?$row->buy:'';
-	    $row->sell=$row->sell>0?$row->sell:'';
-	    $row->exp=$row->exp>0?$row->exp:'';
-	    $row->m=$row->m>0?$row->m:'';
-	    $row->d=$row->d>0?$row->d:'';
-	    $row->deferment=$row->deferment>0?$row->deferment:'';
+	    $row->buy=$row->buy!=0?$row->buy:'';
+	    $row->sell=$row->sell!=0?$row->sell:'';
+	    $row->exp=$row->exp!=0?$row->exp:'';
+	    $row->m=$row->m!=0?$row->m:'';
+	    $row->d=$row->d!=0?$row->d:'';
+	    $row->deferment=$row->deferment!=0?$row->deferment:'';
         }
-	//$total_our_debt=round($total_our_debt,2);
-	//$total_their_debt=round($total_their_debt,2);
-	//$total_their_exp=round($total_their_exp,2);
 	return [
 	    'total_our_debt'=>$total_our_debt,
 	    'total_their_debt'=>$total_their_debt,
