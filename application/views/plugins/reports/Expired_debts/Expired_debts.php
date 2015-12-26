@@ -1,16 +1,12 @@
 <?php
-class Sell_payment_analyse extends Catalog{
-    private $idate;
-    private $fdate;
+class Expired_debts extends Catalog{
     private $all_active;
-    private $deliveries;
-    private $payments;
+    private $our_debts;
+    private $their_debts;
     public function __construct() {
-	$this->idate=$this->dmy2iso( $this->request('idate','\d\d.\d\d.\d\d\d\d') ).' 00:00:00';
-	$this->fdate=$this->dmy2iso( $this->request('fdate','\d\d.\d\d.\d\d\d\d') ).' 23:59:59';
 	$this->all_active=$this->request('all_active','bool');
-	$this->deliveries=$this->request('deliveries','bool');
-	$this->payments=$this->request('payments','bool');
+	$this->our_debts=$this->request('our_debts','bool');
+	$this->their_debts=$this->request('their_debts','bool');
 	$this->filter_by=$this->request('filter_by','\w+');
 	$this->filter_value=$this->request('filter_value');
 	parent::__construct();
@@ -34,47 +30,71 @@ class Sell_payment_analyse extends Catalog{
 	return $direction_filter?'('.implode(' OR ', $direction_filter).')':'0';
     }
     public function viewGet(){
-	$direction_filter=$this->getDirectionFilter();
+	//$direction_filter=$this->getDirectionFilter();
 	$active_filter=$this->all_active?'':' AND active_company_id='.$this->Base->acomp('company_id');
         $user_level=$this->Base->svar('user_level');
         $path_filter=$this->getAssignedPathWhere();
         $having=$this->filter_value?"HAVING $this->filter_by LIKE '%$this->filter_value%'":"";
 	$sql="
 	    SELECT
-		DATE_FORMAT(cstamp,'%d.%m.%Y') cdate,
-                cstamp,
-                label,
-                description,
-                IF(acc_debit_code=361,ROUND(amount,2),'') AS debit,
-                IF(acc_credit_code=361,ROUND(amount,2),'') AS credit,
-		path
+		label,
+                path,
+                deferment,
+		phone,
+                buy,
+                sell,
+                ROUND(IF(sell > allow, sell - allow, 0)) AS exp,
+                FLOOR(expday / 30.417) m,
+                ROUND(expday - FLOOR(expday / 30.417) * 30.417) d
 	    FROM
-		companies_list
-		    JOIN 
-		companies_tree USING(branch_id)
-		    JOIN 
-		acc_trans ON company_id=passive_company_id
-	    WHERE
-		$direction_filter
-		AND cstamp>'$this->idate' 
-		AND cstamp<'$this->fdate' 
-		AND level<='$user_level'
-                $path_filter
-		$active_filter
-	    $having
-	    ORDER BY cstamp DESC";
+		(SELECT 
+		    path,
+		    label,
+		    deferment,
+		    ROUND(SUM(IF(acc_debit_code=361,amount,IF(acc_credit_code=361,-amount,0))),2) sell,
+		    ROUND(SUM(IF(acc_debit_code=631,amount,IF(acc_credit_code=631,-amount,0))),2) buy,
+		    ROUND(SUM(
+		    IF(
+		    DATEDIFF(NOW(),acc_trans.cstamp)<=deferment AND (trans_status=1 OR trans_status=2),IF(acc_debit_code=361,amount,0),0)
+		    ),2) allow,
+		    MAX(IF(DATEDIFF(NOW(),acc_trans.cstamp)>deferment AND (trans_status=1 OR trans_status=2),DATEDIFF(NOW(),acc_trans.cstamp),0)) AS expday,
+		    CONCAT(company_mobile,' ',company_phone) phone
+                FROM
+		    companies_list
+			LEFT JOIN 
+		    acc_trans ON company_id=passive_company_id
+			LEFT JOIN
+		    companies_tree USING(branch_id)
+		WHERE 
+		    level<='$user_level'
+		    $active_filter
+		    $path_filter
+                GROUP BY companies_list.company_id
+		HAVING (sell>allow OR buy<>0)
+		ORDER BY expday DESC) expired";
 	$rows=$this->get_list($sql);
-	$total_debit=0;
-        $total_credit=0;
+
+	$total_our_debt=0;
+        $total_their_debt=0;
+        $total_their_exp=0;
         foreach( $rows as $row ){
-            $total_debit+=$row->debit*1;
-            $total_credit+=$row->credit*1;
+            $total_our_debt+=$row->buy;
+            $total_their_debt+=$row->sell;
+            $total_their_exp+=$row->exp;
+	    $row->buy=$row->buy>0?$row->buy:'';
+	    $row->sell=$row->sell>0?$row->sell:'';
+	    $row->exp=$row->exp>0?$row->exp:'';
+	    $row->m=$row->m>0?$row->m:'';
+	    $row->d=$row->d>0?$row->d:'';
+	    $row->deferment=$row->deferment>0?$row->deferment:'';
         }
-	$total_debit=round($total_debit,2);
-	$total_credit=round($total_credit,2);
+	//$total_our_debt=round($total_our_debt,2);
+	//$total_their_debt=round($total_their_debt,2);
+	//$total_their_exp=round($total_their_exp,2);
 	return [
-	    'total_debit'=>$total_debit,
-	    'total_credit'=>$total_credit,
+	    'total_our_debt'=>$total_our_debt,
+	    'total_their_debt'=>$total_their_debt,
+	    'total_their_exp'=>$total_their_exp,
 	    'rows'=>count($rows)?$rows:[[]]
 	];
     }

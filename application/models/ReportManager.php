@@ -38,10 +38,11 @@ class ReportManager extends Catalog {
     
     public function formSubmit( $report_id=null ){
 	$this->current_info=$this->infoGet($report_id);
+	$tpl_files=isset($this->current_info['template'])?$this->current_info['template']:$this->current_info['report_id'].'.xlsx';
 	$Plugin=$this->Base->load_plugin('reports',$report_id);
 	$dump=[
 	    'tpl_files_folder'=>"plugins/reports/{$this->current_info['report_id']}/",
-	    'tpl_files'=>$this->current_info['template'],
+	    'tpl_files'=>$tpl_files,
 	    'title'=>$this->current_info['title'],
 	    'user_data'=>[
 		'email'=>$this->Base->svar('pcomp')?$this->Base->svar('pcomp')->company_email:'',
