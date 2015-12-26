@@ -52,7 +52,7 @@ class Expired_debts extends Catalog{
 		    label,
 		    deferment,
 		    ROUND(SUM(IF(acc_debit_code=361,amount,IF(acc_credit_code=361,-amount,0))),2) sell,
-		    ROUND(SUM(IF(acc_debit_code=631,amount,IF(acc_credit_code=631,-amount,0))),2) buy,
+		    ROUND(SUM(IF(acc_debit_code=631,-amount,IF(acc_credit_code=631,amount,0))),2) buy,
 		    ROUND(SUM(
 		    IF(
 		    DATEDIFF(NOW(),acc_trans.cstamp)<=deferment AND (trans_status=1 OR trans_status=2),IF(acc_debit_code=361,amount,0),0)
