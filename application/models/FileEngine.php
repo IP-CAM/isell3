@@ -219,7 +219,7 @@ class FileEngine {
             for ($i = 0; $i < $item_count; $i++) {
                 $curr_row_index=$row->index + $i;
                 $item = $items[$i];
-                $item->i = $i + 1;
+                $item?($item->i = $i + 1):'';
                 if( $merge_width>0 ){//There is <mergeNUM> tag must merge NUM cells. Need to merge cell in new row as in tpl row
                     $this->Worksheet->mergeCells("{$column_letter}{$curr_row_index}:{$merge_final_letter}{$curr_row_index}");
                 }

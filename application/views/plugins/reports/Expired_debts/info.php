@@ -5,7 +5,7 @@
 	'version'=>'0,9',
 	'group_name'=>'Анализ продаж',
 	'uri'=>'',
-	'user_level'=>4,
+	'user_level'=>1,
 	'author'=>'baycik',
 	'author_uri'=>'',
 	'licence'=>''
