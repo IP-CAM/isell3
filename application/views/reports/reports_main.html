@@ -10,8 +10,20 @@
 	    load:function(){
 		$.get("ReportManager/listFetch/",function(resp){
 		    ReportsJs.tile.report_list=App.json(resp);
+		    
+		    var group_name='';
+		    for(var i in ReportsJs.tile.report_list){
+			if( ReportsJs.tile.report_list[i].group_name!==group_name ){
+			    group_name=ReportsJs.tile.report_list[i].group_name;
+			    ReportsJs.tile.report_list.splice(i,0,{header:group_name});
+			}
+		    }
+		    
+		    
+		    
+		    
 		    App.renderTpl('reports_tile',{reports:ReportsJs.tile.report_list});
-		    ReportsJs.report.load(ReportsJs.tile.report_list[2]);
+		    ReportsJs.report.load(ReportsJs.tile.report_list[1]);
 		});
 	    },
 	    click:function(node){
@@ -108,9 +120,13 @@
 </style>
 <div id="reports_tile">
     {{reports}}
-    <div class="left_label" data-report-index="{{#}}" onclick="ReportsJs.tile.click(this);">
-	<img src="img/report24.png"> {{title}}
-    </div>
+	{{if header}}
+	    <h2>{{header}}</h2>
+	{{else}}
+	    <div class="left_label" data-report-index="{{#}}" onclick="ReportsJs.tile.click(this);">
+		<img src="img/report24.png"> {{title}}
+	    </div>	
+	{{/if}}
     {{/reports}}
 </div>
 <div style="width:1000px;float:left;overflow: auto">

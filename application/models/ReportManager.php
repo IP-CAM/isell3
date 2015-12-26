@@ -12,6 +12,13 @@ class ReportManager extends Catalog {
 		$reports[]=$info;
 	    }
 	}
+	function sort_bygroup($a,$b){
+	    if( $a['group_name']==$b['group_name'] ){
+		return 0;
+	    }
+	    return ($a['group_name']>$b['group_name'])?-1:1;
+	}
+	usort($reports,'sort_bygroup');
 	return $reports;
     }
     
