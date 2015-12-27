@@ -3,40 +3,38 @@
     ReportsJs={
 	init:function(){
 	    this.tile.load();
-	    
 	},
 	tile:{
 	    report_list:[],
 	    load:function(){
 		$.get("ReportManager/listFetch/",function(resp){
 		    ReportsJs.tile.report_list=App.json(resp);
-		    
 		    var group_name='';
-		    for(var i in ReportsJs.tile.report_list){
+		    for(var i=0;i<ReportsJs.tile.report_list.length;i++){
 			if( ReportsJs.tile.report_list[i].group_name!==group_name ){
-			    group_name=ReportsJs.tile.report_list[i].group_name;
+			    group_name=ReportsJs.tile.report_list[i].group_name||'';
 			    ReportsJs.tile.report_list.splice(i,0,{header:group_name});
 			}
 		    }
-		    
-		    
-		    
-		    
 		    App.renderTpl('reports_tile',{reports:ReportsJs.tile.report_list});
-		    ReportsJs.report.load(ReportsJs.tile.report_list[1]);
+		    var last_index=App.store('last_report_i')||1;
+		    ReportsJs.report.load(ReportsJs.tile.report_list[last_index]);
 		});
 	    },
 	    click:function(node){
 		var index=$(node).data('report-index');
+		App.store('last_report_i',index);
 		ReportsJs.report.load(ReportsJs.tile.report_list[index]);
 	    }
 	},
 	report:{
 	    current_report_info:{},
 	    load:function(rpt_info){
-		this.current_report_info=rpt_info;
-		this.formLoad();
-		App.renderTpl('report_info',this.current_report_info);
+		if( rpt_info ){
+		    this.current_report_info=rpt_info;
+		    this.formLoad();
+		    App.renderTpl('report_info',this.current_report_info);
+		}
 	    },
 	    formLoad:function(){
 		var report_id=this.current_report_info.report_id;
@@ -118,10 +116,10 @@
     }
 </style>
 </style>
-<div id="reports_tile">
+<div id="reports_tile" class="covert">
     {{reports}}
 	{{if header}}
-	    <h2>{{header}}</h2>
+	<div><b>{{header}}</b></div>
 	{{else}}
 	    <div class="left_label" data-report-index="{{#}}" onclick="ReportsJs.tile.click(this);">
 		<img src="img/report24.png"> {{title}}
@@ -130,7 +128,7 @@
     {{/reports}}
 </div>
 <div style="width:1000px;float:left;overflow: auto">
-    <div id="report_info">
+    <div id="report_info" class="covert">
 	<div id="report_throbber" style="display: none;position: relative;background-color: rgba(0,255,0,0.4);" >
 	    <img src="img/throbber_1.gif">
 	</div>
