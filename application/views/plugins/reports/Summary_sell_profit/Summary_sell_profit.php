@@ -29,7 +29,7 @@ class Summary_sell_profit extends Catalog{
 	$this->query("DROP TEMPORARY TABLE IF EXISTS tmp_sell_profit;");
 	$main_table_sql="CREATE TEMPORARY TABLE tmp_sell_profit ( INDEX(product_code) ) ENGINE=MyISAM AS (
 	    SELECT 
-		$this->group_by group_name,
+		$this->group_by group_by,
 		product_code,
 		product_name,
 		sell_qty,
@@ -60,20 +60,21 @@ class Summary_sell_profit extends Catalog{
 		    prod_list pl USING(product_code)
 		WHERE
 		    doc_type=1 AND cstamp>'$this->idate' AND cstamp<'$this->fdate' AND is_commited=1 $active_filter $reclamation_filter
-		GROUP BY product_code) entries)";
+		GROUP BY product_code) entries
+		$having)";
 	$this->query($main_table_sql);
 	$rows=$this->get_list("SELECT * FROM tmp_sell_profit");
 	
 	$totals_table_sql="
 	    SELECT 
-		group_name,
+		group_by,
 		SUM(sell_qty) sell_qty_sum,
 		SUM(self_prod_sum) self_sum,
 		SUM(sell_prod_sum) sell_sum,
 		SUM(sell_prod_sum)-SUM(self_prod_sum) net_sum
 	    FROM 
 		tmp_sell_profit
-	    GROUP BY group_name";
+	    GROUP BY group_by";
 	$totals=$this->get_list($totals_table_sql);
         $total_sell=0;
         $total_self=0;
