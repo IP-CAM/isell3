@@ -174,8 +174,8 @@ class FileEngine {
     }
 
     private function renderWorkbook() {
-        $loop_row = NULL;
         foreach ($this->Worksheet->getRowIterator() as $row) {
+	    $loop_row = NULL;
             $cellIterator = $row->getCellIterator();
             foreach ($cellIterator as $cell) {
                 $cellTpl = $cell->getValue();
@@ -189,9 +189,9 @@ class FileEngine {
                     $cell->setValue($this->evalStr($cellTpl, $this->view));
                 }
             }
-        }
-        if (isset($loop_row)) {
-            $this->renderLoopRow($loop_row, $this->view);
+	    if (isset($loop_row)) {
+		$this->renderLoopRow($loop_row, $this->view);
+	    }
         }
     }
 
