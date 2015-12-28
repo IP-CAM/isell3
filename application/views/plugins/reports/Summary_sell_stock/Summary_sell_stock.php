@@ -1,5 +1,5 @@
 <?php
-class Sell_analyse extends Catalog{
+class Summary_sell_stock extends Catalog{
     private $idate;
     private $fdate;
     private $all_active;

@@ -8,6 +8,5 @@
 	'user_level'=>1,
 	'author'=>'baycik',
 	'author_uri'=>'',
-	'licence'=>'',
-	'template'=>'Sell_payment_analyse.xlsx'
+	'licence'=>''
     ];

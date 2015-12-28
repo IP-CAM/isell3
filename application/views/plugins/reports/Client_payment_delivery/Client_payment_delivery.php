@@ -1,5 +1,5 @@
 <?php
-class Sell_payment_analyse extends Catalog{
+class Client_payment_delivery extends Catalog{
     private $idate;
     private $fdate;
     private $all_active;
