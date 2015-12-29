@@ -170,10 +170,10 @@
                     }
                     prod_codes.push(row.product_code);
                 }
-		if( row && confirm("Удалить '"+prod_codes.join(',')+"' со списка склада?") ){
+		if( row && confirm("Удалить '"+prod_codes.join(' , ')+"' со списка склада?") ){
 		    $.post('Stock/productDelete/',{product_code:prod_codes},function(ok){
 			if( ok*1 ){
-			    App.flash("Товар удален: "+prod_codes.join(','));
+			    App.flash("Товар удален: "+prod_codes.join(' , '));
 			    Leftovers.list.reload();
 			} else {
 			    App.flash("Товар не удален");

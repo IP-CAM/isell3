@@ -140,7 +140,7 @@ class Stock extends Catalog {
     }
     public function productDelete(){
 	$product_codes=$this->request('product_code','raw');
-        $product_codes_in= addslashes( implode(',', $product_codes) );
+        $product_codes_in= "'".implode("','", array_map('addslashes',$product_codes))."'";
         $this->query("DELETE FROM stock_entries WHERE product_quantity=0 AND product_code IN ($product_codes_in)");
         return $this->db->affected_rows();
     }
