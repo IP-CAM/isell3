@@ -3,6 +3,7 @@
     /* global App */
     App.page_accounts_balance = {
 	unused_shown:true,
+        first_loaded:false,
 	init: function () {
 	    var date = new Date();
 	    this.firstDay = App.toDmy(new Date(date.getFullYear(), date.getMonth(), 1));
@@ -27,6 +28,9 @@
 		    $('#page_accounts_balance_dg').treegrid('reload');
 		}
 	    });
+            if( !App.page_accounts_balance.first_loaded ){
+                $('#page_accounts_balance_dg').treegrid('reload');
+            }
 	},
 	formatNum: function (value) {
 	    return App.formatNum(value, 'clear');
@@ -36,6 +40,7 @@
 	},
 	loadBranch: function (param, success, error) {
 	    if( App.page_accounts_balance.firstDay && App.page_accounts_balance.lastDay ){
+                App.page_accounts_balance.first_loaded=true;
 		var url='AccountsCore/accountBalanceTreeFetch/' + App.uri((param['id'] || 0), App.toIso(App.page_accounts_balance.firstDay), App.toIso(App.page_accounts_balance.lastDay),App.page_accounts_balance.unused_shown*1);
 		$.get(url,function(resp){
 		    var rows=App.json(resp);
