@@ -199,16 +199,16 @@ class Stock extends Catalog {
 	$source = array_map('addslashes',$this->request('source','raw'));
 	$target = array_map('addslashes',$this->request('target','raw'));
 	
-        $parent_id=$this->request('parent_id','int');
-        if( $parent_id ){
-            $source[]=$parent_id;
-            $target[]='parent_id';
-        }
+//        $parent_id=$this->request('parent_id','int');
+//        if( $parent_id ){
+//            $source[]=$parent_id;
+//            $target[]='parent_id';
+//        }
         
 	
-	$this->importInTable('prod_list', $source, $target, '/product_code/ru/ua/en/product_spack/product_bpack/product_weight/product_volume/product_unit/product_uktzet/barcode/', $label);
+	$this->importInTable('prod_list', $source, $target, '/product_code/ru/ua/en/product_spack/product_bpack/product_weight/product_volume/product_unit/product_uktzet/barcode/analyse_type/analyse_group/analyse_class/analyse_section/', $label);
 	$this->importInTable('price_list', $source, $target, '/product_code/sell/buy/curr_code/', $label);
-	$this->importInTable('stock_entries', $source, $target, '/product_code/parent_id/party_label/', $label);
+	$this->importInTable('stock_entries', $source, $target, '/product_code/party_label/', $label);
 	$this->query("DELETE FROM imported_data WHERE label='$label' AND {$source[0]} IN (SELECT product_code FROM stock_entries)");
         return  $this->db->affected_rows();
     }
