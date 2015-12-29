@@ -139,8 +139,10 @@ class Stock extends Catalog {
         return $this->update(BAY_DB_MAIN.'.stock_entries JOIN '.BAY_DB_MAIN.'.prod_list USING(product_code) LEFT JOIN '.BAY_DB_MAIN.'.price_list USING(product_code)', $product, ['product_code'=>$product_code]);
     }
     public function productDelete(){
-	$product_code=$this->request('product_code');
-	return $this->delete(BAY_DB_MAIN.'.stock_entries', ['product_code'=>$product_code,'product_quantity'=>0]);
+	$product_codes=$this->request('product_code','raw');
+        $product_codes_in= addslashes( implode(',', $product_codes) );
+        $this->query("DELETE FROM stock_entries WHERE product_quantity=0 AND product_code IN ($product_codes_in)");
+        return $this->db->affected_rows();
     }
     public function movementsFetch( $page=1, $rows=30, $having=null ){
 	$this->check($page,'int');
@@ -198,13 +200,6 @@ class Stock extends Catalog {
 	$label=$this->request('label');
 	$source = array_map('addslashes',$this->request('source','raw'));
 	$target = array_map('addslashes',$this->request('target','raw'));
-	
-//        $parent_id=$this->request('parent_id','int');
-//        if( $parent_id ){
-//            $source[]=$parent_id;
-//            $target[]='parent_id';
-//        }
-        
 	
 	$this->importInTable('prod_list', $source, $target, '/product_code/ru/ua/en/product_spack/product_bpack/product_weight/product_volume/product_unit/product_uktzet/barcode/analyse_type/analyse_group/analyse_class/analyse_section/', $label);
 	$this->importInTable('price_list', $source, $target, '/product_code/sell/buy/curr_code/', $label);

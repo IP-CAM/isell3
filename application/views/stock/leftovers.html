@@ -160,15 +160,20 @@
 		});
 	    },
 	    delete:function(){
-		var row=$("#stock_dg").datagrid('getSelected');
-		if( row && row.product_quantity>0 ){
-		    alert("Остаток '"+row.ru+"' должен быть нулевым");
-		    return;
-		}
-		if( row && confirm("Удалить '"+row.ru+"' со списка склада?") ){
-		    $.post('Stock/productDelete/',{product_code:row.product_code},function(ok){
+		var rows=$("#stock_dg").datagrid('getSelections');
+                var prod_codes=[];
+                for(var i=0;i<rows.length;i++){
+                    var row=rows[i];
+                    if( row && row.product_quantity>0 ){
+                        alert("Остаток '"+row.ru+"' должен быть нулевым");
+                        return;
+                    }
+                    prod_codes.push(row.product_code);
+                }
+		if( row && confirm("Удалить '"+prod_codes.join(',')+"' со списка склада?") ){
+		    $.post('Stock/productDelete/',{product_code:prod_codes},function(ok){
 			if( ok*1 ){
-			    App.flash("Товар удален: "+row.ru);
+			    App.flash("Товар удален: "+prod_codes.join(','));
 			    Leftovers.list.reload();
 			} else {
 			    App.flash("Товар не удален");
@@ -222,7 +227,7 @@
 		    pagination:true,
 		    pageSize:30,
 		    pageList:[30,60,120,600],
-		    singleSelect:true,
+		    singleSelect:false,
 		    autoRowHeight:false,
 		    remoteFilter:true,
 		    onSelect:function(){$('#stock_dg').datagrid('resize');},
