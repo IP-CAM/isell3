@@ -68,7 +68,6 @@
         stockTree:function(){
             App.loadWindow('page/stock/tree').progress(function(status,category){
                 if( status==='select' ){
-                    console.log(category);
                     $("#Stock_parent_id").combobox('setValue',category.branch_id);
                     $("#Stock_parent_id").combobox('setText',category.label);
                 }

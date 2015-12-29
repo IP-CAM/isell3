@@ -180,8 +180,31 @@
 			}
 		    });
 		}
-		
 	    },
+            move:function(){
+		var rows=$("#stock_dg").datagrid('getSelections');
+                var prod_codes=[];
+                if( rows.length ){
+                    for(var i=0;i<rows.length;i++){
+                        prod_codes.push(rows[i].product_code);
+                    }
+                }
+                else{
+                    return;
+                }
+                App.loadWindow('page/stock/tree').progress(function(status,category){
+                    if( status==='select' ){
+                        $.post('Stock/productMove/',{product_code:prod_codes,parent_id:category.branch_id},function(ok){
+                            if( ok*1 ){
+                                App.flash("Товар перемещен в "+category.label+": "+prod_codes.join(' , '));
+                                Leftovers.list.reload();
+                            } else {
+                                App.flash("Товар не перемещен");
+                            }
+                        });
+                    }
+                });
+            },
 	    loadParent:function( parent_id,label ){
 		this.parent_id=parent_id;
 		this.parent_label=label;
@@ -216,6 +239,7 @@
 		<span class="icon-24 icon-create" title="Добавить" onclick="Leftovers.list.create();"> </span>
 		<span class="icon-24 icon-change" title="Изменить" onclick="Leftovers.list.edit();"> </span>
 		<span class="icon-24 icon-delete" title="Удалить" onclick="Leftovers.list.delete();"> </span>
+		<span class="icon-24" style="background-image: url(img/big_rightarrow.png);background-repeat: no-repeat;background-size: 24px 24px;" title="Перенести в другую категорию" onclick="Leftovers.list.move();"> </span>
 		<span class="icon-24 icon-import" title="Импорт" onclick="Leftovers.list.import();"> </span>
 		<span class="icon-24 icon-tablefilter" title="Фильтр таблицы" onclick="Leftovers.list.toggleFilter()"> </span>
 		<span class="icon-24 icon-refresh" title="Обновить" onclick="Leftovers.list.reload()"> </span>

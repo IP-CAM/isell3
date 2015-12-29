@@ -144,6 +144,13 @@ class Stock extends Catalog {
         $this->query("DELETE FROM stock_entries WHERE product_quantity=0 AND product_code IN ($product_codes_in)");
         return $this->db->affected_rows();
     }
+    public function productMove(){
+        $parent_id=$this->request('parent_id','int');
+	$product_codes=$this->request('product_code','raw');
+        $product_codes_in= "'".implode("','", array_map('addslashes',$product_codes))."'";
+        $this->query("UPDATE stock_entries SET parent_id='$parent_id' WHERE product_code IN ($product_codes_in)");
+        return $this->db->affected_rows();
+    }
     public function movementsFetch( $page=1, $rows=30, $having=null ){
 	$this->check($page,'int');
 	$this->check($rows,'int');
