@@ -154,7 +154,11 @@
 	    });
 	},
 	parser:function( node, text ){
-	    var result=eval(text.toString().replace(',','.').match( /[\(\d\.\)\*\/\+-]*/ ).toString()) || 0;
+            try{
+                var result=eval(text.toString().replace(',','.').match( /[\(\d\.\)\*\/\+-]*/ ).toString())*1 || 0;
+            } catch(e){
+                var result=0;
+            }
 	    if( $(node).textbox('options').precision ){
 		result=Tedit.round(result,$(node).textbox('options').precision);
 	    };
