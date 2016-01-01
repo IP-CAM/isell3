@@ -195,7 +195,7 @@ class Utils extends CI_Model {
 	    SET 
 		se.product_quantity = 
 		(SELECT 
-			SUM(IF(doc_type = 2,de.product_quantity,- de.product_quantity))
+			SUM(IF(doc_type = 2,de.product_quantity,- de.product_quantity)) calc_product_quantity
 		    FROM
 			document_entries de
 			    JOIN
