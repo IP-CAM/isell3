@@ -201,7 +201,7 @@ class Utils extends CI_Model {
 			    JOIN
 			document_list dl USING (doc_id)     
 		    WHERE
-			de.product_code=se.product_code AND dl.is_commited = 1 AND dl.notcount = 0
+			de.product_code=se.product_code AND (doc_type = 1 OR doc_type = 2) AND dl.is_commited = 1 AND dl.notcount = 0
 		GROUP BY product_code)";
 	$this->db->query($sql);
 	return $this->db->affected_rows();
