@@ -84,7 +84,7 @@ class Summary_sell_stock extends Catalog{
                 'total_stock'=>round($total_stock,2),
                 'total_sell_qty'=>round($total_sell_qty,2),
                 'total_stock_qty'=>round($total_stock_qty,2),
-		'rows'=>$rows
+		'rows'=>count($rows)?$rows:[[]]
 		];
 	return $view;	
     }
