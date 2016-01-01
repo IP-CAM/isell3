@@ -36,7 +36,7 @@ class Summary_sell_stock extends Catalog{
                     JOIN
                 document_list dl USING(doc_id)
             WHERE
-                (doc_type=1 OR doc_type=2) AND cstamp<'$this->fdate' AND is_commited=1 $active_filter $reclamation_filter
+                (doc_type=1 OR doc_type=2) AND cstamp<'$this->fdate' AND is_commited=1 AND notcount=0 $active_filter $reclamation_filter
             GROUP BY product_code";
         $sql="
             SELECT 
