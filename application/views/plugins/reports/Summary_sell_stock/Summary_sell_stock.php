@@ -68,8 +68,9 @@ class Summary_sell_stock extends Catalog{
             $total_stock_qty+=$row->stock_sum_qty;
         }
         foreach( $rows as $row ){
-            $row->sell_proc=    round( $row->sell_sum/$total_sell, 4);
-            $row->stock_proc=   round( $row->stock_sum/$total_stock, 4);
+            $row->sell_proc=    $total_sell?round( $row->sell_sum/$total_sell, 4):'';
+            $row->stock_proc=   $total_stock?round( $row->stock_sum/$total_stock, 4):'';
+	    $this->clear_zero($row);
         }
 	function sort_bysell($a,$b){
 	    if( $a->sell_sum==$b->sell_sum ){
@@ -86,5 +87,12 @@ class Summary_sell_stock extends Catalog{
 		'rows'=>$rows
 		];
 	return $view;	
+    }
+    private function clear_zero(&$row){
+	foreach($row as &$field){
+	    if(is_numeric($field) && $field==0){
+		$field='';
+	    }
+	}
     }
 }
