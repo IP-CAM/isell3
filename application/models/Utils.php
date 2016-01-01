@@ -2,6 +2,9 @@
 
 class Utils extends CI_Model {
 
+    //////////////////////////////////////
+    //FOLOWING FUNCTIONS ARE DEPRECATED
+    //////////////////////////////////////
     public function spellAmount($number, $unit = NULL, $return_cents = true) {
 	if (!$unit) {
 	    $unit[0] = array('копійка', 'копійки', 'копійок');
@@ -66,7 +69,19 @@ class Utils extends CI_Model {
 	$months = array("січня", "лютого", "березня", "квітня", "травня", "червня", "липня", "серпня", "вересня", "жовтня", "листопада", "грудня");
 	return date('d', $time) . ' ' . $months[date('m', $time) - 1] . ' ' . date('Y', $time);
     }
-
+    ///////////////////////////////////////////
+    //END OF DEPRECATED FUNCTIONS
+    ///////////////////////////////////////////
+    
+    
+    
+    
+    
+    
+    
+    /////////////////////////////
+    //EMAIL FUNCTIONS
+    /////////////////////////////
     private function sendEmail($to,$subject,$body,$file=null){
         $this->Base->set_level(1);
         $this->load->library('email');
@@ -169,5 +184,46 @@ class Utils extends CI_Model {
 		    path = IF(@old_path,REPLACE(path, @old_path, @new_path),@new_path)
 		WHERE
 		    IF(@old_path,path LIKE CONCAT(@old_path, '%'),branch_id=$branch_id)");
+    }
+    /////////////////////////////
+    //STOCK MAINTAINANCE FUNCTIONS
+    /////////////////////////////
+    public function stockQtyRecalculate(){
+	$sql="
+	    UPDATE 
+		stock_entries se
+	    SET 
+		se.product_quantity = 
+		(SELECT 
+			SUM(IF(doc_type = 2,de.product_quantity,- de.product_quantity))
+		    FROM
+			document_entries de
+			    JOIN
+			document_list dl USING (doc_id)     
+		    WHERE
+			de.product_code=se.product_code AND dl.is_commited = 1 AND dl.notcount = 0
+		GROUP BY product_code)";
+	$this->db->query($sql);
+	return $this->db->affected_rows();
+    }
+    public function stockSelfRecalculate(){
+	$idate='2015-12-01'.' 00:00:00';
+	$fdate='2015-12-31'.' 23:59:59';
+	$this->query("DROP TEMPORARY TABLE IF EXISTS tmp_self_recalculate;");
+	$main_table_sql="CREATE TEMPORARY TABLE tmp_self_recalculate ( INDEX(product_code) ) ENGINE=MyISAM AS (
+	    SELECT
+		product_code,
+		SUM( IF(cstamp<'$idate',IF(doc_type = 2,de.product_quantity,- de.product_quantity),0) ) idate_quantity,
+		SUM( IF(cstamp<'$fdate',IF(doc_type = 2,de.product_quantity,- de.product_quantity),0) ) fdate_quantity
+
+	    FROM
+		document_entries de
+		    JOIN
+		document_list dl USING (doc_id)     
+	    WHERE
+		dl.is_commited = 1 AND dl.notcount = 0
+	    GROUP BY product_code
+	)";
+	
     }
 }
