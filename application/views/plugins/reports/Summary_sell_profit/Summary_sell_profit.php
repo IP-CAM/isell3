@@ -98,8 +98,8 @@ class Summary_sell_profit extends Catalog{
                 'total_self'=>$total_self,
                 'total_net'=>$total_net,
                 'total_qty'=>$total_qty,
-		'rows'=>$rows,
-		'totals'=>$totals
+		'rows'=>count($rows)?$rows:[[]],
+		'totals'=>count($totals)?$totals:[[]]
 		];
 	return $view;	
     }
