@@ -6,10 +6,14 @@
  */
 require_once 'Catalog.php';
 class Company extends Catalog{
+    
     public function branchFetch() {
 	$parent_id=$this->request('id','int',0);
 	$table = "companies_tree LEFT JOIN companies_list USING(branch_id)";
 	$assigned_path=  $this->Base->svar('user_assigned_path');
+        if( $assigned_path && $parent_id==0 ){
+            $parent_id=null;
+        }
 	$level=$this->Base->svar('user_level');
 	return $this->treeFetch($table, $parent_id, 'top', $assigned_path, $level);
     }
@@ -56,17 +60,55 @@ class Company extends Catalog{
 		*
 	    FROM
 		companies_list cl
-	    LEFT JOIN
+	    JOIN
 		companies_tree USING(branch_id)
 	    LEFT JOIN 
 		curr_list USING(curr_code)
 	    WHERE
-		(path LIKE '$assigned_path%' OR path IS NULL)
+		(path LIKE '$assigned_path%' OR is_active)
 		    AND
 		company_id=$company_id";
 	return $this->get_row($sql);
     }
     
+    public function companyFindByCode( $company_code=null, $company_vat_id=null ){
+        $sql="SELECT 
+                company_id 
+            FROM 
+                companies_list 
+            WHERE 
+                IF('$company_code',company_code='$company_code',0) 
+                OR IF('$company_vat_id',company_vat_id='$company_vat_id',0)";
+        return $this->get_value($sql);
+    }
+    
+    public function companyUpdate($company_id, $field, $value='') {
+	$this->Base->set_level(2);
+	$this->check($field,'[a-z_]+');
+	$this->check($value);
+	$assigned_path=$this->Base->svar('user_assigned_path');
+	if( $this->Base->acomp('company_id')==$company_id ){
+	    $this->Base->set_level(3);
+	}
+	$sql="UPDATE 
+		companies_list
+	    JOIN 
+		companies_tree USING(branch_id) 
+	    SET $field='$value' 
+	    WHERE 
+		(path LIKE '$assigned_path%' OR path IS NULL)
+		    AND
+		company_id=$company_id";
+	$this->query($sql);
+	$ok=$this->db->affected_rows()>0?1:0;
+	if( $this->Base->acomp('company_id')==$company_id ){/*@TODO move to lazy loading of pcomp/acomp in v4.0*/
+	    $this->selectActiveCompany($company_id);
+	}
+	if( $this->Base->pcomp('company_id')==$company_id ){
+	    $this->selectPassiveCompany($company_id);
+	}
+	return $ok;
+    }    
     
     public function companyTreeCreate($parent_id,$label,$branch_type){
 	$this->Base->set_level(2);
@@ -85,26 +127,7 @@ class Company extends Catalog{
 	}
 	return 0;
     }
-    public function companyUpdate($company_id, $field, $value='') {
-	$this->Base->set_level(2);
-	$this->check($field,'[a-z_]+');
-	$this->check($value);
-	$assigned_path=$this->Base->svar('user_assigned_path');
-	if( $this->Base->acomp('company_id')==$company_id ){
-	    $this->Base->set_level(3);
-	}
-	$sql="UPDATE 
-		companies_list
-	    LEFT JOIN 
-		companies_tree USING(branch_id) 
-	    SET $field='$value' 
-	    WHERE 
-		(path LIKE '$assigned_path%' OR path IS NULL)
-		    AND
-		company_id=$company_id";
-	$this->query($sql);
-	return $this->db->affected_rows()>0?1:0;
-    }
+    
     public function companyTreeUpdate($branch_id,$field,$value) {
 	$this->Base->set_level(2);
 	$this->check($branch_id,'int');
@@ -112,14 +135,15 @@ class Company extends Catalog{
 	$this->check($value);
 	return $this->treeUpdate('companies_tree', $branch_id, $field, $value);
     }
+    
     public function companyTreeDelete( $branch_id ){
 	$this->Base->set_level(4);
 	$this->check($branch_id,'int');
 	$sub_ids=$this->treeGetSub('companies_tree', $branch_id);
 	$in=implode(',', $sub_ids);
 	$this->query("START TRANSACTION");
-	$this->query("DELETE FROM companies_tree WHERE branch_id IN ($in)");
 	$this->query("DELETE FROM companies_list WHERE branch_id IN ($in)");
+	$this->query("DELETE FROM companies_tree WHERE branch_id IN ($in)");
 	$deleted=$this->db->affected_rows();
 	$this->query("COMMIT");
 	return $deleted;
@@ -130,10 +154,29 @@ class Company extends Catalog{
 	$this->Base->svar('pcomp',$company);
 	return $company;
     }
+    
     public function selectActiveCompany( $company_id ){
 	$company=$this->companyGet( $company_id );
-	$this->Base->svar('acomp',$company);
-	return $company;
+	if( $company->is_active ){
+	    $this->Base->svar('acomp',$company);
+	    return $company;
+	}
+	return null;
+    }
+    
+    public function switchActiveCompany(){
+        $current_acomp_id=$this->Base->acomp('company_id');
+        $sql="SELECT 
+                company_id 
+            FROM 
+                companies_list
+            WHERE 
+                is_active=1 
+                AND company_id<>'$current_acomp_id' 
+            ORDER BY company_id<'$current_acomp_id',company_id
+            LIMIT 1";
+        $company_id=$this->get_value($sql);
+        return $this->selectActiveCompany($company_id);
     }
     
     public function companyPrefsGet(){
@@ -144,7 +187,7 @@ class Company extends Catalog{
 	$sql_disct="SELECT
 		st.branch_id,
 		label,
-		discount
+		ROUND(discount,3) discount
 	    FROM
 		stock_tree st
 	    LEFT JOIN
@@ -170,7 +213,8 @@ class Company extends Catalog{
 	    'other'=>$this->get_row($sql_other)
 		);
     }
-    public function companyPrefsUpdate( $type, $field, $value ){
+    
+    public function companyPrefsUpdate( $type, $field, $value='' ){
 	$this->Base->set_level(2);
 	switch( $type ){
 	    case 'discount':
@@ -178,11 +222,13 @@ class Company extends Catalog{
 	    case 'other':
 		if( in_array($field, array('deferment','curr_code','manager_id','is_supplier','company_acc_list','language')) ){
 		    $passive_company_id = $this->Base->pcomp('company_id');
-		    return $this->db->query("UPDATE companies_list SET $field='$value' WHERE company_id=$passive_company_id");
+		    $this->query("UPDATE companies_list SET $field='$value' WHERE company_id=$passive_company_id");
+                    return $this->db->affected_rows();
 		}
 		return false;
 	}
     }
+    
     private function discountUpdate( $branch_id, $discount ){
 	$passive_company_id = $this->Base->pcomp('company_id');
 	if( $discount==1 ){/*Discount is zero so lets delete it*/

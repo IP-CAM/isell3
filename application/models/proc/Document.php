@@ -471,6 +471,9 @@ class Document extends Data {
     public function makeViewOut($view, $head, $entries, $footer, $active, $passive) {
 	$this->Base->LoadClass('Utils');
 	$footer['total_spell'] = $this->Base->Utils->spellAmount($footer['total']);
+        
+        
+        //MOVE TO TAX BILL CUSTOM SCRIPT
 	$footer['vatless'] = number_format($footer['vatless'], 2, ',', '');
 	$footer['vat'] = number_format($footer['vat'], 2, ',', '');
 	$footer['total'] = number_format($footer['total'], 2, ',', '');
@@ -482,6 +485,10 @@ class Document extends Data {
 	}
 	$passive['ag_date'] = date('dmY', strtotime($passive['company_agreement_date']));
 	$passive['ag_date_dot'] = date('d.m.Y', strtotime($passive['company_agreement_date']));
+	$view['view_num_fill'] = str_pad($view['view_num'], 7, ' ', STR_PAD_LEFT);
+	$view['vat_percent'] = ($this->vat_rate - 1) * 100;
+        // END MOVE
+        
 	$view['a'] = $active;
 	$view['p'] = $passive;
 
@@ -493,11 +500,9 @@ class Document extends Data {
 	$view['user_position'] = $this->Base->svar('user_position');
 
 	$view['loc_date'] = $this->Base->Utils->getLocalDate($view['tstamp']);
-	$view['vat_percent'] = ($this->vat_rate - 1) * 100;
 	$view['date'] = date('dmY', strtotime($view['tstamp']));
 	$view['date_dot'] = date('d.m.Y', strtotime($view['tstamp']));
 	$view['extra'] = json_decode($view['view_efield_values']);
-	$view['view_num_fill'] = str_pad($view['view_num'], 7, ' ', STR_PAD_LEFT);
 	$view['entries_num'] = count($entries['rows']);
 	$view['head'] = $head;
 	$view['entries'] = $entries['rows'];
@@ -647,7 +652,8 @@ class Document extends Data {
 	}
 	if ($view_type_props['view_role'] == 'tax_bill') {
 	    if (!$this->isCommited()) {
-		$this->Base->response_wrn('Сначала сохраните документ!');
+		$this->Base->msg('Сначала сохраните документ!');
+		return;
 	    }
 	    if ($this->Base->pcomp('company_vat_id') && (
 		    !$this->Base->pcomp('company_name') ||
@@ -677,13 +683,14 @@ class Document extends Data {
     }
     
     private function getLastEfields($view_type_id){
+	$active_company_id=$this->Base->acomp('company_id');
         $pcomp_id=$this->Base->pcomp('company_id');
         return $this->Base->get_row("SELECT
                     view_efield_values
                 FROM 
                     document_view_list dvl JOIN document_list USING(doc_id)
                 WHERE 
-                    view_type_id='$view_type_id' AND passive_company_id='$pcomp_id' ORDER BY dvl.tstamp DESC",0);
+                    view_type_id='$view_type_id' AND active_company_id='$active_company_id' AND passive_company_id='$pcomp_id' ORDER BY dvl.tstamp DESC",0);
     }
 /////////////////////////////////////////////////////////////////
 //DOCUMENT ALL
@@ -703,7 +710,7 @@ class Document extends Data {
 	$ratios = $this->Base->Pref->prefGet();
 	$doc_ratio = $ratios["usd_ratio"];
 
-	$prev_doc = $this->Base->get_row("SELECT use_vatless_price,signs_after_dot,notcount,doc_type FROM document_list WHERE passive_company_id='$passive_company_id' AND doc_type<10 AND is_commited=1 ORDER BY cstamp DESC LIMIT 1");
+	$prev_doc = $this->Base->get_row("SELECT use_vatless_price,signs_after_dot,notcount,doc_type FROM document_list WHERE active_company_id='$active_company_id' AND passive_company_id='$passive_company_id' AND doc_type<10 AND is_commited=1 ORDER BY cstamp DESC LIMIT 1");
 	if( $doc_type===null ){
 	    $doc_type=$prev_doc['doc_type']?$prev_doc['doc_type']:1;
 	}
@@ -796,6 +803,7 @@ class Document extends Data {
     }
 
     public function fetchDefaultHead() {
+	$active_company_id=$this->Base->acomp('company_id');
 	$passive_company_id = $this->Base->pcomp('company_id');
 	$doc_head = array();
 	$doc_head['active_comp'] = $this->Base->acomp('company_name');
@@ -807,7 +815,7 @@ class Document extends Data {
 	$doc_head['doc_ratio'] = "-";
 	$doc_head['signs_after_dot'] = 2;
 	$doc_head['vat_rate'] = $this->Base->acomp('company_vat_rate');
-	$prev_doc = $this->Base->get_row("SELECT doc_type FROM document_list WHERE passive_company_id='$passive_company_id' AND doc_type<10 AND is_commited=1 ORDER BY cstamp DESC LIMIT 1");
+	$prev_doc = $this->Base->get_row("SELECT doc_type FROM document_list WHERE active_company_id='$active_company_id' AND passive_company_id='$passive_company_id' AND doc_type<10 AND is_commited=1 ORDER BY cstamp DESC LIMIT 1");
 	$doc_head['doc_type'] = $prev_doc['doc_type'] ? $prev_doc['doc_type'] : 1;
 	return $doc_head;
     }
@@ -1140,9 +1148,10 @@ class Document extends Data {
     public function getRawProductPrice($product_code, $curr_correction) {
         $product_code=  addslashes($product_code);//bugfix if special characters are used like \ 
 	$def_curr_code = $this->Base->acomp('curr_code');
+        
 	return $this->Base->get_row("SELECT 
-            sell/{$this->vat_rate}*IF(curr_code<>'$def_curr_code',$curr_correction,1) sell,
-            buy/{$this->vat_rate}*IF(curr_code<>'$def_curr_code',$curr_correction,1) buy
+            sell/{$this->vat_rate}*IF(curr_code<>'' AND curr_code<>'$def_curr_code',$curr_correction,1) sell,
+            buy/{$this->vat_rate}*IF(curr_code<>'' AND curr_code<>'$def_curr_code',$curr_correction,1) buy
             FROM price_list 
             WHERE product_code='$product_code'");
     }

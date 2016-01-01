@@ -72,6 +72,7 @@ class Stock extends Catalog {
 	    $where
 	    GROUP BY se.product_code
 	    HAVING $having
+            ORDER BY se.parent_id,se.product_code
 	    LIMIT $rows OFFSET $offset";
 	$result_rows=$this->get_list($sql);
 	$total_estimate=$offset+(count($result_rows)==$rows?$rows+1:count($result_rows));
@@ -81,15 +82,30 @@ class Stock extends Catalog {
 	$q=$this->request('q','string',0);
 	return $this->get_list("SELECT branch_id,label FROM stock_tree WHERE label LIKE '%$q%'");
     }
+    
+    public function productGet(){
+	$product_code=$this->request('product_code');
+	$sql="SELECT
+		    *
+		FROM
+		    stock_entries se
+			JOIN
+		    prod_list USING(product_code)
+			LEFT JOIN
+		    price_list USING(product_code)
+		WHERE 
+		    product_code='{$product_code}'";
+	return $this->get_row($sql);
+    }
+
     public function productSave(){
 	$this->Base->set_level(2);
 	$product_code=$this->request('product_code');
-        $product_code_new=$this->request('product_code_new','^[\p{L}\d\. ,-]+$');
+        $product_code_new=$this->request('product_code_new','^[\p{L}\d\. ,-_]+$');
         if( !$product_code_new ){
             return false;
         }
 	$product=[
-	    'prod_list.product_code'=>$product_code_new,
 	    'ru'=>$this->request('ru'),
 	    'ua'=>$this->request('ua'),
 	    'en'=>$this->request('en'),
@@ -99,6 +115,10 @@ class Stock extends Catalog {
 	    'product_weight'=>$this->request('product_weight','double'),
 	    'product_volume'=>$this->request('product_volume','double'),
 	    'product_uktzet'=>$this->request('product_uktzet'),
+	    'analyse_type'=>$this->request('analyse_type'),
+	    'analyse_group'=>$this->request('analyse_group'),
+	    'analyse_class'=>$this->request('analyse_class'),
+	    'analyse_section'=>$this->request('analyse_section'),            
 	    'barcode'=>$this->request('barcode'),
 	    'parent_id'=>$this->request('parent_id','int'),
 	    'product_wrn_quantity'=>$this->request('product_wrn_quantity','int'),
@@ -112,11 +132,24 @@ class Stock extends Catalog {
 	    $this->create(BAY_DB_MAIN.'.price_list', ['product_code'=>$product_code_new]);
 	    $this->create(BAY_DB_MAIN.'.stock_entries', ['product_code'=>$product_code_new]);
 	}
-	return $this->update(BAY_DB_MAIN.'.stock_entries JOIN '.BAY_DB_MAIN.'.prod_list USING(product_code) LEFT JOIN '.BAY_DB_MAIN.'.price_list USING(product_code)', $product, ['product_code'=>$product_code]);
+        if( $product_code_new!=$product_code ){
+            $this->update(BAY_DB_MAIN.'.prod_list', ['product_code'=>$product_code_new], ['product_code'=>$product_code]);
+            $product_code=$product_code_new;
+        }
+        return $this->update(BAY_DB_MAIN.'.stock_entries JOIN '.BAY_DB_MAIN.'.prod_list USING(product_code) LEFT JOIN '.BAY_DB_MAIN.'.price_list USING(product_code)', $product, ['product_code'=>$product_code]);
     }
     public function productDelete(){
-	$product_code=$this->request('product_code');
-	return $this->delete(BAY_DB_MAIN.'.stock_entries', ['product_code'=>$product_code,'product_quantity'=>0]);
+	$product_codes=$this->request('product_code','raw');
+        $product_codes_in= "'".implode("','", array_map('addslashes',$product_codes))."'";
+        $this->query("DELETE FROM stock_entries WHERE product_quantity=0 AND product_code IN ($product_codes_in)");
+        return $this->db->affected_rows();
+    }
+    public function productMove(){
+        $parent_id=$this->request('parent_id','int');
+	$product_codes=$this->request('product_code','raw');
+        $product_codes_in= "'".implode("','", array_map('addslashes',$product_codes))."'";
+        $this->query("UPDATE stock_entries SET parent_id='$parent_id' WHERE product_code IN ($product_codes_in)");
+        return $this->db->affected_rows();
     }
     public function movementsFetch( $page=1, $rows=30, $having=null ){
 	$this->check($page,'int');
@@ -170,57 +203,32 @@ class Stock extends Catalog {
 	    $prev_concat=$concat;
 	}
     }
-    public function import_(){
-        $parent_id=$this->request('parent_id','int');
-        $pcode_col=$this->request('product_code');
-        $label=$this->request('label');
-	$where=$label?"AND label='$label'":'';
-        $sql="
-	    INSERT INTO ".BAY_DB_MAIN.".stock_entries(product_code,parent_id)
-            SELECT
-                product_code,
-		'$parent_id'
-            FROM
-                imported_data
-                    JOIN
-                prod_list ON product_code=$pcode_col
-            WHERE
-                product_code NOT IN (SELECT product_code FROM ".BAY_DB_MAIN.".stock_entries)
-		$where";
-	$this->query($sql);
-        return $this->db->affected_rows();
-    }
     public function import(){
+	$label=$this->request('label');
 	$source = array_map('addslashes',$this->request('source','raw'));
 	$target = array_map('addslashes',$this->request('target','raw'));
 	
-        $source[]=$this->request('parent_id','int');
-        $target[]='parent_id';
-	
-	$this->importInTable('prod_list', $source, $target, '/product_code/ru/ua/en/product_spack/product_bpack/product_weight/product_volume/product_unit/product_uktzet/barcode/');
-	$this->importInTable('price_list', $source, $target, '/product_code/sell/buy/curr_code/');
-	$this->importInTable('stock_entries', $source, $target, '/product_code/parent_id/');
-	$this->query("DELETE FROM imported_data WHERE {$source[0]} IN (SELECT product_code FROM stock_entries)");
+	$this->importInTable('prod_list', $source, $target, '/product_code/ru/ua/en/product_spack/product_bpack/product_weight/product_volume/product_unit/product_uktzet/barcode/analyse_type/analyse_group/analyse_class/analyse_section/', $label);
+	$this->importInTable('price_list', $source, $target, '/product_code/sell/buy/curr_code/', $label);
+	$this->importInTable('stock_entries', $source, $target, '/product_code/party_label/', $label);
+	$this->query("DELETE FROM imported_data WHERE label='$label' AND {$source[0]} IN (SELECT product_code FROM stock_entries)");
         return  $this->db->affected_rows();
     }
-    private function importInTable( $table, $src, $trg, $filter ){
+    private function importInTable( $table, $src, $trg, $filter, $label ){
 	$set=[];
 	$target=[];
 	$source=[];
 	for( $i=0;$i<count($trg);$i++ ){
-            if( strpos($filter,"/{$trg[$i]}/") && !empty($src[$i]) ){
-                if( $trg[$i]=='product_code' ){
-                    $product_code_col=$src[$i];
-                }
+            if( strpos($filter,"/{$trg[$i]}/")!==false && !empty($src[$i]) ){
 		$target[]=$trg[$i];
 		$source[]=$src[$i];
-		$set[]="{$trg[$i]}=$src[$i]";//$trg[$i]!='product_code'?:'';
+		$set[]="{$trg[$i]}=$src[$i]";
 	    }
 	}
 	$target_list=  implode(',', $target);
 	$source_list=  implode(',', $source);
 	$set_list=  implode(',', $set);
-	$this->query("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data ON DUPLICATE KEY UPDATE $set_list");
+	$this->query("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data WHERE label='$label' ON DUPLICATE KEY UPDATE $set_list");
 	//print("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data ON DUPLICATE KEY UPDATE $set_list");
 	return $this->db->affected_rows();
     }

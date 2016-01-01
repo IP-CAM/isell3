@@ -9,7 +9,7 @@ class AccountsView extends AccountsCore{
 	$rows=10000;//$this->request('rows','int');
 	$idate=$this->request('idate','\d\d\d\d-\d\d-\d\d');
 	$fdate=$this->request('fdate','\d\d\d\d-\d\d-\d\d');
-	$acc_code=$this->request('acc_code','int');
+	$acc_code=$this->request('acc_code');
 	$out_type=$this->request('out_type');
 	$use_passive_filter=$this->request('use_passive_filter','bool');
 	

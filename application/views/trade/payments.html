@@ -8,7 +8,8 @@
 		    App.handler.progress(function(status){
 			if( status==="passiveCompanySelected" ){
 			    LedgerPayment.fav.init();
-			    LedgerPayment.reload();
+			    LedgerPayment.current_acc_code=0;
+			    //LedgerPayment.reload();
 			}
 		    });
 		}

@@ -1,10 +1,9 @@
 <?php
 require_once 'AccountsCore.php';
 class AccountsData extends AccountsCore{
-    public $min_level=2;
+    public $min_level=1;
     public function transNameListFetch($selected_acc=null){
-	$q=$this->input->get('q');
-	$this->check($q);
+	$q=  str_replace(["_","%"], ["\_","\%"], $this->request('q'));
 	$this->check($selected_acc);
 	$user_level = $this->Base->svar('user_level');
 	$curr_id=$this->Base->acomp('curr_id');
@@ -23,7 +22,7 @@ class AccountsData extends AccountsCore{
 		    JOIN
 		acc_tree atc ON atc.acc_code=acc_credit_code
 	    WHERE 
-		user_level<='$user_level' AND IF('$selected_acc',acc_debit_code='$selected_acc' OR acc_credit_code='$selected_acc',1)
+		user_level<='$user_level' AND CONCAT(acc_debit_code,'_',acc_credit_code) LIKE '%$selected_acc%'
 	    HAVING trans_type_name LIKE '%$q%'
 	    ORDER BY trans_name";
 	return $this->get_list($sql);
@@ -62,7 +61,7 @@ class AccountsData extends AccountsCore{
 	$res->free_result();
 	return $branches;
     }
-    public function accountTreeUpdate($branch_id,$field,$value) {
+    public function accountTreeUpdate($branch_id,$field,$value='') {
 	$this->Base->set_level(3);
 	$this->check($branch_id,'int');
 	$this->check($field);
@@ -70,13 +69,15 @@ class AccountsData extends AccountsCore{
 	return $this->treeUpdate('acc_tree', $branch_id, $field, $value);
     }
     public function balanceTreeDelete( $branch_id ){
+	$this->Base->set_level(3);
 	return $this->treeDelete('acc_tree',$branch_id);
     }
-    public function accountFavoritesFetch( $use_passive_filter=false ){
+    public function accountFavoritesFetch( $use_passive_filter=false, $get_client_bank_accs=false ){
 	if( $use_passive_filter ){
 	    $acc_list=$this->Base->pcomp('company_acc_list');
 	} else {
-	    $acc_list= $this->get_value("SELECT GROUP_CONCAT(acc_code SEPARATOR ',') FROM acc_tree WHERE is_favorite=1");
+	    $where=$get_client_bank_accs?'use_clientbank=1':'is_favorite=1';
+	    $acc_list= $this->get_value("SELECT GROUP_CONCAT(acc_code SEPARATOR ',') FROM acc_tree WHERE $where");
 	}
 	$accs=explode(',',$acc_list);
 	$favs=[];
@@ -88,6 +89,7 @@ class AccountsData extends AccountsCore{
 	return $favs;
    }
     public function accountFavoritesToggle( $acc_code, $is_favorite, $use_passive_filter=false ){
+	$this->Base->set_level(3);
 	$this->check($acc_code);
 	$this->check($is_favorite,'bool');
 	$this->check($use_passive_filter,'bool');

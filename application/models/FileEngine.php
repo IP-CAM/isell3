@@ -1,7 +1,11 @@
 <?php
-
+error_reporting(E_ERROR | E_WARNING | E_PARSE);
 class FileEngine {
-    private $conversion_table = array();
+    private $conversion_table = [
+	'.html'=>['.html' => 'Веб Страница', '.doc' => 'Word Документ'],
+	'.xlsx'=>['.xlsx' => 'Excel 2007', '.xls' => 'Excel 2003', '.html' => 'Веб Страница'],
+	'.xml'=>['.xml' => 'XML Экспорт Данных']
+    ];
     private $view;
     private $tpl_files;
     private $export_types = array();
@@ -13,12 +17,7 @@ class FileEngine {
     public $user_data;
     public $file_name_override;
     public $tplModifier;
-
-    public function FileEngine() {
-        $this->conversion_table['.html'] = array('.html' => 'Веб Страница', '.doc' => 'Word Документ');
-        $this->conversion_table['.xml'] = array('.xml' => 'XML Экспорт Данных');
-        $this->conversion_table['.xlsx'] = array('.xlsx' => 'Excel 2007', '.xls' => 'Excel 2003', '.html' => 'Веб Страница');
-    }
+    public $tpl_files_folder='rpt/';
     
     private function header($text){
         if( $this->header_mode==='send_headers' ){
@@ -49,7 +48,7 @@ class FileEngine {
             $this->Worksheet = $this->PHPexcel->getActiveSheet();
         } else if ($this->tpl_ext == '.html' || $this->tpl_ext == '.xml') {
             $this->compilator = 'Rain';
-            include 'libraries/report/RainTPL.php';
+            include 'application/libraries/report/RainTPL.php';
             $this->tpl_file = substr($file_name, strrpos($file_name, '/') + 1, strrpos($file_name, '.') - strrpos($file_name, '/') - 1);
             $this->tpl_dir = 'application/'.substr($file_name, 0, strrpos($file_name, '/') + 1);
             $this->rain = new RainTPL();
@@ -60,10 +59,10 @@ class FileEngine {
     }
     
     private function compile($tpl_file) {
-        $this->loadFileTpl('views/rpt/' . $tpl_file);
-	if( file_exists('application/views/rpt/' . $tpl_file.'.php') ){
+        $this->loadFileTpl('views/'.$this->tpl_files_folder. $tpl_file);
+	if( file_exists('application/views/' .$this->tpl_files_folder. $tpl_file.'.php') ){
 	    /*Script for custom processing of templates*/
-	    include 'application/views/rpt/' . $tpl_file.'.php';
+	    include 'application/views/' .$this->tpl_files_folder. $tpl_file.'.php';
 	}
         if ($this->compilator == 'PHPExcel') {
             if (isset($this->tplModifier))
@@ -175,8 +174,8 @@ class FileEngine {
     }
 
     private function renderWorkbook() {
-        $loop_row = NULL;
         foreach ($this->Worksheet->getRowIterator() as $row) {
+	    $loop_row = NULL;
             $cellIterator = $row->getCellIterator();
             foreach ($cellIterator as $cell) {
                 $cellTpl = $cell->getValue();
@@ -190,9 +189,9 @@ class FileEngine {
                     $cell->setValue($this->evalStr($cellTpl, $this->view));
                 }
             }
-        }
-        if (isset($loop_row)) {
-            $this->renderLoopRow($loop_row, $this->view);
+	    if (isset($loop_row)) {
+		$this->renderLoopRow($loop_row, $this->view);
+	    }
         }
     }
 
@@ -220,7 +219,7 @@ class FileEngine {
             for ($i = 0; $i < $item_count; $i++) {
                 $curr_row_index=$row->index + $i;
                 $item = $items[$i];
-                $item->i = $i + 1;
+                $item?($item->i = $i + 1):'';
                 if( $merge_width>0 ){//There is <mergeNUM> tag must merge NUM cells. Need to merge cell in new row as in tpl row
                     $this->Worksheet->mergeCells("{$column_letter}{$curr_row_index}:{$merge_final_letter}{$curr_row_index}");
                 }

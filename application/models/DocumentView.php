@@ -12,6 +12,7 @@ class DocumentView extends DocumentItems{
 			view_num,
 			view_name,
 			DATE_FORMAT(tstamp, '%d.%m.%Y') AS view_date,
+                        tstamp,
 			dvt.view_type_id,
 			view_efield_values,
 			view_efield_labels,
@@ -34,10 +35,6 @@ class DocumentView extends DocumentItems{
 	    return [];
 	}
 
-    }
-    public function viewUpdate2222( $doc_view_id, $field, $value, $is_extra=0 ){
-	$Document2=$this->Base->bridgeLoad('Document');
-	return $Document2->updateView($doc_view_id, $field, $value, $is_extra);
     }
     public function viewUpdate($doc_view_id, $is_extra, $field, $value='') {
 	$this->check($doc_view_id,'int');
@@ -90,5 +87,78 @@ class DocumentView extends DocumentItems{
 	$html = addslashes($html);
 	$this->query("UPDATE document_view_list SET freezed=1, html='$html' WHERE doc_view_id='$doc_view_id'");
 	return true;
+    }
+    
+    public function documentViewGet(){
+        $doc_view_id=$this->request('doc_view_id', 'int');
+        $out_type=$this->request('out_type');
+        $dump=$this->fillDump($doc_view_id);
+	
+	//print_r($dump);
+	//exit;
+	$ViewManager=$this->Base->load_model('ViewManager');
+	$ViewManager->store($dump);
+	$ViewManager->outRedirect($out_type);
+    }
+    
+    private function viewGet( $doc_view_id ){
+	$sql="SELECT
+		*,
+                (SELECT doc_data FROM document_list dl WHERE dl.doc_id=dvl.doc_id) doc_data
+	    FROM 
+		document_view_list dvl
+		    JOIN
+		document_view_types USING (view_type_id)
+	    WHERE 
+		doc_view_id='$doc_view_id'";
+	return $this->get_row($sql);
+    }
+    
+    private function fillDump($doc_view_id){
+        $Utils=$this->Base->load_model('Utils');
+	$Company=$this->Base->load_model('Company');
+	$doc_view=$this->viewGet($doc_view_id);
+	if( !$doc_view ){
+	    return null;
+	}
+	//$doc_id=$doc_view->doc_id;
+	
+        //$this->selectDoc($doc_id);
+	$head=$this->headGet($doc_view->doc_id);
+	$rows=$this->entriesFetch();
+	$footer=$this->footerGet();
+        $acomp=$Company->companyGet( $this->doc('active_company_id') );
+        $pcomp=$Company->companyGet( $this->doc('passive_company_id') );
+	
+        $doc_view->total_spell=$Utils->spellAmount($footer->total);
+        $doc_view->loc_date=$Utils->getLocalDate($doc_view->tstamp);
+	$doc_view->user_sign=$this->Base->svar('user_sign');
+	$doc_view->user_position=$this->Base->svar('user_position');
+	$doc_view->date=date('dmY', strtotime($doc_view->tstamp));
+	$doc_view->date_dot=date('d.m.Y', strtotime($doc_view->tstamp));
+	$doc_view->entries_num=count($rows);
+	if( $doc_view->view_efield_values ){
+	    $doc_view->extra=json_decode($doc_view->view_efield_values);
+	} else {
+	    $doc_view->extra=json_decode("{}");
+	}
+        
+        $dump=[
+	    'tpl_files'=>$doc_view->view_tpl,
+	    'title'=>$doc_view->view_name,
+	    'user_data'=>[
+		'email'=>$pcomp->company_email,
+		'text'=>'Доброго дня'
+	    ],
+            'view'=>[
+		'doc_view'=>$doc_view,
+		'a'=>$acomp,
+		'p'=>$pcomp,
+                'head'=>$head,
+                'rows'=>$rows,
+                'footer'=>$footer,
+            ]
+        ];
+        return $dump;
     }
 }

@@ -44,16 +44,23 @@
 	    Doc.data.open_in==='panel'?Doc.node.panel('close'):Doc.node.window('close');
 	},
 	create:function(){
-	    
-	},
-	createThenAddEntry:function ( code, qty ){
+	    var createDef=$.Deferred();
 	    $.post('DocumentItems/createDocument',function(doc_id){
 		if( doc_id*1 ){
-		     Doc.head.load(doc_id);
-		     Doc.entries.add( code, qty );
-		     Doc.handler.notify('created',doc_id);
+		    Doc.head.load(doc_id,true,createDef);
+                    createDef.notify('created');
+                    Doc.handler.notify('created',doc_id);
 		} else {
 		    App.flash("Не удалось создать документ");
+		}
+	    });
+	    return createDef;
+	},
+	createThenAddEntry:function ( code, qty ){
+	    Doc.create().progress(function(status){
+		if( status==='created' ){
+                    Doc.isCreated=true;
+		    Doc.entries.add( code, qty );
 		}
 	    });
 	}
@@ -63,7 +70,10 @@
     /////////////////////////////////////////////
     Doc.head = {
 	props:{},
-	load: function (doc_id,load_only_head) {
+	load: function (doc_id,load_only_head,createDef) {
+            if( doc_id===null ){
+                return;
+            }
 	    Doc.head.props.doc_id=doc_id;
 	    Doc.isCreated=!!doc_id;
 	    $.get('DocumentItems/headGet/' + Doc.head.props.doc_id, function (xhr) {
@@ -71,14 +81,15 @@
 		Doc.head.setPropsForm(Doc.head.props);
 		Doc.setTitle();
 		App.renderTpl('Doc_owners',Doc.head.props);
+		    Doc.view.loadTile();
 		if( !load_only_head ){
 		    Doc.entries.reload();
-		    Doc.view.loadTile();
 		}
+                createDef && createDef.notify('head_loaded',doc_id);
 	    });
 	},
 	reload:function(){
-	    Doc.head.load(Doc.head.props.doc_id,true);
+	    Doc.head.load(Doc.head.props.doc_id,false);
 	},
 	setPropsForm:function(props){
 	    Doc.head.allowUpdate=false;
@@ -89,8 +100,8 @@
 	    Doc.head.typeComboFormatterIcon(Doc.head.props.doc_type);
 	},
 	hightlightCommited:function(){
-	    $('#Doc_commit_btn').css('visibility',(Doc.head.props.is_commited*1?"hidden":"visible"));
-	    $('#Doc_type_cmb,#Doc_notcount_cmb,#Doc_pci').combobox(Doc.head.props.is_commited*1?'disable':'enable');
+	    $('#Doc_commit_btn').css('display',(Doc.head.props.is_commited*1?"none":""));
+	    $('#Doc_type_cmb,#Doc_notcount_cmb,#Doc_pci').combobox(Doc.head.props.is_commited*1?'disable':'enable');//
 	    var color='';
 	    if( Doc.head.props.is_commited*1 ){
 		var doc_type=Math.abs(Doc.head.props.doc_type);
@@ -121,13 +132,22 @@
 	},
 	update:function( field, value, oldval ){
 	    if( Doc.head.allowUpdate && value!==oldval ){
-		if( !Doc.isCreated ){
-		    App.flash("Не возможно изменить настройки. Документ пуст.");
-		    return;
+		if( Doc.isCreated ){
+                    $.post('DocumentItems/headUpdate/'+App.uri(field,value),function(ok){
+			Doc.head.afterUpdate( ok, field, value, oldval );
+		    });
+		} else {
+		    if( field==='passive_company_id' ){
+			Doc.handler.notify('pcomp_changed',value);
+			return;
+		    }
+		    Doc.create().progress(function(status){
+                        if( status==='created' ){
+			    Doc.isCreated=true;
+                            Doc.head.update( field, value, oldval );
+                        }
+                    });	    
 		}
-		$.post('DocumentItems/headUpdate/'+App.uri(field,value),function(ok){
-		    Doc.head.afterUpdate( ok, field, value, oldval );
-		});
 	    }
 	},
 	afterUpdate:function( ok, field, value, oldval ){
@@ -148,7 +168,7 @@
 		    break;
 		case 'doc_type':
 		    if( ok ){
-			Doc.head.load(Doc.head.doc_id);
+			Doc.head.reload();
 			Doc.entries.reload();
 		    } else {
 			App.flash("Сменить тип документа можно только у не проведенного документа.",'alert');
@@ -187,11 +207,17 @@
 	    }
 	    return label;
 	},
-	pcompTree:function(){
-	    if( !Doc.isCreated ){
-		App.flash("Не возможно изменить настройки. Документ пуст.");
+        pcompLoader:function(param, success, error){
+	    if( param.q===undefined ){
+		success([{company_id:Doc.head.props.passive_company_id,label:Doc.head.props.label}]);
 		return;
 	    }
+	    $.get('Company/listFetch/', param, function (xhr) {
+		var resp = App.json(xhr);
+		success(resp[0] ? resp : []);
+	    });   
+        },
+	pcompTree:function(){
 	    App.loadWindow('page/company/tree',{}).progress(function(status,comp){
 		if( status==='select' ){
 		    $("#Doc_pci").combobox('setValue',comp.company_id);
@@ -266,6 +292,10 @@
 	    });
 	},
 	duplicate:function(){
+	    if( !Doc.isCreated ){
+		App.flash("Документ пуст.");
+		return;
+	    }
 	    if( confirm("Создать копию этого документа?") ){
 		$.post("DocumentItems/duplicate/"+Doc.head.props.doc_id,function(doc_id){
 		    if( doc_id*1 ){
@@ -275,6 +305,47 @@
 		    }
 		});
 	    }
+	},
+	import:function(){
+	    if( !Doc.isCreated ){
+		Doc.create().progress(function(status){
+		    if( status==='created' ){
+			Doc.isCreated=true;
+			Doc.head.import();
+		    }
+		});
+		return;
+	    }
+	    var config=[
+		{name:'Код товара',field:'product_code',required:true},
+		{name:'Кол-во',field:'product_quantity'},
+		{name:'Цена',field:'invoice_price'},
+		{name:'Партия',field:'party_label'}		    
+	    ];
+	    App.loadWindow('page/dialog/importer',{label:'документ',fields_to_import:config}).progress(function(status,fvalue,Importer){
+		if( status==='submit' ){
+		    if( Doc.head.props.doc_id>0 ){
+			Doc.head.importDo(fvalue,Importer);
+		    } else {
+			Doc.create().progress(function(status){
+			    if( status==='created' ){
+				Doc.head.importDo(fvalue,Importer);
+			    }
+			});
+		    }
+		}
+	    });
+	},
+	importDo:function(fvalue,Importer){
+	    if( Doc.head.props.is_commited*1 ){
+		App.flash("Документ должен быть не проведен");
+		return;
+	    }
+	    $.post("DocumentItems/import/"+Doc.head.props.doc_id,fvalue,function(ok){
+		App.flash("Импортировано "+ok);
+		Importer.reload();
+		Doc.entries.reload();
+	    });
 	}
     };
     /////////////////////////////////////////////
@@ -313,19 +384,23 @@
 		}
 	    }
 	},
-	edit:function(){
+	edit:function(index,field,value){
 	    var row=$("#Doc_entry_dg").datagrid('getSelected');
 	    if( !row ){
 		App.flash("Строка не выбрана!");
 		return;
 	    }
 	    row.head=Doc.head.props;
+	    row.focus=field;
 	    App.loadWindow('page/trade/document_entry_edit',row).progress(function(state){
 		if(state==='change'){
 		    Doc.entries.reload();
 		}
 		if( state==='close' ){
 		    $('#Doc_entry_dg').datagrid('getPanel').panel('panel').focus();
+		}
+		if( state==='delete' ){
+		    Doc.entries.delete();
 		}
 	    });
 	},
@@ -371,6 +446,10 @@
 	    App.renderTpl('Doc_footer',data);
 	},
 	initRecalculate:function(){
+	    if( !Doc.isCreated ){
+		App.flash("Документ пуст.");
+		return;
+	    }
 	    App.loadWindow('page/trade/document_recalculate').progress(function(state,data){
 		if( state==='submit' ){
 		    $.post("DocumentItems/recalc/"+Doc.head.props.doc_id+'/'+(data.recalc_proc*1||0), function ( xhr ) {
@@ -507,7 +586,11 @@
 	    var i=$(node).attr('data-view-i');
 	    var view=Doc.view.views[i];
 	    if( view.doc_view_id ){
-		App.loadWindow('page/trade/view_settings',view);
+		App.loadWindow('page/trade/view_settings',view).progress(function(status){
+		    if( status==='deleted' || status==='changed' ){
+			Doc.view.loadTile();
+		    }
+		});
 	    }
 	},
 	create:function(view_type_id){
@@ -519,11 +602,11 @@
 	    });
 	},
 	open:function(doc_view_id){
-	    window.open("./?mod=Companies&rq=DocumentOut&doc_view_id="+doc_view_id, '_new');
+	    window.open("./DocumentView/documentViewGet/?out_type=.print&doc_view_id="+doc_view_id, '_new');
 	},
 	click:function( node ){
 	    var doc_view_id=$(node).attr('data-view-id');
-	    var view_type_id=$(node).attr('data-view-type-id')
+	    var view_type_id=$(node).attr('data-view-type-id');
 	    if( doc_view_id*1 ){
 		Doc.view.open(doc_view_id);
 	    }
@@ -539,11 +622,11 @@
 	}
     };
 </script>
-<form id="Doc_head_frm" onsubmit="return false;" style="user-select:none;">
+<form id="Doc_head_frm" onsubmit="return false;" style="-moz-user-select:none;">
     <!-- DOCUMENT HEADER -->
     <div style="width: 658px;margin: auto;padding-top: 10px;">
 	<div>
-	    <select class="easyui-combobox" id="Doc_type_cmb" name="Doc_type" title="Вид" data-options="
+	    <select class="easyui-combobox" id="Doc_type_cmb" name="doc_type" title="Вид" data-options="
 		    editable:false,
 		    buttonText:'<img src=img/sell.png>',
 		    buttonAlign:'left',
@@ -569,10 +652,10 @@
 	    <input class="easyui-combobox" name="passive_company_id" id="Doc_pci" title="Контрагент" data-options="
 		    valueField: 'company_id',
 		    textField: 'label',
-		    url: 'Company/listFetch/selected_passive_if_empty',
+                    loader:Doc.head.pcompLoader,
 		    mode: 'remote',
-		    method:'get',
 		    hasDownArrow:false,
+		    selectOnNavigation:false,
 		    formatter:Doc.head.companyListFrm,
 		    onSelect: function(company){Doc.head.update('passive_company_id',company.company_id)},
 		    icons: [{
@@ -653,6 +736,7 @@
 		<span class="icon-24 icon-lorry" title="Добавить в распорядок" onclick="Doc.head.addEvent();"> </span>
 		<span class="icon-24 icon-sms" title="Отправить СМС" onclick="Doc.head.sendSms();"> </span>
 		<span class="icon-24 icon-calc" title="Перерасчитать цены" onclick="Doc.entries.initRecalculate();"> </span>
+		<span class="icon-24 icon-import" title="Импортировать" onclick="Doc.head.import();"> </span>
 		<span class="icon-24 icon-duplicate" title="Копировать" onclick="Doc.head.duplicate();"> </span>
 		<span class="icon-24 icon-utils" title="Дополнительные свойства" onclick="$('#Doc_utils').toggle('slow')"> </span>
 		<span class="icon-24 icon-refresh" title="Обновить" onclick="Doc.entries.reload();"> </span>
@@ -671,12 +755,12 @@
 	       autoRowHeight:false,
 	       loader:Doc.entries.loader,
 	       method:'get',
-	       onDblClickRow:Doc.entries.edit,
+	       onDblClickCell:Doc.entries.edit,
 	       onRowContextMenu: Doc.entries.onRowContextMenu
 	       ">
 	    <thead>
 		<tr>
-		    <th data-options="field:'product_code',width:80">Код</th>
+                    <th data-options="field:'product_code',width:80">Код</th>  
 		    <th data-options="field:'product_name',width:310">Название</th>
 		    <th data-options="field:'product_quantity',width:50,align:'right'">Кол-во</th>
 		    <th data-options="field:'product_unit',width:40,align:'center'">Ед.</th>
@@ -725,7 +809,7 @@
 	    <img src="img/edit-16.png" title="Изменено пользователем" style="vertical-align: middle"> {{modified_by}}
 	</div>
 	<!-- DOCUMENT VIEWS -->
-        <div id="Doc_view_tile" style="clear:both;vertical-align: top;" class="covert">
+        <div id="Doc_view_tile" style="clear:both;vertical-align: top;text-align: justify" class="covert">
 	    {{if views}}
 		{{views}}
 		<div class="view_button {{if view_hidden|equals>1}}view_is_hidden{{/if}}" 
@@ -735,7 +819,7 @@
 		    <div>{{view_name}}</div>
 		    {{if doc_view_id}}
 		    <img src="img/settings.png" data-view-i="{{#}}" onclick="Doc.view.settings(this);event.stopPropagation()" style="float:right;" title="Настройки">
-			№{{view_num}} {{view_date}}
+		    <b>№{{view_num}} {{view_date}}</b>
 			<div class="view_efields">
 			{{if efields}}
 			    {{efields}}
@@ -765,7 +849,7 @@
 	height:30px;
 	margin-left:0px;
 	margin-top: 3px;
-	background-color: #dfd
+	background-color: #cfd
     }
     .footer_table {
 	background-image: linear-gradient(#fff 0%,  #e0eeff 100%);
@@ -792,16 +876,19 @@
     .view_button{
 	display: inline-block;
 	border: 1px #bbb solid;
-	color: #369;
+	color: #333;
 	border-radius: 3px;
-	width:160px;
+	width:155px;
 	min-height: 32px;
-	margin: 0px 5px 5px 0px;
+	margin: 0px 0px 6px 0px;
 	text-align: center;
-	background-image: linear-gradient(rgba(255,255,255,0.75) 0%,  rgba(255,255,255,0) 100%);
-	background-color:#e0eeff;
+	background-image: linear-gradient(rgba(255,255,255,0.9) 0%,  rgba(255,255,255,0.1) 100%);
+	background-color:#cfd;
 	cursor: pointer;
 	vertical-align: top;
+    }
+    .view_button b{
+	color:#090;
     }
     .view_button img{
 	visibility: hidden;
@@ -811,6 +898,8 @@
 	visibility: visible;
     }
     .view_button:hover{
+	border: 1px #5c5 solid;
+	background-image: none;
 	z-index:100;	
     }
     .view_button:hover .view_efields{
@@ -821,8 +910,8 @@
 	position: absolute;
 	margin-top:1px;
 	text-align: left;
-	width:160px;
-	border: 1px #bbb solid;
+	width:155px;
+	border: 1px #5c5 solid;
 	overflow: hidden;
 	display: none;
 	margin-left:-1px;

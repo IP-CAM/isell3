@@ -19,6 +19,7 @@ class DocumentBlank extends DocumentCore {
 	if( $assigned_path ){
 	    $andwhere.=" AND path LIKE '$assigned_path%'";
 	}
+	$active_company_id='$active_company_id' AND
         $sql = "SELECT 
                     doc_id,
                     doc_type_name,
@@ -42,7 +43,7 @@ class DocumentBlank extends DocumentCore {
                     document_view_types USING (view_type_id)
                 WHERE
                     dl.doc_type > 9
-                        AND dl.active_company_id = '" . $this->Base->acomp('company_id') . "'
+                        AND dl.active_company_id = '$active_company_id'
 			    $andwhere
 		HAVING $having
                 ORDER BY html>'',cstamp , doc_num

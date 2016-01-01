@@ -33,7 +33,7 @@ class Catalog extends CI_Model {
     }
     protected function request( $name, $type=null, $default=null ){
 	$value=$this->input->get_post($name);
-	if( isset($value) ){
+	if( $value!==null ){
 	    $this->check($value,$type);
 	    return $value;
 	}
@@ -158,6 +158,7 @@ class Catalog extends CI_Model {
     protected function treeUpdate($table,$branch_id,$field,$value,$calc_top_id=false) {
 	if( $field=='parent_id' && $this->treeisLeaf($table,$value) || $field=='label' && !$value ){
 	    /*parent must be not leaf and label should not be empty*/
+            $this->Base->msg($field=='parent_id'?"Not folder":"Label should not be empty");
 	    return false;
 	}
 	$this->update($table, [$field => $value],['branch_id' => $branch_id]);
@@ -170,9 +171,9 @@ class Catalog extends CI_Model {
     private function treeUpdatePath($table, $branch_id) {
 	$this->query(
 		"SELECT @old_path:=COALESCE(t1.path, ''),@new_path:=CONCAT(COALESCE(t2.path, '/'), t1.label, '/')
-		FROM $table t1
+		FROM (SELECT * FROM $table) t1
 			LEFT JOIN
-		    $table t2 ON t1.parent_id = t2.branch_id 
+		    (SELECT * FROM $table) t2 ON t1.parent_id = t2.branch_id 
 		WHERE
 		    t1.branch_id = $branch_id");
 	$this->query(

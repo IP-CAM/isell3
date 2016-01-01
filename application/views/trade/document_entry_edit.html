@@ -17,20 +17,19 @@
 	    this.node.window('window').css('top','40px');
 	    
 	    App.renderTpl('DocEntEd_markup',this.data);
-	    App.setupForm("#document_ented_frm",this.data,'use_inp_values');
-	    //$("input[name=product_price]").numberbox({precision:this.data.head.signs_after_dot});
+	    App.setupForm("#document_ented_frm",this.data).change(function(){
+		DocEntEd.change(this.name,this.value);
+	    });
 	    DocEntEd.getStats();
 	},
 	initAfter:function(){
-	    $('#page_trade_document_entry_edit .validatebox-text').on('focus', function() {
+	    $('#page_trade_document_entry_edit input').on('focus', function() {
 		this.select();
 	    });
-	    $('#dee_product_quantity').textbox('textbox').select();
-	},
-	formSet:function(){
-	    DocEntEd.suppressUpdate=true;
-	    $("#document_ented_frm").form('load',DocEntEd.data);
-	    setTimeout(function(){DocEntEd.suppressUpdate=false;},100);	    
+	    if( '/product_quantity/product_price/party_label/'.indexOf(this.data.focus)===-1 ){
+		this.data.focus='product_quantity';
+	    }
+	    $("input[name="+this.data.focus+"]").select();
 	},
 	change: function( name, value ){
 	    if( DocEntEd.suppressUpdate===true ){
@@ -43,7 +42,7 @@
 		    DocEntEd.getStats();
 		}
 		else{
-		    DocEntEd.formSet();
+		    App.setupForm("#document_ented_frm",this.data);//form reset
 		    App.flash('Ошибка. Значение не изменено!');
 		}
 	    });
@@ -52,7 +51,6 @@
 	    $.post( App.uri('DocumentItems','entryStatsGet',DocEntEd.data.head.doc_id,DocEntEd.data.product_code), function(xhr){
 		DocEntEd.stats=App.json(xhr);
 		DocEntEd.renderStats();
-		//$("#dee_product_quantity").numberspinner('increment',100);
 	    });
 	},
 	renderStats:function(){
@@ -69,7 +67,24 @@
 	    }
 	    App.renderTpl('DocEntEd_qty_markup',stats);
 	    App.renderTpl('DocEntEd_price_markup',stats);
-	}
+	},
+	delete:function(){
+	    DocEntEd.handler.notify('delete');
+	},
+	showProductCard:function(){
+	    if( App.user.props.user_level<2 ){
+		alert("Доступ ограничен");
+		return;
+	    }
+	    App.loadWindow('page/stock/product_card',DocEntEd.data.product_code).progress(function(status,fvalue){
+		if( status==='save' ){
+		    DocEntEd.handler.notify('change');
+		}
+	    });	    
+	},
+        parsePrice:function( node ){
+            node.value=eval(node.value.toString().replace(',','.').match( /[\(\d\.\)\*\/\+-]*/ ).toString()) || 0;
+        }
     };
 </script>
 <div id="DocEntEd_markup" class="covert">
@@ -79,31 +94,26 @@
 		Товар:
 	    </td>
 	    <td>
-		<strong title="Код">{{product_code}}</strong> <span title="Название">{{product_name}}</span><br>
-		<i class="hover_show" title="УКТ ЗЕД">УКТ ЗЕД: {{product_uktzet}}</i>
+		<strong title="Код">{{product_code}}</strong> <span title="Название">{{product_name}}</span>
+		<img onclick="DocEntEd.showProductCard();" style="cursor: pointer;vertical-align: middle" src="img/settings.png" title="Изменить свойства товара"><br>
+		<i class="hover_show" title="Таможенный код">Таможенный код: {{product_uktzet}}</i>
 	    </td>
 	</tr>
     </table>
 </div>
 <form id="document_ented_frm" onsubmit="DocEntEd.node.window('close');return false;">
     <div>
-	<input class="easyui-textbox" name="product_quantity" id="dee_product_quantity" title="Кол-во" data-options="
-	       onChange:function(val){DocEntEd.change('product_quantity',val)}
-	       " />
+	<input name="product_quantity" title="Кол-во" />
 	<span id="DocEntEd_qty_markup" class="covert" title="Кол-во на складе">Склад: {{product_quantity}} {{unit}}</span>
     </div>
     <div>
-	<input class="easyui-textbox" name="product_price" id="doc_ent_price" title="Цена" data-options="
-	   onChange:function(val){DocEntEd.change('product_price',val);}
-	   " />
+        <input name="product_price" onchange="DocEntEd.parsePrice(this);" title="Цена"/>
     <span id="DocEntEd_price_markup" class="covert" title="Стандартная цена">Цена: <b style="color:'{{color}}'">{{price}} {{curr_symbol}}</b></span>
     </div>
- 	<input class="easyui-textbox" name="party_label" title="Партия" data-options="
-	       onChange:function(val){DocEntEd.change('party_label',val)}
-	       ">
+ 	<input name="party_label" title="Партия">
    <div style="text-align: center">
 	<button type="submit" onclick="DocEntEd.node.window('close')"><img src="img/apply24.png" style="vertical-align: middle"> Ок</button>
-	<button type="button" onclick="Doc.entries.delete();DocEntEd.node.window('close');"><img src="img/delete.png" style="vertical-align: middle"> Удалить</button>
+	<button type="button" onclick="DocEntEd.delete();DocEntEd.node.window('close');"><img src="img/delete.png" style="vertical-align: middle"> Удалить</button>
     </div>
 </form>
 <style>

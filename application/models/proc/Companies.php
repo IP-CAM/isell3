@@ -225,41 +225,41 @@ class Companies extends Data {
     //STATS SECTION
     /////////////////////////////
 
-    public function getSellStats() {
-        $stats = array();
-        $vat_rate = (1 + $this->Base->acomp('company_vat_rate') / 100);
-        $m = date('Y-m', time() - 60 * 60 * 24 * 31);
-        $passive_company_id = $this->Base->pcomp('company_id');
-        $sql = "SELECT 
-			stt.label brand,
-			ROUND(SUM(de.product_quantity*de.invoice_price)*$vat_rate) s,
-			SUBSTR(cstamp,1,7) m
-				FROM document_entries de
-				JOIN document_list dl USING(doc_id)
-				JOIN stock_entries se USING(product_code)
-				JOIN stock_tree st ON st.branch_id=se.parent_id
-				JOIN stock_tree stt ON st.top_id=stt.branch_id
-			WHERE passive_company_id=$passive_company_id AND cstamp>'$m' AND doc_type=1
-			GROUP BY SUBSTR(cstamp,1,7) DESC,st.top_id";
-        $stats['sell'] = $this->Base->get_list($sql);
-        if ($this->Base->svar('user_level') > 2) {
-            $this->Base->query("SET @mval:=0");
-            $sql = "
-				SELECT m,s,p,IF(@mval<s,IF(s<p,@mval:=p,@mval:=s),0) n
-				FROM
-				(SELECT
-					SUBSTR(cstamp,6,2) m,
-					ROUND(SUM(IF(acc_debit_code=361,amount,0))) s,
-					ROUND(SUM(IF(acc_credit_code=361,amount,0))) p
-				FROM
-					acc_trans 
-				WHERE passive_company_id=$passive_company_id
-				GROUP BY SUBSTR(cstamp,1,7) LIMIT 12) AS t";
-            $stats['pay'] = $this->Base->get_list($sql);
-            $stats['pay_mval'] = $this->Base->get_row("SELECT @mval", 0);
-        }
-        return $stats;
-    }
+//    public function getSellStats() {
+//        $stats = array();
+//        $vat_rate = (1 + $this->Base->acomp('company_vat_rate') / 100);
+//        $m = date('Y-m', time() - 60 * 60 * 24 * 31);
+//        $passive_company_id = $this->Base->pcomp('company_id');
+//        $sql = "SELECT 
+//			stt.label brand,
+//			ROUND(SUM(de.product_quantity*de.invoice_price)*$vat_rate) s,
+//			SUBSTR(cstamp,1,7) m
+//				FROM document_entries de
+//				JOIN document_list dl USING(doc_id)
+//				JOIN stock_entries se USING(product_code)
+//				JOIN stock_tree st ON st.branch_id=se.parent_id
+//				JOIN stock_tree stt ON st.top_id=stt.branch_id
+//			WHERE passive_company_id=$passive_company_id AND cstamp>'$m' AND doc_type=1
+//			GROUP BY SUBSTR(cstamp,1,7) DESC,st.top_id";
+//        $stats['sell'] = $this->Base->get_list($sql);
+//        if ($this->Base->svar('user_level') > 2) {
+//            $this->Base->query("SET @mval:=0");
+//            $sql = "
+//				SELECT m,s,p,IF(@mval<s,IF(s<p,@mval:=p,@mval:=s),0) n
+//				FROM
+//				(SELECT
+//					SUBSTR(cstamp,6,2) m,
+//					ROUND(SUM(IF(acc_debit_code=361,amount,0))) s,
+//					ROUND(SUM(IF(acc_credit_code=361,amount,0))) p
+//				FROM
+//					acc_trans 
+//				WHERE passive_company_id=$passive_company_id
+//				GROUP BY SUBSTR(cstamp,1,7) LIMIT 12) AS t";
+//            $stats['pay'] = $this->Base->get_list($sql);
+//            $stats['pay_mval'] = $this->Base->get_row("SELECT @mval", 0);
+//        }
+//        return $stats;
+//    }
 
 }
 

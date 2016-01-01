@@ -1,10 +1,10 @@
 [
     {"level":"1","name":"Trade","icon":"trade.png","label":"Торговля"},
-    {"level":"1","name":"Companies","icon":"companies.png","label":"Контрагенты"},
     {"level":"3","name":"Accounts","icon":"accounts.png","label":"Бухгалтерия"},
     {"level":"1","name":"Stock","icon":"stock.png","label":"Склад"},
     {"level":"1","name":"Lists","icon":"lists.png","label":"Планировщик"},
     {"level":"2","name":"Data","icon":"data.png","label":"Данные"},
     {"level":"2","name":"Pref","icon":"pref.png","label":"Настройки"},
-    {"level":"1","name":"Home","icon":"home.png","label":"Отчеты"}
+    {"level":"1","name":"Home","icon":"home.png","label":"Отчеты"},
+    {"level":"1","name":"Reports","icon":"home.png","label":"Отчеты"}
 ]

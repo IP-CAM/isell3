@@ -9,7 +9,7 @@ class InputOutput extends CI_Controller{
     }
     
     public $rq;
-    public $rtype = 'success';
+    public $rtype = 'OK';
     public $rmethod = 'xhr';
     public $msg = '';
 
@@ -76,7 +76,7 @@ class InputOutput extends CI_Controller{
     }
 
     public function response_tpl($path) {
-	$this->rtype = 'tpl';
+	//$this->rtype = 'tpl';
 	//echo var_dump(stream_resolve_include_path ( "application/views/$path" ));
 	$this->response(file_get_contents("application/views/$path", true));
     }

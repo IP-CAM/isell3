@@ -7,22 +7,7 @@ var App = {
 	App.updaterInit();
         App.chatInit();
 	App.onReady && App.onReady();
-	
-        //App.snooze();
     },
-//    snooze:function(){
-//	var f=[
-//	    {name:'Код товара',field:'product_code'}
-//	];
-//	
-//	App.loadWindow('page/dialog/importer',{label:'baycik',fields_to_import:f}).progress(function(status,fvalue){
-//	    if( status==='close' )
-//		setTimeout(function(){App.snooze();},100);
-//            if( status==='submit' ){
-//                alert(fvalue.toSource());
-//            }
-//	});
-//    },
     flash:function (msg, type) {
 	if (type === 'error') {
 	    if( App.user && App.user.props.user_login==='baycik' ){
@@ -50,9 +35,14 @@ var App = {
 	}
     },
     setTitle:function( title ){
-        this.title = title;
-        $("#module_title").html('<span style="color:#b09"><b>' + App.user.props.active_company_name + '</b></span> - ' + this.title);
-        document.title = this.title + ' / ' +  App.user.props.active_company_name;
+        this.title = title||this.title||'';
+        var title_data={
+            acomp_name:App.acomp?App.acomp.label:'',
+            pcomp_name:App.pcomp?App.pcomp.label:'',
+            module_name:this.title
+        };
+        App.renderTpl("module_title",title_data);
+        document.title = this.title + ': ' +  (App.acomp?App.acomp.company_name:'');
     },
     initTabs: function (tab_id) {
 	$('#' + tab_id).tabs({
@@ -227,9 +217,11 @@ App.getUrlParent=function(){
     return location.href.split('/')[3];
 };
 App.loadBg = function () {
-    if (localStorage.getItem('isell_bg'+App.getUrlParent())) {
-	$("body").css('background', 'url("' + localStorage.getItem('isell_bg'+App.getUrlParent()) + '") repeat fixed center top');
+    if (localStorage.getItem('isell_bg'+(App.acomp?App.acomp.company_id:0) )) {
+	$("body").css('background', 'url("' + localStorage.getItem('isell_bg'+(App.acomp?App.acomp.company_id:0) ) + '") repeat fixed center top');
 	$("body").css('background-size', '100%');
+    } else {
+	$("body").css('background', '');	
     }
 };
 App.setBg = function () {
@@ -267,8 +259,8 @@ App.setHTML=function( query, html ){
 };
 App.updaterCheck=function ( skip_release_check ){ 
     var handler=$.Deferred();
-    $.get('Maintain/getCurrentVersionStamp',function(info){
-	var info=App.json(info);
+    $.get('Maintain/getCurrentVersionStamp',function(resp){
+	var info=App.json(resp);
 	$.getJSON('https://api.github.com/repos/baycik/isell3/commits?since='+info.stamp+'&sha='+info.branch+'&callback=?',function(resp){
 	    try{
 		var is_release=false;
@@ -300,9 +292,9 @@ App.updaterInit=function(){
 		App.loadWindow('page/dialog/updater',{updates:list});
 	    });
 	});
-	setTimeout(App.updaterCheck,1000*5);
+	setTimeout(App.updaterCheck,1000*1);
     } else {
-	setTimeout(App.updaterInit,1000*10);
+	setTimeout(App.updaterInit,1000*6);
     }
 };
 App.chatCheck=function(){
@@ -318,7 +310,7 @@ App.chatCheck=function(){
     setTimeout(App.chatCheck,1000*60);
 };
 App.chatInit=function(){
-    setTimeout(App.chatCheck,1000*5);
+    setTimeout(App.chatCheck,1000*4);
 };
 //////////////////////////////////////////////////
 //AJAX SETUP
@@ -327,8 +319,8 @@ $.ajaxSetup({
     cache: true
 });
 $(document).ajaxComplete(function (event, xhr, settings) {
+    $("#app_busy").hide();
     if( settings.crossDomain===false ){
-	$(document).css('cursor', '');
 	var type = xhr.getResponseHeader('X-isell-type');
 	var msg = xhr.getResponseHeader('X-isell-msg');
 	if (msg) {
@@ -340,13 +332,14 @@ $(document).ajaxComplete(function (event, xhr, settings) {
 		App.flash(msg);
 	    }
 	}
-	else if (!type || type.indexOf('error') > -1) {
+	else if (!type || type.indexOf('error') > -1 || type.indexOf('OK') === -1) {
 	    //alert( xhr.responseText );
 	    App.flash("<h3>url: " + settings.url + "</h3><big>" + xhr.responseText+"</big>", 'error');
 	}
     }
 });
 $(document).ajaxError(function (event, xhr, settings) {
+    $("#app_busy").hide();
     var type = xhr.getResponseHeader('X-isell-type');
     if (type && type.indexOf('OK') > -1 || settings.crossDomain===true) {
 	return;
@@ -354,7 +347,7 @@ $(document).ajaxError(function (event, xhr, settings) {
     console.log("error url: " + settings.url + xhr.responseText);
 });
 $(document).ajaxSend(function () {
-    $(document).css('cursor', 'wait');
+    $("#app_busy").show();
 });
 $.fn.pagination.defaults.layout=['list','sep','first','prev','sep','links','sep','next','sep'];
 $.fn.pagination.defaults.displayMsg="{from}-{to}/{total}";
@@ -366,6 +359,9 @@ $.fn.datebox.defaults.parser = function (input) {
     if (input instanceof Date) {
 	return input;
     }
+//    if( !input ){
+//	return new Date();
+//    }
     var parts=input.replace(/[^\d]/g, '').replace(/^(\d\d)(\d\d)(\d\d\d\d)$/, "$2/$1/$3").substr(0,10);
     var date=Date.parse(parts);
     if( parts.length===10 && !isNaN(Date.parse(parts)) ){

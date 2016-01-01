@@ -88,6 +88,7 @@ class ProcUtils extends iSellBase {
     }
 
     public function onSelfRecalculate() {
+	$active_company_id=$this->Base->acomp('company_id');
         $this->set_level(3);
         $offset = $this->request('offset', 1, 0);
         $idate = $this->request('idate'); //"2013-01-01";
@@ -96,7 +97,7 @@ class ProcUtils extends iSellBase {
         if (!$step || $step == 1) {
             $limit = 200;
             $res = $this->query("SELECT DISTINCT product_code FROM document_entries JOIN document_list USING(doc_id)
-				WHERE is_commited=1 AND (doc_type=1 OR doc_type=2) AND product_code NOT IN (SELECT product_code FROM stock_entries) 
+				WHERE active_company_id='$active_company_id' AND is_commited=1 AND (doc_type=1 OR doc_type=2) AND product_code NOT IN (SELECT product_code FROM stock_entries) 
 				LIMIT $limit OFFSET $offset");
             while ($row = mysql_fetch_assoc($res)) {
                 $product_code = $row['product_code'];
@@ -124,7 +125,7 @@ class ProcUtils extends iSellBase {
                 $product_code = $row['product_code'];
                 $avg_self = $this->get_row("SELECT SUM(product_quantity*invoice_price)/SUM(product_quantity)
 					FROM document_entries JOIN document_list USING(doc_id) 
-					WHERE is_commited=1 AND doc_type=2 AND product_code='$product_code' AND '$idate'<=cstamp AND cstamp<='$fdate'", 0);
+					WHERE active_company_id='$active_company_id' AND is_commited=1 AND doc_type=2 AND product_code='$product_code' AND '$idate'<=cstamp AND cstamp<='$fdate'", 0);
                 if ($avg_self == 0) {
                     $this->LoadClass('Document');
                     $price = $this->Document->getRawProductPrice($product_code, $usd_ratio);
@@ -134,11 +135,11 @@ class ProcUtils extends iSellBase {
                 }
                 $vat_quantity = $this->get_row("SELECT SUM(IF(doc_type=1,-product_quantity,product_quantity))
 					FROM document_entries JOIN document_list USING(doc_id) 
-					WHERE is_commited=1 AND product_code='$product_code' AND '$idate'<=cstamp AND cstamp<='$fdate'", 0);
+					WHERE active_company_id='$active_company_id' AND is_commited=1 AND product_code='$product_code' AND '$idate'<=cstamp AND cstamp<='$fdate'", 0);
                 /*
                  * Correcting vat_quantity for deleted products
                  */
-                $this->query("UPDATE LOW_PRIORITY document_entries JOIN document_list USING(doc_id) SET  self_price=$new_stock_self WHERE doc_type=1 AND product_code='$product_code'");
+                $this->query("UPDATE LOW_PRIORITY document_entries JOIN document_list USING(doc_id) SET  self_price=$new_stock_self WHERE active_company_id='$active_company_id' AND doc_type=1 AND product_code='$product_code'");
                 $this->query("UPDATE LOW_PRIORITY stock_entries SET self_price='$new_stock_self',vat_quantity='$vat_quantity' WHERE product_code='$product_code'");
                 $left_more_rows = true;
             }

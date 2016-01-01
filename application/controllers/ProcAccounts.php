@@ -222,7 +222,7 @@ class ProcAccounts extends iSellBase {
 
     public function onCheckListData() {
         $this->set_level(3);
-        $main_acc_code = $this->request('main_acc_code', 1);
+        $main_acc_code = $this->request('main_acc_code');
         $table_query = $this->getGridQuery();
         $this->LoadClass('Accounts');
         $table_data = $this->Accounts->getCheckListData($main_acc_code, $table_query);
@@ -237,7 +237,7 @@ class ProcAccounts extends iSellBase {
 
     public function onXMLUpload() {
         $this->set_level(3);
-        $main_acc_code = $this->request('main_acc_code', 1);
+        $main_acc_code = $this->request('main_acc_code');
         set_time_limit(240);
         $this->rmethod = 'alert';
         $this->LoadClass('Accounts');
@@ -255,7 +255,7 @@ class ProcAccounts extends iSellBase {
 //	}
     public function onCheckListViewOut() {
         $this->set_level(3);
-        $main_acc_code = $this->request('main_acc_code', 1);
+        $main_acc_code = $this->request('main_acc_code');
         $table_query = $this->getGridQuery();
         $this->LoadClass('Accounts');
         $this->LoadClass('FileEngine');
@@ -280,7 +280,7 @@ class ProcAccounts extends iSellBase {
 
     public function onFavoriteUpdate() {
         $is_favorite = $this->request('is_favorite', 1);
-        $acc_code = $this->request('acc_code', 1);
+        $acc_code = $this->request('acc_code');
         $this->LoadClass('Accounts');
         $this->Accounts->favoriteUpdate($acc_code, $is_favorite);
     }
@@ -293,7 +293,7 @@ class ProcAccounts extends iSellBase {
 
     public function onUseClientBank() {
         $use_clientbank = $this->request('use_clientbank', 1);
-        $acc_code = $this->request('acc_code', 1);
+        $acc_code = $this->request('acc_code');
         $this->LoadClass('Accounts');
         $this->Accounts->clientBankUseSet($acc_code, $use_clientbank);
     }
@@ -305,7 +305,7 @@ class ProcAccounts extends iSellBase {
 //	}
     public function onAccountBalance() {
         $this->set_level(3);
-        $acc_code = $this->request('acc_code', 1);
+        $acc_code = $this->request('acc_code');
         $this->LoadClass('Accounts');
         $account = $this->Accounts->getAccountBalance($acc_code);
         $this->response($account);

@@ -23,15 +23,17 @@ class Pref {
     }
 
     public function getPrefs($pref_names) {// "pref1,pref2,pref3"
+	$active_company_id=$this->Base->acomp('company_id');
         $where = "pref_name='" . str_replace(',', "' OR pref_name='", $pref_names) . "'";
-        $prefs = $this->Base->get_row("SELECT GROUP_CONCAT(pref_value) pvals,GROUP_CONCAT(pref_name) pnames FROM pref_list WHERE $where");
+        $prefs = $this->Base->get_row("SELECT GROUP_CONCAT(pref_value) pvals,GROUP_CONCAT(pref_name) pnames FROM pref_list WHERE active_company_id='$active_company_id' AND ($where)");
         return array_combine(explode(',', $prefs['pnames']), explode(',', $prefs['pvals']));
     }
 
     public function setPrefs($pref_list) {
+	$active_company_id=$this->Base->acomp('company_id');
         foreach ($pref_list as $pref_name => $pref_value) {
             if (preg_match('/^[^,]*$/', $pref_value))//Should not contain comma
-                $this->Base->query("REPLACE pref_list SET pref_name='$pref_name', pref_value='$pref_value'");
+                $this->Base->query("REPLACE pref_list SET active_company_id='$active_company_id', pref_name='$pref_name', pref_value='$pref_value'");
             else
                 $this->Base->response_error("Не дожно содержать запятую $pref_value ");
         }
@@ -126,7 +128,8 @@ class Pref {
     );
 
     public function prefGet() {
-        $ratios = $this->Base->get_list("SELECT * FROM pref_list");
+	$active_company_id=$this->Base->acomp('company_id');
+        $ratios = $this->Base->get_list("SELECT * FROM pref_list WHERE active_company_id='$active_company_id'");
         $resp = array();
         foreach ($ratios as $val) {
             $resp[$val['pref_name']] = $val['pref_value'];
@@ -135,12 +138,12 @@ class Pref {
     }
 
     public function prefUpdate($field, $value) {
+	$active_company_id=$this->Base->acomp('company_id');
 	if( $field=='default_debt_limit' ){
 	    $this->Base->set_level(4);
 	}
 	$this->Base->set_level(2);
-
-        $this->Base->query("REPLACE pref_list SET pref_value='$value', pref_name='$field'");
+        $this->Base->query("REPLACE pref_list SET active_company_id='$active_company_id', pref_value='$value', pref_name='$field'");
     }
 }
 

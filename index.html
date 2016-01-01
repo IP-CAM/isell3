@@ -1,13 +1,13 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-	<title>iSell 3.7</title>
+	<title>iSell 3.9</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<link rel="icon" type="image/png" href="favicon.png" />
 	<link rel="stylesheet" type="text/css" href="js/jquery-easyui-1.4/themes/default/easyui.css"/>
 	<link rel="stylesheet" type="text/css" href="js/jquery-easyui-1.4/themes/icon.css"/>
 	<link rel="stylesheet" type="text/css" href="js/jquery-easyui-1.4/themes/color.css"/>
-	<link href="css/app.css" rel="stylesheet" type="text/css" />
+	<link rel="stylesheet" type="text/css" href="css/app.css" />
 	<script type="text/javascript" src="js/markup.min.js"></script>
 	<script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
 	<script type="text/javascript" src="js/jquery-easyui-1.4/jquery.easyui.min.js"></script>
@@ -38,6 +38,7 @@
 		},
 		setProps:function( userProps ){
 		    App.user.props=userProps;
+		    App.user.setActiveComp(userProps.acomp);
 		    if( userProps && userProps.user_level>0 ){
 			App.renderTpl('div_user_panel', App.user.props || '');	
 			App.renderTpl('div_module_list', App.user.props || '');
@@ -69,18 +70,81 @@
 		    $.get("User/SignOut");
 		    this.setProps({});
 		},
-		loginFormShow: function () {
+                edit:function(){
+                    $.post("User/userFetch",function(resp){
+                        var props=App.json(resp);
+                        App.user.promptEditor(props);
+                    });
+                },
+                promptEditor:function( user ){
+                    App.loadWindow('page/dialog/user_edit',user).progress(function(status,user_data){
+                        if( status==='submit' ){
+                            $.post("User/save",user_data,function(ok){
+                                if( ok*1 ){
+                                    App.user.getData();
+                                    App.flash("Свойства пользователя сохранены");
+                                } else {
+                                    if( ok==='LAST_ADMIN' ){
+                                        alert("Должен остаться хотя бы один администратор.");
+                                    }
+                                    App.flash("Свойства пользователя не изменены");
+                                }
+                            });
+                        }
+                    });
+                },
+                loginFormShow: function () {
 		    $("#loginScreen,#loginOverlay").show();
 		},
 		loginFormHide: function () {
 		    $("#loginScreen,#loginOverlay").hide();
+		},
+                acompSwitch:function(){
+                    $.get("Company/switchActiveCompany",function(resp){
+                        var company=App.json(resp);
+			App.user.setActiveComp(company);
+                    });
+                },
+		setActiveComp:function(company){
+                    var old_acomp_id=App.acomp?App.acomp.company_id:0;
+		    App.acomp=company;
+		    if( company ){
+                        if( company.company_id===old_acomp_id ){
+                            App.handler.notify('activeCompanyReloaded',company);
+                            return;
+                        }
+			App.handler.notify('activeCompanySelected',company);
+			setTimeout(function(){
+			    App.loadBg();
+			},0);
+		    } else {
+			App.handler.notify('activeCompanyReset');
+		    }
+		},
+		setPassiveCompany:function(company){
+                    var old_pcomp_id=App.pcomp?App.pcomp.company_id:0;
+		    App.pcomp=company;
+		    if( company ){
+                        if( company.company_id===old_pcomp_id ){
+                            App.handler.notify('passiveCompanyReloaded',company);
+                            return;
+                        }
+			App.handler.notify('passiveCompanySelected',company);
+		    } else {
+			App.handler.notify('passiveCompanyReset');
+		    }
 		}
 	    };
 	    App.onReady = function () {
 		App.user.getData();
+                App.handler.progress(function(status){
+                    if( status==='passiveCompanySelected' || status==='activeCompanySelected' ){
+                        App.setTitle();
+                    }
+                });
 	    };
 	    App.module={
-		legacy:["Companies","Accounts","Lists","Data","Home"],//,"Stock"
+		legacy:["Companies","Lists","Data","Home"],//,"Stock","Accounts"
 		init:function(){
 		    $(window).bind( 'hashchange', function(e) {
 			App.module.load(location.hash.substring(1));
@@ -155,16 +219,30 @@
     </head>
     <body class=" claro ">
 	<div id="ApplicationBar" class="transparent">
-	    <img src="img/plusLogo.png" style="vertical-align:top;width:150px;height: auto; max-height: 50px;margin: 2px;" />
-	    <div style="color:#009;padding:8px;display: inline-block;font-size: 18px;" id="module_title">&nbsp;</div>
+	    <img src="img/plusLogo.png" style="vertical-align:top;height: 40px;width:auto;margin: 1px;" />
+	    <div style="color:#009;margin-top:10px;display: inline-block;font-size: 18px;white-space: nowrap;" class="covert" id="module_title">
+                {{module_name}}: 
+                <img src="img/home.png" style="margin-top: -4px;"> <span class="link_button" onclick="App.user.acompSwitch()">{{acomp_name}}</span>
+                {{if pcomp_name}}
+                / <img src="img/gray.png"> {{pcomp_name}}
+                {{/if}}
+            </div>
 	    <div id="holder_user_panel">
 		<img src="img/user-32.png" style="margin: 4px;"/>
 		<div id="div_user_panel">
 		    <div style="color:red">{{user_level_name}}</div>
 		    <div style="font-weight:bold;color:#000">{{user_login}}</div> 
-		    <button onclick="App.user.signOut()"><img src="img/logout.png"/> Выход</button>
+		    <button onclick="App.user.edit()"><img src="img/Edit-24.png"/> Редактировать</button>
+                    <button onclick="App.user.signOut()"><img src="img/logout.png"/> Выход</button>
 		</div>
 	    </div>
+	    <span id="chat_panel" class="covert" style="margin: 4px;cursor: pointer;float:right" onclick="App.loadWindow('page/dialog/chat')">
+		{{if count|more>0}}
+		<img src="img/chat_no.png" style="vertical-align: middle" class="blink" title="Есть новые сообщения" />{{count}}
+		{{else}}
+		<img src="img/chat_no.png" style="vertical-align: middle" title="Новых сообщений нет" />
+		{{/if}}	    
+	    </span>
 	    <span id="sync_panel" class="covert" style="margin: 4px;cursor: pointer;float:right">
 		{{if updates}}
 		{{if is_release}}
@@ -177,13 +255,7 @@
 		<img src="img/update_yes.png" style="vertical-align: middle" title="Обновлений нет" />
 		{{/if}}
 	    </span>
-	    <span id="chat_panel" class="covert" style="margin: 4px;cursor: pointer;float:right" onclick="App.loadWindow('page/dialog/chat')">
-		{{if count|more>0}}
-		<img src="img/chat_no.png" style="vertical-align: middle" class="blink" title="Есть новые сообщения" />{{count}}
-		{{else}}
-		<img src="img/chat_no.png" style="vertical-align: middle" title="Новых сообщений нет" />
-		{{/if}}	    
-	    </span>
+            <span id="app_busy" style="margin: 12px;float:right;display: none"><img src="img/loading_16.png"></span>
 	</div>
 	<table style="border-spacing: 0px;border-collapse: separate;">
 	    <tr>

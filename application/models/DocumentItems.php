@@ -32,7 +32,22 @@ class DocumentItems extends DocumentCore{
 	    ";
 	return $this->get_list($sql);
     }
-    private function footerGet(){
+    private function calcCorrections() {
+	$doc_id=$this->doc('doc_id');
+	$curr_code=$this->Base->pcomp('curr_code');
+	$native_curr=($this->Base->pcomp('curr_code') == $this->Base->acomp('curr_code'))?1:0;
+	$sql="SELECT 
+		@vat_ratio:=1+vat_rate/100 vat_ratio,
+		@vat_correction:=IF(use_vatless_price,1,@vat_ratio) vat_correction,
+		@curr_correction:=IF($native_curr,1,1/doc_ratio) curr_correction,
+		@curr_symbol:=(SELECT curr_symbol FROM curr_list WHERE curr_code='$curr_code') curr_symbol
+	    FROM
+		document_list
+	    WHERE
+		doc_id=$doc_id";
+	return $this->get_row($sql);
+    }
+    protected function footerGet(){
 	$doc_id=$this->doc('doc_id');
 	//$curr_symbol=$this->Base->pcomp('curr_symbol');
 	$this->calcCorrections();
@@ -57,7 +72,7 @@ class DocumentItems extends DocumentCore{
 		WHERE doc_id='$doc_id') t";
 	return $this->get_row($sql);
     }
-    private function entriesFetch(){
+    protected function entriesFetch(){
 	$doc_id=$this->doc('doc_id');
 	$this->calcCorrections();
 	$company_lang = $this->Base->pcomp('language');
@@ -67,21 +82,22 @@ class DocumentItems extends DocumentCore{
                 $company_lang product_name,
                 product_quantity,
                 product_unit,
-                REPLACE(FORMAT(invoice_price * @vat_correction * @curr_correction,signs_after_dot),',',' ') AS product_price,
-                REPLACE(FORMAT(invoice_price * @vat_correction * @curr_correction * product_quantity,2),',',' ') AS product_sum,
+                REPLACE(FORMAT(invoice_price * @vat_correction * @curr_correction,signs_after_dot),',','') AS product_price,
+                REPLACE(FORMAT(invoice_price * @vat_correction * @curr_correction * product_quantity,2),',','') AS product_sum,
                 CHK_ENTRY(doc_entry_id) AS row_status,
                 party_label,
                 product_uktzet,
                 self_price,
-		(invoice_price * @vat_correction * @curr_correction)<IF(is_commited,self_price,
-                    (SELECT self_price FROM stock_entries se WHERE se.product_code=de.product_code)
-                ) is_loss
+		IF(doc_type=1,invoice_price<buy/@curr_correction,invoice_price>buy/@curr_correction) is_loss,
+                buy
             FROM
                 document_list
 		    JOIN
 		document_entries de USING(doc_id)
 		    JOIN 
 		prod_list pl USING(product_code)
+                    LEFT JOIN
+                price_list prl USING(product_code)
             WHERE
                 doc_id='$doc_id'
             ORDER BY pl.product_code";
@@ -98,7 +114,7 @@ class DocumentItems extends DocumentCore{
 	$quantity=$this->request('quantity','int');
 	return $this->entryAdd($doc_id, $code, $quantity);
     }
-    public function entryUpdate( $doc_id, $doc_entry_id, $name, $value ){
+    public function entryUpdate( $doc_id, $doc_entry_id, $name, $value='' ){
 	$this->check($doc_id,'int');
 	$this->selectDoc($doc_id);
 	$Document2=$this->Base->bridgeLoad('Document');
@@ -144,11 +160,13 @@ class DocumentItems extends DocumentCore{
     private function entryPriceGet( $product_code ){
 	$Document2=$this->Base->bridgeLoad('Document');
 	$invoice=$Document2->getProductInvoicePrice($product_code);
-	$invoice=round($invoice,$this->doc('signs_after_dot'));
-	if( !$this->doc('use_vatless_price') ){
-	    $invoice*=1+$this->doc('vat_rate')/100;
-	}
-	return round($invoice,$this->doc('signs_after_dot'));
+        $this->calcCorrections();
+        return $this->get_value("SELECT REPLACE(FORMAT($invoice * @vat_correction * @curr_correction,".$this->doc('signs_after_dot')."),',','') AS product_price");
+//	$invoice=round($invoice,$this->doc('signs_after_dot'));
+//	if( !$this->doc('use_vatless_price') ){
+//	    $invoice*=1+$this->doc('vat_rate')/100;
+//	}
+//	return round($invoice,$this->doc('signs_after_dot'));
     }
     public function entryDocumentGet( $doc_id ){
 	$this->check($doc_id,'int');
@@ -198,19 +216,45 @@ class DocumentItems extends DocumentCore{
 	$this->duplicateHead($new_doc_id, $old_doc_id);
 	return $new_doc_id;
     }
-    private function calcCorrections() {
-	$doc_id=$this->doc('doc_id');
-	$curr_code=$this->Base->pcomp('curr_code');
-	$native_curr=($this->Base->pcomp('curr_code') == $this->Base->acomp('curr_code'))?1:0;
-	$sql="SELECT 
-		@vat_ratio:=1+vat_rate/100 vat_ratio,
-		@vat_correction:=IF(use_vatless_price,1,@vat_ratio) vat_correction,
-		@curr_correction:=IF($native_curr,1,1/doc_ratio) curr_correction,
-		@curr_symbol:=(SELECT curr_symbol FROM curr_list WHERE curr_code='$curr_code') curr_symbol
-	    FROM
-		document_list
-	    WHERE
-		doc_id=$doc_id";
-	return $this->get_row($sql);
+    public function import( $doc_id ){
+	$this->check($doc_id,'int');
+	$this->selectDoc($doc_id);
+	if( $this->isCommited() ){
+	    return false;
+	}
+	$label=$this->request('label');
+	$source = array_map('addslashes',$this->request('source','raw'));
+	$target = array_map('addslashes',$this->request('target','raw'));
+	
+        $source[]=$this->doc('doc_id');
+        $target[]='doc_id';
+	$this->importInTable('document_entries', $source, $target, '/product_code/product_quantity/invoice_price/party_label/doc_id/', $label);
+	$this->query("DELETE FROM imported_data WHERE {$source[0]} IN (SELECT product_code FROM document_entries WHERE doc_id={$doc_id})");
+        return  $this->db->affected_rows();
+    }
+    private function importInTable( $table, $src, $trg, $filter, $label ){
+	$set=[];
+	$target=[];
+	$source=[];
+	$this->calcCorrections();
+	for( $i=0;$i<count($trg);$i++ ){
+            if( strpos($filter,"/{$trg[$i]}/")===false || empty($src[$i]) ){
+		continue;
+	    }
+	    if( $trg[$i]=='product_code' ){
+		$product_code_source=$src[$i];
+	    }
+	    if( $trg[$i]=='invoice_price' ){
+		$src[$i]=$src[$i].'/@curr_correction/@vat_correction';
+	    }
+	    $target[]=$trg[$i];
+	    $source[]=$src[$i];
+	    $set[]="{$trg[$i]}=$src[$i]";
+	}
+	$target_list=  implode(',', $target);
+	$source_list=  implode(',', $source);
+	$set_list=  implode(',', $set);
+	$this->query("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data WHERE label='$label' AND $product_code_source IN (SELECT product_code FROM stock_entries) ON DUPLICATE KEY UPDATE $set_list");
+	return $this->db->affected_rows();
     }
 }

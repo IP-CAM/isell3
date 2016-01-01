@@ -21,9 +21,11 @@ class User extends Catalog {
 	    $this->Base->svar('user_login', $user_data->user_login);
 	    $this->Base->svar('user_sign', $user_data->user_sign);
 	    $this->Base->svar('user_position', $user_data->user_position);
-	    if ( method_exists($this, 'initLoggedUser') ) {
-		$this->initLoggedUser($user_data);
-	    }
+            $this->Base->svar('user_assigned_stat',$user_data->user_assigned_stat);
+            $this->Base->svar('user_assigned_path',$user_data->user_assigned_path);
+            
+            $Company=$this->Base->load_model("Company");
+            $Company->selectActiveCompany($user_data->company_id);
 	    return $this->getUserData();
 	}
 	return false;
@@ -42,8 +44,7 @@ class User extends Catalog {
 	    'user_login'=>$this->Base->svar('user_login'),
 	    'user_level'=>$this->Base->svar('user_level'),
 	    'user_level_name'=>$this->Base->svar('user_level_name'),
-	    'active_company_id'=>$this->Base->acomp('company_id'),
-	    'active_company_name'=>$this->Base->acomp('company_name'),
+	    'acomp'=>$this->Base->svar('acomp'),
 	    'module_list'=>$this->getModuleList()
 	];
     }
@@ -62,6 +63,18 @@ class User extends Catalog {
 	$Company->selectActiveCompany($user_data->company_id);
         $this->Base->svar('user_assigned_stat',$user_data->user_assigned_stat);
         $this->Base->svar('user_assigned_path',$user_data->user_assigned_path);
+    }
+    public function userFetch(){
+	$user_id = $this->Base->svar('user_id');
+        $sql="SELECT
+		user_id,user_login,user_level,user_sign,user_position,
+		first_name,middle_name,last_name,nick,
+		id_type,id_serial,id_number,id_given_by,id_date,
+		user_assigned_path,
+		CONCAT(last_name,' ',first_name,' ',middle_name) AS full_name 
+	    FROM ".BAY_DB_MAIN.".user_list
+		WHERE user_id='$user_id'";
+        return $this->get_row($sql);
     }
     public function listFetch(){
 	$user_id = $this->Base->svar('user_id');
@@ -102,8 +115,13 @@ class User extends Catalog {
 	    $fields['id_date']=$this->request('id_date');	    
 	}
 	if( $current_level>=4 ){
-	    $fields['user_level']=$this->request('user_level');
+	    $fields['user_level']=$this->request('user_level','int');
 	    $fields['user_assigned_path']=$this->request('user_assigned_path');
+	    
+	    $admin=$this->adminLastCheck($user_id);
+	    if( $admin==='last' && $fields['user_level']<4 ){
+		return 'LAST_ADMIN';
+	    }
 	}
 	if( $user_id===0 ){
 	    return $this->create(BAY_DB_MAIN.".user_list", $fields);
@@ -114,6 +132,13 @@ class User extends Catalog {
     public function remove( $user_id ){
 	$this->Base->set_level(4);
 	$this->check($user_id,'int');
+	$admin=$this->adminLastCheck($user_id);
+	if( $admin==='last' ){
+	    return 'LAST_ADMIN';
+	}
 	return $this->delete(BAY_DB_MAIN.".user_list", ['user_id'=>$user_id]);
+    }
+    private function adminLastCheck($user_id){
+	return $this->get_value("SELECT IF(user_level=4 AND (SELECT COUNT(*)=1 FROM user_list WHERE user_level=4),'last','not_last') FROM user_list WHERE user_id='$user_id'");
     }
 }

@@ -15,15 +15,38 @@
 	},
 	init:function () {
 	    var props=Cdet.properties;
-	    Cdet.data.inline?Cdet.node.panel(props):Cdet.node.window(props);
+            if(Cdet.data.inline){
+                Cdet.node.panel(props);
+            } else {
+                Cdet.node.window(props);
+        	this.node.window('hcenter');
+                this.node.window('window').css('position','fixed');
+                this.node.window('window').css('top','40px');
+            }
 	    Cdet.autoselect_label=Cdet.data.autoselect_label;
-	    this.hideIfActive();
+	    this.checkActive();
 	    Cdet.load(Cdet.data.company_id);
+            this.initFormOnce();
 	},
-	hideIfActive:function(){
+        initFormOnce:function(){
+            if( this.formInited ){
+                return;
+            }
+            this.formInited=true;
+            App.formElements("#page_company_details_frm").change(function () {
+		var node=this;
+		Cdet.updateField(node.name,node.value,node.title);
+	    });
+        },
+	checkActive:function(){
 	    if( this.data.is_active ){
-		this.node.find("input[name=company_agreement_num],input[name=company_agreement_date]").attr('type','hidden');
-		this.node.find("#page_company_details_frm_hdn").show();
+		this.node.find("#page_company_details_passive_details").hide();
+		this.node.find("#page_company_details_active_details").show();
+		App.handler.progress(function(status,data){
+		    if( status==="activeCompanySelected" ){
+			Cdet.load(data.company_id);
+		    }
+		});
 	    }
 	},
 	focus:function(){
@@ -55,10 +78,7 @@
 	    });
 	},
 	setup:function(){
-	    App.setupForm("#page_company_details_frm", Cdet.data).change(function () {
-		var node=this;
-		Cdet.updateField(node.name,node.value,node.title);
-	    });
+	    App.setupForm("#page_company_details_frm", Cdet.data);
 	    if( this.autoselect_label ){
 		this.node.find('input[name=label]').select();
 	    }
@@ -71,16 +91,20 @@
 	<input type="text" name="company_jaddress" title="Юр. Адрес*" style="width:410px;"/>
 	<input type="text" name="company_vat_id" title="ИНН*"/>
 	<input type="text" name="company_code" title="КОД"/>	
-	<input type="text" name="company_vat_licence_id" title="Доп. КОД"/>	
 	<input type="text" name="company_phone" title="Телефон*"/>	
+	<input type="text" name="company_vat_licence_id" title="Доп. КОД"/>	
+	<input type="text" name="company_code_registration" title="Регистр. КОД"/>	
     </div>
     <div class="inp_group" style="width:340px;">
-	<input type="text" name="company_agreement_num" title="Номер договора"/>
-	<input type="text" name="company_agreement_date" title="Дата договора"/>
+	<div id="page_company_details_passive_details">
+	    <input type="text" name="company_agreement_num" title="Номер договора"/>
+	    <input type="text" name="company_agreement_date" title="Дата договора"/>
+	</div>
 	<div class="inp_rule"></div>
-	<input type="text" name="company_bank_account" title="Поточный счет"/>
 	<input type="text" name="company_bank_id" title="Код Банка"/>
 	<input type="text" name="company_bank_name" title="Название банка"/>	
+	<input type="text" name="company_bank_account" title="Поточный счет"/>
+	<input type="text" name="company_bank_corr_account" title="Корр. счет"/>
     </div>
     <div class="inp_rule"></div>
     <div class="inp_group" style="width:340px;">
@@ -98,7 +122,7 @@
     <div class="inp_rule"></div>
     <textarea name="company_description" title="Дополнительно" style="width:550px;"></textarea>
     <div class="inp_rule"></div>
-    <div id="page_company_details_frm_hdn" style="display: none">
+    <div id="page_company_details_active_details" style="display: none">
         <input type="text" name="company_vat_rate" title="Ставка НДС"/>
         <select name="language" title="Язык">
             <option value="en">English</option>

@@ -218,6 +218,9 @@ button img{
 .slider-rule span{
     border-color: #000;
 }
+div .combobox-item-hover{
+    background-color: #cdf;
+}
 
 .transparent{
     opacity:0.6;
@@ -248,6 +251,9 @@ button img{
 }
 .icon-eye{
     background:url('../img/eye.png') no-repeat center center;
+}
+.icon-home{
+    background:url('../img/home.png') no-repeat center center;
 }
 .icon-create{
     background:url('../img/edit_add.png') no-repeat center center;
@@ -336,6 +342,18 @@ button img{
 .icon-comp {
     background:url('../img/gray.png') no-repeat center center;
 }
+.icon-upload{
+    background: url('../img/file_upload.png') no-repeat center center;
+}
+.link_button:hover{
+    padding: 5px;
+    margin: -6px;
+    border: 1px solid #0dd;
+    border-radius: 5px;
+    background-color: #cef;
+    cursor: pointer;
+    white-space: nowrap;
+}
 .covert{
     visibility: hidden;
     display: none;
@@ -393,4 +411,12 @@ img{
 .rounded{
     padding: 5px;
     border-radius: 5px;
+}
+.tag{
+    background: #0a0;
+    border-radius: 3px;
+    display: inline-block;
+    padding: 1px;
+    font-weight: bold;
+    color:#fff;
 }

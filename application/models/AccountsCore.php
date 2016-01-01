@@ -9,6 +9,8 @@ include 'Catalog.php';
 class AccountsCore extends Catalog{
     public $min_level=1;
     protected function getAccountProperties( $acc_code, $calc_balance=false, $use_passive_filter=false ) {
+	$active_company_id=$this->Base->acomp('company_id');
+	$default_curr_id=$this->Base->acomp('curr_id');
 	$balance='';
 	if( $calc_balance ){
 	    $passive_filter="";
@@ -17,28 +19,35 @@ class AccountsCore extends Catalog{
 	    }
 	    $balance=",(
 		SELECT 
-		    SUM(ROUND(IF(at.acc_code=acc_debit_code,amount,-amount),2))
+		    SUM(ROUND(IF(at.acc_code=acc_debit_code,-amount,amount),2))
 		FROM acc_trans
-		WHERE (acc_debit_code=at.acc_code OR acc_credit_code=at.acc_code) $passive_filter) balance";
+		WHERE (acc_debit_code=at.acc_code OR acc_credit_code=at.acc_code) AND active_company_id=$active_company_id $passive_filter)*IF(acc_type='P',1,-1) balance";
 	}
+        if( $use_passive_filter ){
+            $acc_list=$this->Base->pcomp('company_acc_list');
+            $is_favorite=strpos($acc_list,$acc_code)!==false?1:0;
+        } else {
+            $is_favorite="is_favorite";
+        }
+        
         $sql="SELECT
-		* $balance
+		* $balance, $is_favorite is_favorite
 	    FROM 
 		acc_tree at
-		    JOIN curr_list cl ON IF(at.curr_id,cl.curr_id=at.curr_id,cl.curr_id=1)
+		    JOIN curr_list cl ON IF(at.curr_id,cl.curr_id=at.curr_id,cl.curr_id='$default_curr_id')
             WHERE acc_code='$acc_code'";
         return $this->get_row($sql);
     }
-    private function ledgerCreate( $acc_code, $use_alt_amount=false, $use_passive_filter=false ){
+    private function ledgerCreate( $acc_code, $using_alt_currency=false, $use_passive_filter=false ){
 	$this->check($acc_code);
-	$this->check($use_alt_amount,'bool');
-	
+	$this->check($using_alt_currency,'bool');
+	$active_company_id=$this->Base->acomp('company_id');
 	$passive_filter="";
 	if( $use_passive_filter ){
 	    $passive_filter=" AND passive_company_id='".$this->Base->pcomp('company_id')."'";
 	}
 	
-	$this->db->query("SET @acc_code:=?, @use_alt_amount=?;",[$acc_code,$use_alt_amount]);
+	$this->db->query("SET @acc_code:=?, @use_alt_amount=?;",[$acc_code,$using_alt_currency]);
 	$this->db->query("DROP TEMPORARY TABLE IF EXISTS tmp_ledger;");
 	$sql="CREATE TEMPORARY TABLE tmp_ledger ( INDEX(cstamp) ) ENGINE=MyISAM AS (
 	    SELECT 
@@ -67,8 +76,8 @@ class AccountsCore extends Catalog{
 		    LEFT JOIN
 		user_list ON user_id = modified_by
 	    WHERE
-		(@acc_code = acc_debit_code
-		    OR @acc_code = acc_credit_code)
+		(@acc_code = acc_debit_code OR @acc_code = acc_credit_code)
+		AND active_company_id='$active_company_id'
 		    $passive_filter)";
 	$this->query($sql);
     }
@@ -84,13 +93,13 @@ class AccountsCore extends Catalog{
     public function ledgerFetch( $acc_code, $idate='', $fdate='', $page=1, $rows=30, $use_passive_filter=false ){
 	$this->check($idate,'\d\d\d\d-\d\d-\d\d');
 	$this->check($fdate,'\d\d\d\d-\d\d-\d\d');
-	$this->check($acc_code,'int');
+	$this->check($acc_code);
 	$this->check($page,'int');
 	$this->check($rows,'int');
 	$idate.=' 00:00:00';
 	$fdate.=' 23:59:59';
         
-	$props=$this->getAccountProperties( $acc_code );
+	$props=$this->getAccountProperties( $acc_code, false, $use_passive_filter );
 	if( $use_passive_filter ){
 	    $this->Base->set_level(1);
             $props->curr_id=$this->Base->pcomp('curr_id');
@@ -101,8 +110,11 @@ class AccountsCore extends Catalog{
 	if( !$acc_code || !$idate || !$fdate ){
 	    return [];
 	}
-        $default_curr_id=$this->Base->acomp('curr_id');
-        $using_alt_currency=$default_curr_id!=$props->curr_id;
+	$using_alt_currency=false;
+	if( $props->curr_id ){
+	    $default_curr_id=$this->Base->acomp('curr_id');
+	    $using_alt_currency=$default_curr_id!=$props->curr_id;
+	}
 	$this->ledgerCreate($acc_code, $using_alt_currency, $use_passive_filter );
 	
 	$having=$this->decodeFilterRules();
@@ -121,8 +133,13 @@ class AccountsCore extends Catalog{
     public function ledgerPaymentFetch( $acc_code, $idate='', $fdate='', $page=1, $rows=30 ){
 	return $this->ledgerFetch($acc_code, $idate, $fdate, $page, $rows, true);
     }
-    public function accountBalanceTreeFetch( $parent_id=0, $idate='', $fdate='', $show_unused=0 ){
+    public function accountBalanceTreeFetch( $parent_id=0, $idate='', $fdate='', $show_unused=1 ){
 	$this->Base->set_level(3);
+	$this->check($parent_id,'int');
+	$this->check($idate,'\d\d\d\d-\d\d-\d\d');
+	$this->check($fdate,'\d\d\d\d-\d\d-\d\d');
+	$this->check($show_unused,'bool');
+	$active_company_id=$this->Base->acomp('company_id');
 	$this->db->query("SET @idate='$idate 00:00:00', @fdate='$fdate 23:59:59', @parent_id='$parent_id';");
 	$sql=
 	"SELECT 
@@ -151,7 +168,7 @@ class AccountsCore extends Catalog{
 		    LEFT JOIN 
 		acc_tree subtree ON subtree.path LIKE CONCAT(tree.path,'%')
 		    LEFT JOIN
-		acc_trans dtrans ON dtrans.acc_debit_code = subtree.acc_code
+		acc_trans dtrans ON dtrans.acc_debit_code = subtree.acc_code AND active_company_id='$active_company_id'
 	    WHERE
 		tree.parent_id=@parent_id
 	    GROUP BY tree.branch_id) d
@@ -166,15 +183,15 @@ class AccountsCore extends Catalog{
 		    LEFT JOIN 
 		acc_tree subtree ON subtree.path LIKE CONCAT(tree.path,'%')
 		    LEFT JOIN
-		acc_trans ctrans ON ctrans.acc_credit_code = subtree.acc_code
+		acc_trans ctrans ON ctrans.acc_credit_code = subtree.acc_code AND active_company_id='$active_company_id'
 	    WHERE
 		tree.parent_id=@parent_id
 	    GROUP BY tree.branch_id) c 
 	ON (d.branch_id=c.branch_id) 
-	HAVING IF( $show_unused, 1, open_bal OR  period_d OR period_c OR close_bal )
+	HAVING IF( '$show_unused', 1, open_bal OR  period_d OR period_c OR close_bal )
 	ORDER BY acc_code";
         $balance=$this->get_list($sql);
-	return $balance?$balance:array();
+	return $balance?$balance:[];
     }
     public function accountBalanceTreeCreate( $parent_id, $label ){
 	$this->Base->set_level(3);
@@ -279,7 +296,17 @@ class AccountsCore extends Catalog{
             $this->transPaymentCalculate($trans['passive_company_id'], $this->payment_account);
         }
     }
-    private function transCheckLink($trans_id,$trans){
+    private function checkTransLink($trans_id,$trans) {
+	if( $trans['check_id'] ){
+	    $this->update('acc_check_list',['trans_id'=>$trans_id],['check_id'=>$trans['check_id']]);
+	}
+    }
+    private function checkTransBreakLink( $check_id ){
+	if( isset($check_id) ){
+	    $this->update('acc_check_list',['trans_id'=>0],['check_id'=>$check_id]);
+	}	
+    }
+    private function transCrossLink($trans_id,$trans){
 	if( $trans['trans_ref'] ){
 	    $this->update('acc_trans', ['trans_ref'=>$trans['trans_ref'],'trans_status'=>5], ['trans_id'=>$trans_id]);
 	    $this->update('acc_trans', ['trans_ref'=>$trans_id,'trans_status'=>4], ['trans_id'=>$trans['trans_ref']]);
@@ -302,12 +329,14 @@ class AccountsCore extends Catalog{
 	    $this->create('acc_trans', $trans);
 	    $trans_id= $this->db->insert_id();
 	}
-	$this->transCheckLink($trans_id,$trans);
+	$this->checkTransLink($trans_id,$trans);
+	$this->transCrossLink($trans_id,$trans);
 	$this->transCheckCalculate($trans);
 	return $trans_id;	
     }
     public function transPostCreateUpdate(){
 	$trans_id=$this->request('trans_id','int',0);
+	$check_id=$this->request('check_id','int');
 	$passive_company_id=$this->request('passive_company_id','int');
 	$trans_type=$this->request('trans_type');
 	$trans_date=$this->request('trans_date','\d\d\d\d-\d\d-\d\d');
@@ -324,6 +353,7 @@ class AccountsCore extends Catalog{
 	}
 	$trans=[
 	    'trans_ref'=>$trans_ref,
+	    'check_id'=>$check_id,
 	    'passive_company_id'=>$passive_company_id,
 	    'acc_debit_code'=>$acc_codes[0],
 	    'acc_credit_code'=>$acc_codes[1],
@@ -341,6 +371,7 @@ class AccountsCore extends Catalog{
 	if( $trans && $this->transCheckLevel($trans->acc_debit_code.'_'.$trans->acc_credit_code) ){
 	    $this->delete('acc_trans',['trans_id'=>$trans_id,'editable'=>1]);
             $ok=$this->db->affected_rows()>0?true:false;
+	    $this->checkTransBreakLink($trans->check_id);
 	    $this->transBreakLink($trans->trans_ref);
             if( $trans->acc_debit_code==$this->payment_account || $trans->acc_credit_code==$this->payment_account ){
                 $this->transPaymentCalculate($trans->passive_company_id, $this->payment_account);
@@ -350,4 +381,5 @@ class AccountsCore extends Catalog{
 	$this->Base->msg('access denied');
 	return false;
     }
+
 }

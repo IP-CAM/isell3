@@ -164,6 +164,7 @@ class Accounts extends Data {
      * ***************** */
 
     public function calculatePayments($pcomp_id = NULL) {
+	$active_company_id=$this->Base->acomp('company_id');
         if (!isset($pcomp_id))
             $pcomp_id = $this->Base->pcomp('company_id');
         $sensitivity=5.00;
@@ -182,16 +183,18 @@ class Accounts extends Data {
                                 (@sum:=@sum + amount)*0
                         )
                 WHERE
-                        passive_company_id = $pcomp_id
-                                AND trans_status <> 4
-                                AND trans_status <> 5
-                                AND (acc_debit_code = $acc_code
-                                OR acc_credit_code = $acc_code)
+			active_company_id = $active_company_id
+                        AND passive_company_id = $pcomp_id
+			AND trans_status <> 4
+			AND trans_status <> 5
+			AND (acc_debit_code = $acc_code
+			OR acc_credit_code = $acc_code)
                 ORDER BY acc_debit_code = $acc_code, amount>0, cstamp;");
     }
 
     private function getAccTransferView($acc_code, $company_only, $curr_id) {
         $def_curr_id = $this->Base->acomp('curr_id');
+	$active_company_id = $this->Base->acomp('active_company_id');
         if ($def_curr_id != $curr_id || $company_only && $def_curr_id != $this->Base->pcomp('curr_id')) {
             $amount_column = "amount_alt"; //Foreign currency
         } else {
@@ -216,7 +219,7 @@ class Accounts extends Data {
         $select[] = "CONCAT(acc_debit_code,' ',acc_credit_code) AS transfer";
         $select[] = "CONCAT(uc.nick,' ',um.nick) AS byuser";
         $select = implode(',', $select);
-        $table = "SELECT $select FROM acc_trans LEFT JOIN " . BAY_DB_MAIN . ".user_list uc ON uc.user_id=created_by LEFT JOIN " . BAY_DB_MAIN . ".user_list um ON um.user_id=modified_by WHERE (acc_debit_code=$acc_code OR acc_credit_code=$acc_code) $passive_case";
+        $table = "SELECT $select FROM acc_trans LEFT JOIN " . BAY_DB_MAIN . ".user_list uc ON uc.user_id=created_by LEFT JOIN " . BAY_DB_MAIN . ".user_list um ON um.user_id=modified_by WHERE (acc_debit_code='$acc_code' OR acc_credit_code='$acc_code') AND active_company_id='$active_company_id' $passive_case";
         return $table;
     }
 
@@ -455,11 +458,12 @@ class Accounts extends Data {
     }
 
     public function getAccountBalance($acc_code, $pcomp_id = NULL) {
+	$active_company_id=$this->Base->acomp('company_id');
         $passive_case = ($pcomp_id === NULL) ? "" : "passive_company_id=$pcomp_id AND";
         $account = $this->Base->get_row("SELECT * FROM acc_tree WHERE acc_code='$acc_code'");
         $account['balance'] = $this->Base->get_row("SELECT ROUND(SUM(IF(acc_debit_code='$acc_code',amount,-amount)),2) 
             FROM acc_trans 
-            WHERE $passive_case (acc_debit_code='$acc_code' OR acc_credit_code='$acc_code')", 0);
+            WHERE $passive_case (acc_debit_code='$acc_code' OR acc_credit_code='$acc_code') AND active_company_id='$active_company_id'", 0);
         $account['curr_symbol'] = $this->Base->acomp('curr_symbol');
         return $account;
     }
@@ -520,7 +524,9 @@ class Accounts extends Data {
             //return false;
         }
         $fields = $this->cached_fields[$table_name]['columns'];
-        $set = array();
+	$active_company_id=$this->Base->acomp('company_id');
+	
+        $set = ["active_company_id='$active_company_id'"];
         $check['main-acc-code'] = $main_acc_code;
         foreach ($fields as $field) {
             if ($field == 'check_id' || $field == 'status') {
@@ -546,7 +552,8 @@ class Accounts extends Data {
         return $balance;
     }
 
-    public function getCheckListData($main_acc_code = 311, $grid_query) {
+    public function getCheckListData($main_acc_code = 0, $grid_query) {
+	$active_company_id=$this->Base->acomp('company_id');
         $select = "
 		    *,
 		    IF(trans_id,'ok Проведен','gray Непроведен') AS status,
@@ -554,7 +561,7 @@ class Accounts extends Data {
 		    IF(credit_amount,ROUND(credit_amount,2),'') AS credit,
 		    DATE_FORMAT(transaction_date,'%d.%m.%Y') AS tdate
 		    ";
-        return $this->getGridData('acc_check_list', $grid_query, $select, "main_acc_code=$main_acc_code", 'ORDER BY transaction_date DESC');
+        return $this->getGridData('acc_check_list', $grid_query, $select, "main_acc_code='$main_acc_code' AND active_company_id=$active_company_id", 'ORDER BY transaction_date DESC');
     }
 
     public function checkListDelete($check_id) {
@@ -609,6 +616,7 @@ class Accounts extends Data {
     /////////////////////////////////////
     public function documentRegistryFetch($period, $direction, $grid_query) {
         $this->Base->set_level(3);
+	$active_company_id=$this->Base->acomp('company_id');
         if ($direction == 'both') {
             return array(
                 'sell' => $this->documentRegistryFetch($period, 'sell'),
@@ -657,7 +665,8 @@ class Accounts extends Data {
             LEFT JOIN document_view_list dvl ON dl.doc_id=dvl.doc_id 
 	    AND view_type_id IN (SELECT view_type_id FROM document_view_types WHERE view_role='tax_bill')";
         $where = "
-            reg_stamp LIKE CONCAT('$period','%')
+	    active_company_id='$active_company_id'
+            AND reg_stamp LIKE CONCAT('$period','%')
             AND is_commited=1
             AND $dir";
         $order = "ORDER BY reg,cstamp";

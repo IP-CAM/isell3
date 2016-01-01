@@ -4,10 +4,16 @@
 	init:function(){
 	    this.initDetails();
 	    this.initPrefs();
+            this.initFormOnce();
+            App.handler.progress(function(status,data){
+                if( status==="activeCompanySelected" ){
+                    PrefJs.initPrefs();
+                }
+            });
 	},
 	initDetails:function(){
 	    var data={
-		company_id:App.user.props.active_company_id,
+		company_id:App.acomp.company_id,
 		inline:true,
 		is_active:true
 	    };
@@ -17,12 +23,19 @@
 	initPrefs:function(){
 	    $.get("Pref/getPrefs/",function(text){
 		PrefJs.prefData=App.json(text);
-		App.setupForm('#AcompPrefs',PrefJs.prefData).change(function(){
-		    var node=this;
-		    PrefJs.updateField(node.name,node.value,node.title);
-		});
+		App.setupForm('#AcompPrefs',PrefJs.prefData);
 	    });
 	},
+        initFormOnce:function(){
+            if( this.formInited ){
+                return;
+            }
+            this.formInited=true;
+            App.formElements("#AcompPrefs").change(function () {
+		var node=this;
+		PrefJs.updateField(node.name,App.val(node),node.title);
+	    });
+        },
 	initClientbankFields:function(){
 	    
 	},
@@ -55,6 +68,9 @@
                        if( ok*1 ){
                            App.flash("Пользователь "+user.user_login+" удален");
                        } else {
+			   if( ok==='LAST_ADMIN' ){
+			       alert("Должен остаться хотя бы один администратор.");
+			   }
                            App.flash("Пользователь не удален");
                        }
                        $('#pref_user_dg').datagrid('reload');
@@ -81,7 +97,10 @@
 				App.flash("Свойства пользователя сохранены");
 				PrefJs.user.checkUserChanged(user_data);
 			    } else {
-				App.flash("Не удалось сохранить свойства пользователя");
+				if( ok==='LAST_ADMIN' ){
+				    alert("Должен остаться хотя бы один администратор.");
+				}
+				App.flash("Свойства пользователя не изменены");
 			    }
 			});
 		    }
@@ -94,7 +113,12 @@
 		    }
 		}
 	    }
-	}
+	},
+        treeRecalculate:function(){
+            $.get("Utils/treeRecalculate",function(resp){
+                alert("Пересчет таблиц завершен");
+            });
+        }
     };
 </script>
 <div class="easyui-panel" title="Настройки" style="width:920px;padding: 3px;margin-bottom: 2px">
@@ -108,10 +132,14 @@
 	    <input name="director_tin" title="Руководитель ИНН">
 	    <input name="accountant_name" title="Бухгалтер ФИО">
 	    <input name="accountant_tin" title="Бухгалтер ИНН">
+	    <div class="inp_rule"></div>
+	    <input name="digital_signature" type="hidden" title="Цифровая подпись">
 	</div>
 	<div class="inp_group" style="width:200px;">
-	    Поля в файле .csv клиент банка
-	    <textarea name="clientbank_fields" style="height: 230px"></textarea>
+            Идентификатор в платежных поручениях ИНН
+            <input type="checkbox" name="tax_id_in_checks"> <br>
+	    Порядок полей в файле .csv клиент банка
+	    <textarea name="clientbank_fields" style="height: 200px"></textarea>
 	</div>
     </form>
 </div>
@@ -154,6 +182,7 @@
 </div>
 <div class="easyui-panel" title="Инструменты" style="width:920px;min-height: 200px;padding: 3px;margin-bottom: 2px">
     <button onclick="App.loadWindow('page/dialog/backup');"><img src="img/database.png" style="width:24px;height:24px"> Запустить менеджер резевного копирования</button>
+    <button onclick="PrefJs.treeRecalculate()">Исправить ошибки в дереве склада,компаний,бух.счетов</button>
 </div>
 <style>
     #AcompPrefs b{

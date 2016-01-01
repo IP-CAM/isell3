@@ -109,7 +109,8 @@ class Maintain extends CI_Model {
     }
 
     private function setupConf(){
-	$conf_file=  tempnam($this->dirWork,'hah');
+	$this->dirWork = realpath('.');
+	$conf_file=  $this->dirWork."/conf".rand(1,1000);
 	$conf='[client]
 	    user="'.BAY_DB_USER.'"
 	    password="'.BAY_DB_PASS.'"';
@@ -130,6 +131,7 @@ class Maintain extends CI_Model {
 	return true;
     }
     
+    private $path_to_backup_folder="/ISELL-DB-BACKUP/";
     public function backupImport(){
 	$this->Base->set_level(4);
         $file=$this->input->post('filename');
@@ -139,7 +141,6 @@ class Maintain extends CI_Model {
         return false;
     }
     
-    private $path_to_backup_folder="/ISELL-DB-BACKUP/";
     public function backupDump(){
         $this->Base->set_level(4);
         $path_to_mysql=$this->db->query("SHOW VARIABLES LIKE 'basedir'")->row()->Value;
