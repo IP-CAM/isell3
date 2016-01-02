@@ -1,7 +1,10 @@
 <?php
 require_once 'DocumentUtils.php';
 class DocumentTrans extends DocumentUtils{
-    private $transDocConfig=[
+    ///////////////////////////////////////
+    //EXPERIMENTAL
+    ///////////////////////////////////////
+    private $docTypeConfig=[
 	1=>[
 	    'name'	=>"Расходный документ",
 	    'total'	=>'361_702',
@@ -19,7 +22,10 @@ class DocumentTrans extends DocumentUtils{
 	    'profit'	=>''
 	]
     ];
-    private function transDocResultGet(){
+    ///////////////////////////////////////
+    //EXPERIMENTAL
+    ///////////////////////////////////////
+    private function docTotalsGet(){
 	$doc_id=$this->doc('doc_id');
 	$doc_vat_rate=$this->doc('vat_rate');
 	$sql="
@@ -39,34 +45,29 @@ class DocumentTrans extends DocumentUtils{
 		WHERE doc_id='$doc_id') t";
 	return $this->get_row($sql);
     }
-    public function transDocUpdate( $doc_id ){
-	$this->selectDoc($doc_id);
-    }
-    
-    
-        protected function footerGet111111111111(){
+    ///////////////////////////////////////
+    //EXPERIMENTAL
+    ///////////////////////////////////////
+    private function docTransGet(){
 	$doc_id=$this->doc('doc_id');
-	//$curr_symbol=$this->Base->pcomp('curr_symbol');
-	$this->calcCorrections();
-	$sql = "
+	$sql="
 	    SELECT
-		total_weight,
-		total_volume,
-		vatless,
-		total - vatless vat,
-		total,
-		@curr_symbol curr_symbol,
-		self
+		trans_id,
+		type
 	    FROM
-		(SELECT
-		    ROUND(SUM(product_quantity*product_weight),2) total_weight,
-		    ROUND(SUM(product_quantity*product_volume),2) total_volume,
-		    SUM(ROUND(product_quantity*invoice_price * @curr_correction,2)) vatless,
-		    SUM(ROUND(product_quantity*invoice_price * @curr_correction * @vat_ratio,2)) total,
-		    SUM(ROUND(product_quantity*self_price,2)) self
-		FROM
-		    document_entries JOIN prod_list USING(product_code)
-		WHERE doc_id='$doc_id') t";
-	return $this->get_row($sql);
+		document_trans";
+	return $this->get_row($sql);	
     }
+    ///////////////////////////////////////
+    //EXPERIMENTAL
+    ///////////////////////////////////////
+    public function docTransUpdate( $doc_id ){
+	$this->selectDoc($doc_id);
+	if( !$this->isCommited() ){
+	    return false;
+	}
+	$totals=$this->docTotalsGet();
+	$docTrans=$this->docTransGet();
+    }
+
 }

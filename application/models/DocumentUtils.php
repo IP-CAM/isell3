@@ -52,4 +52,19 @@ class DocumentUtils extends Catalog{
 	$next_num = $this->get_value("SELECT MAX(doc_num)+1 FROM document_list WHERE doc_type='$doc_type' AND active_company_id='$active_company_id' AND cstamp>DATE_FORMAT(NOW(),'%Y')");
 	return $next_num ? $next_num : 1;
     }
+    protected function calcCorrections() {
+	$doc_id=$this->doc('doc_id');
+	$curr_code=$this->Base->pcomp('curr_code');
+	$native_curr=($this->Base->pcomp('curr_code') == $this->Base->acomp('curr_code'))?1:0;
+	$sql="SELECT 
+		@vat_ratio:=1+vat_rate/100,
+		@vat_correction:=IF(use_vatless_price,1,@vat_ratio),
+		@curr_correction:=IF($native_curr,1,1/doc_ratio),
+		@curr_symbol:=(SELECT curr_symbol FROM curr_list WHERE curr_code='$curr_code')
+	    FROM
+		document_list
+	    WHERE
+		doc_id=$doc_id";
+	$this->query($sql);
+    }
 }
