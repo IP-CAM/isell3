@@ -186,7 +186,7 @@ class Utils extends CI_Model {
 		    IF(@old_path,path LIKE CONCAT(@old_path, '%'),branch_id=$branch_id)");
     }
     /////////////////////////////
-    //STOCK MAINTAINANCE FUNCTIONS
+    //SELF PRICE FUNCTIONS
     /////////////////////////////
     public function stockQtyRecalculate(){
 	$sql="
@@ -206,24 +206,77 @@ class Utils extends CI_Model {
 	$this->db->query($sql);
 	return $this->db->affected_rows();
     }
-    public function stockSelfRecalculate(){
-	$idate='2015-12-01'.' 00:00:00';
-	$fdate='2015-12-31'.' 23:59:59';
-	$this->query("DROP TEMPORARY TABLE IF EXISTS tmp_self_recalculate;");
-	$main_table_sql="CREATE TEMPORARY TABLE tmp_self_recalculate ( INDEX(product_code) ) ENGINE=MyISAM AS (
+    private function selfPriceCheck($fdate){
+	$sql="
+	    UPDATE 
+		document_entries de
+		    JOIN
+		document_list dl USING (doc_id)
+	    SET
+		self_price=invoice_price
+	    WHERE
+		cstamp<'$fdate'";
+	$this->db->query($sql);
+    }
+    private function selfPriceTableMake($idate,$fdate){
+	$this->db->query("DROP TEMPORARY TABLE IF EXISTS tmp_self_price_table;");// 
+	$sql="CREATE TEMPORARY TABLE tmp_self_price_table ( INDEX(product_code) ) ENGINE=MyISAM AS (
 	    SELECT
 		product_code,
-		SUM( IF(cstamp<'$idate',IF(doc_type = 2,de.product_quantity,- de.product_quantity),0) ) idate_quantity,
-		SUM( IF(cstamp<'$fdate',IF(doc_type = 2,de.product_quantity,- de.product_quantity),0) ) fdate_quantity
-
+		SUM( IF(cstamp<'$idate',IF(doc_type = 2,de.product_quantity,- de.product_quantity),0) ) idate_stock_qty,
+		SUM( IF(cstamp<'$fdate',IF(doc_type = 2,de.product_quantity,- de.product_quantity),0) ) fdate_stock_qty,
+		SUM( IF(doc_type = 2,de.product_quantity*de.self_price,0) ) fdate_buy_sum,
+		SUM( IF(doc_type = 2,de.product_quantity,0) ) fdate_buy_qty
 	    FROM
 		document_entries de
 		    JOIN
 		document_list dl USING (doc_id)     
 	    WHERE
-		dl.is_commited = 1 AND dl.notcount = 0
+		cstamp<'$fdate' AND dl.is_commited = 1 AND dl.notcount = 0
 	    GROUP BY product_code
 	)";
+	$this->db->query($sql);	
+    }
+    private function selfPriceAssign($idate,$fdate){
+	$sql="
+	    UPDATE
+		document_entries de
+		    JOIN
+		document_list dl USING (doc_id) 
+		    JOIN
+		tmp_self_price_table spt USING(product_code)
+	    SET
+		de.self_price=fdate_buy_sum/fdate_buy_qty
+	    WHERE
+		cstamp>'$idate' AND cstamp<'$fdate' AND doc_type=1";
+	$this->db->query($sql);	
+	return $this->db->affected_rows();
+    }
+    public function selfPriceInvoiceRecalculate(){
+	$idate='2015-12-01'.' 00:00:00';
+	$fdate='2015-12-31'.' 23:59:59';
 	
+	$this->selfPriceCheck($fdate);
+	$this->selfPriceTableMake($idate,$fdate);
+	return $this->selfPriceAssign($idate,$fdate);
+    }
+    private function selfPriceStockAssign($idate,$fdate){
+	$sql="
+	    UPDATE
+		stock_entries se
+		    JOIN
+		tmp_self_price_table spt USING(product_code)
+	    SET
+		se.self_price=fdate_buy_sum/fdate_buy_qty";
+	$this->db->query($sql);	
+	return $this->db->affected_rows();
+    }
+    public function selfPriceStockRecalculate(){
+	$idate='2000-01-01'.' 00:00:00';
+	$fdate='3000-01-01'.' 23:59:59';
+	
+	$this->selfPriceCheck($fdate);
+	$this->selfPriceTableMake($idate,$fdate);
+	return $this->selfPriceStockAssign($idate,$fdate);
     }
 }
