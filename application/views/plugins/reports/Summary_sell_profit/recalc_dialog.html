@@ -1,0 +1,17 @@
+<script type="text/javascript">
+    /* global App */
+    App.page_plugins_reports_Summary_sell_profit_recalc_dialog = {
+	init: function () {
+	    this.node.window({
+		title: 'Пересчитать учетной цены',
+		width: 360,
+		height: 'auto',
+		onClose: function () {
+		    App.page_plugins_reports_Summary_sell_profit_recalc_dialog.handler.notify('close');
+		    delete App.page_plugins_reports_Summary_sell_profit_recalc_dialog;
+		}
+	    });
+	}
+    };
+</script>
+Hello world

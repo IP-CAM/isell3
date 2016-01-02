@@ -252,13 +252,31 @@ class Utils extends CI_Model {
 	$this->db->query($sql);	
 	return $this->db->affected_rows();
     }
-    public function selfPriceInvoiceRecalculate(){
-	$idate='2015-12-01'.' 00:00:00';
-	$fdate='2015-12-31'.' 23:59:59';
+    private function selfPriceOldApiRecalculate($idate,$fdate){
+	$Document2=$this->Base->bridgeLoad('Document');
+	$res = $this->db->query("SELECT doc_id,passive_company_id FROM document_list WHERE is_commited=1 AND doc_type=1 AND '$idate'<=cstamp AND cstamp<='$fdate' ORDER BY passive_company_id");
+	foreach ($res->result() as $row) {
+	    if ($this->pcomp('company_id') != $row->passive_company_id){
+		$this->selectPassiveCompany($row->passive_company_id);
+	    }
+	    $doc_id = $row->doc_id;
+	    $Document2->selectDoc($doc_id);
+	    $Document2->updateTrans();
+	}
+	$res->free_result();
+    }
+    public function selfPriceInvoiceRecalculate($idate,$fdate){
+	set_time_limit(300);
+	
+	
+	
+	$idate.=' 00:00:00';
+	$fdate.=' 23:59:59';
 	
 	$this->selfPriceCheck($fdate);
 	$this->selfPriceTableMake($idate,$fdate);
-	return $this->selfPriceAssign($idate,$fdate);
+	$this->selfPriceAssign($idate,$fdate);
+	$this->selfPriceOldApiRecalculate($idate, $fdate);
     }
     private function selfPriceStockAssign($idate,$fdate){
 	$sql="
