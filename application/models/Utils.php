@@ -255,30 +255,37 @@ class Utils extends CI_Model {
     private function selfPriceOldApiRecalculate($idate,$fdate){
 	$Document2=$this->Base->bridgeLoad('Document');
 	$res = $this->db->query("SELECT doc_id,passive_company_id FROM document_list WHERE is_commited=1 AND doc_type=1 AND '$idate'<=cstamp AND cstamp<='$fdate' ORDER BY passive_company_id");
-	foreach ($res->result() as $row) {
-	    if ($this->pcomp('company_id') != $row->passive_company_id){
-		$this->selectPassiveCompany($row->passive_company_id);
+	if( $res ){
+	    foreach ($res->result() as $row) {
+		if ($Document2->Base->pcomp('company_id') != $row->passive_company_id){
+		    $Document2->Base->selectPassiveCompany($row->passive_company_id);
+		}
+		$doc_id = $row->doc_id;
+		$Document2->selectDoc($doc_id);
+		$Document2->updateTrans();
 	    }
-	    $doc_id = $row->doc_id;
-	    $Document2->selectDoc($doc_id);
-	    $Document2->updateTrans();
+	    $res->free_result();	    
 	}
-	$res->free_result();
+
     }
-    public function selfPriceInvoiceRecalculate($idate,$fdate){
+    private function dmy2iso( $dmy ){
+	$chunks=  explode('.', $dmy);
+	return "$chunks[2]-$chunks[1]-$chunks[0]";
+    }
+    public function selfPriceInvoiceRecalculate($idatedmy,$fdatedmy){
 	set_time_limit(300);
 	
 	
 	
-	$idate.=' 00:00:00';
-	$fdate.=' 23:59:59';
+	$idate=$this->dmy2iso($idatedmy).' 00:00:00';
+	$fdate=$this->dmy2iso($fdatedmy).' 23:59:59';
 	
 	$this->selfPriceCheck($fdate);
 	$this->selfPriceTableMake($idate,$fdate);
 	$this->selfPriceAssign($idate,$fdate);
 	$this->selfPriceOldApiRecalculate($idate, $fdate);
     }
-    private function selfPriceStockAssign($idate,$fdate){
+    private function selfPriceStockAssign(){
 	$sql="
 	    UPDATE
 		stock_entries se
