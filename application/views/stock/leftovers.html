@@ -134,6 +134,7 @@
 		}
 	    },
 	    edit:function(index,field,value){
+		$("#stock_dg").datagrid('selectRow',index);
 		var row=$("#stock_dg").datagrid('getSelected');
 		if( row ){
 		    row.focus=field;
