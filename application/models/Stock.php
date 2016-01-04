@@ -45,7 +45,7 @@ class Stock extends Catalog {
 	}
 	$sql="SELECT
 		st.label parent_label,
-		SUM(IF(TO_DAYS(NOW()) - TO_DAYS(dl.cstamp) <= 90,de.product_quantity,0)) m3,
+		ROUND( SUM(IF(TO_DAYS(NOW()) - TO_DAYS(dl.cstamp) <= 90,de.product_quantity,0))/3 ) m3,
 		SUM(IF(TO_DAYS(NOW()) - TO_DAYS(dl.cstamp) <= 30,de.product_quantity,0)) m1,
 		pl.*,
 		pp.sell,
@@ -231,5 +231,39 @@ class Stock extends Catalog {
 	$this->query("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data WHERE label='$label' ON DUPLICATE KEY UPDATE $set_list");
 	//print("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data ON DUPLICATE KEY UPDATE $set_list");
 	return $this->db->affected_rows();
+    }
+    public function utilCalcMin( $parent_id, $period, $ratio ){
+	$this->check($parent_id,'int');
+	$this->check($period,'int');
+	$this->check($ratio,'double');
+	$branch_ids=$this->treeGetSub('stock_tree',$parent_id);
+	$where="WHERE se.parent_id IN (".implode(',',$branch_ids).")";
+	$stock_table="
+	    UPDATE
+		stock_entries se
+	    SET
+		product_wrn_quantity=
+		(SELECT
+		    SUM(IF(TO_DAYS(NOW()) - TO_DAYS(dl.cstamp) <= $period,de.product_quantity,0))*$ratio
+		FROM
+		    document_entries de
+			JOIN
+		    document_list dl ON de.doc_id=dl.doc_id AND dl.is_commited=1 AND dl.doc_type=1
+		WHERE 
+		    de.product_code=se.product_code
+		GROUP BY se.product_code) 
+	    $where";
+	$this->query($stock_table);
+	return $this->db->affected_rows();
+    }
+        public function adjustMin($parent_id, $ratio) {
+        if ($ratio < 0.5){
+            $this->Base->response_wrn("Коэффициэнт не может быть меньше 0,5");
+	}
+        $sub_parents_ids = $this->getSubBranchIds('stock_tree', $parent_id);
+        $sub_parents_where = "parent_id='" . implode("' OR parent_id='", $sub_parents_ids) . "'";
+        $this->Base->query("
+		
+	");
     }
 }
