@@ -244,7 +244,7 @@ class Stock extends Catalog {
 	    SET
 		product_wrn_quantity=
 		(SELECT
-		    SUM(IF(TO_DAYS(NOW()) - TO_DAYS(dl.cstamp) <= $period,de.product_quantity,0))*$ratio
+		    ROUND(SUM(IF(TO_DAYS(NOW()) - TO_DAYS(dl.cstamp) <= $period,de.product_quantity,0))*$ratio/10)*10
 		FROM
 		    document_entries de
 			JOIN

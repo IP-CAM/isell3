@@ -21,7 +21,8 @@
 	submit:function(e){
 	    e.preventDefault();
 	    var fvalue=App.collectForm("#page_stock_calc_min_frm");
-	    if( fvalue.ratio>0.5 ){
+	    if( fvalue.ratio>=0.5 ){
+		fvalue.ratio=fvalue.ratio*1;
 		this.handler.notify('submit',fvalue);
 	    } else {
 		alert("Коэффициент должен быть числом больше 0,5");
