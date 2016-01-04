@@ -107,23 +107,28 @@
 	<input name="product_volume" title="Объем м3">
 	<input name="product_uktzet" title="Тамож. код">
 	<input name="barcode" title="Штрихкод">
-	<input name="party_label" title="Партия">	
+	<input name="party_label" title="Партия">
     </div>
-    <div class="inp_rule"></div>
-    <div class="inp_group" style="width: 320px;vertical-align: top">
-	<input name="sell" title="Продажа">
-	<input name="buy" title="Покупка">
-	<select name="curr_code" title="Валюта">
-	    <option value="UAH">UAH Гривна</option>
-	    <option value="USD">USD Доллар</option>
-	    <option value="RUB">RUB Рубль</option>
-	</select>
+    <div class="inp_group" style="width: 320px;vertical-align: top;">
+	<fieldset style="width: 300px;">
+	    <legend>Цены на товар</legend>
+	    <input name="sell" title="Продажа">
+	    <input name="buy" title="Покупка">
+	    <select name="curr_code" title="Валюта">
+		<option value="UAH">UAH Гривна</option>
+		<option value="USD">USD Доллар</option>
+		<option value="RUB">RUB Рубль</option>
+	    </select>
+	</fieldset>
     </div>
-    <div class="inp_group" style="width: 320px;vertical-align: top">
-	<input name="analyse_type" title="Тип">
-	<input name="analyse_group" title="Группа">
-	<input name="analyse_class" title="Класс">
-	<input name="analyse_section" title="Раздел">
+    <div class="inp_group" style="width: 320px;vertical-align: top;margin-right: 15px;float:right">
+	<fieldset style="width: 300px;">
+	    <legend>Аналитика</legend>
+	    <input name="analyse_type" title="Тип">
+	    <input name="analyse_group" title="Группа">
+	    <input name="analyse_class" title="Класс">
+	    <input name="analyse_section" title="Раздел">
+	</fieldset>
     </div>
     <div style="text-align: center;margin-top: 15px;">
 	<button type="submit"><img src="img/Save-24.png" /> Сохранить</button>

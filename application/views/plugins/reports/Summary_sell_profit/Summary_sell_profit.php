@@ -59,7 +59,7 @@ class Summary_sell_profit extends Catalog{
 			JOIN
 		    prod_list pl USING(product_code)
 		WHERE
-		    doc_type=1 AND cstamp>'$this->idate' AND cstamp<'$this->fdate' AND is_commited=1 $active_filter $reclamation_filter
+		    doc_type=1 AND cstamp>'$this->idate' AND cstamp<'$this->fdate' AND is_commited=1 AND notcount=0 $active_filter $reclamation_filter
 		GROUP BY product_code) entries
 		$having)";
 	$this->query($main_table_sql);
@@ -98,8 +98,8 @@ class Summary_sell_profit extends Catalog{
                 'total_self'=>$total_self,
                 'total_net'=>$total_net,
                 'total_qty'=>$total_qty,
-		'rows'=>$rows,
-		'totals'=>$totals
+		'rows'=>count($rows)?$rows:[[]],
+		'totals'=>count($totals)?$totals:[[]]
 		];
 	return $view;	
     }

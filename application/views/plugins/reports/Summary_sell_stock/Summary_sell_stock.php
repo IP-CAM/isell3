@@ -36,7 +36,7 @@ class Summary_sell_stock extends Catalog{
                     JOIN
                 document_list dl USING(doc_id)
             WHERE
-                (doc_type=1 OR doc_type=2) AND cstamp<'$this->fdate' AND is_commited=1 $active_filter $reclamation_filter
+                (doc_type=1 OR doc_type=2) AND cstamp<'$this->fdate' AND is_commited=1 AND notcount=0 $active_filter $reclamation_filter
             GROUP BY product_code";
         $sql="
             SELECT 
@@ -68,8 +68,9 @@ class Summary_sell_stock extends Catalog{
             $total_stock_qty+=$row->stock_sum_qty;
         }
         foreach( $rows as $row ){
-            $row->sell_proc=    round( $row->sell_sum/$total_sell, 4);
-            $row->stock_proc=   round( $row->stock_sum/$total_stock, 4);
+            $row->sell_proc=    $total_sell?round( $row->sell_sum/$total_sell, 4):'';
+            $row->stock_proc=   $total_stock?round( $row->stock_sum/$total_stock, 4):'';
+	    $this->clear_zero($row);
         }
 	function sort_bysell($a,$b){
 	    if( $a->sell_sum==$b->sell_sum ){
@@ -83,8 +84,15 @@ class Summary_sell_stock extends Catalog{
                 'total_stock'=>round($total_stock,2),
                 'total_sell_qty'=>round($total_sell_qty,2),
                 'total_stock_qty'=>round($total_stock_qty,2),
-		'rows'=>$rows
+		'rows'=>count($rows)?$rows:[[]]
 		];
 	return $view;	
+    }
+    private function clear_zero(&$row){
+	foreach($row as &$field){
+	    if(is_numeric($field) && $field==0){
+		$field='';
+	    }
+	}
     }
 }
