@@ -256,14 +256,7 @@ class Stock extends Catalog {
 	$this->query($stock_table);
 	return $this->db->affected_rows();
     }
-        public function adjustMin($parent_id, $ratio) {
-        if ($ratio < 0.5){
-            $this->Base->response_wrn("Коэффициэнт не может быть меньше 0,5");
-	}
-        $sub_parents_ids = $this->getSubBranchIds('stock_tree', $parent_id);
-        $sub_parents_where = "parent_id='" . implode("' OR parent_id='", $sub_parents_ids) . "'";
-        $this->Base->query("
-		
-	");
+    public function utilsCalcIncomeOrder( $parent_id ){
+	
     }
 }
