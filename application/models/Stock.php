@@ -164,7 +164,8 @@ class Stock extends Catalog {
         $sql="SELECT
                 DATE_FORMAT(dl.cstamp,'%d.%m.%Y') oper_date,
                 CONCAT(dt.doc_type_name,IF(dl.is_reclamation,' (Возврат)',''),' #',dl.doc_num) doc,
-                label,
+		(SELECT label FROM companies_tree JOIN companies_list USING(branch_id) WHERE company_id=passive_company_id) plabel,
+		(SELECT label FROM companies_tree JOIN companies_list USING(branch_id) WHERE company_id=active_company_id) alabel,
                 product_code,
                 ru,
                 IF(doc_type=1,product_quantity,'') sell,
@@ -177,10 +178,6 @@ class Stock extends Catalog {
                 document_types dt USING(doc_type)
                     JOIN
                 prod_list USING(product_code)
-                    JOIN
-                companies_list ON passive_company_id=company_id
-                    LEFT JOIN
-                companies_tree USING(branch_id)
             WHERE
                 is_commited AND NOT notcount
             HAVING $having
@@ -194,11 +191,12 @@ class Stock extends Catalog {
     private function distinctMovementsRows( &$result_rows ){
 	$prev_concat='';
 	foreach( $result_rows as $row ){
-	    $concat=$row->oper_date.$row->doc.$row->label;
+	    $concat=$row->alabel.$row->oper_date.$row->doc.$row->plabel;
 	    if( $prev_concat==$concat ){
 		$row->oper_date='';
 		$row->doc='';
-		$row->label='';
+		$row->alabel='';
+		$row->plabel='';
 	    }
 	    $prev_concat=$concat;
 	}
