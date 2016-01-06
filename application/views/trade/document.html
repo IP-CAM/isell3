@@ -747,12 +747,12 @@
 	DOCUMENT ENTRIES 
 	----------------------------
 	-->
-	<table class="easyui-datagrid" id="Doc_entry_dg" style="width:660px;"
+	<table class="easyui-datagrid" id="Doc_entry_dg" style="width:660px;max-height: 800px;"
 	       data-options="
 	       rownumbers:true,
 	       noheader:true,
 	       ctrlSelect:true,
-	       autoRowHeight:false,
+	       autoRowHeight:true,
 	       loader:Doc.entries.loader,
 	       method:'get',
 	       onDblClickCell:Doc.entries.edit,
@@ -760,8 +760,8 @@
 	       ">
 	    <thead>
 		<tr>
-                    <th data-options="field:'product_code',width:80">Код</th>  
-		    <th data-options="field:'product_name',width:310">Название</th>
+                    <th data-options="field:'product_code',width:75">Код</th>  
+		    <th data-options="field:'product_name',width:300">Название</th>
 		    <th data-options="field:'product_quantity',width:50,align:'right'">Кол-во</th>
 		    <th data-options="field:'product_unit',width:40,align:'center'">Ед.</th>
 		    <th data-options="field:'product_price',width:55,align:'right',formatter:Doc.entries.calculate">Цена</th>

@@ -232,31 +232,5 @@ class Stock extends Catalog {
 	//print("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data ON DUPLICATE KEY UPDATE $set_list");
 	return $this->db->affected_rows();
     }
-    public function utilCalcMin( $parent_id, $period, $ratio ){
-	$this->check($parent_id,'int');
-	$this->check($period,'int');
-	$this->check($ratio,'double');
-	$branch_ids=$this->treeGetSub('stock_tree',$parent_id);
-	$where="WHERE se.parent_id IN (".implode(',',$branch_ids).")";
-	$stock_table="
-	    UPDATE
-		stock_entries se
-	    SET
-		product_wrn_quantity=
-		(SELECT
-		    ROUND(SUM(IF(TO_DAYS(NOW()) - TO_DAYS(dl.cstamp) <= $period,de.product_quantity,0))*$ratio/10)*10
-		FROM
-		    document_entries de
-			JOIN
-		    document_list dl ON de.doc_id=dl.doc_id AND dl.is_commited=1 AND dl.doc_type=1
-		WHERE 
-		    de.product_code=se.product_code
-		GROUP BY se.product_code) 
-	    $where";
-	$this->query($stock_table);
-	return $this->db->affected_rows();
-    }
-    public function utilsCalcIncomeOrder( $parent_id ){
-	
-    }
+
 }

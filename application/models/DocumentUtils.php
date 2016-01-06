@@ -3,8 +3,10 @@ require_once 'Catalog.php';
 class DocumentUtils extends Catalog{
     public $min_level=1;
     protected function selectDoc( $doc_id ){
-	$this->Base->svar('doc_id',$doc_id);
-	unset( $this->_doc );
+	if( $doc_id!=$this->Base->svar('doc_id') ){
+	    $this->Base->svar('doc_id',$doc_id);
+	    unset( $this->_doc );
+	}
     }
     private function checkPassiveLoad(){
 	if( $this->Base->pcomp('company_id')!==$this->_doc->passive_company_id  ){

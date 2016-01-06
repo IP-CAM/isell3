@@ -20,6 +20,7 @@
 	},
 	list:{
 	    parent_id:0,
+	    parent_label:'Все',
 	    filterRules:{},
 	    currPage:1,
 	    loader:function( param, success, error ){
@@ -227,12 +228,29 @@
 	    calc_min:function(){
 		App.loadWindow("page/stock/calc_min",{parent_label:Leftovers.list.parent_label}).progress(function(status, fvalue){
 		    if( status==='submit' ){
-			$.post("Stock/utilCalcMin/"+App.uri(Leftovers.list.parent_id,fvalue.period,fvalue.ratio),function(ok){
+			$.post("Utils/stockCalcMin/"+App.uri(Leftovers.list.parent_id,fvalue.period,fvalue.ratio),function(ok){
 			    if( ok*1 ){
 				Leftovers.list.reload();
 				App.flash("Минимумы расчитаны у "+ok+" товаров");
 			    } else {
 				App.flash("Минимумы не изменились");
+			    }
+			});
+		    }
+		});
+	    },
+	    calc_buy_order:function(){
+		App.loadWindow("page/stock/calc_buy_order",{parent_label:Leftovers.list.parent_label}).progress(function(status, fvalue){
+		    if( status==='submit' ){
+			if( !confirm('Сформировать заказ поставщику "'+App.pcomp.label+'" по категории "'+Leftovers.list.parent_label+'"?') ){
+			    return false;
+			}
+			$.post("Utils/stockCalcIncomeOrder/"+Leftovers.list.parent_id,{filterRules: Leftovers.list.filterRules},function(doc_id){
+			    if( doc_id*1 ){
+				App.flash("Заказ сформирован");
+				App.loadWindow('page/trade/document',{doc_id:doc_id});
+			    } else {
+				App.flash("Заказ не сформирован");
 			    }
 			});
 		    }
@@ -249,8 +267,8 @@
 	    <div id="StreeInline"></div>
 	    Инструменты
 	    <hr>
-	    <button style="width:100%;margin: 2px;" onclick="Leftovers.utils.calc_min()"><img src="img/calc.png" style="width:24px;height: 24px;"> Рассчитать минимумы</button><br>
-	    <button style="width:100%;margin: 2px;"><img src="img/docnew.png"> Подготовить заказ</button>
+	    <button style="width:100%;margin: 2px;text-align: left" onclick="Leftovers.utils.calc_min()"><img src="img/calc.png" style="width:24px;height: 24px;"> Рассчитать минимумы</button><br>
+	    <button style="width:100%;margin: 2px;text-align: left" onclick="Leftovers.utils.calc_buy_order()"><img src="img/docnew.png" style="width:24px;height: 24px;"> Сформировать заказ</button>
 	</td>
 	<td style="vertical-align: top">
 	    <div style="float: left;font-weight: bold;padding-top: 8px;">

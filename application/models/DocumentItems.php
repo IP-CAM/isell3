@@ -89,7 +89,7 @@ class DocumentItems extends DocumentCore{
             ORDER BY pl.product_code";
 	return $this->get_list($sql);
     }
-    private function entryAdd( $doc_id, $code, $quantity ){
+    public function entryAdd( $doc_id, $code, $quantity ){
 	$this->selectDoc($doc_id);
 	$Document2=$this->Base->bridgeLoad('Document');
 	return $Document2->addEntry( $code, $quantity );

@@ -1,6 +1,6 @@
 <?php
-
-class Utils extends CI_Model {
+require_once 'Catalog.php';
+class Utils extends Catalog{
 
     //////////////////////////////////////
     //FOLOWING FUNCTIONS ARE DEPRECATED
@@ -304,4 +304,51 @@ class Utils extends CI_Model {
 	$this->selfPriceTableMake($idate,$fdate);
 	return $this->selfPriceStockAssign($idate,$fdate);
     }
-}
+    
+    public function stockCalcMin( $parent_id, $period, $ratio ){
+	$this->check($parent_id,'int');
+	$this->check($period,'int');
+	$this->check($ratio,'double');
+	$branch_ids=$this->treeGetSub('stock_tree',$parent_id);
+	$where="WHERE se.parent_id IN (".implode(',',$branch_ids).")";
+	$stock_table="
+	    UPDATE
+		stock_entries se
+	    SET
+		product_wrn_quantity=
+		(SELECT
+		    ROUND(SUM(IF(TO_DAYS(NOW()) - TO_DAYS(dl.cstamp) <= $period,de.product_quantity,0))*$ratio/10)*10
+		FROM
+		    document_entries de
+			JOIN
+		    document_list dl ON de.doc_id=dl.doc_id AND dl.is_commited=1 AND dl.doc_type=1
+		WHERE 
+		    de.product_code=se.product_code
+		GROUP BY se.product_code) 
+	    $where";
+	$this->query($stock_table);
+	return $this->db->affected_rows();
+    }
+    public function stockCalcIncomeOrder( $parent_id=0 ){
+	$this->check($doc_id,'int');
+	$having=$this->decodeFilterRules();
+	$branch_ids=$this->treeGetSub('stock_tree',$parent_id);
+	$where="product_wrn_quantity>product_quantity AND parent_id IN (".implode(',',$branch_ids).")";
+	$sql="
+	    SELECT
+		product_code,
+		IF(product_bpack,CEIL((product_wrn_quantity-product_quantity)/product_bpack)*product_bpack,product_wrn_quantity-product_quantity) qty
+	    FROM
+		stock_entries
+		    JOIN
+		prod_list USING(product_code)
+	    WHERE $where
+	    HAVING $having";
+	$buy_order=$this->get_list($sql);
+	$DocumentItems=$this->Base->load_model("DocumentItems");
+	$doc_id=$DocumentItems->createDocument(2);//create buy document
+	foreach($buy_order as $row){
+	   $DocumentItems->entryAdd($doc_id,$row->product_code,$row->qty);
+	}
+	return $doc_id;
+    }}
