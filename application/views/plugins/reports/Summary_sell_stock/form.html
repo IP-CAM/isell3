@@ -1,10 +1,7 @@
 <form>
-    <div class="inp_group" style="width: 305px;">
+    <div class="inp_group" style="width: 230px;">
 	<input style="width:95px" class="easyui-datebox" name="idate" title="Начальная дата" value="{{first_day}}" data-options="required:true">
 	<input style="width:95px" class="easyui-datebox" name="fdate" title="Конечная дата" value="{{today}}" data-options="required:true">
-	<input type="checkbox" name="all_active" title="Все наши фирмы" checked="checked">
-	<input type="checkbox" name="count_reclamations" title="Учитывать возвраты" checked="checked">
-	<input type="checkbox" name="in_alt_currency" title="Выводить в валюте">
     </div>
     <div class="inp_group" style="width: 350px;">
 	<select name="group_by" title="Группировать по">
@@ -16,6 +13,11 @@
 	    <option value="analyse_section">Раздел</option>
 	</select>
 	<input name="group_by_filter" title="Фильтр группы">	
+    </div>
+    <div class="inp_group" style="width: 200px;">
+	<input type="checkbox" name="all_active" title="Все наши фирмы" checked="checked">
+	<input type="checkbox" name="count_reclamations" title="Учитывать возвраты" checked="checked">
+	<input type="checkbox" name="in_alt_currency" title="Выводить в валюте">
     </div>
     <div style="text-align: center">
 	<button type="submit"><img src="img/report24.png" style="width:24px;height: auto"> Сформировать</button>
