@@ -9,6 +9,7 @@ class Summary_sell_profit extends Catalog{
 	$this->all_active=$this->request('all_active','bool');
 	$this->count_reclamations=$this->request('count_reclamations','bool',0);
 	$this->in_alt_currency=$this->request('in_alt_currency','bool',0);
+	$this->group_by_client=$this->request('group_by_client','bool',0);
 	$this->language=$this->request('language','\w+','ru');
 	$this->group_by_filter=$this->request('group_by_filter');
 	$this->group_by=$this->request('group_by','\w+');
@@ -24,13 +25,15 @@ class Summary_sell_profit extends Catalog{
     public function viewGet(){
 	$active_filter=$this->all_active?'':' AND active_company_id='.$this->Base->acomp('company_id');
 	$reclamation_filter=$this->count_reclamations?'':' AND is_reclamation=0';
+	$passive_groupper=$this->group_by_client?',passive_company_id':'';
+	$group_by_label=$this->group_by_client?"CONCAT($this->group_by,' / ',(SELECT company_name FROM companies_list WHERE company_id=passive_company_id))":"$this->group_by";
         $having=$this->group_by_filter?"HAVING group_by LIKE '%$this->group_by_filter%'":"";
 	
 	$this->query("DROP TEMPORARY TABLE IF EXISTS tmp_sell_profit;");
 	$main_table_sql="CREATE TEMPORARY TABLE tmp_sell_profit ( INDEX(product_code) ) ENGINE=MyISAM AS (
 	    SELECT 
-		$this->group_by group_by,
-		product_code,
+		$group_by_label group_by,
+		product_code $passive_groupper,
 		product_name,
 		sell_qty,
 		self_prod_sum/sell_qty self_avg,
@@ -40,7 +43,7 @@ class Summary_sell_profit extends Catalog{
 		sell_prod_sum-self_prod_sum net_prod_sum
 	    FROM 	    
 		(SELECT
-		    product_code,
+		    product_code $passive_groupper,
 		    $this->language product_name,
 		    (SELECT label FROM stock_tree WHERE branch_id=se.parent_id) label,
 		    analyse_type,
@@ -60,7 +63,7 @@ class Summary_sell_profit extends Catalog{
 		    prod_list pl USING(product_code)
 		WHERE
 		    doc_type=1 AND cstamp>'$this->idate' AND cstamp<'$this->fdate' AND is_commited=1 AND notcount=0 $active_filter $reclamation_filter
-		GROUP BY product_code) entries
+		GROUP BY product_code $passive_groupper) entries
 		$having)";
 	$this->query($main_table_sql);
 	$rows=$this->get_list("SELECT * FROM tmp_sell_profit");
@@ -74,7 +77,7 @@ class Summary_sell_profit extends Catalog{
 		SUM(sell_prod_sum)-SUM(self_prod_sum) net_sum
 	    FROM 
 		tmp_sell_profit
-	    GROUP BY group_by";
+	    GROUP BY group_by $passive_groupper";
 	$totals=$this->get_list($totals_table_sql);
         $total_sell=0;
         $total_self=0;
