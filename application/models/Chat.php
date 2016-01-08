@@ -9,7 +9,7 @@ class Chat extends Catalog{
 		CONCAT(first_name,' ',last_name) name,
 		MAX( IF(event_status=1,1,0) ) has_new
             FROM
-                " . BAY_DB_MAIN . ".user_list
+                user_list
                     LEFT JOIN
                 event_list ON event_user_id=user_id
 		GROUP BY user_id";
@@ -26,7 +26,7 @@ class Chat extends Catalog{
     private function addMessage( $he, $msg ){
         $user_id = $this->Base->svar('user_id');
         $sql="INSERT INTO
-                " . BAY_DB_MAIN . ".event_list
+                event_list
               SET 
                 event_label='Chat',
                 event_date=NOW(),
@@ -49,9 +49,9 @@ class Chat extends Catalog{
 	    event_status=1 unread,
 	    IF( (event_target='$me' OR event_target='all') AND @unread_id=0 AND event_status=1,@unread_id:=event_id,0) unread_id
                 FROM
-                    " . BAY_DB_MAIN . ".event_list
+                    event_list
                         JOIN
-                    " . BAY_DB_MAIN . ".user_list ON event_user_id=user_id
+                    user_list ON event_user_id=user_id
                 WHERE 
                     event_label='Chat' 
                 HAVING
@@ -61,14 +61,14 @@ class Chat extends Catalog{
                 ORDER BY event_date";
 	$messages=$this->get_list($sql);
 	$this->setAsRead();
-        return array('msgs'=>$messages,'has_new'=>$this->checkNew());
+        return ['msgs'=>$messages,'has_new'=>$this->checkNew()];
     }
     private function setAsRead(){
-	$this->query("UPDATE " . BAY_DB_MAIN . ".event_list SET event_status=2 WHERE event_id=@unread_id;");
+	$this->query("UPDATE event_list SET event_status=2 WHERE event_id=@unread_id;");
     }
     public function checkNew(){
 	$me = $this->Base->svar('user_login');
-	$sql="SELECT COUNT(*) FROM " . BAY_DB_MAIN . ".event_list WHERE event_status=1 AND (event_target='all' OR event_target='$me')";
+	$sql="SELECT COUNT(*) FROM event_list WHERE event_status=1 AND (event_target='all' OR event_target='$me')";
 	return $this->get_value($sql);
     }
 }

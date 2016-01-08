@@ -1,0 +1,52 @@
+<script>
+    /*global App*/
+EventsJs={
+    activeDates:[],
+    selectedDay:App.toIso(App.today()),
+    init:function(){
+	this.activeDatesGet();
+    },
+    activeDatesGet:function(){
+	$.get("Events/activeDatesGet",function(resp){
+	    EventsJs.activeDates=App.json(resp);
+	    $("#event_calendar").calendar("moveTo",new Date(EventsJs.selectedDay));
+	});
+    },
+    calendar:{
+	formatter:function (date) {
+	    var iso = App.toIso(date);
+	    for (var i in EventsJs.activeDates) {
+		if ( iso === EventsJs.activeDates[i]['event_date'] ) {
+		    return '<div style="border:2px #0f0 solid;border-radius:10px;">' + date.getDate() + '</div>';
+		}
+	    }
+	    return date.getDate();
+	},
+	onChange: function(date){
+	    EventsJs.selectedDay = App.toIso(date);
+	    //EventsJs.initLabelList();
+	}
+    }
+};    
+</script>
+<table cellpadding="0" cellspacing="0" align="center">
+    <tr>
+	<td width="200" align="center" valign="top">
+	    <div id="event_calendar" class="easyui-calendar" style="width:250px;height:250px;" data-options="
+		 formatter:EventsJs.calendar.formatter,
+		 onChange:EventsJs.calendar.onChange"></div>
+	    <div id="event_label_list"></div>
+	</td>
+	<td valign="top" align="center">
+	    <div class="grid_wrapper">
+		<div id="event_grid" style="padding:15px;"></div>
+		<div id="event_info">
+		    <h1>На этот день нет запланированных заданий</h1>
+		    <a href="javascript:ListsJs.events.addEvent()">
+			<img src="img/edit_add.png"><br> добавить новое задание
+		    </a>
+		</div>
+	    </div>
+	</td>
+    </tr>
+</table>
