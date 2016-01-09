@@ -5,6 +5,7 @@ EventsJs={
     selectedDay:App.toIso(App.today()),
     init:function(){
 	this.activeDatesGet();
+	this.tile.load();
     },
     activeDatesGet:function(){
 	$.get("Events/activeDatesGet",function(resp){
@@ -12,41 +13,114 @@ EventsJs={
 	    $("#event_calendar").calendar("moveTo",new Date(EventsJs.selectedDay));
 	});
     },
+    show_dialog:function(fvalue){
+	fvalue.event_user_id = App.user.props.user_id;
+	App.loadWindow('page/events/event', fvalue).progress(function (status, fvalue) {
+	    if (status === 'update' || status === 'create' || status === 'delete') {
+		EventsJs.selectedDay = App.toIso(fvalue.event_date) || EventsJs.selectedDay;
+		EventsJs.activeDatesGet();
+	    }
+	});	
+    },
     calendar:{
 	formatter:function (date) {
 	    var iso = App.toIso(date);
 	    for (var i in EventsJs.activeDates) {
 		if ( iso === EventsJs.activeDates[i]['event_date'] ) {
-		    return '<div style="border:2px #0f0 solid;border-radius:10px;">' + date.getDate() + '</div>';
+		    return '<div style="border:2px #0f0 solid;border-radius:18px;font-size:18px;">' + date.getDate() + '</div>';
 		}
 	    }
-	    return date.getDate();
+	    return '<div style="font-size:18px;">' + date.getDate() + '</div>';
 	},
 	onChange: function(date){
 	    EventsJs.selectedDay = App.toIso(date);
 	    //EventsJs.initLabelList();
 	}
+    },
+    tile:{
+	event_list:[],
+	load:function(){
+	    $.get("Events/listFetch/"+EventsJs.selectedDay,function(resp){
+		EventsJs.tile.event_list=App.json(resp);
+		var event_label='';
+		for(var i=0;i<EventsJs.tile.event_list.length;i++){
+		    if( EventsJs.tile.event_list[i].event_label!==event_label ){
+			event_label=EventsJs.tile.event_list[i].event_label||'';
+			EventsJs.tile.event_list.splice(i,0,{header:event_label});
+		    }
+		}
+		App.renderTpl('events_tile',{events:EventsJs.tile.event_list});
+		//var last_index=App.store('last_event_i')||1;
+		//EventsJs.event.load(EventsJs.tile.event_list[last_index]);
+	    });
+	},
+	click:function( node ){
+	    var index=$(node).data('event-index');
+	    EventsJs.show_dialog(EventsJs.tile.event_list[index]);
+	}
     }
 };    
 </script>
-<table cellpadding="0" cellspacing="0" align="center">
-    <tr>
-	<td width="200" align="center" valign="top">
-	    <div id="event_calendar" class="easyui-calendar" style="width:250px;height:250px;" data-options="
+<style>
+    .event_tile_label{
+	text-align: center;
+	background-color: rgba(150,200,255,0.6);
+	font-size: 18px;
+	margin: 5px;
+	margin-bottom: 0px;
+	padding: 5px;
+    }
+    .event_tile_item_row{
+	margin:1px 5px 1px 5px;
+	background-color: rgba(255,255,255,0.4);
+    }
+    .event_tile_item_row:hover{
+	background-color: rgba(255,255,255,0.7);
+	cursor: pointer;
+    }
+    .event_tile_item_row div{
+	display: table-cell;
+	border-left: 1px solid #def;
+	padding: 1px;
+	height: 20px;
+    }
+    .event_tile_header,.event_tile_header:hover{
+	background-color: rgba(150,200,255,0.6);
+	cursor: default;
+    }
+    .event_tile_header div{
+	height: 20px;
+	text-align: center;
+	font-weight: bold;
+	padding-top: 5px;
+    } 
+</style>
+<div id="event_calendar" class="easyui-calendar" style="width:250px;height:250px;display: inline-block" data-options="
 		 formatter:EventsJs.calendar.formatter,
 		 onChange:EventsJs.calendar.onChange"></div>
-	    <div id="event_label_list"></div>
-	</td>
-	<td valign="top" align="center">
-	    <div class="grid_wrapper">
-		<div id="event_grid" style="padding:15px;"></div>
-		<div id="event_info">
-		    <h1>На этот день нет запланированных заданий</h1>
-		    <a href="javascript:ListsJs.events.addEvent()">
-			<img src="img/edit_add.png"><br> добавить новое задание
-		    </a>
+<div style="display: inline-block;vertical-align: top;background-color: rgba(255,255,255,0.4);width:950px;padding: 10px;">
+	<div id="events_tile">
+	    {{events}}
+		{{if header}}
+		<h2>{{header}}</h2>
+		<div class="event_tile_item_row event_tile_header">
+		    <div style="width:60px">Дата</div>
+		    <div style="width:100px">Задание</div>
+		    <div style="width:100px">Цель</div>
+		    <div style="width:200px">Место</div>
+		    <div style="width:100px">Контакт</div>
+		    <div style="width:200px">Комментарий</div>
 		</div>
-	    </div>
-	</td>
-    </tr>
-</table>
+		{{else}}
+		    <div class="event_tile_item_row" data-event-index="{{#}}" onclick="EventsJs.tile.click(this);">
+			<div style="width:60px;text-align: center">{{date_dmy}}</div>
+			<div style="width:100px">{{event_name}}</div>
+			<div style="width:100px">{{event_target}}</div>
+			<div style="width:200px">{{event_place}}</div>
+			<div style="width:100px">{{event_note}}</div>
+			<div style="width:200px">{{event_descr}}</div>
+		    </div>	
+		{{/if}}
+	    {{/events}}
+	</div>
+</div>

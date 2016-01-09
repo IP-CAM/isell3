@@ -12,14 +12,27 @@ class Events extends Catalog{
 	$user_id = $this->Base->svar('user_id');
 	$user_level = $this->Base->svar('user_level');
 	$sql="SELECT 
-		DISTINCT(SUBSTR(event_date,1,10)) event_date
+		DISTINCT(DATE(event_date)) event_date
 	    FROM 
 		event_list 
 	    WHERE 
 		NOT event_is_private 
 		OR event_is_private AND (event_user_id='$user_id' OR $user_level>=3)
 	    ORDER BY event_date DESC
-	    LIMIT 90";
+	    ";
+	return $this->get_list($sql);
+    }
+    public function listFetch( $date ){
+	$this->check($date,'\d\d\d\d-\d\d-\d\d');
+	$sql="
+	    SELECT
+		*,
+		DATE_FORMAT(event_date,'%d.%m.%Y') date_dmy,
+		(SELECT nick FROM user_list WHERE user_id=modified_by) nick
+	    FROM
+		event_list
+	    WHERE
+		DATE(event_date)='$date'";
 	return $this->get_list($sql);
     }
 }
