@@ -55,8 +55,10 @@ EventsJs={
 	    });
 	},
 	click:function( node ){
-	    var index=$(node).data('event-index');
-	    EventsJs.show_dialog(EventsJs.tile.event_list[index]);
+	    $(".event_tile_item_row_selected").removeClass("event_tile_item_row_selected");
+	    $(node).addClass("event_tile_item_row_selected");
+	    //var index=$(node).data('event-index');
+	    //EventsJs.show_dialog(EventsJs.tile.event_list[index]);
 	}
     }
 };    
@@ -84,6 +86,11 @@ EventsJs={
 	padding: 1px;
 	height: 20px;
     }
+    .event_tile_item_row_selected,.event_tile_item_row_selected:hover{
+	margin:-1px 4px -1px 4px;
+	background-color: rgba(255,255,0,0.4);
+	border: 1px solid #000;
+    }
     .event_tile_header,.event_tile_header:hover{
 	background-color: rgba(150,200,255,0.6);
 	cursor: default;
@@ -99,28 +106,28 @@ EventsJs={
 		 formatter:EventsJs.calendar.formatter,
 		 onChange:EventsJs.calendar.onChange"></div>
 <div style="display: inline-block;vertical-align: top;background-color: rgba(255,255,255,0.4);width:950px;padding: 10px;">
-	<div id="events_tile">
-	    {{events}}
-		{{if header}}
-		<h2>{{header}}</h2>
-		<div class="event_tile_item_row event_tile_header">
-		    <div style="width:60px">Дата</div>
-		    <div style="width:100px">Задание</div>
-		    <div style="width:100px">Цель</div>
-		    <div style="width:200px">Место</div>
-		    <div style="width:100px">Контакт</div>
-		    <div style="width:200px">Комментарий</div>
-		</div>
-		{{else}}
-		    <div class="event_tile_item_row" data-event-index="{{#}}" onclick="EventsJs.tile.click(this);">
-			<div style="width:60px;text-align: center">{{date_dmy}}</div>
-			<div style="width:100px">{{event_name}}</div>
-			<div style="width:100px">{{event_target}}</div>
-			<div style="width:200px">{{event_place}}</div>
-			<div style="width:100px">{{event_note}}</div>
-			<div style="width:200px">{{event_descr}}</div>
-		    </div>	
-		{{/if}}
-	    {{/events}}
-	</div>
+    <div id="events_tile">
+	{{events}}
+	    {{if header}}
+	    <h2>{{header}}</h2>
+	    <div class="event_tile_item_row event_tile_header">
+		<div style="width:60px">Дата</div>
+		<div style="width:100px">Задание</div>
+		<div style="width:100px">Цель</div>
+		<div style="width:200px">Место</div>
+		<div style="width:100px">Контакт</div>
+		<div style="width:200px">Комментарий</div>
+	    </div>
+	    {{else}}
+		<div class="event_tile_item_row" data-event-index="{{#}}" onclick="EventsJs.tile.click(this);">
+		    <div style="width:60px;text-align: center">{{date_dmy}}</div>
+		    <div style="width:100px">{{event_name}}</div>
+		    <div style="width:100px">{{event_target}}</div>
+		    <div style="width:200px">{{event_place}}</div>
+		    <div style="width:100px">{{event_note}}</div>
+		    <div style="width:200px">{{event_descr}}</div>
+		</div>	
+	    {{/if}}
+	{{/events}}
+    </div>
 </div>
