@@ -1,10 +1,10 @@
 <?php
 
-$this->view->a->all=getAll($this->view->a);
-$this->view->p->all=getAll($this->view->p);
+$this->view->a->allbr=getAllBr($this->view->a);
+$this->view->p->allbr=getAllBr($this->view->p);
 
-function getAll( $comp ) {
-    $all ="$comp->company_name \n$comp->company_jaddress";
+function getAllBr( $comp ) {
+    $all ="$comp->company_name <br>$comp->company_jaddress";
     $all.=$comp->company_phone?", тел.:{$comp->company_phone}":'';
     $all.=$comp->company_bank_account?", Р/р:{$comp->company_bank_account}":'';
     $all.=$comp->company_bank_name?" в {$comp->company_bank_name}":'';
