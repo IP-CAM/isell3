@@ -57,9 +57,9 @@ class DocumentItems extends DocumentCore{
 		WHERE doc_id='$doc_id') t";
 	return $this->get_row($sql);
     }
-    protected function entriesFetch(){
+    protected function entriesFetch( $skip_vat_correction=false ){
 	$doc_id=$this->doc('doc_id');
-	$this->calcCorrections();
+	$this->calcCorrections( $skip_vat_correction );
 	$company_lang = $this->Base->pcomp('language');
 	$sql = "SELECT
                 doc_entry_id,
@@ -68,8 +68,8 @@ class DocumentItems extends DocumentCore{
                 product_quantity,
                 product_unit,
 		analyse_section,
-                REPLACE(FORMAT(invoice_price * @vat_correction * @curr_correction,signs_after_dot),',','') AS product_price,
-                REPLACE(FORMAT(invoice_price * @vat_correction * @curr_correction * product_quantity,2),',','') AS product_sum,
+                ROUND(invoice_price * @vat_correction * @curr_correction, signs_after_dot) AS product_price,
+                ROUND(invoice_price * @vat_correction * @curr_correction * product_quantity,2) AS product_sum,
                 CHK_ENTRY(doc_entry_id) AS row_status,
                 party_label,
                 product_uktzet,
