@@ -131,6 +131,7 @@ class Stock extends Catalog {
 	    $this->create(BAY_DB_MAIN.'.prod_list', ['product_code'=>$product_code_new]);
 	    $this->create(BAY_DB_MAIN.'.price_list', ['product_code'=>$product_code_new]);
 	    $this->create(BAY_DB_MAIN.'.stock_entries', ['product_code'=>$product_code_new]);
+            $product_code=$product_code_new;
 	}
         if( $product_code_new!=$product_code ){
             $this->update(BAY_DB_MAIN.'.prod_list', ['product_code'=>$product_code_new], ['product_code'=>$product_code]);
