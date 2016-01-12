@@ -78,16 +78,19 @@
 	    Doc.isCreated=!!doc_id;
 	    $.get('DocumentItems/headGet/' + Doc.head.props.doc_id, function (xhr) {
 		Doc.head.props = App.json(xhr);
-		Doc.head.setPropsForm(Doc.head.props);
-		Doc.setTitle();
-		App.renderTpl('Doc_owners',Doc.head.props);
-		    Doc.view.loadTile();
+                Doc.head.set();
+                Doc.view.loadTile();
 		if( !load_only_head ){
 		    Doc.entries.reload();
 		}
                 createDef && createDef.notify('head_loaded',doc_id);
 	    });
 	},
+        set:function(){
+            Doc.head.setPropsForm(Doc.head.props);
+            Doc.setTitle();
+            App.renderTpl('Doc_owners',Doc.head.props);            
+        },
 	reload:function(){
 	    Doc.head.load(Doc.head.props.doc_id,false);
 	},
@@ -190,6 +193,7 @@
 	    else{
 		Doc.head.props[field]=value;
 		Doc.head.hightlightCommited();
+                Doc.head.set();
 	    }
 	},
 	typeComboFormatter: function (data) {
