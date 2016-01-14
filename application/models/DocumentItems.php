@@ -50,7 +50,7 @@ class DocumentItems extends DocumentCore{
 		    ROUND(SUM(product_quantity*product_weight),2) total_weight,
 		    ROUND(SUM(product_quantity*product_volume),2) total_volume,
 		    SUM(ROUND(product_quantity*invoice_price * @curr_correction,2)) vatless,
-		    SUM(ROUND(product_quantity*invoice_price * @curr_correction * @vat_ratio,2)) total,
+		    ROUND(SUM(ROUND(product_quantity*invoice_price * @curr_correction,2) * @vat_ratio),2) total,
 		    SUM(ROUND(product_quantity*self_price,2)) self
 		FROM
 		    document_entries JOIN prod_list USING(product_code)
