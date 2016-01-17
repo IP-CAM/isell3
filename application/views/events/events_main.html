@@ -5,22 +5,23 @@ EventsJs={
     selectedDay:App.toIso(App.today()),
     init:function(){
 	this.activeDatesGet();
-	this.tile.load();
     },
     activeDatesGet:function(){
 	$.get("Events/activeDatesGet",function(resp){
 	    EventsJs.activeDates=App.json(resp);
-	    $("#event_calendar").calendar("moveTo",new Date(EventsJs.selectedDay));
+	    $("#event_calendar").calendar();
+	    EventsJs.tile.load();
 	});
     },
     show_dialog:function(fvalue){
 	fvalue.event_user_id = App.user.props.user_id;
+	fvalue.event_date=App.toDmy(EventsJs.selectedDay);
 	App.loadWindow('page/events/event', fvalue).progress(function (status, fvalue) {
 	    if (status === 'update' || status === 'create' || status === 'delete') {
-		EventsJs.selectedDay = App.toIso(fvalue.event_date) || EventsJs.selectedDay;
+		EventsJs.selectedDay = fvalue.event_date || EventsJs.selectedDay;
 		EventsJs.activeDatesGet();
 	    }
-	});	
+	});
     },
     calendar:{
 	formatter:function (date) {
@@ -34,7 +35,7 @@ EventsJs={
 	},
 	onChange: function(date){
 	    EventsJs.selectedDay = App.toIso(date);
-	    //EventsJs.initLabelList();
+	    EventsJs.tile.load();
 	}
     },
     tile:{
@@ -60,16 +61,50 @@ EventsJs={
 	    //var index=$(node).data('event-index');
 	    //EventsJs.show_dialog(EventsJs.tile.event_list[index]);
 	},
-	create:function(){
-	    
+	create:function(node){
+	    var header=$(node).parent().data('header');
+	    var fvalue = {
+		event_label: header,
+		event_date: EventsJs.selectedDay
+	    };
+	    EventsJs.show_dialog(fvalue);
 	},
-	edit:function(){
-	    
+	edit:function(node){
+	    var index=node?$(node).data('event-index'):$(".event_tile_item_row_selected").data('event-index');
+	    EventsJs.show_dialog(EventsJs.tile.event_list[index]);
 	},
-	delete:function(){
-	    
+	delete:function(node){
+	    var index=node?$(node).data('event-index'):$(".event_tile_item_row_selected").data('event-index');
+            if (confirm('Удалить запись?') && EventsJs.tile.event_list[index].event_id) {
+                $.post('Events/eventDelete/'+EventsJs.tile.event_list[index].event_id,function(ok){
+		    if( ok*1 ){
+			App.flash("Запись удалена");
+			EventsJs.tile.load();
+		    }else {
+			App.flash("Запись неудалена");
+		    }
+                });
+            }	    
 	},
-	print:function(){
+	move:function(node){
+	    var label=$(node).parent().data('header');
+	    var index=$(".event_tile_item_row_selected").data('event-index');
+	    var event_id=index?EventsJs.tile.event_list[index].event_id:0;
+	    App.loadWindow("page/events/move").progress(function(status,newdate,mode){
+		if( status==='move' ){
+		    $.post("Events/eventMove/"+App.uri(EventsJs.selectedDay,newdate,event_id,label,mode),function(ok){
+			if( ok*1 ){
+			    App.flash("Запись перенесена");
+			    EventsJs.activeDatesGet();
+			    $("#event_calendar").calendar('moveTo',new Date(newdate));
+			} else {
+			    App.flash("Запись не перенесена");
+			}
+		    });
+		}
+	    });
+	},
+	print:function(node){
 	    
 	}
     }
@@ -103,7 +138,8 @@ EventsJs={
     }
     .event_tile_item_row_selected,.event_tile_item_row_selected:hover{
 	margin:-2px 3px -1px 3px;
-	border: 2px solid #000;
+	border: 2px solid #08f;
+	background-color: rgba(255,255,255,0.7);
     }
     .event_tile_header,.event_tile_header:hover{
 	background: linear-gradient(0deg, rgba(220,255,255,0.9), rgba(255,255,255,0.6));
@@ -118,15 +154,22 @@ EventsJs={
 		 formatter:EventsJs.calendar.formatter,
 		 onChange:EventsJs.calendar.onChange"></div>
 <div style="display: inline-block;vertical-align: top;background-color: rgba(255,255,255,0.4);width:950px;padding: 10px;">
-    <div id="events_tile">
+    <div id="events_tile" class="covert">
+	{{if events|empty}}
+	<div style="text-align: center">
+	    <h1>Нет заданий на этот день</h1>
+	    <button onclick="EventsJs.tile.create(this);"><img src="img/edit_add.png"> Добавть задание</button>
+	</div>
+	{{/if}}
 	{{events}}
 	    {{if header}}
 	    <div style="padding: 5px;padding-top: 20px;">
-		<div style="text-align: right;padding-right: 5px;float: right;">
-		    <span class="icon-24 icon-create" title="Добавить" onclick="EventsJs.tile.create();"> </span>
+		<div style="text-align: right;padding-right: 5px;float: right;" data-header="{{header}}">
+		    <span class="icon-24 icon-create" title="Добавить" onclick="EventsJs.tile.create(this);"> </span>
 		    <span class="icon-24 icon-change" title="Изменить" onclick="EventsJs.tile.edit();"> </span>
 		    <span class="icon-24 icon-delete" title="Удалить" onclick="EventsJs.tile.delete();"> </span>
-		    <span class="icon-24 icon-print" title="Печать" onclick="EventsJs.tile.print();"> </span>
+		    <span class="icon-24" style="background-image: url(img/big_rightarrow.png);background-repeat: no-repeat;background-size: 24px 24px;" title="Перенести на другую дату" onclick="EventsJs.tile.move(this);"> </span>
+		    <span class="icon-24 icon-print" title="Печать" onclick="EventsJs.tile.print(this);"> </span>
 		</div>
 		<span style="font-size:18px;font-weight: bold">
 		    {{header}}
@@ -142,7 +185,7 @@ EventsJs={
 		<div>Комментарий</div>
 	    </div>
 	    {{else}}
-		<div class="event_tile_item_row" data-event-index="{{#}}" onclick="EventsJs.tile.click(this);">
+		<div class="event_tile_item_row" data-event-index="{{#}}" onclick="EventsJs.tile.click(this);" ondblclick="EventsJs.tile.edit(this);">
 		    <div style="max-width:26px;width:25px;"></div>
 		    <div style="max-width:60px;width:60px;text-align: center">{{date_dmy}}</div>
 		    <div style="max-width:150px;width:150px">{{event_name}}</div>

@@ -1,17 +1,19 @@
 <script type="text/javascript">
     /*global App */
     App.page_events_event = {
-        init: function (data, handler) {
-            $('#page_events_event').window({
+        init: function () {
+            this.node.window({
                 title: 'Добавить в распорядок',
                 width: 800,
-                height: 300
+                height: 300,
+		onClose:function(){
+		    App.page_events_event.node.remove();
+		    delete App.page_events_event;
+		}
             });
-            data.event_date = App.toDmy(data.event_date || new Date());
-            this.data = data;
-            this.handler = handler;
-            App.setupForm("#page_events_event_frm", data);
-            if (data.event_id) {
+            //this.data.event_date = App.toDmy(this.data.event_date || new Date());
+            App.setupForm("#page_events_event_frm", this.data);
+            if (this.data.event_id) {
                 $('#event_delete_button').attr('disabled', false);
             }
             $('#page_events_event_frm').submit(function (event) {
@@ -21,11 +23,6 @@
                 App.page_events_event.saveEvent(fvalue);
             });
         },
-        destroy: function () {
-            $('#page_events_event').window('close');
-            $('#page_events_event').remove();
-            delete App.page_events_event;
-        },
         saveEvent: function (fvalue) {
             fvalue.event_date = App.toIso(fvalue.event_date);
             $.post('ProcLists/onSaveEvent',fvalue,function(event_id){
@@ -34,7 +31,7 @@
                 App.page_events_event.data = fvalue;
                 App.flash("Создана запись: " + fvalue.event_name);
                 App.page_events_event.handler.notify('create', fvalue);
-                App.page_events_event.destroy();                
+                App.page_events_event.node.window('close');                
             });
         },
         deleteEvent: function () {
@@ -43,7 +40,7 @@
             if (confirm('Удалить запись?') && App.page_events_event.data.event_id) {
                 $.post('ProcLists/onDeleteEvent',{delIds:'[{"event_id":"'+App.page_events_event.data.event_id+'"}]'},function(){
                     App.page_events_event.handler.notify('delete', App.page_events_event.data);
-                    App.page_events_event.destroy();                    
+                    App.page_events_event.node.window('close');                    
                 });
             }
         },
