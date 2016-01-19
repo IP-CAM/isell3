@@ -3,16 +3,24 @@
     App.page_events_event = {
         init: function () {
             this.node.window({
-                title: 'Добавить в распорядок',
+                title: 'Редактирование задания',
                 width: 800,
-                height: 300,
+		top:50,
+		height: 'auto',
+		shadow:false,
 		onClose:function(){
 		    App.page_events_event.node.remove();
 		    delete App.page_events_event;
 		}
             });
-            //this.data.event_date = App.toDmy(this.data.event_date || new Date());
-            App.setupForm("#page_events_event_frm", this.data);
+	    this.node.window('hcenter');
+	    this.node.window('window').css('position','fixed');
+	    App.setupForm("#page_events_event_frm", this.data);
+	    
+	    
+	    this.data.created_by=this.data.created_by||'-';
+	    this.data.modified_by=this.data.modified_by||'-';
+	    App.renderTpl('page_events_event_frm_modified',this.data);
             if (this.data.event_id) {
                 $('#event_delete_button').attr('disabled', false);
             }
@@ -59,23 +67,27 @@
 <form id="page_events_event_frm" onsubmit="return false;" style="-moz-user-select:none;">
     <input type="hidden" name="event_user_id"/>
     <input type="hidden" name="event_id"/>
-    <img src="img/event.png" style="float:left" />
+    <img src="img/event.png" style="float:left;margin: 5px;" />
     <div style="display: inline-block;width: 320px;">
-        <input type="text" name="event_date" title="Дата" class="easyui-datebox" />
+        <input type="text" name="event_date" title="Дата" style="width:100px" class="easyui-datebox" />
         <input type="text" name="event_name" title="Задание" />
+        <input type="text" name="event_place" title="Место" />
         <input type="text" name="event_target" title="Цель" />
-        <input type="text" name="event_place" title="Место задания" />
         <input type="text" name="event_note" title="Контакт" />
+        <input type="checkbox" name="event_is_private" value="1" title="Скрыть" />
     </div>
     <div style="display: inline-block;width: 320px;vertical-align: top">
-        <input type="checkbox" name="event_is_private" value="1" title="Скрыть" />
         <div class="inp_group" style="text-align: right;">
             <a href="javascript:App.page_events_event.setLabel('Доставка')">Доставка</a> | 
             <a href="javascript:App.page_events_event.setLabel('Напоминание клиенту')">Напоминание клиенту</a> | 
             <a href="javascript:App.page_events_event.setLabel('Задания на складе')">Задания на складе</a> 
         </div>
         <input type="text" name="event_label" placeholder="Группа" title="Группа задания" style="background-color:#FFFFCC" />
-        <textarea rows="3" name="event_descr" title="Дополнительно"></textarea>
+        <textarea rows="4" name="event_descr" placeholder="Комментарий" style="width: 300px"></textarea>
+	<div id="page_events_event_frm_modified">
+	    <img src="img/add-16.png" title="Создано пользователем" style="vertical-align: middle"> {{created_by}} 
+	    <img src="img/edit-16.png" title="Изменено пользователем" style="vertical-align: middle"> {{modified_by}}
+	</div>
     </div>
     <div style="text-align: center;margin-top: 30px;">
         <button type="submit"><img src="img/Save-24.png" style="vertical-align: middle" /> Сохранить</button>

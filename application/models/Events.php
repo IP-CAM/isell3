@@ -30,7 +30,8 @@ class Events extends Catalog{
 	    SELECT
 		*,
 		DATE_FORMAT(event_date,'%d.%m.%Y') date_dmy,
-		(SELECT nick FROM user_list WHERE user_id=modified_by) nick
+		(SELECT nick FROM user_list WHERE user_id=created_by) created_by,
+		(SELECT nick FROM user_list WHERE user_id=modified_by) modified_by
 	    FROM
 		event_list
 	    WHERE
@@ -54,9 +55,11 @@ class Events extends Catalog{
 	    'event_place'=>$this->request('event_place'),
 	    'event_note'=>$this->request('event_note'),
 	    'event_descr'=>$this->request('event_descr'),
-	    'event_is_private'=>$this->request('event_is_private')
+	    'event_is_private'=>$this->request('event_is_private'),
+	    'modified_by'=>$this->Base->svar('user_id')
 	];
 	if( !$event_id ){
+	    $event['created_by']=$this->Base->svar('user_id');
 	    return $this->create('event_list', $event);
 	}
 	return $this->update('event_list', $event, ['event_id'=>$event_id]);
