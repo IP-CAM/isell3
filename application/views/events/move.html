@@ -19,6 +19,7 @@
 	},
 	move:function(mode){
 	    App.page_events_move.handler.notify('move',this.newdate,mode);
+	    this.node.window('close');
 	}
     };
 </script>

@@ -105,7 +105,22 @@ EventsJs={
 	    });
 	},
 	print:function(node){
+	    var label=$(node).parent().data('header');
+	    EventsJs.selectedDay
 	    
+	},
+	out:function( label, out_type ){
+	    var params={
+		label:label,
+		event_date:EventsJs.selectedDay,
+		out_type:out_type
+	    };
+	    var url='Events/eventViewGet/?'+$.param( params );
+	    if( out_type==='.print' ){
+		window.open(url,'print_tab');
+	    } else {
+		location.href=url;
+	    }
 	}
     }
 };    
@@ -169,7 +184,7 @@ EventsJs={
 		    <span class="icon-24 icon-change" title="Изменить" onclick="EventsJs.tile.edit();"> </span>
 		    <span class="icon-24 icon-delete" title="Удалить" onclick="EventsJs.tile.delete();"> </span>
 		    <span class="icon-24" style="background-image: url(img/big_rightarrow.png);background-repeat: no-repeat;background-size: 24px 24px;" title="Перенести на другую дату" onclick="EventsJs.tile.move(this);"> </span>
-		    <span class="icon-24 icon-print" title="Печать" onclick="EventsJs.tile.print(this);"> </span>
+		    <span class="icon-24 icon-print" title="Печать" onclick="EventsJs.tile.out($(this).parent().data('header'),'.print');"> </span>
 		</div>
 		<span style="font-size:18px;font-weight: bold">
 		    {{header}}

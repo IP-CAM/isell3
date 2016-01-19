@@ -52,7 +52,7 @@ class User extends Catalog {
 	$mods=json_decode(file_get_contents('application/config/modules.json',true));//not very reliable way to check, modules can be loaded anyway by hand
 	$alowed=array();
 	foreach( $mods as $mod ){
-	    if( $this->Base->svar('user_level')>=$mod->level && strpos(BAY_ACTIVE_MODULES, "/{$mod->name}/")!==false ){
+	    if( $this->Base->svar('user_level')>=$mod->level ){// && strpos(BAY_ACTIVE_MODULES, "/{$mod->name}/")!==false 
 		$alowed[]=$mod;
 	    }
 	}

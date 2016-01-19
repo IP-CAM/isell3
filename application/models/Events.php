@@ -22,8 +22,10 @@ class Events extends Catalog{
 	return $this->get_list($sql);
     }
     
-    public function listFetch( $date ){
+    public function listFetch( $date, $label=null ){
 	$this->check($date,'\d\d\d\d-\d\d-\d\d');
+	$this->check($label);
+	$label_filter=$label?" AND event_label='$label'":'';
 	$sql="
 	    SELECT
 		*,
@@ -32,7 +34,7 @@ class Events extends Catalog{
 	    FROM
 		event_list
 	    WHERE
-		DATE(event_date)='$date' AND event_label<>'chat'
+		DATE(event_date)='$date' AND event_label<>'chat' $label_filter
 	    ORDER BY event_label";
 	return $this->get_list($sql);
     }
@@ -52,5 +54,28 @@ class Events extends Catalog{
 	    return $this->db->affected_rows();
 	}
 	return $this->update('event_list',['event_date'=>$newdate],['event_id'=>$event_id]);
+    }
+    public function eventViewGet(){
+	$label=$this->request('label');
+	$event_date=$this->request('event_date','\d\d\d\d-\d\d-\d\d');
+	$out_type=$this->request('out_type');
+	
+	$rows=$this->listFetch($event_date,$label);
+	$dump=[
+	    'tpl_files'=>$this->Base->acomp('language').'/EventList.xlsx',
+	    'title'=>"Список Заданий",
+	    'user_data'=>[
+		'email'=>$this->Base->svar('pcomp')?$this->Base->svar('pcomp')->company_email:'',
+		'text'=>'Доброго дня'
+	    ],
+	    'view'=>[
+		'label'=>$label,
+		'date'=>date('d.m.Y',  strtotime($event_date)),
+		'rows'=>$rows
+	    ]
+	];
+	$ViewManager=$this->Base->load_model('ViewManager');
+	$ViewManager->store($dump);
+	$ViewManager->outRedirect($out_type);
     }
 }

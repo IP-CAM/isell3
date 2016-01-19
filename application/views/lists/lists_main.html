@@ -136,7 +136,7 @@
 	});
     };
     ListsJs.events.initCal = function () {
-	$('#event_calendar').calendar({
+	$('#event_calendar1').calendar({
 	    formatter: function (date) {
 		var iso = App.toIso(date);
 		for (var i in ListsJs.events.activeDates) {
@@ -151,13 +151,13 @@
 		ListsJs.events.initLabelList();
 	    }
 	});
-	$('#event_calendar').calendar('moveTo', new Date(ListsJs.events.selectedDay));
+	$('#event_calendar1').calendar('moveTo', new Date(ListsJs.events.selectedDay));
     };
 </script>
 <table cellpadding="0" cellspacing="0" align="center">
     <tr>
 	<td width="200" align="center" valign="top">
-	    <div id="event_calendar" style="width:180px;height:180px;"></div>
+	    <div id="event_calendar1" style="width:180px;height:180px;"></div>
 	    <div style="letter-spacing:3px;color:#06F">&nbsp;</div>
 	    <div id="event_label_list"><!--{% for row in label_list %}<div class="event_label" onclick="ListsJs.events.selectLabel(this);" title="{{row.event_label}}"><big>"{{row.event_label}}" ({{row.count}})</big></div>{% endfor %}--></div>
 	</td>
