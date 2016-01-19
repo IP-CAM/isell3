@@ -16,7 +16,7 @@
 	    this.node.window('hcenter');
 	    this.node.window('window').css('position','fixed');
 	    
-	    
+	    this.data.event_date=this.data.event_date || App.toDmy(new Date());
 	    this.data.created_by=this.data.created_by||'-';
 	    this.data.modified_by=this.data.modified_by||'-';
 	    this.data.event_priority=this.data.event_priority||'3medium';
