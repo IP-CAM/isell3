@@ -78,16 +78,19 @@
 	    Doc.isCreated=!!doc_id;
 	    $.get('DocumentItems/headGet/' + Doc.head.props.doc_id, function (xhr) {
 		Doc.head.props = App.json(xhr);
-		Doc.head.setPropsForm(Doc.head.props);
-		Doc.setTitle();
-		App.renderTpl('Doc_owners',Doc.head.props);
-		    Doc.view.loadTile();
+                Doc.head.set();
+                Doc.view.loadTile();
 		if( !load_only_head ){
 		    Doc.entries.reload();
 		}
                 createDef && createDef.notify('head_loaded',doc_id);
 	    });
 	},
+        set:function(){
+            Doc.head.setPropsForm(Doc.head.props);
+            Doc.setTitle();
+            App.renderTpl('Doc_owners',Doc.head.props);            
+        },
 	reload:function(){
 	    Doc.head.load(Doc.head.props.doc_id,false);
 	},
@@ -190,6 +193,7 @@
 	    else{
 		Doc.head.props[field]=value;
 		Doc.head.hightlightCommited();
+                Doc.head.set();
 	    }
 	},
 	typeComboFormatter: function (data) {
@@ -355,11 +359,18 @@
 	reload:function(){
 	    $('#Doc_entry_dg').datagrid('reload');
 	},
+        enumerate:function(entries){
+            for(var i=0;i<entries.length;i++){
+                entries[i].row_num=i+1;
+            }
+            return entries;
+        },
 	loader: function (param, success, error) {
 	    if( Doc.isCreated ){
 		$.post("DocumentItems/entryDocumentGet/"+Doc.head.props.doc_id, function ( xhr ) {
 		    var resp = App.json(xhr);
-		    success(resp.entries ? resp.entries : []);
+                    var entries=Doc.entries.enumerate(resp.entries ? resp.entries : []);
+		    success(entries);
 		    Doc.entries.renderFooter( resp.footer );
 		});
 	    }
@@ -624,7 +635,7 @@
 </script>
 <form id="Doc_head_frm" onsubmit="return false;" style="-moz-user-select:none;">
     <!-- DOCUMENT HEADER -->
-    <div style="width: 658px;margin: auto;padding-top: 10px;">
+    <div style="width: 668px;margin: auto;padding-top: 10px;">
 	<div>
 	    <select class="easyui-combobox" id="Doc_type_cmb" name="doc_type" title="Вид" data-options="
 		    editable:false,
@@ -747,9 +758,8 @@
 	DOCUMENT ENTRIES 
 	----------------------------
 	-->
-	<table class="easyui-datagrid" id="Doc_entry_dg" style="width:660px;max-height: 800px;"
+	<table class="easyui-datagrid" id="Doc_entry_dg" style="width:670px;max-height:800px;"
 	       data-options="
-	       rownumbers:true,
 	       noheader:true,
 	       ctrlSelect:true,
 	       autoRowHeight:true,
@@ -760,8 +770,9 @@
 	       ">
 	    <thead>
 		<tr>
+                    <th data-options="field:'row_num',width:30">№</th>  
                     <th data-options="field:'product_code',width:75">Код</th>  
-		    <th data-options="field:'product_name',width:300">Название</th>
+		    <th data-options="field:'product_name',width:310">Название</th>
 		    <th data-options="field:'product_quantity',width:50,align:'right'">Кол-во</th>
 		    <th data-options="field:'product_unit',width:40,align:'center'">Ед.</th>
 		    <th data-options="field:'product_price',width:55,align:'right',formatter:Doc.entries.calculate">Цена</th>

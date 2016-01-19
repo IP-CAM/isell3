@@ -125,7 +125,7 @@ class DocumentView extends DocumentItems{
 	
         //$this->selectDoc($doc_id);
 	$head=$this->headGet($doc_view->doc_id);
-	$rows=$this->entriesFetch();
+	$rows=$this->entriesFetch( 1 );
 	$footer=$this->footerGet();
         $acomp=$Company->companyGet( $this->doc('active_company_id') );
         $pcomp=$Company->companyGet( $this->doc('passive_company_id') );

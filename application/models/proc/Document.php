@@ -322,7 +322,7 @@ class Document extends Data {
                 SET 
                     product_quantity = $quantity,
                     invoice_price = ROUND($invoice, $signs_after_dot),
-                    self_price = $self,
+                    self_price = '$self',
                     party_label = '$party_label'
                 WHERE
                     doc_entry_id = '$doc_entry_id'";

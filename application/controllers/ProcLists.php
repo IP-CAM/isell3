@@ -2,7 +2,7 @@
 require_once('iSellBase.php');
 class ProcLists extends iSellBase{
     public function ProcLists(){
-        $this->ProcessorBase(1);
+        $this->ProcessorBase(2);
     }
     public function onDefault(){
         $this->response_tpl('lists/lists_main.html');
