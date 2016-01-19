@@ -5,7 +5,7 @@ CHANGE COLUMN `event_status` `event_status` VARCHAR(20) NOT NULL AFTER `event_us
 ADD COLUMN `event_priority` VARCHAR(45) NULL DEFAULT NULL AFTER `event_status`,
 ADD COLUMN `event_repeat` VARCHAR(45) NULL DEFAULT NULL AFTER `event_date`;
 
-ALTER TABLE `isell_nu`.`price_list` 
+ALTER TABLE `price_list` 
 ADD COLUMN `label` VARCHAR(45) NOT NULL AFTER `product_code`,
 DROP PRIMARY KEY,
 ADD PRIMARY KEY USING BTREE (`product_code`, `label`);
