@@ -15,11 +15,12 @@
             });
 	    this.node.window('hcenter');
 	    this.node.window('window').css('position','fixed');
-	    App.setupForm("#page_events_event_frm", this.data);
 	    
 	    
 	    this.data.created_by=this.data.created_by||'-';
 	    this.data.modified_by=this.data.modified_by||'-';
+	    this.data.event_priority=this.data.event_priority||'3medium';
+	    App.setupForm("#page_events_event_frm", this.data);
 	    App.renderTpl('page_events_event_frm_modified',this.data);
             if (this.data.event_id) {
                 $('#event_delete_button').attr('disabled', false);
@@ -77,6 +78,13 @@
         <input type="checkbox" name="event_is_private" value="1" title="Скрыть" />
     </div>
     <div style="display: inline-block;width: 320px;vertical-align: top">
+	<select name="event_priority" title="Приоритет">
+	    <option value="1critical" style="background-color: red">Критический</option>
+	    <option value="2high" style="background-color: yellow">Высокий</option>
+	    <option value="3medium" selected="selected">Средний</option>
+	    <option value="4low" style="background-color: #ccc">Низкий</option>
+	    <option value="5future" style="background-color: green">В планах</option>
+	</select>
         <div class="inp_group" style="text-align: right;">
             <a href="javascript:App.page_events_event.setLabel('Доставка')">Доставка</a> | 
             <a href="javascript:App.page_events_event.setLabel('Напоминание клиенту')">Напоминание клиенту</a> | 

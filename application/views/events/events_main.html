@@ -163,7 +163,24 @@ EventsJs={
     .event_tile_header div{
 	text-align: center;
 	font-weight: bold;
-    } 
+    }
+    
+    
+    .event_tile_item_1critical{
+	background-color: rgba(255,0,0,0.4);
+    }
+    .event_tile_item_2high{
+	background-color: rgba(255,255,0,0.4);
+    }
+    .event_tile_item_3medium{
+	
+    }
+    .event_tile_item_4low{
+	background-color: rgba(200,200,200,0.4);	
+    }
+    .event_tile_item_5future{
+	background-color: rgba(150,255,150,0.4);
+    }
 </style>
 <div id="event_calendar" class="easyui-calendar" style="width:220px;height:220px;display: inline-block" data-options="
 		 formatter:EventsJs.calendar.formatter,
@@ -200,7 +217,7 @@ EventsJs={
 		<div>Комментарий</div>
 	    </div>
 	    {{else}}
-		<div class="event_tile_item_row" data-event-index="{{#}}" onclick="EventsJs.tile.click(this);" ondblclick="EventsJs.tile.edit(this);">
+		<div class="event_tile_item_row event_tile_item_{{event_priority}}" data-event-index="{{#}}" onclick="EventsJs.tile.click(this);" ondblclick="EventsJs.tile.edit(this);">
 		    <div style="max-width:26px;width:25px;"></div>
 		    <div style="max-width:60px;width:60px;text-align: center">{{date_dmy}}</div>
 		    <div style="max-width:150px;width:150px">{{event_name}}</div>
