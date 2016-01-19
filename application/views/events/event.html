@@ -24,26 +24,32 @@
             });
         },
         saveEvent: function (fvalue) {
+	    var card_event_id=fvalue.event_id;
             fvalue.event_date = App.toIso(fvalue.event_date);
-            $.post('ProcLists/onSaveEvent',fvalue,function(event_id){
-                fvalue.event_id = event_id;
-                $("input[name='event_id']").val(fvalue.event_id);
-                App.page_events_event.data = fvalue;
-                App.flash("Создана запись: " + fvalue.event_name);
-                App.page_events_event.handler.notify('create', fvalue);
+            $.post('Events/eventSave/'+card_event_id,fvalue,function( resp ){
+		if( !card_event_id ){//new record card_event_id==0
+		    fvalue.event_id = resp;
+		    $("input[name='event_id']").val(fvalue.event_id);
+		    App.page_events_event.data = fvalue;
+		}
+                App.flash("Запись сохранена: " + fvalue.event_name);
+		App.page_events_event.handler.notify('create', fvalue);
                 App.page_events_event.node.window('close');                
             });
         },
         deleteEvent: function () {
-            var fvalue = App.page_events_event.data;
-            fvalue.event_date = App.toIso(fvalue.event_date);
             if (confirm('Удалить запись?') && App.page_events_event.data.event_id) {
-                $.post('ProcLists/onDeleteEvent',{delIds:'[{"event_id":"'+App.page_events_event.data.event_id+'"}]'},function(){
-                    App.page_events_event.handler.notify('delete', App.page_events_event.data);
-                    App.page_events_event.node.window('close');                    
+                $.post('Events/eventDelete/'+App.page_events_event.data.event_id,function(ok){
+		    if( ok*1 ){
+			App.flash("Запись удалена");
+			App.page_events_event.handler.notify('delete');
+			App.page_events_event.node.window('close');
+		    }else {
+			App.flash("Запись неудалена");
+		    }
                 });
             }
-        },
+	},
         setLabel: function (label) {
             App.page_events_event.data.event_label = label;
             $('[name="event_label"]').val(label);

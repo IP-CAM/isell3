@@ -43,6 +43,24 @@ class Events extends Catalog{
 	$this->check($event_id,'int');
 	return $this->delete("event_list",['event_id'=>$event_id]);
     }
+    public function eventSave( $event_id ){
+	$this->Base->set_level(2);
+	$this->check($event_id,'int');
+	$event=[
+	    'event_date'=>$this->request('event_date'),
+	    'event_name'=>$this->request('event_name'),
+	    'event_label'=>$this->request('event_label'),
+	    'event_target'=>$this->request('event_target'),
+	    'event_place'=>$this->request('event_place'),
+	    'event_note'=>$this->request('event_note'),
+	    'event_descr'=>$this->request('event_descr'),
+	    'event_is_private'=>$this->request('event_is_private')
+	];
+	if( !$event_id ){
+	    return $this->create('event_list', $event);
+	}
+	return $this->update('event_list', $event, ['event_id'=>$event_id]);
+    }
     
     public function eventMove( $olddate, $newdate, $event_id, $label, $mode ){
 	$this->check($event_id,'int');
