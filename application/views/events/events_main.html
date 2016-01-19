@@ -18,7 +18,9 @@ EventsJs={
 	fvalue.event_date=App.toDmy(EventsJs.selectedDay);
 	App.loadWindow('page/events/event', fvalue).progress(function (status, fvalue) {
 	    if (status === 'update' || status === 'create' || status === 'delete') {
-		EventsJs.selectedDay = fvalue.event_date || EventsJs.selectedDay;
+		if( fvalue && fvalue.event_date ){
+		    EventsJs.selectedDay = fvalue.event_date;
+		}
 		EventsJs.activeDatesGet();
 	    }
 	});
