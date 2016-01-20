@@ -45,16 +45,17 @@ EventsJs={
 	load:function(){
 	    $.get("Events/listFetch/"+EventsJs.selectedDay,function(resp){
 		EventsJs.tile.event_list=App.json(resp);
+                var event_list_tmp=[];
 		var event_label='---';
 		for(var i=0;i<EventsJs.tile.event_list.length;i++){
 		    if( EventsJs.tile.event_list[i].event_label!==event_label ){
-			event_label=EventsJs.tile.event_list[i].event_label||'';
-			EventsJs.tile.event_list.splice(i,0,{header:event_label});
+			event_label=EventsJs.tile.event_list[i].event_label||'-';
+                        event_list_tmp.push( {header:event_label} );
 		    }
+                    event_list_tmp.push( EventsJs.tile.event_list[i] );
 		}
+                EventsJs.tile.event_list=event_list_tmp;
 		App.renderTpl('events_tile',{events:EventsJs.tile.event_list});
-		//var last_index=App.store('last_event_i')||1;
-		//EventsJs.event.load(EventsJs.tile.event_list[last_index]);
 	    });
 	},
 	click:function( node ){
