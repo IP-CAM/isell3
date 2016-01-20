@@ -45,7 +45,7 @@ EventsJs={
 	load:function(){
 	    $.get("Events/listFetch/"+EventsJs.selectedDay,function(resp){
 		EventsJs.tile.event_list=App.json(resp);
-		var event_label='';
+		var event_label='---';
 		for(var i=0;i<EventsJs.tile.event_list.length;i++){
 		    if( EventsJs.tile.event_list[i].event_label!==event_label ){
 			event_label=EventsJs.tile.event_list[i].event_label||'';
