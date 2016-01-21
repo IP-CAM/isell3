@@ -111,7 +111,7 @@
 		];
 		App.loadWindow('page/dialog/importer',{label:'склад',fields_to_import:config}).progress(function(status,fvalue,Importer){
 		    if( status==='submit' ){
-			//fvalue.parent_id=Leftovers.list.parent_id;
+			fvalue.parent_id=Leftovers.list.parent_id;
 			$.post("Stock/import/",fvalue,function(ok){
 			    App.flash("Добавлено "+ok);
 			    Leftovers.list.reload();

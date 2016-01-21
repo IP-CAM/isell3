@@ -207,9 +207,16 @@ class Stock extends Catalog {
 	$source = array_map('addslashes',$this->request('source','raw'));
 	$target = array_map('addslashes',$this->request('target','raw'));
 	
+        $parent_id=$this->request('parent_id','int');
+        if( $parent_id ){
+            $source[]=$parent_id;
+            $target[]='parent_id';
+        }
+        
+	
 	$this->importInTable('prod_list', $source, $target, '/product_code/ru/ua/en/product_spack/product_bpack/product_weight/product_volume/product_unit/product_uktzet/barcode/analyse_type/analyse_group/analyse_class/analyse_section/', $label);
 	$this->importInTable('price_list', $source, $target, '/product_code/sell/buy/curr_code/', $label);
-	$this->importInTable('stock_entries', $source, $target, '/product_code/party_label/', $label);
+	$this->importInTable('stock_entries', $source, $target, '/product_code/party_label/parent_id/', $label);
 	$this->query("DELETE FROM imported_data WHERE label='$label' AND {$source[0]} IN (SELECT product_code FROM stock_entries)");
         return  $this->db->affected_rows();
     }
@@ -221,14 +228,16 @@ class Stock extends Catalog {
             if( strpos($filter,"/{$trg[$i]}/")!==false && !empty($src[$i]) ){
 		$target[]=$trg[$i];
 		$source[]=$src[$i];
-		$set[]="{$trg[$i]}=$src[$i]";
+                if( $trg[$i]!='parent_id' ){/*set parent_id only for new added rows*/
+                    $set[]="{$trg[$i]}=$src[$i]";
+                }
 	    }
 	}
 	$target_list=  implode(',', $target);
 	$source_list=  implode(',', $source);
 	$set_list=  implode(',', $set);
 	$this->query("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data WHERE label='$label' ON DUPLICATE KEY UPDATE $set_list");
-	//print("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data ON DUPLICATE KEY UPDATE $set_list");
+	print("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data WHERE label='$label' ON DUPLICATE KEY UPDATE $set_list");
 	return $this->db->affected_rows();
     }
 
