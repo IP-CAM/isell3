@@ -7,6 +7,7 @@ class Summary_sell_profit extends Catalog{
 	$this->idate=$this->dmy2iso( $this->request('idate','\d\d.\d\d.\d\d\d\d') ).' 00:00:00';
 	$this->fdate=$this->dmy2iso( $this->request('fdate','\d\d.\d\d.\d\d\d\d') ).' 23:59:59';
 	$this->all_active=$this->request('all_active','bool');
+	$this->count_sells=$this->request('count_sells','bool',0);
 	$this->count_reclamations=$this->request('count_reclamations','bool',0);
 	$this->in_alt_currency=$this->request('in_alt_currency','bool',0);
 	$this->group_by_client=$this->request('group_by_client','bool',0);
@@ -24,7 +25,17 @@ class Summary_sell_profit extends Catalog{
     }
     public function viewGet(){
 	$active_filter=$this->all_active?'':' AND active_company_id='.$this->Base->acomp('company_id');
-	$reclamation_filter=$this->count_reclamations?'':' AND is_reclamation=0';
+        
+        $reclamation_filter='';
+        if( $this->count_sells && !$this->count_reclamations ){
+            $reclamation_filter=' AND is_reclamation=0';
+        }
+        if( !$this->count_sells && $this->count_reclamations ){
+            $reclamation_filter=' AND is_reclamation=1';
+        }
+        if( !$this->count_sells && !$this->count_reclamations ){
+            $reclamation_filter=' AND 0';
+        }
 	$passive_groupper=$this->group_by_client?',passive_company_id':'';
 	$group_by_label=$this->group_by_client?"CONCAT($this->group_by,' / ',(SELECT company_name FROM companies_list WHERE company_id=passive_company_id))":"$this->group_by";
         $having=$this->group_by_filter?"HAVING group_by LIKE '%$this->group_by_filter%'":"";
