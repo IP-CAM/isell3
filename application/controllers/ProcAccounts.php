@@ -331,9 +331,10 @@ class ProcAccounts extends iSellBase {
         $period = $this->request('period', "\d{4}-\d{2}");
         $direction = $this->request('direction', "(buy|sell)");
         $out_type = $this->request('out_type', 0, 'json');
-
+	$group_by=$this->request('group_by',1,0);
+	
         $this->LoadClass('Accounts');
-        $view = $this->Accounts->documentRegistryFetch($period, $out_type == '.xml' ? 'both' : $direction, $grid_query);
+        $view = $this->Accounts->documentRegistryFetch($period, $out_type == '.xml' ? 'both' : $direction, $grid_query,$group_by);
         if ($out_type == 'json') {
             $this->response($view);
         } else

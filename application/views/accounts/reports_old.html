@@ -94,6 +94,7 @@
                         request.mod = 'Accounts';
                         request.rq = 'DocumentRegistry';
                         request.out_type = '.print';
+			request.group_by=0;
                         Acc.printOut(request);
                     };
                     onDownload = function (request) {
@@ -154,6 +155,14 @@
                     });
                 }
             };
+	    AccountsJs.reports.group_by_report=function(){
+		var request=AccountsJs.reports.registry_grid.request;
+		request.mod = 'Accounts';
+		request.rq = 'DocumentRegistry';
+		request.out_type = '.print';
+		request.group_by=1;
+		Acc.printOut(request);
+	    };
             AccountsJs.reports.init();
         });
         }
@@ -219,8 +228,6 @@
                                     <option value="12">Декабрь</option>
                                 </select>
                                 <select data-dojo-type="dijit/form/Select" id="rep_invreg_year" name="rep_invreg_year" style="display:inline-block;width:70px">
-                                    <option value="2012">2012</option>
-                                    <option value="2013">2013</option>
                                     <option value="2014">2014</option>
                                     <option value="2015">2015</option>
                                     <option value="2016">2016</option>
@@ -267,7 +274,7 @@
                 </table>
             </div>
         </div>
-
+	<button style="width:100%;margin-top: 10px;text-align: left" onclick="AccountsJs.reports.group_by_report()"><img src="img/InvoiceList.png"> Сгруппировать по контрагентам</button>
     </div>
     <div style="display:table-cell;vertical-align: top">
         <div id="acc_doc_registry"></div>

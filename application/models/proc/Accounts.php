@@ -614,7 +614,7 @@ class Accounts extends Data {
     /////////////////////////////////////
     // REPORTS SECTION
     /////////////////////////////////////
-    public function documentRegistryFetch($period, $direction, $grid_query) {
+    public function documentRegistryFetch($period, $direction, $grid_query,$group_by) {
         $this->Base->set_level(3);
 	$active_company_id=$this->Base->acomp('company_id');
         if ($direction == 'both') {
@@ -706,7 +706,26 @@ class Accounts extends Data {
         $registry['gtotal'] = number_format($registry['gtotal'], 2, '.', ' ');
         $registry['gvatless'] = number_format($registry['gvatless'], 2, '.', ' ');
         $registry['gvat'] = number_format($registry['gvat'], 2, '.', ' ');
-        $registry['entries'] = $this->getGridData('doc_registry_temp', $grid_query, '*', '', $order);
+	
+	
+	if( $group_by ){
+	    $select="
+		company_name,
+		company_vat_id,
+		SUM(total) total,
+		SUM(vatless) vatless,
+		SUM(vat) vat";
+	    $order="ORDER BY company_name";
+	    
+	    
+	    
+	    $registry['entries'] = $this->getGridData('doc_registry_temp GROUP BY company_name ', $grid_query, $select, '', $order);
+	} else {
+	    $registry['entries'] = $this->getGridData('doc_registry_temp', $grid_query, '*', '', $order);
+	}
+	
+	
+        
         return $registry;
     }
 
