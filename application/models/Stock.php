@@ -237,7 +237,7 @@ class Stock extends Catalog {
 	$source_list=  implode(',', $source);
 	$set_list=  implode(',', $set);
 	$this->query("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data WHERE label='$label' ON DUPLICATE KEY UPDATE $set_list");
-	print("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data WHERE label='$label' ON DUPLICATE KEY UPDATE $set_list");
+	//print("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data WHERE label='$label' ON DUPLICATE KEY UPDATE $set_list");
 	return $this->db->affected_rows();
     }
 
