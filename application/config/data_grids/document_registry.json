@@ -67,6 +67,16 @@
 	    "field": "vat",
 	    "name": "НДС",
 	    "align": "right"
+	},
+	{
+	    "field": "print",
+	    "name": "!",
+	    "type": "tooltip"
+	},
+	{
+	    "field": "down",
+	    "name": "!",
+	    "type": "tooltip"
 	}
     ]
 }

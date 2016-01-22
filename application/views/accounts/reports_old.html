@@ -102,6 +102,14 @@
                         request.out_type = '.xml';
                         Connector.addRedirection(request);
                     };
+		    onAction=function( data ){
+			if( data.action==='print' ){
+			    window.open("./DocumentView/documentViewGet/?out_type=.print&doc_view_id="+data.rowData.doc_view_id, '_new');
+			}
+			if( data.action==='down' ){
+			    location.href="./DocumentView/documentViewGet/?out_type=.xml&doc_view_id="+data.rowData.doc_view_id;
+			}
+		    };
                     startup();
                 }
                 AccountsJs.reports.registry_grid.addInvoice = function (request) {

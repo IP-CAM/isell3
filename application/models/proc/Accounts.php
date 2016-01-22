@@ -656,7 +656,10 @@ class Accounts extends Data {
                     CAST(ROUND(amount,2) AS CHAR(10))
                     FROM acc_trans JOIN document_trans USING(trans_id) 
                     WHERE doc_id=dl.doc_id AND (type='641_28' OR type='641_44' OR type='702_641')
-            ) AS vat";
+            ) AS vat,
+	    doc_view_id,
+	    IF(doc_view_id,'print Напечатать Налоговую Накладную','') print,
+	    IF(doc_view_id,'down Скачать Налоговую Накладную','') down";
         $table = "
             document_list dl
             JOIN document_types USING(doc_type)
@@ -687,7 +690,10 @@ class Accounts extends Data {
             description VARCHAR(45),
             total VARCHAR(10),
             vatless VARCHAR(10),
-            vat VARCHAR(10)
+            vat VARCHAR(10),
+	    doc_view_id INT,
+	    print VARCHAR(45),
+	    down VARCHAR(45)
             ) ENGINE=Memory;
         ");
         $this->Base->query("INSERT INTO doc_registry_temp SELECT $select FROM $table WHERE $where");
