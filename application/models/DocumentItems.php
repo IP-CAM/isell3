@@ -67,7 +67,7 @@ class DocumentItems extends DocumentCore{
                 product_quantity,
                 product_unit,
 		analyse_section,
-                ROUND(invoice_price * @vat_correction * @curr_correction, signs_after_dot) AS product_price,
+                ROUND(invoice_price * @vat_correction * @curr_correction, @signs_after_dot) AS product_price,
                 ROUND(invoice_price * @vat_correction * @curr_correction * product_quantity,2) AS product_sum,
                 CHK_ENTRY(doc_entry_id) AS row_status,
                 party_label,

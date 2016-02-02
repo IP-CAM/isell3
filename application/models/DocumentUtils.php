@@ -62,7 +62,8 @@ class DocumentUtils extends Catalog{
 		@vat_ratio:=1+vat_rate/100,
 		@vat_correction:=IF(use_vatless_price OR '$skip_vat_correction',1,@vat_ratio),
 		@curr_correction:=IF($native_curr,1,1/doc_ratio),
-		@curr_symbol:=(SELECT curr_symbol FROM curr_list WHERE curr_code='$curr_code')
+		@curr_symbol:=(SELECT curr_symbol FROM curr_list WHERE curr_code='$curr_code'),
+                @signs_after_dot:=signs_after_dot
 	    FROM
 		document_list
 	    WHERE
