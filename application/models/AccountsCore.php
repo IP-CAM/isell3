@@ -268,6 +268,7 @@ class AccountsCore extends Catalog{
         if ( !isset($pcomp_id) ){
             $pcomp_id = $this->Base->pcomp('company_id');
         }
+        $active_company_id=$this->Base->acomp('company_id');
         $sensitivity=5.00;
         $this->query("SET @sum:=0.0;");
         $this->query("
@@ -283,7 +284,8 @@ class AccountsCore extends Catalog{
                         (@sum:=@sum + amount)*0
                     )
                 WHERE
-                    passive_company_id = $pcomp_id
+                    active_company_id=$active_company_id
+                    AND passive_company_id = $pcomp_id
                     AND trans_status <> 4
                     AND trans_status <> 5
                     AND (acc_debit_code = $acc_code
