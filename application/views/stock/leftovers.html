@@ -130,11 +130,20 @@
 		var url='StockView/stockViewGet/?'+$.param( params );
 		if( out_type==='.print' ){
 		    window.open(url,'print_tab');
-		} else {
-		    location.href=url;
 		}
 	    },
+            outfile:function( out_type ){
+		var params={
+		    page:1,
+		    parent_id:Leftovers.list.parent_id,
+		    filterRules:Leftovers.list.filterRules,
+		    out_type:out_type
+		};
+		var url='StockView/stockViewFileGet/?'+$.param( params );
+		location.href=url;
+	    },
 	    edit:function(index,field,value){
+		$("#stock_dg").datagrid('unselectAll');
 		$("#stock_dg").datagrid('selectRow',index);
 		var row=$("#stock_dg").datagrid('getSelected');
 		if( row ){
@@ -282,7 +291,7 @@
 		<span class="icon-24 icon-import" title="Импорт" onclick="Leftovers.list.import();"> </span>
 		<span class="icon-24 icon-tablefilter" title="Фильтр таблицы" onclick="Leftovers.list.toggleFilter()"> </span>
 		<span class="icon-24 icon-refresh" title="Обновить" onclick="Leftovers.list.reload()"> </span>
-		<span class="icon-24" style="background-image: url(img/file_download.png);background-repeat: no-repeat" title="Скачать таблицу" onclick="Leftovers.list.out('.xlsx');"> </span>
+		<span class="icon-24" style="background-image: url(img/file_download.png);background-repeat: no-repeat" title="Скачать таблицу" onclick="Leftovers.list.outfile('.xlsx');"> </span>
 		<span class="icon-24 icon-print" title="Печать" onclick="Leftovers.list.out('.print')"> </span>
 	    </div>
 	    <table class="easyui-datagrid" id="stock_dg" style="width:780px" data-options="
