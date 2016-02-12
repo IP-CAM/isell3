@@ -1,8 +1,8 @@
 -- MySQL dump 10.13  Distrib 5.6.17, for Win32 (x86)
 --
--- Host: acc    Database: isell3
+-- Host: 127.0.0.1    Database: isell3
 -- ------------------------------------------------------
--- Server version	5.6.20-log
+-- Server version	5.5.24-log
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -48,30 +48,48 @@ DROP TABLE IF EXISTS `acc_check_list`;
 CREATE TABLE `acc_check_list` (
   `check_id` int(11) NOT NULL AUTO_INCREMENT,
   `trans_id` int(11) DEFAULT NULL,
-  `main_acc_code` varchar(6) NOT NULL,
+  `active_company_id` int(10) unsigned NOT NULL,
+  `main_acc_code` varchar(15) NOT NULL,
   `number` int(11) DEFAULT NULL,
   `date` timestamp NULL DEFAULT NULL,
   `value_date` timestamp NULL DEFAULT NULL,
+  `assumption_date` timestamp NULL DEFAULT NULL,
+  `transaction_date` timestamp NULL DEFAULT NULL,
   `debit_amount` double DEFAULT NULL,
   `credit_amount` double DEFAULT NULL,
-  `assumption_date` timestamp NULL DEFAULT NULL,
   `currency` varchar(3) DEFAULT NULL,
-  `transaction_date` timestamp NULL DEFAULT NULL,
+  `assignment` varchar(255) DEFAULT NULL,
   `client_name` varchar(255) DEFAULT NULL,
   `client_code` bigint(20) DEFAULT NULL,
-  `client_account` varchar(14) DEFAULT NULL,
+  `client_code1` varchar(45) DEFAULT NULL,
+  `client_account` varchar(45) DEFAULT NULL,
+  `client_corr_account` varchar(45) DEFAULT NULL,
   `client_bank_name` varchar(255) DEFAULT NULL,
   `client_bank_code` int(11) DEFAULT NULL,
   `correspondent_name` varchar(255) DEFAULT NULL,
   `correspondent_code` bigint(20) DEFAULT NULL,
-  `correspondent_account` varchar(14) DEFAULT NULL,
+  `correspondent_code1` varchar(45) DEFAULT NULL,
+  `correspondent_account` varchar(45) DEFAULT NULL,
+  `correspondent_corr_account` varchar(45) DEFAULT NULL,
   `correspondent_bank_name` varchar(255) DEFAULT NULL,
   `correspondent_bank_code` int(11) DEFAULT NULL,
-  `assignment` varchar(255) DEFAULT NULL,
+  `creator_status` varchar(45) DEFAULT NULL,
+  `payment_type` varchar(45) DEFAULT NULL,
+  `payment_type1` varchar(45) DEFAULT NULL,
+  `payment_time` varchar(45) DEFAULT NULL,
+  `payment_queue` varchar(45) DEFAULT NULL,
+  `index_kbk` varchar(45) DEFAULT NULL,
+  `index_okato` varchar(45) DEFAULT NULL,
+  `index_reason` varchar(45) DEFAULT NULL,
+  `index_number` varchar(45) DEFAULT NULL,
+  `index_date` varchar(45) DEFAULT NULL,
+  `index_type` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`check_id`),
   UNIQUE KEY `unq` (`number`,`transaction_date`,`correspondent_code`,`debit_amount`,`credit_amount`),
   KEY `fk_acc_check_list_acc_tree1_idx` (`main_acc_code`),
-  CONSTRAINT `fk_acc_check_list_acc_tree1` FOREIGN KEY (`main_acc_code`) REFERENCES `acc_tree` (`acc_code`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  KEY `fk_acc_check_list_companies_list1_idx` (`active_company_id`),
+  CONSTRAINT `fk_acc_check_list_acc_tree1` FOREIGN KEY (`main_acc_code`) REFERENCES `acc_tree` (`acc_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `fk_acc_check_list_companies_list1` FOREIGN KEY (`active_company_id`) REFERENCES `companies_list` (`company_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -96,12 +114,12 @@ CREATE TABLE `acc_trans` (
   `trans_ref` int(10) DEFAULT NULL,
   `check_id` int(11) DEFAULT NULL,
   `article_id` int(11) DEFAULT NULL,
-  `trans_status` tinyint(1) DEFAULT NULL,
+  `trans_status` tinyint(1) NOT NULL,
   `editable` tinyint(1) NOT NULL DEFAULT '0',
   `active_company_id` int(10) unsigned NOT NULL,
   `passive_company_id` int(10) unsigned NOT NULL,
-  `acc_debit_code` varchar(6) NOT NULL,
-  `acc_credit_code` varchar(6) NOT NULL,
+  `acc_debit_code` varchar(15) NOT NULL,
+  `acc_credit_code` varchar(15) NOT NULL,
   `amount` double NOT NULL,
   `amount_alt` double NOT NULL,
   `description` varchar(255) NOT NULL,
@@ -115,15 +133,13 @@ CREATE TABLE `acc_trans` (
   KEY `FK_acc_artcleid_idx` (`article_id`),
   KEY `acc_credit_code_idx` (`acc_credit_code`),
   KEY `acc_debit_code_idx` (`acc_debit_code`),
-  KEY `fk_acc_trans_acc_trans_status1_idx` (`trans_status`),
   KEY `fk_acc_trans_user_list1_idx` (`modified_by`),
   KEY `fk_acc_trans_user_list2_idx` (`created_by`),
+  CONSTRAINT `acc_credit_code` FOREIGN KEY (`acc_credit_code`) REFERENCES `acc_tree` (`acc_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `acc_debit_code` FOREIGN KEY (`acc_debit_code`) REFERENCES `acc_tree` (`acc_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `FK_acc_activecid` FOREIGN KEY (`active_company_id`) REFERENCES `companies_list` (`company_id`) ON DELETE CASCADE,
   CONSTRAINT `FK_acc_artcleid` FOREIGN KEY (`article_id`) REFERENCES `acc_article_list` (`article_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `FK_acc_passivecid` FOREIGN KEY (`passive_company_id`) REFERENCES `companies_list` (`company_id`) ON DELETE CASCADE,
-  CONSTRAINT `acc_credit_code` FOREIGN KEY (`acc_credit_code`) REFERENCES `acc_tree` (`acc_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `acc_debit_code` FOREIGN KEY (`acc_debit_code`) REFERENCES `acc_tree` (`acc_code`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `fk_acc_trans_acc_trans_status1` FOREIGN KEY (`trans_status`) REFERENCES `acc_trans_status` (`trans_status`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_acc_trans_user_list1` FOREIGN KEY (`modified_by`) REFERENCES `user_list` (`user_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `fk_acc_trans_user_list2` FOREIGN KEY (`created_by`) REFERENCES `user_list` (`user_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -146,8 +162,8 @@ DROP TABLE IF EXISTS `acc_trans_names`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `acc_trans_names` (
-  `acc_debit_code` varchar(6) NOT NULL,
-  `acc_credit_code` varchar(6) NOT NULL,
+  `acc_debit_code` varchar(15) NOT NULL,
+  `acc_credit_code` varchar(15) NOT NULL,
   `trans_name` varchar(45) NOT NULL,
   `user_level` tinyint(4) NOT NULL,
   PRIMARY KEY (`acc_debit_code`,`acc_credit_code`),
@@ -208,16 +224,14 @@ CREATE TABLE `acc_tree` (
   `branch_data` text NOT NULL,
   `level` tinyint(3) unsigned NOT NULL,
   `path` text NOT NULL,
-  `acc_code` varchar(6) DEFAULT NULL,
+  `acc_code` varchar(15) DEFAULT NULL,
   `acc_type` varchar(2) DEFAULT NULL,
   `acc_role` varchar(45) DEFAULT NULL,
   `curr_id` int(10) unsigned DEFAULT NULL,
   `is_favorite` tinyint(1) DEFAULT NULL,
   `use_clientbank` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`branch_id`),
-  UNIQUE KEY `acc_code_UNIQUE` (`acc_code`),
-  KEY `curr_code_idx` (`curr_id`),
-  CONSTRAINT `curr_code` FOREIGN KEY (`curr_id`) REFERENCES `curr_list` (`curr_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  UNIQUE KEY `acc_code_UNIQUE` (`acc_code`)
 ) ENGINE=InnoDB AUTO_INCREMENT=329 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -278,23 +292,26 @@ CREATE TABLE `companies_list` (
   `company_mobile` varchar(255) NOT NULL,
   `company_address` varchar(255) NOT NULL,
   `company_jaddress` varchar(255) NOT NULL,
-  `company_description` text NOT NULL,
-  `company_bank_account` varchar(45) NOT NULL,
   `company_bank_id` varchar(45) NOT NULL,
   `company_bank_name` varchar(255) NOT NULL,
+  `company_bank_account` varchar(45) NOT NULL,
+  `company_bank_corr_account` varchar(45) DEFAULT NULL,
   `company_vat_id` varchar(45) NOT NULL,
-  `company_vat_licence_id` varchar(45) NOT NULL,
   `company_code` varchar(45) NOT NULL,
+  `company_code_registration` varchar(45) DEFAULT NULL,
+  `company_vat_licence_id` varchar(45) NOT NULL,
   `company_agreement_num` varchar(45) NOT NULL,
   `company_agreement_date` varchar(45) NOT NULL,
   `company_vat_rate` int(11) unsigned NOT NULL,
   `company_acc_list` varchar(45) DEFAULT '361,631',
-  `deferment` int(10) unsigned NOT NULL,
-  `debt_limit` double NOT NULL,
+  `company_description` text NOT NULL,
   `curr_code` varchar(3) DEFAULT NULL,
   `language` varchar(2) DEFAULT NULL,
+  `deferment` int(10) unsigned NOT NULL,
+  `debt_limit` double NOT NULL,
   `manager_id` int(11) DEFAULT NULL,
   `is_supplier` tinyint(3) unsigned NOT NULL,
+  `is_active` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`company_id`),
   KEY `fk_companies_list_companies_tree1_idx` (`branch_id`),
   KEY `fk_companies_list_curr_list1_idx` (`curr_code`),
@@ -309,7 +326,7 @@ CREATE TABLE `companies_list` (
 
 LOCK TABLES `companies_list` WRITE;
 /*!40000 ALTER TABLE `companies_list` DISABLE KEYS */;
-INSERT INTO `companies_list` VALUES (1,NULL,'Наша фирма','','','','','','','','','','','','','','','','','','',0,'361,631',0,0,'RUB','ru',NULL,0),(2,1,'Клиент','','','','','','','','','','','','','','','','','','',0,'361,631',0,0,'RUB','ru',NULL,0);
+INSERT INTO `companies_list` VALUES (1,1,'ООО \"Наша фирма\"','','','','','','','','','','','','',NULL,'','',NULL,'','','',0,'361,631','','RUB','ru',0,0,NULL,0,1),(2,2,'ООО \"Клиент\"','','','','','','','','','','','','',NULL,'','',NULL,'','','',0,'361,631','','RUB','ru',0,0,NULL,0,NULL);
 /*!40000 ALTER TABLE `companies_list` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -330,7 +347,7 @@ CREATE TABLE `companies_tree` (
   `top_id` int(10) unsigned NOT NULL,
   `path` text,
   PRIMARY KEY (`branch_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -339,7 +356,7 @@ CREATE TABLE `companies_tree` (
 
 LOCK TABLES `companies_tree` WRITE;
 /*!40000 ALTER TABLE `companies_tree` DISABLE KEYS */;
-INSERT INTO `companies_tree` VALUES (1,0,'Клиент',1,'',0,0,'Клиент');
+INSERT INTO `companies_tree` VALUES (1,0,'Наша фирма',1,'',0,0,'Наша фирма'),(2,0,'Клиент',1,'',0,0,'Клиент');
 /*!40000 ALTER TABLE `companies_tree` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -595,16 +612,19 @@ DROP TABLE IF EXISTS `event_list`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `event_list` (
   `event_id` int(11) NOT NULL AUTO_INCREMENT,
+  `event_is_private` tinyint(1) NOT NULL,
   `event_user_id` int(11) DEFAULT NULL,
+  `event_user_liable` varchar(45) DEFAULT NULL,
+  `event_status` varchar(20) NOT NULL,
+  `event_priority` varchar(45) DEFAULT NULL,
   `event_label` varchar(45) NOT NULL,
   `event_date` timestamp NULL DEFAULT NULL,
+  `event_repeat` varchar(45) DEFAULT NULL,
   `event_name` varchar(45) NOT NULL,
   `event_target` varchar(255) NOT NULL,
   `event_place` varchar(255) NOT NULL,
   `event_note` varchar(45) NOT NULL COMMENT 'Note if goods are containing docs or must be payed by other part',
   `event_descr` text NOT NULL,
-  `event_is_private` tinyint(1) NOT NULL,
-  `event_status` tinyint(4) NOT NULL,
   `created_by` tinyint(4) DEFAULT NULL,
   `modified_by` tinyint(4) DEFAULT NULL,
   PRIMARY KEY (`event_id`),
@@ -623,6 +643,45 @@ LOCK TABLES `event_list` WRITE;
 UNLOCK TABLES;
 
 --
+-- Table structure for table `imported_data`
+--
+
+DROP TABLE IF EXISTS `imported_data`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `imported_data` (
+  `row_id` int(11) NOT NULL AUTO_INCREMENT,
+  `label` varchar(45) NOT NULL,
+  `A` text NOT NULL,
+  `B` text NOT NULL,
+  `C` text NOT NULL,
+  `D` text NOT NULL,
+  `E` text NOT NULL,
+  `F` text NOT NULL,
+  `G` text NOT NULL,
+  `H` text NOT NULL,
+  `I` text NOT NULL,
+  `K` text NOT NULL,
+  `L` text NOT NULL,
+  `M` text NOT NULL,
+  `N` text NOT NULL,
+  `O` text NOT NULL,
+  `P` text NOT NULL,
+  `Q` text NOT NULL,
+  PRIMARY KEY (`row_id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `imported_data`
+--
+
+LOCK TABLES `imported_data` WRITE;
+/*!40000 ALTER TABLE `imported_data` DISABLE KEYS */;
+/*!40000 ALTER TABLE `imported_data` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `pref_list`
 --
 
@@ -630,9 +689,12 @@ DROP TABLE IF EXISTS `pref_list`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `pref_list` (
+  `active_company_id` int(10) unsigned NOT NULL,
   `pref_name` varchar(45) NOT NULL,
   `pref_value` text NOT NULL,
-  PRIMARY KEY (`pref_name`)
+  PRIMARY KEY (`active_company_id`,`pref_name`),
+  KEY `fk_pref_list_companies_list1_idx` (`active_company_id`),
+  CONSTRAINT `fk_pref_list_companies_list1` FOREIGN KEY (`active_company_id`) REFERENCES `companies_list` (`company_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -642,7 +704,6 @@ CREATE TABLE `pref_list` (
 
 LOCK TABLES `pref_list` WRITE;
 /*!40000 ALTER TABLE `pref_list` DISABLE KEYS */;
-INSERT INTO `pref_list` VALUES ('accountant_name','Иванов Иван Иванович'),('accountant_tin','0000000000'),('clientbank_fields','client-code,\nclient-bank-code,\nclient-account,\n-,\ntransaction-date,\n-,\ncorrespondent-bank-code,\ncorrespondent-bank-name,\ncorrespondent-account,\ncorrespondent-code,\ncorrespondent-name,\nnumber,\ndate,\ndebit-amount,\ncredit-amount,\nassignment'),('default_debt_limit','200000'),('director_name','Иванов Иван Иванович'),('director_tin','0000000000'),('usd_ratio','22.5');
 /*!40000 ALTER TABLE `pref_list` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -655,12 +716,13 @@ DROP TABLE IF EXISTS `price_list`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `price_list` (
   `product_code` varchar(45) NOT NULL,
+  `label` varchar(45) NOT NULL,
   `sell` double NOT NULL,
   `buy` double NOT NULL,
   `curr_code` varchar(45) NOT NULL,
-  PRIMARY KEY (`product_code`) USING BTREE,
+  PRIMARY KEY (`product_code`,`label`) USING BTREE,
   KEY `FK_price_list_1` (`product_code`),
-  CONSTRAINT `FK_prodcode` FOREIGN KEY (`product_code`) REFERENCES `prod_list` (`product_code`) ON DELETE CASCADE ON UPDATE NO ACTION
+  CONSTRAINT `FK_prodcode` FOREIGN KEY (`product_code`) REFERENCES `prod_list` (`product_code`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -670,7 +732,7 @@ CREATE TABLE `price_list` (
 
 LOCK TABLES `price_list` WRITE;
 /*!40000 ALTER TABLE `price_list` DISABLE KEYS */;
-INSERT INTO `price_list` VALUES ('001',1,0.5,'');
+INSERT INTO `price_list` VALUES ('001','',1,0.5,'');
 /*!40000 ALTER TABLE `price_list` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -694,6 +756,10 @@ CREATE TABLE `prod_list` (
   `product_volume` double NOT NULL,
   `product_unit` varchar(5) NOT NULL,
   `is_service` tinyint(3) unsigned NOT NULL,
+  `analyse_type` varchar(45) DEFAULT NULL,
+  `analyse_group` varchar(45) DEFAULT NULL,
+  `analyse_class` varchar(45) DEFAULT NULL,
+  `analyse_section` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`product_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -704,7 +770,7 @@ CREATE TABLE `prod_list` (
 
 LOCK TABLES `prod_list` WRITE;
 /*!40000 ALTER TABLE `prod_list` DISABLE KEYS */;
-INSERT INTO `prod_list` VALUES ('001','Товар','','','','',0,0,0,0,'шт',0);
+INSERT INTO `prod_list` VALUES ('001','Товар','','','','',0,0,0,0,'шт',0,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `prod_list` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -911,9 +977,7 @@ CREATE TABLE `stock_entries` (
   `fetch_stamp` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`stock_entry_id`),
   UNIQUE KEY `Index_3` (`product_code`),
-  KEY `fk_stock_entries_stock_tree1_idx` (`parent_id`),
-  CONSTRAINT `FK_stock_entries_1` FOREIGN KEY (`product_code`) REFERENCES `prod_list` (`product_code`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk_stock_entries_stock_tree1` FOREIGN KEY (`parent_id`) REFERENCES `stock_tree` (`branch_id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  CONSTRAINT `FK_stock_entries_1` FOREIGN KEY (`product_code`) REFERENCES `prod_list` (`product_code`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=5515 DEFAULT CHARSET=utf8 ROW_FORMAT=COMPACT;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -965,6 +1029,7 @@ CREATE TABLE `stock_tree` (
   `is_leaf` tinyint(1) NOT NULL,
   `branch_data` text NOT NULL,
   `level` tinyint(3) unsigned NOT NULL,
+  `path` text,
   `top_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`branch_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
@@ -976,7 +1041,7 @@ CREATE TABLE `stock_tree` (
 
 LOCK TABLES `stock_tree` WRITE;
 /*!40000 ALTER TABLE `stock_tree` DISABLE KEYS */;
-INSERT INTO `stock_tree` VALUES (1,0,'Категория',0,'',0,0);
+INSERT INTO `stock_tree` VALUES (1,0,'Категория',0,'',0,NULL,0);
 /*!40000 ALTER TABLE `stock_tree` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1008,7 +1073,7 @@ CREATE TABLE `user_list` (
   `user_assigned_path` text,
   `user_assigned_stat` text,
   PRIMARY KEY (`user_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -1017,7 +1082,7 @@ CREATE TABLE `user_list` (
 
 LOCK TABLES `user_list` WRITE;
 /*!40000 ALTER TABLE `user_list` DISABLE KEYS */;
-INSERT INTO `user_list` VALUES (25,'baycik','6635e8cfef502390ac8ee04d513de306',4,NULL,NULL,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
+INSERT INTO `user_list` VALUES (1,'admin','21232f297a57a5a743894a0e4a801fc3',4,NULL,NULL,1,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL);
 /*!40000 ALTER TABLE `user_list` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -1228,4 +1293,4 @@ DELIMITER ;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2015-08-20 16:29:31
+-- Dump completed on 2016-02-12 10:54:29
