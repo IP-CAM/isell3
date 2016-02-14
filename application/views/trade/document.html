@@ -194,6 +194,7 @@
 		Doc.head.props[field]=value;
 		Doc.head.hightlightCommited();
                 Doc.head.set();
+		Doc.handler.notify('head_changed',value);
 	    }
 	},
 	typeComboFormatter: function (data) {
