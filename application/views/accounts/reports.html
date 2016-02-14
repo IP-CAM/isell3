@@ -1,0 +1,111 @@
+<script type="text/javascript">
+    /* global App*/
+    App.page_accounts_reports={
+	init:function(){
+	    var today=App.today().split('.');
+	    this.data.month=today[1];
+	    this.data.year=today[2];
+	    App.setupForm('#acc_inv_reg_frm',this.data);
+	}
+    };
+</script>
+<div style="">
+    <div style="width:300px;display: inline-block;">
+	<div class="easyui-panel" title="Итого по реестру">
+	    <form id="acc_inv_reg_frm">
+		<fieldset style="width:270px">
+		    <legend>Настройки реестра</legend>
+		    <select name="month" title="Месяц" style="width:110px">
+			<option value="0">ВЕСЬ ГОД</option>
+			<option value="01">Январь</option>
+			<option value="02">Февраль</option>
+			<option value="03">Март</option>
+			<option value="04">Апрель</option>
+			<option value="05">Май</option>
+			<option value="06">Июнь</option>
+			<option value="07">Июль</option>
+			<option value="08">Август</option>
+			<option value="09">Сентябрь</option>
+			<option value="10">Октябрь</option>
+			<option value="11">Ноябрь</option>
+			<option value="12">Декабрь</option>
+		    </select>
+		    <input name="year" title="Год" style="width:100px">
+		    <input type="checkbox" title="Группировать по контрагентам">
+		</fieldset>
+	    </form>
+	    <fieldset style="width:270px">
+		<legend>Итоги реестра</legend>
+		<div id="acc_inv_reg_footer">
+		    <table style="margin: 5px;">
+			<tr>
+			    <th style="width:100px"></th>
+			    <th>Покупка</th>
+			    <th>Продажа</th>
+			</tr>
+			<tr>
+			    <td>Колл-во:</td>
+			    <td>{{buy_count}}</td>
+			    <td>{{sell_count}}</td>
+			</tr>
+			<tr>
+			    <td>Сумма:</td>
+			    <td>{{buy_total}}</td>
+			    <td>{{sell_total}}</td>
+			</tr>
+			<tr>
+			    <td>Без НДС:</td>
+			    <td>{{buy_vatless}}</td>
+			    <td>{{sell_vatless}}</td>
+			</tr>
+			<tr>
+			    <td>НДС:</td>
+			    <td>{{buy_vat}}</td>
+			    <td>{{sell_vat}}</td>
+			</tr>
+			<tr>
+			    <td rowspan="2">К оплате НДС:</td>
+			    <td colspan="2"><b>{{pay_vat}}</b></td>
+			</tr>
+		    </table>
+		    <button><img src="img/calc.png" style="width:24px;height:24px;"> Начислить НДС</button>
+		</div>
+	    </fieldset>
+	</div>
+    </div>
+    <div style="display: inline-block;vertical-align: top;">
+	<div style="clear:both">
+	    <div style="float: left;font-weight: bold;padding-top: 8px;">
+		<img src="img/table16.png" style="width:16px;height: 16px;"> Реестр полученных документов
+	    </div>
+	    <div style="float: right">
+		<span class="icon-24 icon-create" title="Добавить" onclick="Cbank.list.rowCreate();"> </span>
+		<span class="icon-24 icon-delete" title="Удалить" onclick="Cbank.list.rowDelete();"> </span>
+		<span class="icon-24 icon-tablefilter" title="Фильтр таблицы" onclick="Cbank.list.toggleFilter()"> </span>
+		<span class="icon-24 icon-refresh" title="Обновить" onclick="$('#account_clientbank_dg').datagrid('reload')"> </span>
+		<span class="icon-24 icon-print" title="Напечатать" onclick="Cbank.list.out('.print');"> </span>
+	    </div>
+	</div>
+	<table id="acc_inv_reg_buy_dg" class="easyui-datagrid" style="width:760px;"
+	       data-options="
+	       pagination:true,
+	       pageSize:25,
+	       pageList:[25,50,100,500,1000],
+	       singleSelect:true,
+	       remoteFilter:true,
+	       onLoadSuccess:function(){$('#acc_inv_reg_buy_dg').datagrid('resize');}">
+	    <thead>
+		<th data-options="width:25,field:'doc_type'"></th>
+		<th data-options="width:70,field:'tinv_num'">Номер</th>
+		<th data-options="width:70,field:'tinv_date'">Дата</th>
+		<th data-options="width:200,field:'comp_label'">Предприятие</th>
+		<th data-options="width:100,field:'company_tax_id'">ИНН</th>
+		<th data-options="width:80,field:'total',align:'right'">Сумма</th>
+		<th data-options="width:80,field:'vatless',align:'right'">Без НДС</th>
+		<th data-options="width:80,field:'vat',align:'right'">НДС</th>
+		<th data-options="width:25,field:'print'"></th>
+		<th data-options="width:25,field:'save'"></th>
+	    </thead>
+	</table>
+    </div>
+</div>

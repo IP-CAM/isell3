@@ -47,7 +47,7 @@ input,select,textarea{
 input[type=checkbox]{
     width: 20px;
 }
-input:hover,select:hover,textarea:hover{
+input:hover,textarea:hover{
     background: #e0f3ff;
     border-color:#acf;
 }
