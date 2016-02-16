@@ -57,7 +57,7 @@ fieldset{
     padding: -2px;
 }
 fieldset .inp_group b{
-    width:82px;
+    -width:75px;
 }
 select{
     padding:0px;
