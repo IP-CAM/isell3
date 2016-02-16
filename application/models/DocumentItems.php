@@ -51,12 +51,12 @@ class DocumentItems extends DocumentCore{
 		    ROUND(SUM(product_quantity*product_weight),2) total_weight,
 		    ROUND(SUM(product_quantity*product_volume),2) total_volume,
 		    ROUND(IF('$use_total_as_base',
-			SUM(ROUND(invoice_price * @curr_correction * @vat_ratio,2) * product_quantity),
-			SUM(ROUND(invoice_price * @curr_correction,2) * product_quantity) * @vat_ratio
+			SUM(ROUND(invoice_price * @vat_ratio * @curr_correction * product_quantity,2)),
+			SUM(ROUND(invoice_price * @curr_correction * product_quantity,2)) * @vat_ratio
 			),2) total,
 		    ROUND(IF('$use_total_as_base',
-			SUM(ROUND(invoice_price * @curr_correction * @vat_ratio,2) * product_quantity)/ @vat_ratio,
-			SUM(ROUND(invoice_price * @curr_correction,2) * product_quantity)
+			SUM(ROUND(invoice_price * @curr_correction * @vat_ratio * product_quantity,2))/ @vat_ratio,
+			SUM(ROUND(invoice_price * @curr_correction * product_quantity,2))
 			),2) vatless,
 		    SUM(ROUND(product_quantity*self_price,2)) self
 		FROM
@@ -76,7 +76,7 @@ class DocumentItems extends DocumentCore{
                 product_unit,
 		analyse_section,
                 ROUND(invoice_price * @vat_correction * @curr_correction, @signs_after_dot) AS product_price,
-                ROUND(invoice_price * @vat_correction * @curr_correction,2) * product_quantity AS product_sum,
+                ROUND(invoice_price * @vat_correction * @curr_correction * product_quantity,2) AS product_sum,
                 CHK_ENTRY(doc_entry_id) AS row_status,
                 party_label,
                 product_uktzet,

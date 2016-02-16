@@ -869,7 +869,7 @@ class Document extends Data {
             $sql = "SELECT
                     ROUND(SUM(product_quantity*product_weight),2) as total_weight,
                     ROUND(SUM(product_quantity*product_volume),2) as total_volume,
-                    ROUND(SUM(ROUND(invoice_price * {$this->vat_rate},2) * product_quantity),2) total,
+                    ROUND(SUM(ROUND(invoice_price * {$this->vat_rate} * product_quantity,2)),2) total,
                     SUM(ROUND(product_quantity*self_price,2)) as self
                 FROM
                     document_entries JOIN prod_list USING(product_code)
