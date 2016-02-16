@@ -1182,7 +1182,7 @@ class Document extends Data {
                 JOIN
                     document_entries USING (product_code) 
                 SET 
-                    buy = invoice_price*{$this->vat_rate}/IF(curr_code='$def_curr_code',1, $doc_ratio)
+                    buy = invoice_price*{$this->vat_rate}/IF(curr_code='$def_curr_code' OR curr_code='',1, $doc_ratio)
                 WHERE
                     doc_id = '$doc_id';");
     }
