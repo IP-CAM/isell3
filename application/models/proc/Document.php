@@ -861,17 +861,35 @@ class Document extends Data {
     public function fetchFooter($mode = 'total_in_def_curr') {
 	$doc_id = $this->doc('doc_id');
 	$curr_correction = $this->getCurrCorrection($mode);
-	$sql = "SELECT
-		ROUND(SUM(product_quantity*product_weight),2) as total_weight,
-		ROUND(SUM(product_quantity*product_volume),2) as total_volume,
-		SUM(ROUND(product_quantity*invoice_price*$curr_correction,2)) as vatless,
-		SUM(ROUND(product_quantity*self_price,2)) as self
-	    FROM
-		document_entries JOIN prod_list USING(product_code)
-	    WHERE doc_id='$doc_id'";
-	$footer = $this->Base->get_row($sql);
-	$footer['total'] = number_format(round($footer['vatless'] * $this->vat_rate, 2), 2, '.', '');
-	$footer['vat'] = number_format($footer['total'] - $footer['vatless'], 2, '.', '');
+        $this->Base->LoadClass("Pref");
+        
+        
+        $pref=$this->Base->Pref->prefGet();
+        if( $pref['use_total_as_base'] ){
+            $sql = "SELECT
+                    ROUND(SUM(product_quantity*product_weight),2) as total_weight,
+                    ROUND(SUM(product_quantity*product_volume),2) as total_volume,
+                    ROUND(SUM(ROUND(invoice_price * {$this->vat_rate},2) * product_quantity),2) total,
+                    SUM(ROUND(product_quantity*self_price,2)) as self
+                FROM
+                    document_entries JOIN prod_list USING(product_code)
+                WHERE doc_id='$doc_id'";
+            $footer = $this->Base->get_row($sql);
+            $footer['vatless'] = number_format(round($footer['total'] / $this->vat_rate, 2), 2, '.', '');
+            $footer['vat'] = number_format($footer['total'] - $footer['vatless'], 2, '.', '');            
+        }else{
+            $sql = "SELECT
+                    ROUND(SUM(product_quantity*product_weight),2) as total_weight,
+                    ROUND(SUM(product_quantity*product_volume),2) as total_volume,
+                    SUM(ROUND(product_quantity*invoice_price*$curr_correction,2)) as vatless,
+                    SUM(ROUND(product_quantity*self_price,2)) as self
+                FROM
+                    document_entries JOIN prod_list USING(product_code)
+                WHERE doc_id='$doc_id'";
+            $footer = $this->Base->get_row($sql);
+            $footer['total'] = number_format(round($footer['vatless'] * $this->vat_rate, 2), 2, '.', '');
+            $footer['vat'] = number_format($footer['total'] - $footer['vatless'], 2, '.', '');
+        }
 	$footer['curr_symbol'] = $this->Base->pcomp('curr_symbol');
 	return $footer;
     }
