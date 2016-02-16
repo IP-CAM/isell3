@@ -467,6 +467,7 @@
 		if( state==='submit' ){
 		    $.post("DocumentItems/recalc/"+Doc.head.props.doc_id+'/'+(data.recalc_proc*1||0), function ( xhr ) {
 			Doc.entries.reload();
+                        Doc.handler.notify('head_changed');
 		    });
 		}
 	    });
