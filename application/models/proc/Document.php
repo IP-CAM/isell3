@@ -860,16 +860,18 @@ class Document extends Data {
 
     public function fetchFooter($mode = 'total_in_def_curr') {
 	$doc_id = $this->doc('doc_id');
+
 	$curr_correction = $this->getCurrCorrection($mode);
         $this->Base->LoadClass("Pref");
         
         
         $pref=$this->Base->Pref->prefGet();
         if( $pref['use_total_as_base'] ){
+            $signs_after_dot=$this->doc('signs_after_dot');
             $sql = "SELECT
                     ROUND(SUM(product_quantity*product_weight),2) as total_weight,
                     ROUND(SUM(product_quantity*product_volume),2) as total_volume,
-                    ROUND(SUM(ROUND(invoice_price * {$this->vat_rate} * product_quantity,2)),2) total,
+                    ROUND(SUM(ROUND(invoice_price * {$this->vat_rate} * $curr_correction,$signs_after_dot) * product_quantity),2) total,
                     SUM(ROUND(product_quantity*self_price,2)) as self
                 FROM
                     document_entries JOIN prod_list USING(product_code)
