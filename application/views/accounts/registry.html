@@ -1,18 +1,42 @@
 <script type="text/javascript">
     /* global App*/
-    App.page_accounts_reports={
+    App.page_accounts_registry={
 	init:function(){
 	    var today=App.today().split('.');
 	    this.data.month=today[1];
 	    this.data.year=today[2];
-	    App.setupForm('#acc_inv_reg_frm',this.data);
+	    App.setupForm('#acc_tax_bill_reg_frm',this.data).change(function(){
+		$('#acc_tax_bill_reg_sell_dg').datagrid('reload');
+	    });
+	    $('#acc_tax_bill_reg_sell_dg').datagrid('reload');
+	},
+	loader:function(param, success, error){
+	    var fvalue=App.collectForm('#acc_tax_bill_reg_frm');
+	    if( fvalue.year ){
+		$.get('AccountsData/registryFetch/'+fvalue.year+'-'+fvalue.month, {filterRules: param.filterRules}, function (xhr) {
+		    var resp = App.json(xhr);
+		    success(resp);
+		});
+	    }
+
+	},
+	rowTooltip:function(value, row){
+	    return App.datagrid.tooltip('document Открыть документ', row, 'App.page_accounts_registry.openDoc()');
+	},
+	openDoc:function(){
+	    var row=$('#acc_tax_bill_reg_sell_dg').datagrid('getSelected');
+	    App.loadWindow('page/trade/document',{doc_id:row.doc_id}).progress(function(status){
+		if( status!=='inited' ){
+		    $('#account_ledger_dg').datagrid('reload');
+		}
+	    });
 	}
     };
 </script>
 <div style="">
     <div style="width:300px;display: inline-block;">
 	<div class="easyui-panel" title="Итого по реестру">
-	    <form id="acc_inv_reg_frm">
+	    <form id="acc_tax_bill_reg_frm">
 		<fieldset style="width:270px">
 		    <legend>Настройки реестра</legend>
 		    <select name="month" title="Месяц" style="width:110px">
@@ -36,7 +60,7 @@
 	    </form>
 	    <fieldset style="width:270px">
 		<legend>Итоги реестра</legend>
-		<div id="acc_inv_reg_footer">
+		<div id="acc_tax_bill_reg_footer">
 		    <table style="margin: 5px;">
 			<tr>
 			    <th style="width:100px"></th>
@@ -74,35 +98,37 @@
 	</div>
     </div>
     <div style="display: inline-block;vertical-align: top;">
+
 	<div style="clear:both">
 	    <div style="float: left;font-weight: bold;padding-top: 8px;">
-		<img src="img/table16.png" style="width:16px;height: 16px;"> Реестр полученных документов
+		<img src="img/table16.png" style="width:16px;height: 16px;"> Реестр выданых документов
 	    </div>
 	    <div style="float: right">
-		<span class="icon-24 icon-create" title="Добавить" onclick="Cbank.list.rowCreate();"> </span>
-		<span class="icon-24 icon-delete" title="Удалить" onclick="Cbank.list.rowDelete();"> </span>
 		<span class="icon-24 icon-tablefilter" title="Фильтр таблицы" onclick="Cbank.list.toggleFilter()"> </span>
-		<span class="icon-24 icon-refresh" title="Обновить" onclick="$('#account_clientbank_dg').datagrid('reload')"> </span>
-		<span class="icon-24 icon-print" title="Напечатать" onclick="Cbank.list.out('.print');"> </span>
+		<span class="icon-24 icon-refresh" title="Обновить" onclick="$('#acc_tax_bill_reg_sell_dg').datagrid('reload')"> </span>
+		<span class="icon-24 icon-print" title="Напечатать" onclick="App.page_accounts_registry.out('sell','.print');"> </span>
 	    </div>
 	</div>
-	<table id="acc_inv_reg_buy_dg" class="easyui-datagrid" style="width:760px;"
+	<table id="acc_tax_bill_reg_sell_dg" class="easyui-datagrid" style="width:785px;"
 	       data-options="
+	       url:'AccountsData/registryFetch',
+	       loader:App.page_accounts_registry.loader,
 	       pagination:true,
 	       pageSize:25,
 	       pageList:[25,50,100,500,1000],
+	       onSelect:function(){$('#acc_tax_bill_reg_sell_dg').datagrid('resize');},
 	       singleSelect:true,
-	       remoteFilter:true,
-	       onLoadSuccess:function(){$('#acc_inv_reg_buy_dg').datagrid('resize');}">
+	       remoteFilter:true">
 	    <thead>
-		<th data-options="width:25,field:'doc_type'"></th>
-		<th data-options="width:70,field:'tinv_num'">Номер</th>
-		<th data-options="width:70,field:'tinv_date'">Дата</th>
-		<th data-options="width:200,field:'comp_label'">Предприятие</th>
+		<th data-options="width:25,field:'doc_type',formatter:App.datagrid.tooltip"></th>
+		<th data-options="width:70,field:'tax_bill_num'">Номер</th>
+		<th data-options="width:70,field:'tax_bill_date'">Дата</th>
+		<th data-options="width:200,field:'company_name'">Предприятие</th>
 		<th data-options="width:100,field:'company_tax_id'">ИНН</th>
-		<th data-options="width:80,field:'total',align:'right'">Сумма</th>
 		<th data-options="width:80,field:'vatless',align:'right'">Без НДС</th>
 		<th data-options="width:80,field:'vat',align:'right'">НДС</th>
+		<th data-options="width:80,field:'total',align:'right'">Сумма</th>
+		<th data-options="width:25,field:'doc',formatter:App.page_accounts_registry.rowTooltip"></th>
 		<th data-options="width:25,field:'print'"></th>
 		<th data-options="width:25,field:'save'"></th>
 	    </thead>

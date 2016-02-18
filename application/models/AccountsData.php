@@ -111,4 +111,31 @@ class AccountsData extends AccountsCore{
 	    return $this->update('acc_tree',['is_favorite'=>$is_favorite],['acc_code'=>$acc_code]);
 	}
     }
+    public function registryFetch($period=''){
+	$active_company_id=$this->Base->acomp('company_id');
+	$sql="SELECT
+		dl.doc_id,
+		CONCAT(icon_name,' ',doc_type_name) doc_type,
+		view_num tax_bill_num,
+		DATE_FORMAT(IF(dvl.tstamp IS NOT NULL,dvl.tstamp,dl.reg_stamp),'%d.%m.%Y') tax_bill_date,
+		IF(company_vat_id,company_name,'НЕПЛАТЕЛЬЩИК НАЛОГА') company_name,
+		company_vat_id company_tax_id,
+		(SELECT ROUND(amount,2) FROM acc_trans JOIN document_trans dt USING(trans_id) WHERE dt.doc_id=dl.doc_id AND trans_role='total') total,
+		(SELECT ROUND(amount,2) FROM acc_trans JOIN document_trans dt USING(trans_id) WHERE dt.doc_id=dl.doc_id AND trans_role='vat') vat,
+		(SELECT ROUND(amount,2) FROM acc_trans JOIN document_trans dt USING(trans_id) WHERE dt.doc_id=dl.doc_id AND trans_role='vatless') vatless
+	    FROM
+		document_list dl
+		    JOIN
+		document_types USING(doc_type)
+		    JOIN
+		companies_list ON company_id=passive_company_id
+		    LEFT JOIN
+		document_view_list dvl ON dl.doc_id=dvl.doc_id AND view_role='tax_bill'
+	    WHERE
+		active_company_id='$active_company_id'
+		AND reg_stamp LIKE '$period%'
+		AND is_commited=1
+		AND doc_type=1";
+	return $this->get_list($sql);
+    }
 }

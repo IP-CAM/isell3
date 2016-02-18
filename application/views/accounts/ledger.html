@@ -109,7 +109,7 @@
 	},
 	documentOpen:function( doc_id ){
 	    App.loadWindow('page/trade/document',{doc_id:doc_id}).progress(function(status){
-		if( status==='close' || status==='deleted' ){
+		if( status!=='inited' ){
 		    $('#account_ledger_dg').datagrid('reload');
 		}
 	    });
