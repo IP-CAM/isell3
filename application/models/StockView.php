@@ -8,12 +8,13 @@ class StockView extends Stock{
 	$having=$this->decodeFilterRules();
 	$out_type=$this->request('out_type');
 	
+        $blank_set=$this->Base->pref('blank_set');
 	$table=$this->listFetch($page,$rows,$parent_id,$having);
 	foreach ($table['rows'] as $row) {
             $row->product_quantity==0?$row->product_quantity='':'';
         }
 	$dump=[
-	    'tpl_files'=>$this->Base->acomp('language').'/StockValidation.xlsx',
+	    'tpl_files'=>$blank_set.'/StockValidation.xlsx',
 	    'title'=>"Залишки на складі",
 	    'user_data'=>[
 		'email'=>$this->Base->svar('pcomp')?$this->Base->svar('pcomp')->company_email:'',
@@ -37,7 +38,7 @@ class StockView extends Stock{
 	$parent_id=$this->request('parent_id','int');
 	$having=$this->decodeFilterRules();
 	$out_type=$this->request('out_type');
-	
+	$blank_set=$this->Base->pref('blank_set');
 	$table=$this->listFetch($page,$rows,$parent_id,$having);
 	foreach ($table['rows'] as $row) {
             $row->product_quantity==0?$row->product_quantity='':'';
@@ -46,7 +47,7 @@ class StockView extends Stock{
             $row->m1==0?$row->m1='':'';
         }
 	$dump=[
-	    'tpl_files'=>$this->Base->acomp('language').'/StockTable.xlsx',
+	    'tpl_files'=>$blank_set.'/StockTable.xlsx',
 	    'title'=>"Справочник товаров",
 	    'user_data'=>[
 		'email'=>$this->Base->svar('pcomp')?$this->Base->svar('pcomp')->company_email:'',
@@ -69,9 +70,9 @@ class StockView extends Stock{
 	$rows=$this->request('rows','int');
 	$having=$this->decodeFilterRules();
 	$out_type=$this->request('out_type');
-	
+	$blank_set=$this->Base->pref('blank_set');
 	$dump=[
-	    'tpl_files'=>$this->Base->acomp('language').'/StockMovements.xlsx',
+	    'tpl_files'=>$blank_set.'/StockMovements.xlsx',
 	    'title'=>"Рух товарів",
 	    'user_data'=>[
 		'email'=>$this->Base->svar('pcomp')?$this->Base->svar('pcomp')->company_email:'',
