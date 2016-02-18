@@ -139,9 +139,12 @@
 			<input name="digital_signature" type="hidden" title="Цифровая подпись">	    
 		    </div>
 		    <div class="easyui-panel" title="Другие настройки" data-options="collapsible:true,collapsed:true" style="width:340px;float:left">
-			<h3>Округление цен в накладных</h3>
-			Использовать цену с НДС как основную
-			<input type="checkbox" title="" name="use_total_as_base">  
+			
+			<input type="checkbox" title="Округлять до цены с НДС в накладных" name="use_total_as_base">
+                        <select name="blank_set" title="Комплект бланков">
+                            <option value="ua">Україна</option>
+                            <option value="ru">Россия</option>
+                        </select>
 		    </div>
 		    <div class="easyui-panel" title="Настройки клиент-банка" data-options="collapsible:true,collapsed:true" style="width:340px;float:left">
 			Идентификатор в платежных поручениях ИНН
