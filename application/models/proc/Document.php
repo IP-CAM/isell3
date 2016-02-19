@@ -958,6 +958,7 @@ class Document extends Data {
 	if ($field == 'signs_after_dot') {
 	    $this->Base->query("UPDATE document_list SET signs_after_dot='$new_val' WHERE doc_id='$doc_id'");
 	    $this->selectDoc($doc_id);
+            $this->updateTrans();
 	} else
 	if ($field == 'vat_rate') {
 	    $this->Base->set_level(3);
