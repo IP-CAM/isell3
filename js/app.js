@@ -236,10 +236,12 @@ App.datagrid = {
 	var cmd = parts.shift();
 	if (cmd){
 	    var handler='';
+	    var style='max-width:16px;height:auto';
 	    if( callback ){
-		handler='onclick="setTimeout(function(){'+callback+'},0)" style="cursor:pointer"';
+		handler='onclick="setTimeout(function(){'+callback+'},0)"';
+		style='max-width:16px;height:auto;cursor:pointer';
 	    }
-	    return '<img src="img/' + cmd + '.png" title="' + parts.join(' ') + '" '+handler+'>';
+	    return '<img src="img/' + cmd + '.png" style="'+style+'" title="' + parts.join(' ') + '" '+handler+'>';
 	}
 	else{
 	    return '';
