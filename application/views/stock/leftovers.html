@@ -168,8 +168,40 @@
 		    if( status==='save' ){
 			Leftovers.list.reload();
 		    }
+		    if( status==='prev' ){
+			Leftovers.list.prev();
+		    }
+		    if( status==='next' ){
+			Leftovers.list.next();
+		    }
 		});
 	    },
+            prev:function(){
+                var selected = $("#stock_dg").datagrid('getSelected');
+                var index = $("#stock_dg").datagrid('getRowIndex', selected);
+                $("#stock_dg").datagrid('unselectRow',index);
+                if (selected && index>0) {
+                    $("#stock_dg").datagrid('selectRow', index - 1);
+                } else {
+                    var rows = $("#stock_dg").datagrid('getRows');
+                    $("#stock_dg").datagrid('selectRow', rows.length - 1);
+                }
+                var row = $("#stock_dg").datagrid('getSelected');
+                Leftovers.list.showProductCard(row);
+            },
+            next:function(){
+                var selected = $("#stock_dg").datagrid('getSelected');
+                var index = $("#stock_dg").datagrid('getRowIndex', selected);
+                $("#stock_dg").datagrid('unselectRow',index);
+                var rows = $("#stock_dg").datagrid('getRows');
+                if (selected && rows.length-1>index) {
+                    $("#stock_dg").datagrid('selectRow', index + 1);
+                } else {
+                    $("#stock_dg").datagrid('selectRow', 0);
+                }
+                var row = $("#stock_dg").datagrid('getSelected');
+                Leftovers.list.showProductCard(row);
+            },
 	    delete:function(){
 		var rows=$("#stock_dg").datagrid('getSelections');
                 var prod_codes=[];

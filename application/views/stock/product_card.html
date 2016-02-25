@@ -1,6 +1,7 @@
 <script type="text/javascript">
     /*global App */
     App.page_stock_product_card = {
+        closeOnSave:true,
 	parsed:true,
 	init: function () {
 	    this.node.window({
@@ -54,16 +55,25 @@
 		$.post('Stock/productSave/',this.data,function(ok){
 		    if( ok*1 ){
 			App.flash("Свойства товара сохранены");
-			App.page_stock_product_card.handler.notify('save',App.page_stock_product_card.data);
+                        if( App.page_stock_product_card.closeOnSave ){
+                            App.page_stock_product_card.handler.notify('save',App.page_stock_product_card.data);
+                        }
 		    } else {
 			App.flash("Свойства товара не изменились");
 		    }
 		});
-		App.page_stock_product_card.node.window('close');
+                if( App.page_stock_product_card.closeOnSave ){
+                    App.page_stock_product_card.node.window('close');
+                }
 	    } else {
 		alert("Код товара не должен содержать сивол: "+(this.data.product_code_new.match(/[^\wабвгдеёжзийклмнопрстуфхцчшщъыьюяіїє\. ,-]/ig)||[]).join(""));
 	    }
 	},
+        next:function( direction ){
+            App.page_stock_product_card.closeOnSave=false;
+            $("#page_stock_product_card_frm").submit();
+            App.page_stock_product_card.handler.notify(direction<0?'prev':'next');
+        },
         stockTree:function(){
             App.loadWindow('page/stock/tree').progress(function(status,category){
                 if( status==='select' ){
@@ -129,8 +139,10 @@
 	    <input name="analyse_section" title="Раздел">
 	</fieldset>
     </div>
-    <div style="text-align: center;margin-top: 15px;">
+    <div style="text-align: center;margin-top: 15px;clear: both">
 	<button type="submit"><img src="img/Save-24.png" /> Сохранить</button>
 	<button type="button" onclick="App.page_stock_product_card.node.window('close')"><img src="img/close24.png" /> Закрыть</button>
+        | <button type="button" onclick="App.page_stock_product_card.next(-1)" title="Сохранить и открыть предидущий">&lt;&lt;&lt; Пред.</button>
+        <button type="button" onclick="App.page_stock_product_card.next(1)" title="Сохранить и открыть следующий">&gt;&gt;&gt; След.</button>
     </div>
 </form>
