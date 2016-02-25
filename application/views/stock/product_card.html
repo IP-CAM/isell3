@@ -61,6 +61,7 @@
 		    } else {
 			App.flash("Свойства товара не изменились");
 		    }
+                    App.page_stock_product_card.closeOnSave=true;
 		});
                 if( App.page_stock_product_card.closeOnSave ){
                     App.page_stock_product_card.node.window('close');
