@@ -26,6 +26,9 @@
 		    App.page_stock_product_card.initWidgets();
 		});
 	    }
+            if( this.data.enablePrevnext ){
+                $("#stock_prod_card_prevnext").css('visibility','visible');   
+            }
 	},
 	initWidgets:function(){
 	    App.page_stock_product_card.data.product_code_new=App.page_stock_product_card.data.product_code;
@@ -146,7 +149,9 @@
     <div style="text-align: center;margin-top: 15px;clear: both">
         <button type="submit" onclick="App.page_stock_product_card.closeOnSave=true;"><img src="img/Save-24.png" /> Сохранить</button>
 	<button type="button" onclick="App.page_stock_product_card.node.window('close')"><img src="img/close24.png" /> Закрыть</button>
-        | <button type="button" onclick="App.page_stock_product_card.next(-1)" title="Сохранить и открыть предидущий">&lt;&lt;&lt; Пред.</button>
-        <button type="button" onclick="App.page_stock_product_card.next(1)" title="Сохранить и открыть следующий">&gt;&gt;&gt; След.</button>
+        <span id="stock_prod_card_prevnext" style="visibility: hidden">
+            | <button type="button" onclick="App.page_stock_product_card.next(-1)" title="Сохранить и открыть предидущий">&lt;&lt;&lt; Пред.</button>
+            <button type="button" onclick="App.page_stock_product_card.next(1)" title="Сохранить и открыть следующий">&gt;&gt;&gt; След.</button>
+        </span>
     </div>
 </form>

@@ -164,6 +164,7 @@
 		    alert("Доступ ограничен");
 		    return;
 		}
+                fvalue.enablePrevnext=true;
 		App.loadWindow('page/stock/product_card',fvalue).progress(function(status,fvalue){
 		    if( status==='save' ){
 			Leftovers.list.reload();
