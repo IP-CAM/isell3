@@ -82,6 +82,9 @@
                     $("#Stock_parent_id").combobox('setText',category.label);
                 }
             });
+        },
+        parsePrice:function( node ){
+            node.value=eval(node.value.toString().replace(',','.').match( /[\(\d\.\)\*\/\+-]*/ ).toString()) || 0;
         }
     };
 </script>
@@ -122,8 +125,8 @@
     <div class="inp_group" style="width: 320px;vertical-align: top;">
 	<fieldset style="width: 300px;">
 	    <legend>Цены на товар</legend>
-	    <input name="sell" title="Продажа">
-	    <input name="buy" title="Покупка">
+            <input name="sell" title="Продажа" onchange="App.page_stock_product_card.parsePrice(this)" class="icon-calc16" style="background-position: right">
+	    <input name="buy" title="Покупка" onchange="App.page_stock_product_card.parsePrice(this)" class="icon-calc16" style="background-position: right">
 	    <select name="curr_code" title="Валюта">
 		<option value="UAH">UAH Гривна</option>
 		<option value="USD">USD Доллар</option>
