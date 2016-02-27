@@ -30,8 +30,13 @@
 			);
 		$.get('AccountsRegistry/registryFetch/'+uri, param, function (xhr) {
 		    var resp = App.json(xhr);
-		    success(resp);
-		    App.page_accounts_registry.renderSubtotals(mode,resp.sub_totals);
+		    if( resp ){
+			success(resp);
+			App.page_accounts_registry.renderSubtotals(mode,resp.sub_totals);
+		    } else {
+			success([]);
+		    }
+		    
 		});
 	    }
 	},
