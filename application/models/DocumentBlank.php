@@ -55,13 +55,16 @@ class DocumentBlank extends DocumentCore {
     public function availFetch() {
         $avail_docs = $this->get_list("SELECT * FROM document_types WHERE doc_type>=10");
         foreach ($avail_docs as &$doc) {
-            $doc->avail_views = $this->get_list("SELECT view_type_id,view_name,IF(view_file='',0,1) AS only_reg FROM document_view_types WHERE doc_type='$doc->doc_type' AND view_file<>''");
+            $doc->avail_views = $this->get_list("SELECT view_type_id,view_name,IF(view_file='',0,1) AS only_reg FROM document_view_types WHERE doc_types LIKE '%/$doc->doc_type/%' AND view_file<>''");
         }
         return $avail_docs;
     }
     public function blankCreate( $view_type_id, $register_only = false ){
 	if( $this->Base->pcomp('company_id') ){
-	    $doc_type = $this->get_value("SELECT doc_type FROM document_view_types WHERE view_type_id='$view_type_id'");
+	    $doc_types = $this->get_value("SELECT doc_types FROM document_view_types WHERE view_type_id='$view_type_id'");
+	    $doc_types_arr=explode('/',$doc_types);
+	    $doc_type=$doc_types_arr[0];
+	    
 	    $Document2=$this->Base->bridgeLoad('Document');
 	    $Document2->add($doc_type);
 	    if ($register_only === false){
@@ -79,7 +82,7 @@ class DocumentBlank extends DocumentCore {
         $blank = $this->get_row("SELECT * FROM document_view_list JOIN document_view_types USING(view_type_id) WHERE doc_id='$doc_id'");
         if (!$blank) {//only registry record
             $doc_type = $this->doc('doc_type');
-            $blank = $this->get_row("SELECT view_name FROM document_view_types WHERE doc_type='$doc_type'");
+            $blank = $this->get_row("SELECT view_name FROM document_view_types WHERE doc_types LIKE '%/$doc_type/%'");
         } elseif ($blank->html) {
             $blank->html = stripslashes($blank->html);
         } else {

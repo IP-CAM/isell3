@@ -33,8 +33,30 @@ INSERT INTO `stock_entries` (`product_code`, `parent_id`) VALUES ('телефо�
 INSERT INTO `stock_entries` (`product_code`, `parent_id`) VALUES ('ремонт', @parent_id);
 INSERT INTO `stock_entries` (`product_code`, `parent_id`) VALUES ('услуга', @parent_id);
 
-INSERT INTO `document_view_types` (`doc_type`, `view_name`, `view_tpl`) VALUES ('3', 'Акт выполенных работ', 'ua/doc/service_invoice.xlsx');
-INSERT INTO `document_view_types` (`doc_type`, `view_name`, `view_tpl`) VALUES ('4', 'Акт выполенных работ', 'ua/doc/service_invoice.xlsx');
-INSERT INTO `document_view_types` (`doc_type`, `view_name`, `view_role`, `view_efield_labels`, `view_tpl`) VALUES ('3', 'Податкова Накладна', 'tax_bill', '{\"sign\":\"Выписал\",\"type_of_reason\":\"Тип причины\"}', 'ua/doc/podatkova_nakladna2015_1.html,ua/doc/podatkova_nakladna2015_1.xml');
-INSERT INTO `document_view_types` (`doc_type`, `view_name`, `view_role`, `view_efield_labels`, `view_tpl`) VALUES ('2', 'Податкова Накладна (Вхідна)', 'tax_bill', '{\"sign\":\"Выписал\",\"type_of_reason\":\"Тип причины\"}', 'ua/doc/podatkova_nakladna2015_1.html,ua/doc/podatkova_nakladna2015_1.xml');
-INSERT INTO `document_view_types` (`doc_type`, `view_name`, `view_role`, `view_efield_labels`, `view_tpl`) VALUES ('4', 'Податкова Накладна (Вхідна)', 'tax_bill', '{\"sign\":\"Выписал\",\"type_of_reason\":\"Тип причины\"}', 'ua/doc/podatkova_nakladna2015_1.html,ua/doc/podatkova_nakladna2015_1.xml');
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
+
+ALTER TABLE `document_view_types` 
+DROP FOREIGN KEY `FK_document_view_types_1`;
+
+ALTER TABLE `companies_tree` 
+CHANGE COLUMN `branch_id` `branch_id` INT(10) UNSIGNED NULL DEFAULT NULL AUTO_INCREMENT ;
+
+ALTER TABLE `document_view_types` 
+CHANGE COLUMN `doc_type` `doc_types` VARCHAR(20) NOT NULL ,
+DROP INDEX `FK_document_view_types_1`;
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+
+UPDATE document_view_types SET doc_type=CONCAT('/',doc_type,'/');
+UPDATE document_view_types SET doc_type='/1/3/' WHERE view_type_id=27;
+INSERT INTO `document_view_types` (`doc_type`, `view_name`, `view_tpl`) VALUES ('/3/', 'Акт выполенных работ', 'ua/doc/service_invoice.xlsx');
+INSERT INTO `document_view_types` (`doc_type`, `view_name`, `view_tpl`) VALUES ('/4/', 'Акт выполенных работ (Вхідний)', 'ua/doc/service_invoice.xlsx');
+INSERT INTO `document_view_types` (`doc_type`, `view_name`, `view_role`, `view_efield_labels`, `view_tpl`) VALUES ('/2/4/', 'Податкова Накладна (Вхідна)', 'tax_bill', '{\"sign\":\"Выписал\",\"type_of_reason\":\"Тип причины\"}', 'ua/doc/podatkova_nakladna2015_1.html');
+
+

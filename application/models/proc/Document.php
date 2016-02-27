@@ -582,12 +582,12 @@ class Document extends Data {
 		    document_view_types
 		WHERE
 		    view_hidden IS NULL AND
-		    doc_type = (SELECT 
+		    doc_type LIKE CONCAT('%/', (SELECT 
 			    doc_type
 			FROM
 			    document_list
 			WHERE
-			    doc_id = '$doc_id'))) AS vl
+			    doc_id = '$doc_id'))) AS vl,'/%')
 	    GROUP BY view_type_id";
 	$res = $this->Base->query($sql);
 	while ($row = mysql_fetch_assoc($res)) {
