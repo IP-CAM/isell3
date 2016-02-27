@@ -53,10 +53,11 @@ SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
 
-UPDATE document_view_types SET doc_type=CONCAT('/',doc_type,'/');
-UPDATE document_view_types SET doc_type='/1/3/' WHERE view_type_id=27;
-INSERT INTO `document_view_types` (`doc_type`, `view_name`, `view_tpl`) VALUES ('/3/', 'Акт выполенных работ', 'ua/doc/service_invoice.xlsx');
-INSERT INTO `document_view_types` (`doc_type`, `view_name`, `view_tpl`) VALUES ('/4/', 'Акт выполенных работ (Вхідний)', 'ua/doc/service_invoice.xlsx');
-INSERT INTO `document_view_types` (`doc_type`, `view_name`, `view_role`, `view_efield_labels`, `view_tpl`) VALUES ('/2/4/', 'Податкова Накладна (Вхідна)', 'tax_bill', '{\"sign\":\"Выписал\",\"type_of_reason\":\"Тип причины\"}', 'ua/doc/podatkova_nakladna2015_1.html');
+UPDATE document_view_types SET doc_types=CONCAT('/',doc_types,'/');
+UPDATE document_view_types SET doc_types='/1/3/' WHERE view_type_id=22;
+UPDATE document_view_types SET doc_types='/1/3/' WHERE view_type_id=27;
+INSERT INTO `document_view_types` (`doc_types`, `view_name`, `view_tpl`) VALUES ('/3/', 'Акт выполенных работ', 'ua/doc/service_invoice.xlsx');
+INSERT INTO `document_view_types` (`doc_types`, `view_name`, `view_tpl`) VALUES ('/4/', 'Акт выполенных работ (Вхідний)', 'ua/doc/service_invoice.xlsx');
+INSERT INTO `document_view_types` (`doc_types`, `view_name`, `view_role`, `view_efield_labels`, `view_tpl`) VALUES ('/2/4/', 'Податкова Накладна (Вхідна)', 'tax_bill', '{\"sign\":\"Выписал\",\"type_of_reason\":\"Тип причины\"}', 'ua/doc/podatkova_nakladna2015_1.html');
 
 

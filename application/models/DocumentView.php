@@ -24,7 +24,7 @@ class DocumentView extends DocumentItems{
 			    LEFT JOIN 
 			document_view_list dvl ON dvl.view_type_id=dvt.view_type_id AND doc_id = '$doc_id'
 		    WHERE
-			doc_type=$doc_type
+			doc_types LIKE '%/$doc_type/%'
 		    GROUP BY 
 			view_type_id
 		    ORDER BY
