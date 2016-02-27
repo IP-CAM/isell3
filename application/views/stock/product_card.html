@@ -35,7 +35,8 @@
 	    });
 	    $("input[name="+this.data.focus+"]").select();
 	    $("#Stock_parent_id").combobox('setValue',App.page_stock_product_card.data.parent_id);
-	    $("#Stock_parent_id").combobox('setText',App.page_stock_product_card.data.parent_label);	    
+	    $("#Stock_parent_id").combobox('setText',App.page_stock_product_card.data.parent_label);
+	    this.serviceCheck();
 	},
 	categoryLoader:function(param, success, error){
 	    if( param.q===undefined ){
@@ -71,13 +72,18 @@
                     $("#Stock_parent_id").combobox('setText',category.label);
                 }
             });
-        }
+        },
+	serviceCheck:function(){
+	    var is_service=App.val("#product_card_srv_chk");
+	    this.node.find('.only_product_props input').attr('disabled',is_service?'disabled':null);
+	}
     };
 </script>
 <form id="page_stock_product_card_frm" onsubmit="App.page_stock_product_card.submit(event)">
     <input type="hidden" name="product_code">
     <div class="inp_group" style="width: 420px;vertical-align: top">
 	<img src="img/product.png" style="float:left;width:100px;height: auto" />
+	<input name="is_service" title="Услуга" type="checkbox" id="product_card_srv_chk" onclick="App.page_stock_product_card.serviceCheck(this)">
 	<input class="easyui-combobox" name="parent_id" id="Stock_parent_id" title="Категория" data-options="
 		valueField: 'branch_id',
 		textField: 'label',
@@ -94,12 +100,12 @@
 		">
 	<input name="product_code_new" title="Код" required="required">
 	<input name="product_unit" title="Единица" required="required">
-	<input name="product_wrn_quantity" title="Мин. кол-во">
 	<input name="ru" title="Название Рус" style="width:300px" required="required">
 	<input name="ua" title="Название Укр" style="width:300px">
 	<input name="en" title="Название Англ" style="width:300px">
     </div>
-    <div class="inp_group" style="width: 320px;vertical-align: top">
+    <div class="inp_group only_product_props" style="width: 320px;vertical-align: top">
+	<input name="product_wrn_quantity" title="Мин. кол-во">
 	<input name="product_spack" title="В коробке">
 	<input name="product_bpack" title="В ящике">
 	<input name="product_weight" title="Вес кг">

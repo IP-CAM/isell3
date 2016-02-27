@@ -23,6 +23,9 @@ body{
     min-height: 25px;
     margin: 2px;
 }
+.inp_group label{
+    white-space: nowrap;
+}
 .textbox{
     border-radius: 0px !important;
     left:-1px;
