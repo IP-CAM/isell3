@@ -28,7 +28,7 @@
 			    fvalue.group_by_comp?'group_by_comp':'expanded',
 			    mode
 			);
-		$.get('AccountsData/registryFetch/'+uri, param, function (xhr) {
+		$.get('AccountsRegistry/registryFetch/'+uri, param, function (xhr) {
 		    var resp = App.json(xhr);
 		    success(resp);
 		    App.page_accounts_registry.renderSubtotals(mode,resp.sub_totals);
@@ -60,16 +60,20 @@
 	    }
 	    return '';
 	},
-	openDoc:function(buy){
-	    var row=$(buy?'#acc_tax_bill_reg_buy_dg':'#acc_tax_bill_reg_sell_dg').datagrid('getSelected');
-	    App.loadWindow('page/trade/document',{doc_id:row.doc_id}).progress(function(status){
+	openDoc:function(is_buy, doc_id){
+	    var dg=is_buy?'#acc_tax_bill_reg_buy_dg':'#acc_tax_bill_reg_sell_dg';
+	    if( doc_id===undefined ){
+		var row=$(dg).datagrid('getSelected');
+		doc_id=row.doc_id;
+	    }
+	    App.loadWindow('page/trade/document',{doc_id:doc_id}).progress(function(status){
 		if( status!=='inited' ){
-		    $('#account_ledger_dg').datagrid('reload');
+		    $(dg).datagrid('reload');
 		}
 	    });
 	},
-	openPrint:function(buy,out_type){
-	    var row=$(buy?'#acc_tax_bill_reg_buy_dg':'#acc_tax_bill_reg_sell_dg').datagrid('getSelected');
+	openPrint:function(is_buy,out_type){
+	    var row=$(is_buy?'#acc_tax_bill_reg_buy_dg':'#acc_tax_bill_reg_sell_dg').datagrid('getSelected');
 	    if( out_type==='.print' ){
 		window.open("./DocumentView/documentViewGet/?out_type=.print&doc_view_id="+row.doc_view_id, '_new');
 	    } else {
@@ -87,6 +91,15 @@
 		$('#acc_tax_bill_reg_buy_dg').datagrid('enableFilter');
 		this.filterEnabled = true;
 	    }
+	},
+	rowCreate:function( is_buy ){
+	    this.openDoc(is_buy,0);
+	},
+	rowUpdate:function( is_buy ){
+	    this.openDoc(is_buy);
+	},
+	rowDelete:function( is_buy ){
+	    this.openDoc(is_buy);
 	}
     };
 </script>
@@ -167,6 +180,9 @@
 		<img src="img/table16.png" style="width:16px;height: 16px;"> Реестр полученных документов
 	    </div>
 	    <div style="float: right">
+		<span class="icon-24 icon-create" title="Добавить" onclick="App.page_accounts_registry.rowCreate('buy');"> </span>
+		<span class="icon-24 icon-change" title="Изменить" onclick="App.page_accounts_registry.rowUpdate('buy');"> </span>
+		<span class="icon-24 icon-delete" title="Удалить" onclick="App.page_accounts_registry.rowDelete('buy');"> </span>
 		<span class="icon-24 icon-tablefilter" title="Фильтр таблицы" onclick="App.page_accounts_registry.toggleFilter()"> </span>
 		<span class="icon-24 icon-refresh" title="Обновить" onclick="$('#acc_tax_bill_reg_buy_dg').datagrid('reload')"> </span>
 		<span class="icon-24 icon-print" title="Напечатать" onclick="App.page_accounts_registry.out('buy','.print');"> </span>
@@ -202,6 +218,9 @@
 		<img src="img/table16.png" style="width:16px;height: 16px;"> Реестр выданых документов
 	    </div>
 	    <div style="float: right">
+		<span class="icon-24 icon-create" title="Добавить" onclick="App.page_accounts_registry.rowCreate('sell');"> </span>
+		<span class="icon-24 icon-change" title="Изменить" onclick="App.page_accounts_registry.rowUpdate('sell');"> </span>
+		<span class="icon-24 icon-delete" title="Удалить" onclick="App.page_accounts_registry.rowDelete('sell');"> </span>
 		<span class="icon-24 icon-tablefilter" title="Фильтр таблицы" onclick="App.page_accounts_registry.toggleFilter()"> </span>
 		<span class="icon-24 icon-refresh" title="Обновить" onclick="$('#acc_tax_bill_reg_sell_dg').datagrid('reload')"> </span>
 		<span class="icon-24 icon-print" title="Напечатать" onclick="App.page_accounts_registry.out('sell','.print');"> </span>
