@@ -2,7 +2,21 @@
 
 $this->view->a->all=getAll($this->view->a);
 $this->view->p->all=getAll($this->view->p);
-$this->view->p->ag_date_dot=date('d.m.Y',  strtotime($this->view->p->company_agreement_date));
+
+if( $this->view->head->doc_type==3 ){
+    /*we are selling the service*/
+    $this->view->ag_num=$this->view->p->company_agreement_num;
+    $this->view->ag_date=$this->view->p->company_agreement_date;
+    $this->view->sign_performer= $this->view->doc_view->user_position.$this->view->doc_view->user_sign;
+} else {
+    /*we are buying the service*/
+    $this->view->ag_num=$this->view->a->company_agreement_num;
+    $this->view->ag_date=$this->view->a->company_agreement_date;
+    $this->view->sign_customer= $this->view->doc_view->user_position.$this->view->doc_view->user_sign;
+}
+
+
+$this->view->ag_date_dot=date('d.m.Y',  strtotime($this->view->ag_date));
 
 function getAll( $comp ) {
     $all ="$comp->company_name \n$comp->company_jaddress";

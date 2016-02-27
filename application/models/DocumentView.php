@@ -127,8 +127,15 @@ class DocumentView extends DocumentItems{
 	$head=$this->headGet($doc_view->doc_id);
 	$rows=$this->entriesFetch( 1 );
 	$footer=$this->footerGet();
-        $acomp=$Company->companyGet( $this->doc('active_company_id') );
-        $pcomp=$Company->companyGet( $this->doc('passive_company_id') );
+	if( $head->doc_type==1 || $head->doc_type==3 ){
+	    /*if sell document use straight seller=acomp else buyer=pcomp*/
+	    $acomp=$Company->companyGet( $this->doc('active_company_id') );
+	    $pcomp=$Company->companyGet( $this->doc('passive_company_id') );
+	} else {
+	    $pcomp=$Company->companyGet( $this->doc('active_company_id') );
+	    $acomp=$Company->companyGet( $this->doc('passive_company_id') );	    
+	}
+        
 	
         $doc_view->total_spell=$Utils->spellAmount($footer->total);
         $doc_view->loc_date=$Utils->getLocalDate($doc_view->tstamp);

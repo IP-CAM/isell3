@@ -1072,7 +1072,7 @@ class Document extends Data {
 	}
     }
 
-    protected function makeTransaction($acc_debit_code, $acc_credit_code, $amount, $description, $label) {
+    protected function makeTransaction($acc_debit_code, $acc_credit_code, $amount, $description, $trans_role) {
 	if ($this->Base->pcomp('curr_code') == $this->Base->acomp('curr_code')) {
 	    $amount_alt = 0;
 	} else {
@@ -1085,7 +1085,7 @@ class Document extends Data {
 	$this->Base->LoadClass('Accounts');
 	if (!$trans_id) {//Transaction does not exists
 	    $trans_id = $this->Base->Accounts->commitTransaction($acc_debit_code, $acc_credit_code, $amount, $description, false, $this->doc('cstamp'), NULL, $amount_alt);
-	    $this->Base->query("INSERT INTO document_trans SET doc_id=$doc_id, trans_id=$trans_id, type='$trans_type', label='$label'");
+	    $this->Base->query("INSERT INTO document_trans SET doc_id=$doc_id, trans_id=$trans_id, type='$trans_type', trans_role='$trans_role'");
 	} else {
 	    $this->Base->Accounts->updateTransaction($trans_id, array('amount' => $amount, 'amount_alt' => $amount_alt, 'description' => $description));
 	}

@@ -48,5 +48,5 @@ INSERT INTO `stock_entries` (`product_code`, `parent_id`) VALUES ('услуга'
 
 
 
-
-
+INSERT INTO `document_view_types` (`doc_type`, `view_name`, `view_role`, `view_efield_labels`, `view_tpl`) VALUES ('3', 'Податкова Накладна Електронна', 'tax_bill', '{\"sign\":\"Выписал\",\"type_of_reason\":\"Тип причины\"}', 'ua/doc/podatkova_nakladna2015_1.html,ua/doc/podatkova_nakladna2015_1.xml');
+INSERT INTO `document_view_types` (`doc_type`, `view_name`, `view_role`, `view_efield_labels`, `view_tpl`) VALUES ('4', 'Податкова Накладна Електронна', 'tax_bill', '{\"sign\":\"Выписал\",\"type_of_reason\":\"Тип причины\"}', 'ua/doc/podatkova_nakladna2015_1.html,ua/doc/podatkova_nakladna2015_1.xml');
