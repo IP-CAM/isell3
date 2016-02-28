@@ -26,6 +26,9 @@ body{
 .inp_group label{
     white-space: nowrap;
 }
+.inp_group label b{
+    white-space: normal;
+}
 .textbox{
     border-radius: 0px !important;
     left:-1px;
