@@ -19,7 +19,7 @@ class DocumentBlank extends DocumentCore {
 	if( $assigned_path ){
 	    $andwhere.=" AND path LIKE '$assigned_path%'";
 	}
-	$active_company_id='$active_company_id' AND
+	$active_company_id=$this->Base->acomp('company_id');
         $sql = "SELECT 
                     doc_id,
                     doc_type_name,
@@ -63,7 +63,7 @@ class DocumentBlank extends DocumentCore {
 	if( $this->Base->pcomp('company_id') ){
 	    $doc_types = $this->get_value("SELECT doc_types FROM document_view_types WHERE view_type_id='$view_type_id'");
 	    $doc_types_arr=explode('/',$doc_types);
-	    $doc_type=$doc_types_arr[0];
+	    $doc_type=$doc_types_arr[1];
 	    
 	    $Document2=$this->Base->bridgeLoad('Document');
 	    $Document2->add($doc_type);
