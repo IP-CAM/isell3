@@ -2,8 +2,8 @@
 require_once 'AccountsCore.php';
 class AccountsRegistry extends AccountsCore{
     public function registryFetch($period='',$mode='', $direction='sell'){
-	$page=$this->request('page','int');
-	$rows=$this->request('rows','int');
+	$page=$this->request('page','int',1);
+	$rows=$this->request('rows','int',1000);
 	$offset=($page-1)*$rows;
 	if( $offset<0 ){
 	    $offset=0;
@@ -19,6 +19,7 @@ class AccountsRegistry extends AccountsCore{
 	$tmp_sql="CREATE TEMPORARY TABLE tax_bill_reg ( INDEX(doc_view_id) ) ENGINE=MyISAM AS ( SELECT
 		dl.doc_id,
 		doc_view_id,
+		doc_type_name,
 		CONCAT(icon_name,' ',doc_type_name) doc_type,
 		view_num tax_bill_num,
 		DATE_FORMAT(dl.cstamp,'%d.%m.%Y') cdate,
@@ -65,37 +66,34 @@ class AccountsRegistry extends AccountsCore{
 	} else {
 	    $sql="SELECT * FROM tax_bill_reg LIMIT $rows OFFSET $offset";
 	}
-	
+	$rows=$this->get_list($sql);
+	if( !count($rows) ){
+	    $rows=[[]];
+	}
 	return [
-	    'rows'=>$this->get_list($sql),
+	    'rows'=>$rows,
 	    'sub_totals'=>$sub_totals,
 	    'total'=>$sub_totals->count
 	];
     }
-    public function registryViewGet( $period='', $mode='', $out_type='.print' ){
+    public function registryViewGet(){
+	$period=$this->request('period');
+	$mode=$this->request('mode');
+	$out_type=$this->request('out_type','string','.print');
+	$blank_set=$this->Base->pref('blank_set');
 	$dump=[
-	    'tpl_files'=>$doc_view->view_tpl,
-	    'title'=>$doc_view->view_name,
+	    'tpl_files'=>$blank_set.'/AccDocumentRegistry.xlsx',
+	    'title'=>"Реестр документов",
 	    'user_data'=>[
-		'email'=>$pcomp->company_email,
+		'email'=>$this->Base->svar('pcomp')?$this->Base->svar('pcomp')->company_email:'',
 		'text'=>'Доброго дня'
 	    ],
 	    'view'=>[
-		buy=>$this->registryViewGet($period, $mode,'buy'),
-		sell=>$this->registryViewGet($period, $mode,'sell')
+		'period'=>$period,
+		'buy'=>$this->registryFetch($period, $mode,'buy'),
+		'sell'=>$this->registryFetch($period, $mode,'sell')
 	    ]
 	];
-	$ViewManager=$this->Base->load_model('ViewManager');
-	$ViewManager->store($dump);
-	$ViewManager->outRedirect($out_type);
-    }
-        public function documentViewGet(){
-        $doc_view_id=$this->request('doc_view_id', 'int');
-        $out_type=$this->request('out_type');
-        $dump=$this->fillDump($doc_view_id);
-	
-	//print_r($dump);
-	//exit;
 	$ViewManager=$this->Base->load_model('ViewManager');
 	$ViewManager->store($dump);
 	$ViewManager->outRedirect($out_type);

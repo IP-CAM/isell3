@@ -36,7 +36,6 @@
 		    } else {
 			success([]);
 		    }
-		    
 		});
 	    }
 	},
@@ -111,13 +110,9 @@
 	rowDelete:function( is_buy ){
 	    this.openDoc(is_buy);
 	},
-	out:function(direction,out_type){
-	    window.open("./AccountsRegistry/registryOut/?out_type=.print", '_new');
-	    if( out_type==='.print' ){
-		
-	    } else {
-		location.href="./AccountsRegistry/registryOut/?out_type=.xlsx";
-	    }	    
+	out:function(out_type){
+	    var fvalue=App.collectForm('#acc_tax_bill_reg_frm');
+	    window.open("./AccountsRegistry/registryViewGet/?out_type="+out_type+'&period='+(fvalue.year+'-'+fvalue.month)+'&mode='+(fvalue.group_by_comp?'group_by_comp':'expanded'), '_new');   
 	}
     };
 </script>
@@ -186,7 +181,6 @@
 			    <td colspan="2"><b>{{pay_vat}}</b></td>
 			</tr>
 		    </table>
-		    <button><img src="img/calc.png" style="width:24px;height:24px;"> Начислить НДС</button>
 		</div>
 	    </fieldset>
 	</div>
@@ -203,7 +197,7 @@
 		<span class="icon-24 icon-delete" title="Удалить" onclick="App.page_accounts_registry.rowDelete('buy');"> </span>
 		<span class="icon-24 icon-tablefilter" title="Фильтр таблицы" onclick="App.page_accounts_registry.toggleFilter()"> </span>
 		<span class="icon-24 icon-refresh" title="Обновить" onclick="$('#acc_tax_bill_reg_buy_dg').datagrid('reload')"> </span>
-		<span class="icon-24 icon-print" title="Напечатать" onclick="App.page_accounts_registry.out('buy','.print');"> </span>
+		<span class="icon-24 icon-print" title="Напечатать" onclick="App.page_accounts_registry.out('.print');"> </span>
 	    </div>
 	</div>
 	<table id="acc_tax_bill_reg_buy_dg" class="easyui-datagrid" style="width:855px;"
@@ -241,7 +235,7 @@
 		<span class="icon-24 icon-delete" title="Удалить" onclick="App.page_accounts_registry.rowDelete('sell');"> </span>
 		<span class="icon-24 icon-tablefilter" title="Фильтр таблицы" onclick="App.page_accounts_registry.toggleFilter()"> </span>
 		<span class="icon-24 icon-refresh" title="Обновить" onclick="$('#acc_tax_bill_reg_sell_dg').datagrid('reload')"> </span>
-		<span class="icon-24 icon-print" title="Напечатать" onclick="App.page_accounts_registry.out('sell','.print');"> </span>
+		<span class="icon-24 icon-print" title="Напечатать" onclick="App.page_accounts_registry.out('.print');"> </span>
 	    </div>
 	</div>
 	<table id="acc_tax_bill_reg_sell_dg" class="easyui-datagrid" style="width:855px;"
