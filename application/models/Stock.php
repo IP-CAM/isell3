@@ -100,12 +100,19 @@ class Stock extends Catalog {
 
     public function productSave(){
 	$this->Base->set_level(2);
+	$affected_rows=0;
 	$product_code=$this->request('product_code');
         $product_code_new=$this->request('product_code_new','^[\p{L}\d\. ,-_]+$');
-        if( !$product_code_new ){
+        if( !$product_code_new ){// do not match the pattern
             return false;
         }
-	$product=[
+	if( $product_code && $product_code<>$product_code_new ){
+	    $this->update('prod_list', ['product_code'=>$product_code_new], ['product_code'=>$product_code]);
+	    $affected_rows+=$this->db->affected_rows()*1;
+	}
+	$product_code=$product_code_new;
+	$prod_list=[
+	    'product_code'=>$product_code,
 	    'ru'=>$this->request('ru'),
 	    'ua'=>$this->request('ua'),
 	    'en'=>$this->request('en'),
@@ -119,25 +126,75 @@ class Stock extends Catalog {
 	    'analyse_group'=>$this->request('analyse_group'),
 	    'analyse_class'=>$this->request('analyse_class'),
 	    'analyse_section'=>$this->request('analyse_section'),            
-	    'barcode'=>$this->request('barcode'),
+	    'barcode'=>$this->request('barcode')
+	];
+	$prod_list_set=$this->makeSet($prod_list);
+	$this->query("INSERT INTO prod_list SET $prod_list_set ON DUPLICATE KEY UPDATE $prod_list_set");
+	$affected_rows+=$this->db->affected_rows()*1;
+	
+	$stock_entries=[
+	    'product_code'=>$product_code,
 	    'parent_id'=>$this->request('parent_id','int'),
 	    'product_wrn_quantity'=>$this->request('product_wrn_quantity','int'),
-	    'party_label'=>$this->request('party_label'),
+	    'party_label'=>$this->request('party_label')
+	];
+	$stock_entries_set=$this->makeSet($stock_entries);
+	$this->query("INSERT INTO stock_entries SET $stock_entries_set ON DUPLICATE KEY UPDATE $stock_entries_set");
+	$affected_rows+=$this->db->affected_rows()*1;
+	
+	$price_list=[
+	    'product_code'=>$product_code,
 	    'buy'=>$this->request('buy','double'),
 	    'sell'=>$this->request('sell','double'),
 	    'curr_code'=>$this->request('curr_code'),
 	];
-	if( !$product_code ){//NEW RECORD
-	    $this->create(BAY_DB_MAIN.'.prod_list', ['product_code'=>$product_code_new]);
-	    $this->create(BAY_DB_MAIN.'.price_list', ['product_code'=>$product_code_new]);
-	    $this->create(BAY_DB_MAIN.'.stock_entries', ['product_code'=>$product_code_new]);
-            $product_code=$product_code_new;
+	$price_list_set=$this->makeSet($price_list);
+	$this->query("INSERT INTO price_list SET $price_list_set ON DUPLICATE KEY UPDATE $price_list_set");
+	$affected_rows+=$this->db->affected_rows()*1;
+	
+	return $affected_rows;
+    }
+    private function makeSet( $array ){
+	$set=[];
+	foreach( $array as $key=>$val ){
+	    $set[]="$key='$val'";
 	}
-        if( $product_code_new!=$product_code ){
-            $this->update(BAY_DB_MAIN.'.prod_list', ['product_code'=>$product_code_new], ['product_code'=>$product_code]);
-            $product_code=$product_code_new;
+	return implode(',',$set);
+    }
+    public function import(){
+	$label=$this->request('label');
+	$source = array_map('addslashes',$this->request('source','raw'));
+	$target = array_map('addslashes',$this->request('target','raw'));
+        $parent_id=$this->request('parent_id','int');
+        if( $parent_id ){
+            $source[]=$parent_id;
+            $target[]='parent_id';
         }
-        return $this->update(BAY_DB_MAIN.'.stock_entries JOIN '.BAY_DB_MAIN.'.prod_list USING(product_code) LEFT JOIN '.BAY_DB_MAIN.'.price_list USING(product_code)', $product, ['product_code'=>$product_code]);
+	$this->importInTable('prod_list', $source, $target, '/product_code/ru/ua/en/product_spack/product_bpack/product_weight/product_volume/product_unit/product_uktzet/barcode/analyse_type/analyse_group/analyse_class/analyse_section/', $label);
+	$this->importInTable('price_list', $source, $target, '/product_code/sell/buy/curr_code/', $label);
+	$this->importInTable('stock_entries', $source, $target, '/product_code/party_label/parent_id/', $label);
+	$this->query("DELETE FROM imported_data WHERE label='$label' AND {$source[0]} IN (SELECT product_code FROM stock_entries)");
+        return  $this->db->affected_rows();
+    }
+    private function importInTable( $table, $src, $trg, $filter, $label ){
+	$set=[];
+	$target=[];
+	$source=[];
+	for( $i=0;$i<count($trg);$i++ ){
+            if( strpos($filter,"/{$trg[$i]}/")!==false && !empty($src[$i]) ){
+		$target[]=$trg[$i];
+		$source[]=$src[$i];
+                if( $trg[$i]!='parent_id' ){/*set parent_id only for new added rows*/
+                    $set[]="{$trg[$i]}=$src[$i]";
+                }
+	    }
+	}
+	$target_list=  implode(',', $target);
+	$source_list=  implode(',', $source);
+	$set_list=  implode(',', $set);
+	$this->query("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data WHERE label='$label' ON DUPLICATE KEY UPDATE $set_list");
+	//print("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data WHERE label='$label' ON DUPLICATE KEY UPDATE $set_list");
+	return $this->db->affected_rows();
     }
     public function productDelete(){
 	$product_codes=$this->request('product_code','raw');
@@ -202,43 +259,4 @@ class Stock extends Catalog {
 	    $prev_concat=$concat;
 	}
     }
-    public function import(){
-	$label=$this->request('label');
-	$source = array_map('addslashes',$this->request('source','raw'));
-	$target = array_map('addslashes',$this->request('target','raw'));
-	
-        $parent_id=$this->request('parent_id','int');
-        if( $parent_id ){
-            $source[]=$parent_id;
-            $target[]='parent_id';
-        }
-        
-	
-	$this->importInTable('prod_list', $source, $target, '/product_code/ru/ua/en/product_spack/product_bpack/product_weight/product_volume/product_unit/product_uktzet/barcode/analyse_type/analyse_group/analyse_class/analyse_section/', $label);
-	$this->importInTable('price_list', $source, $target, '/product_code/sell/buy/curr_code/', $label);
-	$this->importInTable('stock_entries', $source, $target, '/product_code/party_label/parent_id/', $label);
-	$this->query("DELETE FROM imported_data WHERE label='$label' AND {$source[0]} IN (SELECT product_code FROM stock_entries)");
-        return  $this->db->affected_rows();
-    }
-    private function importInTable( $table, $src, $trg, $filter, $label ){
-	$set=[];
-	$target=[];
-	$source=[];
-	for( $i=0;$i<count($trg);$i++ ){
-            if( strpos($filter,"/{$trg[$i]}/")!==false && !empty($src[$i]) ){
-		$target[]=$trg[$i];
-		$source[]=$src[$i];
-                if( $trg[$i]!='parent_id' ){/*set parent_id only for new added rows*/
-                    $set[]="{$trg[$i]}=$src[$i]";
-                }
-	    }
-	}
-	$target_list=  implode(',', $target);
-	$source_list=  implode(',', $source);
-	$set_list=  implode(',', $set);
-	$this->query("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data WHERE label='$label' ON DUPLICATE KEY UPDATE $set_list");
-	//print("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data WHERE label='$label' ON DUPLICATE KEY UPDATE $set_list");
-	return $this->db->affected_rows();
-    }
-
 }
