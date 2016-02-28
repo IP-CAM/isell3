@@ -67,7 +67,7 @@ class DocumentUtils extends Catalog{
 	    FROM
 		document_list
 	    WHERE
-		doc_id=$doc_id";
+		doc_id='$doc_id'";
 	$this->query($sql);
     }
 }

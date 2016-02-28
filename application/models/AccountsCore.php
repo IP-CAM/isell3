@@ -81,13 +81,14 @@ class AccountsCore extends Catalog{
 		    $passive_filter)";
 	$this->query($sql);
     }
-    private function ledgerGetSubtotals( $idate, $fdate ){
+    private function ledgerGetSubtotals( $idate, $fdate, $having ){
 	$sql="SELECT 
 		    SUM(IF('$idate'>cstamp,debit-credit,0)) ibal,
 		    SUM(IF('$idate'<cstamp AND cstamp<='$fdate',debit,0)) pdebit,
 		    SUM(IF('$idate'<cstamp AND cstamp<='$fdate',credit,0)) pcredit,
 		    SUM(IF(cstamp<='$fdate',debit-credit,0)) fbal
-		FROM tmp_ledger";
+		FROM tmp_ledger
+                WHERE $having";
 	return $this->get_row($sql);
     }
     public function ledgerFetch( $acc_code, $idate='', $fdate='', $page=1, $rows=30, $use_passive_filter=false ){
@@ -127,7 +128,7 @@ class AccountsCore extends Catalog{
 	$result_rows=$this->get_list($sql);
 	$total_estimate=$offset+(count($result_rows)==$rows?$rows+1:count($result_rows));
 	
-	$sub_totals=$this->ledgerGetSubtotals($idate, $fdate);
+	$sub_totals=$this->ledgerGetSubtotals($idate, $fdate, $having);
 	return ['rows'=>$result_rows,'total'=>$total_estimate,'props'=>$props,'sub_totals'=>$sub_totals,'using_alt_currency'=>$using_alt_currency];
     }
     public function ledgerPaymentFetch( $acc_code, $idate='', $fdate='', $page=1, $rows=30 ){

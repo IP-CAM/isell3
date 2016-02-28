@@ -1,6 +1,7 @@
 <script type="text/javascript">
     /*global App */
     App.page_stock_product_card = {
+        closeOnSave:true,
 	parsed:true,
 	init: function () {
 	    this.node.window({
@@ -25,6 +26,9 @@
 		    App.page_stock_product_card.initWidgets();
 		});
 	    }
+            if( this.data.enablePrevnext ){
+                $("#stock_prod_card_prevnext").css('visibility','visible');   
+            }
 	},
 	initWidgets:function(){
 	    App.page_stock_product_card.data.product_code_new=App.page_stock_product_card.data.product_code;
@@ -55,16 +59,26 @@
 		$.post('Stock/productSave/',this.data,function(ok){
 		    if( ok*1 ){
 			App.flash("Свойства товара сохранены");
-			App.page_stock_product_card.handler.notify('save',App.page_stock_product_card.data);
+                        if( App.page_stock_product_card.closeOnSave ){
+                            App.page_stock_product_card.handler.notify('save',App.page_stock_product_card.data);
+                        }
 		    } else {
 			App.flash("Свойства товара не изменились");
 		    }
+                    App.page_stock_product_card.closeOnSave=true;
 		});
-		App.page_stock_product_card.node.window('close');
+                if( App.page_stock_product_card.closeOnSave ){
+                    App.page_stock_product_card.node.window('close');
+                }
 	    } else {
 		alert("Код товара не должен содержать сивол: "+(this.data.product_code_new.match(/[^\wабвгдеёжзийклмнопрстуфхцчшщъыьюяіїє\. ,-]/ig)||[]).join(""));
 	    }
 	},
+        next:function( direction ){
+            App.page_stock_product_card.closeOnSave=false;
+            $("#page_stock_product_card_frm").submit();
+            App.page_stock_product_card.handler.notify(direction<0?'prev':'next');
+        },
         stockTree:function(){
             App.loadWindow('page/stock/tree').progress(function(status,category){
                 if( status==='select' ){
@@ -77,6 +91,9 @@
 	    var is_service=App.val("#product_card_srv_chk");
 	    this.node.find('.only_product_props input').attr('disabled',is_service?'disabled':null);
 	}
+        parsePrice:function( node ){
+            node.value=eval(node.value.toString().replace(',','.').match( /[\(\d\.\)\*\/\+-]*/ ).toString()) || 0;
+        }
     };
 </script>
 <form id="page_stock_product_card_frm" onsubmit="App.page_stock_product_card.submit(event)">
@@ -117,8 +134,8 @@
     <div class="inp_group" style="width: 320px;vertical-align: top;">
 	<fieldset style="width: 300px;">
 	    <legend>Цены на товар</legend>
-	    <input name="sell" title="Продажа">
-	    <input name="buy" title="Покупка">
+            <input name="sell" title="Продажа" onchange="App.page_stock_product_card.parsePrice(this)" class="icon-calc16" style="background-position: right">
+	    <input name="buy" title="Покупка" onchange="App.page_stock_product_card.parsePrice(this)" class="icon-calc16" style="background-position: right">
 	    <select name="curr_code" title="Валюта">
 		<option value="UAH">UAH Гривна</option>
 		<option value="USD">USD Доллар</option>
@@ -135,8 +152,12 @@
 	    <input name="analyse_section" title="Раздел">
 	</fieldset>
     </div>
-    <div style="text-align: center;margin-top: 15px;">
-	<button type="submit"><img src="img/Save-24.png" /> Сохранить</button>
+    <div style="text-align: center;margin-top: 15px;clear: both">
+        <button type="submit" onclick="App.page_stock_product_card.closeOnSave=true;"><img src="img/Save-24.png" /> Сохранить</button>
 	<button type="button" onclick="App.page_stock_product_card.node.window('close')"><img src="img/close24.png" /> Закрыть</button>
+        <span id="stock_prod_card_prevnext" style="visibility: hidden">
+            | <button type="button" onclick="App.page_stock_product_card.next(-1)" title="Сохранить и открыть предидущий">&lt;&lt;&lt; Пред.</button>
+            <button type="button" onclick="App.page_stock_product_card.next(1)" title="Сохранить и открыть следующий">&gt;&gt;&gt; След.</button>
+        </span>
     </div>
 </form>
