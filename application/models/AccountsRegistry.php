@@ -72,4 +72,32 @@ class AccountsRegistry extends AccountsCore{
 	    'total'=>$sub_totals->count
 	];
     }
+    public function registryViewGet( $period='', $mode='', $out_type='.print' ){
+	$dump=[
+	    'tpl_files'=>$doc_view->view_tpl,
+	    'title'=>$doc_view->view_name,
+	    'user_data'=>[
+		'email'=>$pcomp->company_email,
+		'text'=>'Доброго дня'
+	    ],
+	    'view'=>[
+		buy=>$this->registryViewGet($period, $mode,'buy'),
+		sell=>$this->registryViewGet($period, $mode,'sell')
+	    ]
+	];
+	$ViewManager=$this->Base->load_model('ViewManager');
+	$ViewManager->store($dump);
+	$ViewManager->outRedirect($out_type);
+    }
+        public function documentViewGet(){
+        $doc_view_id=$this->request('doc_view_id', 'int');
+        $out_type=$this->request('out_type');
+        $dump=$this->fillDump($doc_view_id);
+	
+	//print_r($dump);
+	//exit;
+	$ViewManager=$this->Base->load_model('ViewManager');
+	$ViewManager->store($dump);
+	$ViewManager->outRedirect($out_type);
+    }
 }

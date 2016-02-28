@@ -42,9 +42,14 @@
 	},
 	renderSubtotals:function( mode, sub_totals ){
 	    this.sub_totals[mode]=sub_totals;
-	    if( this.sub_totals.sell.sum_vat && this.sub_totals.buy.sum_vat ){
-		this.sub_totals.pay_vat=(this.sub_totals.sell.sum_vat-this.sub_totals.buy.sum_vat).toFixed(2);
-	    }
+	    this.sub_totals.sell.sum_vatless=this.sub_totals.sell.sum_vatless||0;
+	    this.sub_totals.sell.sum_vat=this.sub_totals.sell.sum_vat||0;
+	    this.sub_totals.sell.sum_total=this.sub_totals.sell.sum_total||0;
+	    this.sub_totals.buy.sum_vatless=this.sub_totals.buy.sum_vatless||0;
+	    this.sub_totals.buy.sum_vat=this.sub_totals.buy.sum_vat||0;
+	    this.sub_totals.buy.sum_total=this.sub_totals.buy.sum_total||0;
+	    
+	    this.sub_totals.pay_vat=(this.sub_totals.sell.sum_vat-this.sub_totals.buy.sum_vat).toFixed(2);
 	    App.renderTpl('acc_tax_bill_reg_footer',this.sub_totals);
 	},
 	docTooltip:function(value, row){
@@ -105,6 +110,14 @@
 	},
 	rowDelete:function( is_buy ){
 	    this.openDoc(is_buy);
+	},
+	out:function(direction,out_type){
+	    window.open("./AccountsRegistry/registryOut/?out_type=.print", '_new');
+	    if( out_type==='.print' ){
+		
+	    } else {
+		location.href="./AccountsRegistry/registryOut/?out_type=.xlsx";
+	    }	    
 	}
     };
 </script>
