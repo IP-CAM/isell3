@@ -1,3 +1,5 @@
+SET NAMES 'utf8';
+
 ALTER TABLE `document_trans` 
 ADD COLUMN `trans_role` VARCHAR(45) NULL DEFAULT NULL AFTER `type`;
 UPDATE document_trans SET trans_role='profit' WHERE `type`='791_441';
