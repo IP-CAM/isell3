@@ -6,12 +6,14 @@
 		title:'Резервное копирование',
 		width: 500,
 		height: 330,
+		top:50,
+		shadow:false,
 		onClose: function(){
 		    App.page_dialog_backup.handler.notify('close',App.page_dialog_backup.data);
 		    App.page_dialog_backup.destroy();
 		}		
 	    });
-	    this.node.window('center');
+	    this.node.window('window').css('position','fixed');
 	},
 	destroy:function () {
 	    this.node.window('destroy');

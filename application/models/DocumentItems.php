@@ -157,7 +157,7 @@ class DocumentItems extends DocumentCore{
 	$Document2=$this->Base->bridgeLoad('Document');
 	$invoice=$Document2->getProductInvoicePrice($product_code);
         $this->calcCorrections();
-        return $this->get_value("SELECT REPLACE(FORMAT($invoice * @vat_correction * @curr_correction,".$this->doc('signs_after_dot')."),',','') AS product_price");
+        return $this->get_value("SELECT REPLACE(FORMAT('$invoice' * @vat_correction * @curr_correction,".$this->doc('signs_after_dot')."),',','') AS product_price");
 //	$invoice=round($invoice,$this->doc('signs_after_dot'));
 //	if( !$this->doc('use_vatless_price') ){
 //	    $invoice*=1+$this->doc('vat_rate')/100;

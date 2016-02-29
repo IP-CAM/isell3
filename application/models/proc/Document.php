@@ -582,12 +582,12 @@ class Document extends Data {
 		    document_view_types
 		WHERE
 		    view_hidden IS NULL AND
-		    doc_type = (SELECT 
+		    doc_type LIKE CONCAT('%/', (SELECT 
 			    doc_type
 			FROM
 			    document_list
 			WHERE
-			    doc_id = '$doc_id'))) AS vl
+			    doc_id = '$doc_id'))) AS vl,'/%')
 	    GROUP BY view_type_id";
 	$res = $this->Base->query($sql);
 	while ($row = mysql_fetch_assoc($res)) {
@@ -678,7 +678,7 @@ class Document extends Data {
 	    $efields = addslashes($this->getLastEfields($view_type_id));
 	}
 	$cstamp = $this->doc('cstamp');
-	$this->Base->query("INSERT INTO document_view_list SET doc_id='$doc_id', view_type_id='$view_type_id', view_efield_values='$efields', tstamp='$cstamp', view_num='$view_num'");
+	$this->Base->query("INSERT INTO document_view_list SET doc_id='$doc_id', view_type_id='$view_type_id', view_efield_values='$efields', tstamp='$cstamp', view_num='$view_num', view_role='{$view_type_props['view_role']}'");
 	return mysql_insert_id();
     }
     
@@ -1063,37 +1063,37 @@ class Document extends Data {
 	 */
 	if ($this->doc('doc_type') == 1) {//SELL DOCUMENT
 	    $desc = "Расходный документ " . ($this->doc('is_reclamation') ? "(Возврат) " : "") . "№$doc_num";
-	    $this->makeTransaction(361, 702, $sum['total'], $desc);
-	    $this->makeTransaction(702, 641, $sum['vat'], $desc);
-	    $this->makeTransaction(702, 791, $sum['vatless'], $desc);
-	    $this->makeTransaction(791, 281, $sum['self'], $desc);
-	    $this->makeTransaction(791, 441, $sum['profit'], $desc);
+	    $this->makeTransaction(361, 702, $sum['total'], $desc, 'total');
+	    $this->makeTransaction(702, 641, $sum['vat'], $desc, 'vat');
+	    $this->makeTransaction(702, 791, $sum['vatless'], $desc, 'vatless');
+	    $this->makeTransaction(791, 281, $sum['self'], $desc, 'self');
+	    $this->makeTransaction(791, 441, $sum['profit'], $desc, 'profit');
 	    return true;
 	}
 	if ($this->doc('doc_type') == 2) {//BUY DOCUMENT
 	    $desc = "Приходный документ " . ($this->doc('is_reclamation') ? "(Возврат) " : "") . "№$doc_num";
-	    $this->makeTransaction(28, 631, $sum['total'], $desc);
-	    $this->makeTransaction(281, 28, $sum['vatless'], $desc);
-	    $this->makeTransaction(641, 28, $sum['vat'], $desc);
+	    $this->makeTransaction(28, 631, $sum['total'], $desc, 'total');
+	    $this->makeTransaction(281, 28, $sum['vatless'], $desc, 'vatless');
+	    $this->makeTransaction(641, 28, $sum['vat'], $desc, 'vat');
 	    return true;
 	}
 	if ($this->doc('doc_type') == 3) {//SERVICEOUT DOCUMENT
 	    $desc = "Акт Оказанных Услуг №$doc_num";
-	    $this->makeTransaction(361, 44, $sum['total'], $desc);
-	    $this->makeTransaction(44, 441, $sum['vatless'], $desc);
-	    $this->makeTransaction(44, 641, $sum['vat'], $desc);
+	    $this->makeTransaction(361, 44, $sum['total'], $desc, 'total');
+	    $this->makeTransaction(44, 441, $sum['vatless'], $desc, 'vatless');
+	    $this->makeTransaction(44, 641, $sum['vat'], $desc, 'vat');
 	    return true;
 	}
 	if ($this->doc('doc_type') == 4) {//SERVICEIN DOCUMENT
 	    $desc = "Акт Полученных Услуг №$doc_num";
-	    $this->makeTransaction(44, 631, $sum['total'], $desc);
-	    $this->makeTransaction(441, 44, $sum['vatless'], $desc);
-	    $this->makeTransaction(641, 44, $sum['vat'], $desc);
+	    $this->makeTransaction(44, 631, $sum['total'], $desc, 'total');
+	    $this->makeTransaction(441, 44, $sum['vatless'], $desc, 'vatless');
+	    $this->makeTransaction(641, 44, $sum['vat'], $desc, 'vat');
 	    return true;
 	}
     }
 
-    protected function makeTransaction($acc_debit_code, $acc_credit_code, $amount, $description) {
+    protected function makeTransaction($acc_debit_code, $acc_credit_code, $amount, $description, $trans_role) {
 	if ($this->Base->pcomp('curr_code') == $this->Base->acomp('curr_code')) {
 	    $amount_alt = 0;
 	} else {
@@ -1106,7 +1106,7 @@ class Document extends Data {
 	$this->Base->LoadClass('Accounts');
 	if (!$trans_id) {//Transaction does not exists
 	    $trans_id = $this->Base->Accounts->commitTransaction($acc_debit_code, $acc_credit_code, $amount, $description, false, $this->doc('cstamp'), NULL, $amount_alt);
-	    $this->Base->query("INSERT INTO document_trans SET doc_id=$doc_id, trans_id=$trans_id, type='$trans_type'");
+	    $this->Base->query("INSERT INTO document_trans SET doc_id=$doc_id, trans_id=$trans_id, type='$trans_type', trans_role='$trans_role'");
 	} else {
 	    $this->Base->Accounts->updateTransaction($trans_id, array('amount' => $amount, 'amount_alt' => $amount_alt, 'description' => $description));
 	}

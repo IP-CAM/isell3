@@ -23,6 +23,12 @@ body{
     min-height: 25px;
     margin: 2px;
 }
+.inp_group label{
+    white-space: nowrap;
+}
+.inp_group label b{
+    white-space: normal;
+}
 .textbox{
     border-radius: 0px !important;
     left:-1px;
@@ -47,7 +53,7 @@ input,select,textarea{
 input[type=checkbox]{
     width: 20px;
 }
-input:hover,select:hover,textarea:hover{
+input:hover,textarea:hover{
     background: #e0f3ff;
     border-color:#acf;
 }
@@ -57,7 +63,7 @@ fieldset{
     padding: -2px;
 }
 fieldset .inp_group b{
-    width:82px;
+    -width:75px;
 }
 select{
     padding:0px;

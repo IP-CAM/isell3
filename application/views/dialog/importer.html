@@ -7,13 +7,16 @@
 		width: 800,
 		title: 'Импорт таблицы',
 		height: 600,
-		top:30,
+		top:50,
+		shadow:false,
 		onClose: function () {
 		    App.page_dialog_importer.node.window('destroy');
 		    App.page_dialog_importer.handler.notify('close');
 		    delete App.page_dialog_importer;
 		}
 	    });
+	    this.node.window('window').css('position','fixed');
+	    
 	    this.label=this.data.label||'';
 	    $("#page_dialog_importer_label").val(this.label);
 	    this.initSelector();
