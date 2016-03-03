@@ -68,7 +68,7 @@ class Stock extends Catalog {
 		    LEFT JOIN
 		document_entries de USING(product_code)
 		    LEFT JOIN
-		document_list dl ON de.doc_id=dl.doc_id AND dl.is_commited=1 AND dl.doc_type=1
+		document_list dl ON de.doc_id=dl.doc_id AND dl.is_commited=1 AND dl.doc_type=1 AND notcount=0
 	    $where
 	    GROUP BY se.product_code
 	    HAVING $having
