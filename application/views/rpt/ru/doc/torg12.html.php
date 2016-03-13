@@ -1,22 +1,45 @@
 <?php
-    $this->view->doc_view->total_spell=  num2str($this->view->footer->total);
-    $this->view->doc_view->date_spell= daterus($this->view->doc_view->date_dot);
-    $this->view->p->all=getAll($this->view->p);
-    $this->view->a->all=getAll($this->view->a);
-    
     $okei=[
         'шт'=>'796',
         'м'=>'006'
     ];
+
+    $this->view->doc_view->total_spell=  num2str($this->view->footer->total);
+    $this->view->doc_view->date_spell= daterus($this->view->doc_view->date_dot);
+    $this->view->p->all=getAll($this->view->p);
+    $this->view->a->all=getAll($this->view->a);
     $this->view->total_qty=0;
-    foreach( $this->view->rows as &$row ){
-        $row->product_unit_code=$okei[$row->product_unit];
-        $this->view->total_qty+=$row->product_quantity;
-        
-        
-        $row->product_sum_vat=round($row->product_sum*0.18,2);
-        $row->product_sum_total=$row->product_sum+$row->product_sum_vat;
+    
+    $this->view->tables=[array_splice($this->view->rows,0,3)];
+    $this->view->tables=array_merge($this->view->tables,array_chunk($this->view->rows,15));
+    $this->view->tables_count=count($this->view->tables);
+    $i=0;
+    foreach( $this->view->tables as &$table ){
+	$subcount=0;
+	$subvatless=0;
+	$subvat=0;
+	$subtotal=0;
+	foreach( $table as &$row ){
+	    $row->i=++$i;
+	    $row->product_sum_vat=round($row->product_sum*0.18,2);
+	    $row->product_sum_total=$row->product_sum+$row->product_sum_vat;
+	    $row->product_unit_code=$okei[$row->product_unit];
+	    $subcount+=$row->product_quantity;
+	    $subvatless+=$row->product_sum;
+	    $subvat+=$row->product_sum_vat;
+	    $subtotal+=$row->product_sum_total;
+	}
+	$table['subcount']=$subcount;
+	$table['subvatless']=$subvatless;
+	$table['subvat']=$subvat;
+	$table['subtotal']=$subtotal;
+	$this->view->total_qty+=$subcount;
     }
+
+    
+    
+    
+    
     
     
 
@@ -31,7 +54,7 @@
 
     function daterus($dmy) {
         $dmy=  explode('.', $dmy);
-        $months = array('нулября', 'января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря');
+        $months = array('ноября', 'января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря');
         return ' &lt;' .$dmy[0] . '&gt; ' . $months[$dmy[1]*1] . ' ' . $dmy[2] . ' года';
     }
 
