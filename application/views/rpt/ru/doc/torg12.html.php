@@ -5,12 +5,6 @@ $okei = [
     'м' => '006'
 ];
 
-$this->view->doc_view->total_spell = num2str($this->view->footer->total);
-$this->view->doc_view->date_spell = daterus($this->view->doc_view->date_dot);
-$this->view->p->all = getAll($this->view->p);
-$this->view->a->all = getAll($this->view->a);
-$this->view->total_qty = 0;
-
 $this->view->tables = [array_splice($this->view->rows, 0, 3)];
 $this->view->tables = array_merge($this->view->tables, array_chunk($this->view->rows, 15));
 $this->view->tables_count = count($this->view->tables);
@@ -37,6 +31,14 @@ foreach ($this->view->tables as &$table) {
     $this->view->total_qty+=$subcount;
 }
 
+$this->view->total_pages = num2str($this->view->tables_count + 1, true);
+$this->view->total_rows = num2str($i, true);
+$this->view->doc_view->total_spell = num2str($this->view->footer->total);
+$this->view->doc_view->date_spell = daterus($this->view->doc_view->date_dot);
+$this->view->p->all = getAll($this->view->p);
+$this->view->a->all = getAll($this->view->a);
+$this->view->total_qty = 0;
+
 function getAll($comp) {
     $all = "$comp->company_name";
     $all.=$comp->company_vat_id ? ", ИНН/КПП:{$comp->company_vat_id}/{$comp->company_vat_licence_id}" : '';
@@ -56,7 +58,7 @@ function daterus($dmy) {
  * @author runcore
  * @uses morph(...)
  */
-function num2str($num) {
+function num2str($num, $only_number = false) {
     $nul = 'ноль';
     $ten = array(
 	array('', 'один', 'два', 'три', 'четыре', 'пять', 'шесть', 'семь', 'восемь', 'девять'),
@@ -92,8 +94,12 @@ function num2str($num) {
 	    if ($uk > 1)
 		$out[] = morph($v, $unit[$uk][0], $unit[$uk][1], $unit[$uk][2]);
 	} //foreach
-    } else
+    } else {
 	$out[] = $nul;
+    }
+    if ($only_number) {
+	return join(' ', $out);
+    }
     $out[] = morph(intval($rub), $unit[1][0], $unit[1][1], $unit[1][2]); // rub
     $out[] = $kop . ' ' . morph($kop, $unit[0][0], $unit[0][1], $unit[0][2]); // kop
     return trim(preg_replace('/ {2,}/', ' ', join(' ', $out)));
