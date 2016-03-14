@@ -1,5 +1,4 @@
 <?php
-
 $okei = [
     'шт' => '796',
     'м' => '006'
@@ -8,6 +7,11 @@ $okei = [
 $this->view->tables = [array_splice($this->view->rows, 0, 3)];
 $this->view->tables = array_merge($this->view->tables, array_chunk($this->view->rows, 15));
 $this->view->tables_count = count($this->view->tables);
+
+$this->view->footer->total_qty=0;
+$this->view->footer->vatless=0;
+$this->view->footer->vat=0;
+$vat_percent=0.18;
 $i = 0;
 foreach ($this->view->tables as &$table) {
     $subcount = 0;
@@ -16,8 +20,10 @@ foreach ($this->view->tables as &$table) {
     $subtotal = 0;
     foreach ($table as &$row) {
 	$row->i = ++$i;
-	$row->product_sum_vat = round($row->product_sum * 0.18, 2);
-	$row->product_sum_total = $row->product_sum + $row->product_sum_vat;
+	$row->product_sum_total = format($row->product_quantity*round($row->product_price*(1+$vat_percent),2));
+	$row->product_sum = format($row->product_sum_total/(1+$vat_percent));
+	$row->product_sum_vat = format($row->product_sum_total-$row->product_sum);
+	
 	$row->product_unit_code = $okei[$row->product_unit];
 	$subcount+=$row->product_quantity;
 	$subvatless+=$row->product_sum;
@@ -25,10 +31,12 @@ foreach ($this->view->tables as &$table) {
 	$subtotal+=$row->product_sum_total;
     }
     $table['subcount'] = $subcount;
-    $table['subvatless'] = $subvatless;
-    $table['subvat'] = $subvat;
-    $table['subtotal'] = $subtotal;
-    $this->view->total_qty+=$subcount;
+    $table['subvatless'] = format($subvatless);
+    $table['subvat'] = format($subvat);
+    $table['subtotal'] = format($subtotal);
+    $this->view->footer->total_qty+=$subcount;
+    $this->view->footer->vatless+=$subvatless;
+    $this->view->footer->vat+=$subvat;
 }
 
 $this->view->total_pages = num2str($this->view->tables_count + 1, true);
@@ -37,8 +45,10 @@ $this->view->doc_view->total_spell = num2str($this->view->footer->total);
 $this->view->doc_view->date_spell = daterus($this->view->doc_view->date_dot);
 $this->view->p->all = getAll($this->view->p);
 $this->view->a->all = getAll($this->view->a);
-$this->view->total_qty = 0;
 
+function format($num){
+    return number_format($num, 2,'.','');
+}
 function getAll($comp) {
     $all = "$comp->company_name";
     $all.=$comp->company_vat_id ? ", ИНН/КПП:{$comp->company_vat_id}/{$comp->company_vat_licence_id}" : '';

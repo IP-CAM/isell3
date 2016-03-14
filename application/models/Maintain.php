@@ -105,7 +105,8 @@ class Maintain extends CI_Model {
     public function updateInstall(){
 	$this->dirWork = realpath('.');
 	$file = str_replace("\\", "/", $this->dirWork.'/install/db_update.sql');
-	return $this->backupImportExecute($file);
+	$this->backupImportExecute($file);
+	return true;
     }
 
     private function setupConf(){
