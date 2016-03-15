@@ -2,9 +2,9 @@
 error_reporting(E_ERROR | E_WARNING | E_PARSE);
 class FileEngine {
     private $conversion_table = [
-	'.html'=>['.html' => 'Веб Страница', '.doc' => 'Word Документ'],
-	'.xlsx'=>['.xlsx' => 'Excel 2007', '.xls' => 'Excel 2003', '.html' => 'Веб Страница'],
-	'.xml'=>['.xml' => 'XML Экспорт Данных']
+	'.html' => ['.doc' => 'Word Документ','.html' => 'Веб Страница'],
+	'.xlsx' => ['.xlsx' => 'Excel', '.xls' => 'Excel 2003', '.html' => 'Веб Страница'],
+	'.xml'  => ['.xml' => 'XML Экспорт Данных']
     ];
     private $view;
     private $tpl_files;
@@ -18,6 +18,7 @@ class FileEngine {
     public $file_name_override;
     public $tplModifier;
     public $tpl_files_folder='rpt/';
+    
     
     private function header($text){
         if( $this->header_mode==='send_headers' ){
@@ -75,12 +76,13 @@ class FileEngine {
     }
 
     private function setup_compilator($out_ext) {
+	$this->out_ext=$out_ext;
         foreach ($this->tpl_files as $tpl_file) {
             $tpl_ext = substr($tpl_file, strrpos($tpl_file, '.'));
             if ($this->conversion_table[$tpl_ext]){
                 $this->export_types = array_merge($this->export_types, $this->conversion_table[$tpl_ext]);
 	    }
-            if (!$this->tpl_ext && in_array($out_ext, array_keys($this->conversion_table[$tpl_ext]))) {
+            if (!$this->tpl_ext && in_array($this->out_ext, array_keys($this->conversion_table[$tpl_ext]))) {
                 $this->tpl_ext = $tpl_ext;
                 $this->compile($tpl_file);
             }

@@ -21,70 +21,43 @@
 	font-size:10.0pt;
 	font-family:"Arial","serif";
     }
-    /* Page Definitions */
-    @page{
-	size:841.7pt 595.45pt;  /* A4 */
-	margin:0.5cm 0.5cm 0.5cm 0.5cm; /* Margins: 2.5 cm on each side */
-	mso-page-orientation: landscape;
-    }
-    @page WordSection1{
-	size:841.7pt 595.45pt;  /* A4 */
-	margin:0.5cm 0.5cm 0.5cm 0.5cm; /* Margins: 2.5 cm on each side */
-	mso-page-orientation: landscape; 
-    }
-    div.WordSection1{
-	page:WordSection1;
-    }
     .page{
-	-min-height: 21cm;
-	-min-width:29.7cm;
+	min-height:20cm;
+	width:29.7cm;
 	background: none;
 	background-color:#FFFFFF;
-	size: landscape;
+	page-break-after:always;
+	page-break-inside:avoid;
     }
-    @media print{@page {size: landscape}}
+    @page {
+      size: A4 landscape;
+    }
     -->
 </style>
 
-<div class="page WordSection1">
-    <p class=MsoNormal align=right style='text-align:right'><span style='font-size:
-								  8.0pt'>Унифицированная форма № ТОРГ-12</span></p>
-
-    <p class=MsoNormal align=right style='text-align:right'><span style='font-size:
-								  8.0pt'>Утверждена постановлением Госкомстата России</span></p>
-
-    <p class=MsoNormal align=right style='text-align:right'><span style='font-size:
-								  8.0pt'>от 25.12.98 № 132</span></p>
-
-    <p class=MsoNormal align=right style='text-align:right'><span style='font-size:
-								  8.0pt'>&nbsp;</span></p>
-
+<div class="page">
+    <p class=MsoNormal align=right style='text-align:right'><span style='font-size:8.0pt'>Унифицированная форма № ТОРГ-12</span></p>
+    <p class=MsoNormal align=right style='text-align:right'><span style='font-size:8.0pt'>Утверждена постановлением Госкомстата России</span></p>
+    <p class=MsoNormal align=right style='text-align:right'><span style='font-size:8.0pt'>от 25.12.98 № 132</span></p>
+    <p class=MsoNormal align=right style='text-align:right'><span style='font-size:8.0pt'>&nbsp;</span></p>
     <table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0
 	   style='border-collapse:collapse;border:none'>
 	<tr style='page-break-inside:avoid'>
 	    <td width=917 colspan=6 valign=top style='width:687.5pt;border:none;
 		border-right:solid windowtext 1.0pt;'>
-		<p class=MsoNormal align=center style='text-align:center'><span
-			style='font-size:11.0pt'>&nbsp;</span></p>
+		<p class=MsoNormal align=center style='text-align:center'><span style='font-size:11.0pt'>&nbsp;</span></p>
 	    </td>
-	    <td width=130 valign=top style='width:97.75pt;border-top:solid windowtext 1.0pt;
-		border-left:none;border-bottom:solid windowtext 1.5pt;border-right:solid windowtext 1.0pt;
-		'>
-		<p class=MsoNormal align=center style='text-align:center'><span
-			style='font-size:11.0pt'>Код</span></p>
+	    <td width=130 valign=top style='width:97.75pt;border-top:solid windowtext 1.0pt; border-left:none;border-bottom:solid windowtext 1.5pt;border-right:solid windowtext 1.0pt;'>
+		<p class=MsoNormal align=center style='text-align:center'><span style='font-size:11.0pt'>Код</span></p>
 	    </td>
 	</tr>
 	<tr style='page-break-inside:avoid;height:14.2pt'>
 	    <td width=917 colspan=6 valign=bottom style='width:687.5pt;border:none;
 		border-right:solid windowtext 1.5pt;;height:14.2pt'>
-		<p class=MsoNormal align=right style='margin-right:2.85pt;text-align:right'><span
-			style='font-size:11.0pt'>Форма по ОКУД</span></p>
+		<p class=MsoNormal align=right style='margin-right:2.85pt;text-align:right'><span style='font-size:11.0pt'>Форма по ОКУД</span></p>
 	    </td>
-	    <td width=130 valign=bottom style='width:97.75pt;border-top:none;border-left:
-		none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.5pt;
-		;height:14.2pt'>
-		<p class=MsoNormal align=center style='text-align:center'><span
-			style='font-size:11.0pt'>0330212</span></p>
+	    <td width=130 valign=bottom style='width:97.75pt;border-top:none;border-left:none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.5pt;height:14.2pt'>
+		<p class=MsoNormal align=center style='text-align:center'><span style='font-size:11.0pt'>0330212</span></p>
 	    </td>
 	</tr>
 	<tr style='height:14.2pt'>
@@ -392,18 +365,16 @@
 		</td>
 	    </tr>
 	</table>
-
     </div>
 
     <p class=MsoNormal><span style='font-size:8.0pt'>&nbsp;</span></p>
     {loop name="v->tables"}
     <table class=MsoNormalTable border=1 cellspacing=0 cellpadding=0 style='border-collapse:collapse;border:none'>
 	<!--HEADER-->
+	<thead>
 	<tr>
-	    <td width=48 rowspan=2 valign=top style='width:35.95pt;border:solid windowtext 1.0pt;
-		'>
-		<p class=MsoNormal align=center style='text-align:center'>Номер по по-<br>
-		    рядку</p>
+	    <td width=48 rowspan=2 valign=top style='width:35.95pt;border:solid windowtext 1.0pt;'>
+		<p class=MsoNormal align=center style='text-align:center'>Номер по по-<br>рядку</p>
 	    </td>
 	    <td width=231 colspan=2 valign=top style='border:solid windowtext 1.0pt;
 		border-left:none;'>
@@ -560,6 +531,7 @@
 		<p class=MsoNormal align=center style='text-align:center'>15</p>
 	    </td>
 	</tr>
+	</thead>
 	<!--END OF HEADER-->
 	{loop name="value"}
 	{if="$value->i"}
@@ -705,7 +677,7 @@
 	{/if}
 
     </table>
-    <span style='font-size:11.0pt;font-family:"Arial","serif"'><br clear=all style='page-break-before:always'></span>
+    </div><div class="page">
     {/loop}
 
 

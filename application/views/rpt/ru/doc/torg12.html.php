@@ -14,10 +14,15 @@ $okei = [
     'пог. м'=>'018',
     'упак'=>'778'
 ];
-
-$this->view->tables = [array_splice($this->view->rows, 0, 3)];
-$this->view->tables = array_merge($this->view->tables, array_chunk($this->view->rows, 15));
-$this->view->tables_count = count($this->view->tables);
+if( $this->out_ext=='.doc' ){
+    $this->landscape_orientation=true;
+    $this->view->tables = [$this->view->rows];
+    $this->view->tables_count = 1;
+} else {
+    $this->view->tables = [array_splice($this->view->rows, 0, 5)];
+    $this->view->tables = array_merge($this->view->tables, array_chunk($this->view->rows, 19));
+    $this->view->tables_count = count($this->view->tables);
+}
 
 $this->view->footer->total_qty=0;
 $this->view->footer->vatless=0;
