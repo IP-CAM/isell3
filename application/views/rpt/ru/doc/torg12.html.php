@@ -61,6 +61,30 @@ $this->view->doc_view->total_spell = num2str($this->view->footer->total);
 $this->view->doc_view->date_spell = daterus($this->view->doc_view->date_dot);
 $this->view->p->all = getAll($this->view->p);
 $this->view->a->all = getAll($this->view->a);
+$this->view->goods_reciever=$this->view->p->all;
+$this->view->goods_reciever_okpo=$this->view->p->company_code;
+
+if( $this->view->doc_view->extra->goods_reciever_okpo ){
+    $this->view->goods_reciever_okpo=$this->view->doc_view->extra->goods_reciever_okpo;
+}
+if( $this->view->doc_view->extra->goods_reciever ){
+    $this->view->goods_reciever=$this->view->doc_view->extra->goods_reciever;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function format($num){
     return number_format($num, 2,'.','');
