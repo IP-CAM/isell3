@@ -655,12 +655,8 @@ class Document extends Data {
 		$this->Base->msg('Сначала сохраните документ!');
 		return;
 	    }
-	    if ($this->Base->pcomp('company_vat_id') && (
-		    !$this->Base->pcomp('company_name') ||
-		    !$this->Base->pcomp('company_jaddress') ||
-		    !$this->Base->pcomp('company_phone') ||
-		    !$this->Base->pcomp('company_agreement_num') ||
-		    !$this->Base->pcomp('company_agreement_date'))
+	    if ($this->Base->pcomp('company_vat_id') && 
+		    !$this->Base->pcomp('company_name')
 	    ) {
 		$this->Base->response_wrn('Заполнены не все реквизиты!');
 	    }
