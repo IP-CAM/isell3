@@ -42,7 +42,8 @@ class AccountsRegistry extends AccountsCore{
                 AND SUBSTRING(dl.cstamp,1,7)='{$period}'
 		AND is_commited=1
 		AND $direction_filter
-	    HAVING $having)";
+	    HAVING $having
+            ORDER BY dl.cstamp)";
 	$this->query($tmp_sql);
 	
 	$sql_sub="SELECT 
