@@ -43,7 +43,7 @@ class AccountsRegistry extends AccountsCore{
 		AND is_commited=1
 		AND $direction_filter
 	    HAVING $having
-            ORDER BY dl.cstamp)";
+            ORDER BY SUBSTRING(dl.cstamp,1,10),doc_view_id )";
 	$this->query($tmp_sql);
 	
 	$sql_sub="SELECT 
