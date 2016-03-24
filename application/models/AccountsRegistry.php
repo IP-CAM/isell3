@@ -39,7 +39,7 @@ class AccountsRegistry extends AccountsCore{
 		document_view_list dvl ON dl.doc_id=dvl.doc_id AND view_role='tax_bill'
 	    WHERE
 		active_company_id='$active_company_id'
-		AND dl.cstamp LIKE '$period%'
+                AND SUBSTRING(dl.cstamp,1,7)='{$period}'
 		AND is_commited=1
 		AND $direction_filter
 	    HAVING $having)";
