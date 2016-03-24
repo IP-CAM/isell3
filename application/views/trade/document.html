@@ -231,6 +231,9 @@
 		}
 	    });
 	},
+        openCompanyDetails:function(company_id){
+	    App.loadWindow('page/company/details',{company_id:Doc.head.props.passive_company_id});
+	},
 	sendSms:function(){
 	    if( !Doc.isCreated ){
 		App.flash("Документ пуст.");
@@ -416,9 +419,6 @@
 		    Doc.entries.delete();
 		}
 	    });
-	},
-        updateCompanyDetails:function(company_id){
-	    App.loadWindow('page/company/details',{company_id:company_id,autoselect_label:true});
 	},
 	delete:function(){
 	    var rows=$("#Doc_entry_dg").datagrid('getSelections');
@@ -763,13 +763,17 @@
 		    selectOnNavigation:false,
 		    formatter:Doc.head.companyListFrm,
 		    onSelect: function(company){Doc.head.update('passive_company_id',company.company_id)},
+                    width:178,
 		    icons: [{
-			     iconCls:'icon-change16',
+			     iconCls:'icon-settings16',
 			     handler: function(e){
-				 
+				 Doc.head.pcompTree();
 			     }
 			 }]
 		    ">
+                <button onclick="Doc.head.openCompanyDetails()" style="margin-top:4px;margin-right: 3px;" class="tiny_button" title="Реквизиты выбранного контрагента">
+                    <img src="img/edit-16.png">
+                </button>
 	    <input type="text" name="signs_after_dot" class="easyui-numberspinner" title="Точность" data-options="
 		   min:0,
 		   max:5,
