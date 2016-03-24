@@ -732,7 +732,10 @@ class Document extends Data {
             doc_num='$next_doc_num',
             created_by=$user_id,
             modified_by=$user_id,
-            vat_rate=$vat_rate"
+            vat_rate=$vat_rate,
+            doc_data='',
+                is_commited=0,
+                is_reclamation=0"
 	);
 	$doc_id = mysql_insert_id();
 	$this->selectDoc($doc_id);
