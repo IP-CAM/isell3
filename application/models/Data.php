@@ -35,7 +35,7 @@ class Data extends Catalog {
     }
     private function checkTable($table_name) {
 	foreach ($this->permited_tables as $table) {
-	    if ($this->Base->svar('user_level') < $table->level){
+	    if ( isset($table->level) && $this->Base->svar('user_level') < $table->level){
 		continue;
             }
 	    if ($table_name == $table->table_name){
