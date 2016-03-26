@@ -103,8 +103,13 @@ class Catalog extends CI_Model {
         $this->check_error();
 	return $ok;
     }
-    protected function delete($table, $key) {
-	$this->db->delete($table, $key);
+    protected function delete($table, $key, $key_values=null) {
+	if( $key_values ){
+	    $this->db->where_in($key, $key_values);
+	    $this->db->delete($table);	    
+	} else {
+	    $this->db->delete($table, $key);
+	}
 	$ok=$this->db->affected_rows();
         $this->check_error();
 	return $ok;

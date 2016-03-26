@@ -60,7 +60,7 @@ class Data extends Catalog {
 	if( !$this->checkTable($table_name) ){
 	    return false;
 	}
-	return $this->get_list("SHOW COLUMNS FROM $table_name");
+	return $this->get_list("SHOW FULL COLUMNS FROM $table_name");
     }
     public function tableData($table_name){
 	if( !$this->checkTable($table_name) ){
@@ -73,5 +73,13 @@ class Data extends Catalog {
 		    'rows'=>$this->get_list("SELECT * FROM $table_name LIMIT $rows OFFSET $offset"),
 		    'total'=>$this->get_value("SELECT COUNT(*) FROM $table_name")
 		];
+    }
+    public function tableRowsDelete($table_name){
+	if( !$this->checkTable($table_name) ){
+	    return false;
+	}
+	$key=$this->request('key');
+	$values=$this->request('values','raw');
+	return $this->delete($table_name,$key,$values);
     }
 }

@@ -16,7 +16,10 @@ DataJs={
     processStruct:function(struct){
 	this.tableWidth=10;
     	for(var i in struct){
-	    struct[i].title=struct[i].field=struct[i].name=struct[i].Field;
+	    struct[i].title=struct[i].name=struct[i].field=struct[i].Field;
+	    if( struct[i].Comment ){
+		struct[i].title=struct[i].name=struct[i].Comment;
+	    }
 	    if( struct[i].Type.indexOf('varchar')>-1 ){
 		var chars=parseInt(struct[i].Type.split('(')[1]);
 		if( chars<50 ){
@@ -29,6 +32,9 @@ DataJs={
 		struct[i].width=70;
 	    }
 	    this.tableWidth+=struct[i].width;
+	    if( struct[i].Key==="PRI" ){
+		DataJs.tableKey=struct[i].Field;
+	    }
 	}
 	DataJs.currentStruct=struct;	
     },
@@ -52,8 +58,19 @@ DataJs={
 	    
 	},
 	delete:function(){
-	    var row=$("#data_grid").datagrid('getSelected');
-	    $.post("Data/tableRowDelete/"+DataJs.currentTable);
+	    var key_vals=[];
+	    var rows=$("#data_grid").datagrid('getSelections');
+	    for(var i in rows){
+		key_vals.push(rows[i][DataJs.tableKey]);
+	    }
+	    $.post("Data/tableRowsDelete/"+DataJs.currentTable,{key:DataJs.tableKey,values:key_vals},function(ok){
+		if(ok>0){
+		    $('#data_grid').datagrid('reload');
+		    App.flash("Удалено строк: "+ok);
+		} else {
+		    App.flash("Удаление не удалось!");
+		}
+	    });
 	},
 	toggleFilter: function () {
 	    if (this.filterEnabled) {
@@ -66,7 +83,6 @@ DataJs={
 	    }
 	},
 	import:function(){
-	    console.log(DataJs.currentStruct);
 	    App.loadWindow('page/dialog/importer',{label:'данные',fields_to_import:DataJs.currentStruct}).progress(function(status,fvalue,Importer){
 		if( status==='submit' ){
 		    $.post("Data/import/"+DataJs.currentTable,fvalue,function(ok){
