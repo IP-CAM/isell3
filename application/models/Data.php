@@ -2,9 +2,12 @@
 
 require_once 'Catalog.php';
 class Data extends Catalog {
-    private $permitted_tables=["prod_list","price_list"];
+    function __construct(){
+	$this->permited_tables = json_decode(file_get_contents('application/config/permited_tables.json', true));
+    }
+    
     public function import( $table_name ){
-	if( !in_array($table_name, $this->permitted_tables) ){
+	if( !$this->checkTable($table_name) ){
 	    return false;
 	}
 	$source = array_map('addslashes',$this->request('source','raw'));
@@ -29,5 +32,46 @@ class Data extends Catalog {
             ;
 	$this->query($sql);
         return $this->db->affected_rows();
+    }
+    private function checkTable($table_name) {
+	foreach ($this->permited_tables as $table) {
+	    if ($this->Base->svar('user_level') < $table->level){
+		continue;
+            }
+	    if ($table_name == $table->table_name){
+		return true;
+            }
+	}
+	return false;
+    }
+
+    public function permitedTableList() {
+	$table_list = [];
+	foreach ($this->permited_tables as $table) {
+	    if (isset($table->level) && $this->Base->svar('user_level') < $table->level || isset($table->hidden) && $table->hidden){
+		continue;
+            }
+	    $table_list[] = $table;
+	}
+	return $table_list;
+    }
+    
+    public function tableStructure($table_name){
+	if( !$this->checkTable($table_name) ){
+	    return false;
+	}
+	return $this->get_list("SHOW COLUMNS FROM $table_name");
+    }
+    public function tableData($table_name){
+	if( !$this->checkTable($table_name) ){
+	    return false;
+	}
+	$page=$this->request('page','int');
+	$rows=$this->request('rows','int');
+	$offset=$page*$rows;
+	return [
+		    'rows'=>$this->get_list("SELECT * FROM $table_name LIMIT $rows OFFSET $offset"),
+		    'total'=>$this->get_value("SELECT COUNT(*) FROM $table_name")
+		];
     }
 }
