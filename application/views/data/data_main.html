@@ -45,7 +45,9 @@ DataJs={
 	    pagination:true,
 	    pageSize:30,
 	    pageList:[30,60,120,600],
-	    columns:[this.currentStruct]
+	    columns:[this.currentStruct],
+	    onSelect:function(){$('#data_grid').datagrid('resize');},
+	    onDblClickCell:DataJs.list.edit
 	});
 	this.filterEnabled = false;
 	this.currentTable=table_name;
@@ -54,8 +56,13 @@ DataJs={
 	create:function(){
 	    
 	},
-	update:function(){
-	    
+	edit:function(){
+	    var row=$("#data_grid").datagrid('getSelected');
+	    App.loadWindow("page/data/universal_editor",{fvalue:row,fstruct:DataJs.currentStruct}).progress(function(status,fvalue){
+		if( status==='submit' ){
+		    
+		}
+	    });
 	},
 	delete:function(){
 	    var key_vals=[];

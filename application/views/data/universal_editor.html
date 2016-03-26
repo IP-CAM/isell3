@@ -1,0 +1,29 @@
+<script>
+    /*global App*/
+    App.page_data_universal_editor={
+	init:function(){
+	    this.node.window({
+		width: 650,
+		title: 'Редактирование записи',
+		height: 'auto',
+		top:50,
+		shadow:false,
+		onClose: function () {
+		    App.page_data_universal_editor.node.window('destroy');
+		    App.page_data_universal_editor.handler.notify('close');
+		    delete App.page_data_universal_editor;
+		}
+	    });
+	    this.createForm(this.data.fstruct);
+	},
+	createForm:function(fstruct){
+	    App.renderTpl("univ_editor_frm",{fields:fstruct},'nocache');
+	    App.setupForm("#univ_editor_frm",this.data.fvalue);
+	}
+    };
+</script>
+<form id="univ_editor_frm">
+    {{fields}}
+    <input name="{{field}}" title="{{title}}">
+    {{/fields}}
+</form>
