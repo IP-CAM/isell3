@@ -41,7 +41,7 @@ DataJs={
     },
     initTable:function(table_name){
 	try{
-	    $('#data_grid').datagrid('removeFilterRule');
+	   // $('#data_grid').datagrid('removeFilterRule');
 	    DataJs.filterEnabled = false;
 	}catch(e){};
 	$('#data_grid').datagrid({
@@ -53,7 +53,10 @@ DataJs={
 	    pageList:[30,60,120,600],
 	    columns:[this.currentStruct],
 	    onSelect:function(){$('#data_grid').datagrid('resize');},
-	    onDblClickCell:DataJs.list.edit
+	    onDblClickCell:DataJs.list.edit,
+	    onBeforeLoad:function(){
+		DataJs.filterEnabled?'':$('#data_grid').datagrid('removeFilterRule');
+	    }
 	});
 	this.currentTable=table_name;
     },
