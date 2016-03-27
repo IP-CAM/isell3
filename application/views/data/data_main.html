@@ -163,7 +163,10 @@ DataJs={
 	    <table class="easyui-datagrid" id="data_table_list" data-options="
 		   url:'Data/permitedTableList',
 		   singleSelect:true,
-		   onSelect:DataJs.loadTable
+		   onSelect:function(){
+			$('#data_table_list').datagrid('resize');
+			DataJs.loadTable();
+		    }
 		   ">
 		<thead>
 		    <tr>
