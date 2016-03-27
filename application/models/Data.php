@@ -62,13 +62,15 @@ class Data extends Catalog {
 	}
 	return $this->get_list("SHOW FULL COLUMNS FROM $table_name");
     }
-    public function tableData($table_name){
+    public function tableData($table_name,$having=null){
 	if( !$this->checkTable($table_name) ){
 	    return false;
 	}
-	$page=$this->request('page','int');
-	$rows=$this->request('rows','int');
-	$having=$this->decodeFilterRules();
+	$page=$this->request('page','int',1);
+	$rows=$this->request('rows','int',1000);
+	if( !$having ){
+	    $having=$this->decodeFilterRules();
+	}
 	$offset=($page-1)*$rows;
 	if( $offset<0 ){
 	    $offset=0;
@@ -105,5 +107,27 @@ class Data extends Catalog {
 	    $this->query("INSERT INTO $table_name SET $key='$key_val', $inp='$inp_val' ON DUPLICATE KEY UPDATE $inp='$inp_val'");
 	}
 	return $this->db->affected_rows();
+    }
+    public function tableViewGet($table_name){
+	$out_type=$this->request('out_type');
+	
+	$table=$this->tableData($table_name);
+	//print_r($table['rows']);exit;
+	
+	$dump=[
+	    'tpl_files'=>'/GridTpl.xlsx',
+	    'title'=>"Экспорт таблицы",
+	    'user_data'=>[
+		'email'=>$this->Base->svar('pcomp')?$this->Base->svar('pcomp')->company_email:'',
+		'text'=>'Доброго дня'
+	    ],
+	    'struct'=>$this->tableStructure($table_name),
+	    'view'=>[
+		'rows'=>$table['rows']
+	    ]
+	];
+	$ViewManager=$this->Base->load_model('ViewManager');
+	$ViewManager->store($dump);
+	$ViewManager->outRedirect($out_type);
     }
 }
