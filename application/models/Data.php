@@ -2,9 +2,12 @@
 
 require_once 'Catalog.php';
 class Data extends Catalog {
-    private $permitted_tables=["prod_list","price_list"];
+    function __construct(){
+	$this->permited_tables = json_decode(file_get_contents('application/config/permited_tables.json', true));
+    }
+    
     public function import( $table_name ){
-	if( !in_array($table_name, $this->permitted_tables) ){
+	if( !$this->checkTable($table_name) ){
 	    return false;
 	}
 	$source = array_map('addslashes',$this->request('source','raw'));
@@ -29,5 +32,102 @@ class Data extends Catalog {
             ;
 	$this->query($sql);
         return $this->db->affected_rows();
+    }
+    private function checkTable($table_name) {
+	foreach ($this->permited_tables as $table) {
+	    if ( isset($table->level) && $this->Base->svar('user_level') < $table->level){
+		continue;
+            }
+	    if ($table_name == $table->table_name){
+		return true;
+            }
+	}
+	return false;
+    }
+
+    public function permitedTableList() {
+	$table_list = [];
+	foreach ($this->permited_tables as $table) {
+	    if (isset($table->level) && $this->Base->svar('user_level') < $table->level || isset($table->hidden) && $table->hidden){
+		continue;
+            }
+	    $table_list[] = $table;
+	}
+	return $table_list;
+    }
+    
+    public function tableStructure($table_name){
+	if( !$this->checkTable($table_name) ){
+	    return false;
+	}
+	return $this->get_list("SHOW FULL COLUMNS FROM $table_name");
+    }
+    public function tableData($table_name,$having=null){
+	if( !$this->checkTable($table_name) ){
+	    return false;
+	}
+	$page=$this->request('page','int',1);
+	$rows=$this->request('rows','int',1000);
+	if( !$having ){
+	    $having=$this->decodeFilterRules();
+	}
+	$offset=($page-1)*$rows;
+	if( $offset<0 ){
+	    $offset=0;
+	}
+	return [
+		    'rows'=>$this->get_list("SELECT * FROM $table_name WHERE $having LIMIT $rows OFFSET $offset"),
+		    'total'=>$this->get_value("SELECT COUNT(*) FROM $table_name WHERE $having")
+		];
+    }
+    public function tableRowsDelete($table_name){
+	$this->Base->set_level(3);
+	if( !$this->checkTable($table_name) ){
+	    return false;
+	}
+	$key=$this->request('key');
+	$values=$this->request('values','raw');
+	return $this->delete($table_name,$key,$values);
+    }
+    public function tableRowUpdate($table_name){
+	$this->Base->set_level(3);
+	if( !$this->checkTable($table_name) ){
+	    return false;
+	}
+	$key=$this->request('key');
+	$key_val=$this->request('key_val');
+	$inp=$this->request('inp');
+	$inp_val=$this->request('inp_val');
+	if( $key===$inp ){
+	    /*
+	     * On new record key == inp
+	     */
+	    $this->query("INSERT INTO $table_name SET $inp='$inp_val'");
+	} else {
+	    $this->query("INSERT INTO $table_name SET $key='$key_val', $inp='$inp_val' ON DUPLICATE KEY UPDATE $inp='$inp_val'");
+	}
+	return $this->db->affected_rows();
+    }
+    public function tableViewGet($table_name){
+	$out_type=$this->request('out_type');
+	
+	$table=$this->tableData($table_name);
+	//print_r($table['rows']);exit;
+	
+	$dump=[
+	    'tpl_files'=>'/GridTpl.xlsx',
+	    'title'=>"Экспорт таблицы",
+	    'user_data'=>[
+		'email'=>$this->Base->svar('pcomp')?$this->Base->svar('pcomp')->company_email:'',
+		'text'=>'Доброго дня'
+	    ],
+	    'struct'=>$this->tableStructure($table_name),
+	    'view'=>[
+		'rows'=>$table['rows']
+	    ]
+	];
+	$ViewManager=$this->Base->load_model('ViewManager');
+	$ViewManager->store($dump);
+	$ViewManager->outRedirect($out_type);
     }
 }

@@ -66,8 +66,9 @@ class FileEngine {
 	    include 'application/views/' .$this->tpl_files_folder. $tpl_file.'.php';
 	}
         if ($this->compilator == 'PHPExcel') {
-            if (isset($this->tplModifier))
-                $this->Worksheet = call_user_func_array($this->tplModifier, array($this, $this->Worksheet));
+            if (isset($this->tplModifier)){
+                $this->Worksheet = call_user_func_array($this->tplModifier, [$this, $this->Worksheet]);
+	    }
             $this->renderWorkbook();
         }
         else if ($this->compilator == 'Rain') {
