@@ -147,11 +147,11 @@ DataJs={
 		filterRules:DataJs.list.filterRules,
 		out_type:out_type
 	    };
-	    var url="Data/tableViewGet/"+DataJs.currentTable+"?rows=1000&"+$.param( params );
+	    var url="Data/tableViewGet/"+DataJs.currentTable+"?"+$.param( params );
 	    if( out_type==='.print' ){
-		window.open(url,'print_tab');
+		window.open(url+"&rows=100",'print_tab');
 	    } else {
-		location.href=url;
+		location.href=url+"&rows=1000";
 	    }
 	}
     }
