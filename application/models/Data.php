@@ -68,18 +68,42 @@ class Data extends Catalog {
 	}
 	$page=$this->request('page','int');
 	$rows=$this->request('rows','int');
-	$offset=$page*$rows;
+	$having=$this->decodeFilterRules();
+	$offset=($page-1)*$rows;
+	if( $offset<0 ){
+	    $offset=0;
+	}
 	return [
-		    'rows'=>$this->get_list("SELECT * FROM $table_name LIMIT $rows OFFSET $offset"),
-		    'total'=>$this->get_value("SELECT COUNT(*) FROM $table_name")
+		    'rows'=>$this->get_list("SELECT * FROM $table_name WHERE $having LIMIT $rows OFFSET $offset"),
+		    'total'=>$this->get_value("SELECT COUNT(*) FROM $table_name WHERE $having")
 		];
     }
     public function tableRowsDelete($table_name){
+	$this->Base->set_level(3);
 	if( !$this->checkTable($table_name) ){
 	    return false;
 	}
 	$key=$this->request('key');
 	$values=$this->request('values','raw');
 	return $this->delete($table_name,$key,$values);
+    }
+    public function tableRowUpdate($table_name){
+	$this->Base->set_level(3);
+	if( !$this->checkTable($table_name) ){
+	    return false;
+	}
+	$key=$this->request('key');
+	$key_val=$this->request('key_val');
+	$inp=$this->request('inp');
+	$inp_val=$this->request('inp_val');
+	if( $key===$inp ){
+	    /*
+	     * On new record key == inp
+	     */
+	    $this->query("INSERT INTO $table_name SET $inp='$inp_val'");
+	} else {
+	    $this->query("INSERT INTO $table_name SET $key='$key_val', $inp='$inp_val' ON DUPLICATE KEY UPDATE $inp='$inp_val'");
+	}
+	return $this->db->affected_rows();
     }
 }

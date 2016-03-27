@@ -14,16 +14,45 @@
 		    delete App.page_data_universal_editor;
 		}
 	    });
+	    this.checkIfNew();
 	    this.createForm(this.data.fstruct);
+	    App.setupForm("#univ_editor_frm",this.data.fvalue).change(function(){
+		var key=App.page_data_universal_editor.getKeyVal();
+		var val={field:$(this).attr('name'),value:$(this).val()};
+		App.page_data_universal_editor.handler.notify('change',key,val,$(this).attr('title'));
+	    });
+	    if( this.data.fvalue.focus ){
+		$("#univ_editor_frm input[name="+this.data.fvalue.focus+"]").select();
+	    }
 	},
 	createForm:function(fstruct){
 	    App.renderTpl("univ_editor_frm",{fields:fstruct},'nocache');
-	    App.setupForm("#univ_editor_frm",this.data.fvalue);
+	},
+	getKeyVal:function(){
+	    for(var i in this.data.fstruct){
+		if( this.data.fstruct[i].Key==="PRI" ){
+		    return {
+			field:this.data.fstruct[i].field,
+			value:this.data.fvalue[this.data.fstruct[i].field]
+		    };
+		}
+	    }
+	},
+	checkIfNew:function(){
+	    if( this.data.fvalue===undefined ){
+		this.data.fvalue={};
+		var key=App.page_data_universal_editor.getKeyVal();
+		this.data.fvalue={focus:key.field};
+		this.data.fvalue[key.field]=new Date().getTime();
+	    }
 	}
     };
 </script>
-<form id="univ_editor_frm">
+<form id="univ_editor_frm" onsubmit="App.page_data_universal_editor.node.window('close')">
     {{fields}}
     <input name="{{field}}" title="{{title}}">
     {{/fields}}
+    <div style="text-align: center">
+	<button><img src="img/apply24.png"> Ок</button>
+    </div>
 </form>
