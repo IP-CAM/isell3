@@ -5,34 +5,49 @@ class Data extends Catalog {
     function __construct(){
 	$this->permited_tables = json_decode(file_get_contents('application/config/permited_tables.json', true));
     }
-    
-    public function import( $table_name ){
+    public function import($table_name){
 	if( !$this->checkTable($table_name) ){
 	    return false;
 	}
+	$label=$this->request('label');
 	$source = array_map('addslashes',$this->request('source','raw'));
 	$target = array_map('addslashes',$this->request('target','raw'));
-	$source_fields=  implode(',', $source);
-	$target_fields=  implode(',', $target);
-	
-        $product_code_source='';
-	$i=0;
-	$update_set=[];
-	foreach( $target as $tfield ){
-	    if( $tfield=='product_code' ){
-                $product_code_source=$source[$i];
-		$i++;
-		continue;
-	    }
-	    $update_set[]="$tfield={$source[$i]}";
-	    $i++;
+	if( $table_name=='prod_list' ){
+	    $this->importInTable('prod_list', $source, $target, '/product_code/ru/ua/en/product_spack/product_bpack/product_weight/product_volume/product_unit/product_uktzet/barcode/analyse_type/analyse_group/analyse_class/analyse_section/', $label);
+	} else if( $table_name=='price_list' ){
+	    $this->importInTable('prod_list', $source, $target, '/product_code/', $label);
+	    $this->importInTable('price_list', $source, $target, '/product_code/sell/buy/curr_code/', $label);
 	}
-	
-	$sql="INSERT INTO $table_name ($target_fields) SELECT $source_fields FROM imported_data ".(($table_name=='price_list')?"WHERE $product_code_source IN (SELECT product_code FROM prod_list)":"")." ON DUPLICATE KEY UPDATE ".implode(',',$update_set)
-            ;
-	$this->query($sql);
-        return $this->db->affected_rows();
+	$this->query("DELETE FROM imported_data WHERE label LIKE '%$label%' AND {$source[0]} IN (SELECT product_code FROM $table_name)");
+        return  $this->db->affected_rows();
     }
+    private function importInTable( $table, $src, $trg, $filter, $label ){
+	$set=[];
+	$target=[];
+	$source=[];
+	for( $i=0;$i<count($trg);$i++ ){
+            if( strpos($filter,"/{$trg[$i]}/")!==false && !empty($src[$i]) ){
+		$target[]=$trg[$i];
+		$source[]=$src[$i];
+		$set[]="{$trg[$i]}=$src[$i]";
+	    }
+	}
+	$target_list=  implode(',', $target);
+	$source_list=  implode(',', $source);
+	$set_list=  implode(',', $set);
+	$this->query("INSERT INTO $table ($target_list) SELECT $source_list FROM imported_data WHERE label LIKE '%$label%' ON DUPLICATE KEY UPDATE $set_list");
+	return $this->db->affected_rows();
+    }
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
     private function checkTable($table_name) {
 	foreach ($this->permited_tables as $table) {
 	    if ( isset($table->level) && $this->Base->svar('user_level') < $table->level){
@@ -87,7 +102,7 @@ class Data extends Catalog {
 	}
 	$key=$this->request('key');
 	$values=$this->request('values','raw');
-	return $this->delete($table_name,$key,$values);
+	//return $this->delete($table_name,$key,$values);
     }
     public function tableRowUpdate($table_name){
 	$this->Base->set_level(3);
