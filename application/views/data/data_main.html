@@ -1,6 +1,7 @@
 <script type="text/javascript">
 DataJs={
     filterEnabled:false,
+    tableKey:[],
     loadTable:function(){
 	var row=$("#data_table_list").datagrid('getSelected');
 	if( row ){
@@ -34,7 +35,7 @@ DataJs={
 	    }
 	    this.tableWidth+=struct[i].width;
 	    if( struct[i].Key==="PRI" ){
-		DataJs.tableKey=struct[i].Field;
+		DataJs.tableKey.push(struct[i].Field);
 	    }
 	}
 	DataJs.currentStruct=struct;	
@@ -109,7 +110,13 @@ DataJs={
 	    var key_vals=[];
 	    var rows=$("#data_grid").datagrid('getSelections');
 	    for(var i in rows){
-		key_vals.push(rows[i][DataJs.tableKey]);
+		var key_value=[];
+		for(var k in DataJs.tableKey){
+		    key_value.push(rows[i][DataJs.tableKey[k]]);
+		}
+		
+		
+		key_vals.push(key_value);
 	    }
 	    $.post("Data/tableRowsDelete/"+DataJs.currentTable,{key:DataJs.tableKey,values:key_vals},function(ok){
 		if(ok>0){

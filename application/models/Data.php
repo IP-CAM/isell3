@@ -100,9 +100,18 @@ class Data extends Catalog {
 	if( !$this->checkTable($table_name) ){
 	    return false;
 	}
-	$key=$this->request('key');
+	$keys=$this->request('key','raw');
 	$values=$this->request('values','raw');
-	//return $this->delete($table_name,$key,$values);
+	$deleted=0;
+	foreach( $values as $value ){
+	    $case=[];
+	    $i=0;
+	    foreach( $keys as $key ){
+		$case[$key]=$value[$i++];
+	    }
+	    $deleted+=$this->delete($table_name,$case);
+	}
+	return $deleted;
     }
     public function tableRowUpdate($table_name){
 	$this->Base->set_level(3);
