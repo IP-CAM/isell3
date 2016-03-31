@@ -50,7 +50,11 @@
 </script>
 <form id="univ_editor_frm" onsubmit="App.page_data_universal_editor.node.window('close')">
     {{fields}}
-    <input name="{{field}}" title="{{title}}">
+	{{if Key|equals>PRI}}
+	    <input name="{{field}}" title="{{title}}" style="background:#ffc">
+	{{else}}
+	    <input name="{{field}}" title="{{title}}">
+	{{/if}}
     {{/fields}}
     <div style="text-align: center">
 	<button><img src="img/apply24.png"> Ок</button>
