@@ -309,7 +309,7 @@ App.chatCheck=function(){
 	    }
 	});
     }
-    setTimeout(App.chatCheck,1000*60);
+    setTimeout(App.chatCheck,100*60);
 };
 App.chatInit=function(){
     setTimeout(App.chatCheck,1000*4);
@@ -330,11 +330,15 @@ $(document).ajaxComplete(function (event, xhr, settings) {
 	var msg = xhr.getResponseHeader('X-isell-msg');
 	if (msg) {
 	    var msg = decodeURIComponent(msg.replace(/\+/g, " "));
-	    if (type === 'error') {
-		App.flash(msg, 'error');
-	    }
-	    else {
-		App.flash(msg);
+	    switch( type ){
+		case 'error':
+		    App.flash(msg, 'error');
+		    break;
+		case 'kickout':
+		    App.user.loginFormShow();
+		    break;
+		default:
+		    App.flash(msg);
 	    }
 	}
 	else if (!type || type.indexOf('error') > -1 || type.indexOf('OK') === -1) {

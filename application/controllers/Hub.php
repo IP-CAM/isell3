@@ -118,8 +118,8 @@ class HubBase extends CI_Controller{
     }
     
     private function kick_out() {
-	$this->rtype = 'DIALOG';
-	$this->response('page/dialog/loginform.html');
+	$this->rtype = 'kickout';
+	$this->response('');
     }
     
     public function msg($msg) {
