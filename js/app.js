@@ -309,7 +309,7 @@ App.chatCheck=function(){
 	    }
 	});
     }
-    setTimeout(App.chatCheck,100*60);
+    setTimeout(App.chatCheck,1000*60);
 };
 App.chatInit=function(){
     setTimeout(App.chatCheck,1000*4);
