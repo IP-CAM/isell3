@@ -72,12 +72,13 @@ DataJs={
     },
     list:{
 	create:function(){
-	    this.openUnivEditor();
+	    this.openUnivEditor({});
 	},
 	openUnivEditor:function(row){
-	    App.loadWindow("page/data/universal_editor",{fvalue:row,fstruct:DataJs.currentStruct}).progress(function(status,key,inp,title){
+	    var rowKey=DataJs.list.getRowKey(row);
+	    App.loadWindow("page/data/universal_editor",{fvalue:row,fstruct:DataJs.currentStruct}).progress(function(status,data,title){
 		if( status==='change' ){
-		    $.post("Data/tableRowUpdate/"+DataJs.currentTable,{key:key.field,key_val:key.value,inp:inp.field,inp_val:inp.value},function(ok){
+		    $.post("Data/tableRowCreateUpdate/"+DataJs.currentTable,{rowKey:JSON.stringify(rowKey),data:JSON.stringify(data)},function(ok){
 			if( ok>0 ){
 			    App.flash("Сохранено: "+title);
 			    $('#data_grid').datagrid('reload');
@@ -103,22 +104,23 @@ DataJs={
 		DataJs.list.openUnivEditor(row);
 	    }
 	},
+	getRowKey:function(row){
+	    var key={};
+	    for(var i in DataJs.tableKey){
+		key[DataJs.tableKey[i]]=row[DataJs.tableKey[i]];
+	    }
+	    return key;
+	},
 	delete:function(){
 	    if(!confirm("Удалить выделенные строки?")){
 		return false;
 	    }
-	    var key_vals=[];
+	    var rowKey=[];
 	    var rows=$("#data_grid").datagrid('getSelections');
 	    for(var i in rows){
-		var key_value=[];
-		for(var k in DataJs.tableKey){
-		    key_value.push(rows[i][DataJs.tableKey[k]]);
-		}
-		
-		
-		key_vals.push(key_value);
+		rowKey.push(DataJs.list.getRowKey(rows[i]));
 	    }
-	    $.post("Data/tableRowsDelete/"+DataJs.currentTable,{key:DataJs.tableKey,values:key_vals},function(ok){
+	    $.post("Data/tableRowsDelete/"+DataJs.currentTable,{rowKey:JSON.stringify(rowKey)},function(ok){
 		if(ok>0){
 		    $('#data_grid').datagrid('reload');
 		    App.flash("Удалено строк: "+ok);

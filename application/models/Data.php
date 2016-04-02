@@ -100,37 +100,25 @@ class Data extends Catalog {
 	if( !$this->checkTable($table_name) ){
 	    return false;
 	}
-	$keys=$this->request('key','raw');
-	$values=$this->request('values','raw');
 	$deleted=0;
-	foreach( $values as $value ){
-	    $case=[];
-	    $i=0;
-	    foreach( $keys as $key ){
-		$case[$key]=$value[$i++];
-	    }
-	    $deleted+=$this->delete($table_name,$case);
+	$rowKeys=$this->request('rowKey','json');
+	foreach( $rowKeys as $key ){
+	    $deleted+=$this->delete($table_name,$key);
 	}
 	return $deleted;
     }
-    public function tableRowUpdate($table_name){
+    public function tableRowCreateUpdate($table_name){
 	$this->Base->set_level(3);
 	if( !$this->checkTable($table_name) ){
 	    return false;
 	}
-	$key=$this->request('key');
-	$key_val=$this->request('key_val');
-	$inp=$this->request('inp');
-	$inp_val=$this->request('inp_val');
-	if( $key===$inp ){
-	    /*
-	     * On new record key == inp
-	     */
-	    $this->query("INSERT INTO $table_name SET $inp='$inp_val'");
-	} else {
-	    $this->query("INSERT INTO $table_name SET $key='$key_val', $inp='$inp_val' ON DUPLICATE KEY UPDATE $inp='$inp_val'");
+	$rowKey=$this->request('rowKey','json');
+	$data=$this->request('data','json');
+	if( !$rowKey ){
+	    $this->create($table_name,$data);
+	    return $this->db->affected_rows();
 	}
-	return $this->db->affected_rows();
+	return $this->update($table_name, $data, $rowKey);
     }
     public function tableViewGet($table_name){
 	$out_type=$this->request('out_type');

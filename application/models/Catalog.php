@@ -21,6 +21,9 @@ class Catalog extends CI_Model {
 	    case 'string':
                 $var=  addslashes( $var );
                 break;
+	    case 'json':
+                $var= json_decode( $var ,true);
+                break;
 	    default:
 		if( $type ){
 		    $matches=[];
