@@ -114,9 +114,12 @@ class Data extends Catalog {
 	}
 	$rowKey=$this->request('rowKey','json');
 	$data=$this->request('data','json');
+	$create=$this->request('create','bool');
 	if( !$rowKey ){
-	    $this->create($table_name,$data);
-	    return $this->db->affected_rows();
+	    return false;
+	}
+	if( $create ){
+	    $this->create($table_name, $rowKey);
 	}
 	return $this->update($table_name, $data, $rowKey);
     }

@@ -41,11 +41,10 @@ DataJs={
 	DataJs.currentStruct=struct;	
     },
     initTable:function(table_name){
-	try{
-	   // $('#data_grid').datagrid('removeFilterRule');
-	    DataJs.filterEnabled = false;
-	}catch(e){};
-	$('#data_grid').datagrid({
+	var grid_id='data_grid_'+table_name;
+	$('#data_grid').html('<div id="'+grid_id+'"></div>');
+	DataJs.currentGrid=$('#'+grid_id);
+	DataJs.currentGrid.datagrid({
 	    width:this.tableWidth<900?this.tableWidth:900,
 	    remoteFilter:true,
 	    pagination:true,
@@ -54,10 +53,10 @@ DataJs={
 	    columns:[this.currentStruct],
 	    onDblClickCell:DataJs.list.edit,
 	    onSelect:function(){
-		$('#data_grid').datagrid('resize');
+		DataJs.currentGrid.datagrid('resize');
 	    },
 	    onBeforeLoad:function(){
-		DataJs.filterEnabled?'':$('#data_grid').datagrid('removeFilterRule');
+		//DataJs.filterEnabled?'':DataJs.currentGrid.datagrid('removeFilterRule');
 	    },
 	    loader:function( param, success, error ){
 		DataJs.list.currPage=param.page;
@@ -68,20 +67,24 @@ DataJs={
 		});
 	    }
 	});
+	DataJs.currentGrid.datagrid('enableFilter');
 	this.currentTable=table_name;
     },
     list:{
 	create:function(){
-	    this.openUnivEditor({});
+	    this.openUnivEditor();
 	},
 	openUnivEditor:function(row){
 	    var rowKey=DataJs.list.getRowKey(row);
-	    App.loadWindow("page/data/universal_editor",{fvalue:row,fstruct:DataJs.currentStruct}).progress(function(status,data,title){
+	    var create=!row?1:0;
+	    App.loadWindow("page/data/universal_editor",{fvalue:row,fstruct:DataJs.currentStruct}).progress(function(status,createdRowKey,data,title){
 		if( status==='change' ){
-		    $.post("Data/tableRowCreateUpdate/"+DataJs.currentTable,{rowKey:JSON.stringify(rowKey),data:JSON.stringify(data)},function(ok){
+		    rowKey=createdRowKey||rowKey;
+		    $.post("Data/tableRowCreateUpdate/"+DataJs.currentTable,{rowKey:JSON.stringify(rowKey),data:JSON.stringify(data),create:create},function(ok){
 			if( ok>0 ){
 			    App.flash("Сохранено: "+title);
-			    $('#data_grid').datagrid('reload');
+			    DataJs.currentGrid.datagrid('reload');
+			    create=0;
 			} else {
 			    App.flash("Не сохранено!");
 			}
@@ -90,21 +93,24 @@ DataJs={
 	    });
 	},
 	editClick:function(){
-	    var row=$("#data_grid").datagrid('getSelected');
+	    var row=DataJs.currentGrid.datagrid('getSelected');
 	    if( row ){
 		DataJs.list.openUnivEditor(row);
 	    }	    
 	},
 	edit:function(index,field,value){
-	    $("#data_grid").datagrid('unselectAll');
-	    $("#data_grid").datagrid('selectRow',index);
-	    var row=$("#data_grid").datagrid('getSelected');
+	    DataJs.currentGrid.datagrid('unselectAll');
+	    DataJs.currentGrid.datagrid('selectRow',index);
+	    var row=DataJs.currentGrid.datagrid('getSelected');
 	    if( row ){
 		row.focus=field;
 		DataJs.list.openUnivEditor(row);
 	    }
 	},
 	getRowKey:function(row){
+	    if( !row ){
+		return null;
+	    }
 	    var key={};
 	    for(var i in DataJs.tableKey){
 		key[DataJs.tableKey[i]]=row[DataJs.tableKey[i]];
@@ -116,13 +122,13 @@ DataJs={
 		return false;
 	    }
 	    var rowKey=[];
-	    var rows=$("#data_grid").datagrid('getSelections');
+	    var rows=DataJs.currentGrid.datagrid('getSelections');
 	    for(var i in rows){
 		rowKey.push(DataJs.list.getRowKey(rows[i]));
 	    }
 	    $.post("Data/tableRowsDelete/"+DataJs.currentTable,{rowKey:JSON.stringify(rowKey)},function(ok){
 		if(ok>0){
-		    $('#data_grid').datagrid('reload');
+		    DataJs.currentGrid.datagrid('reload');
 		    App.flash("Удалено строк: "+ok);
 		} else {
 		    App.flash("Удаление не удалось!");
@@ -131,11 +137,11 @@ DataJs={
 	},
 	toggleFilter: function () {
 	    if (DataJs.filterEnabled) {
-		$('#data_grid').datagrid('disableFilter');
+		DataJs.currentGrid.datagrid('disableFilter');
 		DataJs.filterEnabled = false;
 	    }
 	    else {
-		$('#data_grid').datagrid('enableFilter');
+		DataJs.currentGrid.datagrid('enableFilter');
 		DataJs.filterEnabled = true;
 	    }
 	},
@@ -144,7 +150,7 @@ DataJs={
 		if( status==='submit' ){
 		    $.post("Data/import/"+DataJs.currentTable,fvalue,function(ok){
 			App.flash("Добавлено строк "+ok);
-			$('#data_grid').datagrid('reload');
+			DataJs.currentGrid.datagrid('reload');
 			Importer.reload();
 		    });
 		}
@@ -196,7 +202,7 @@ DataJs={
 		    <span class="icon-24 icon-import" title="Импорт" onclick="DataJs.list.import();"> </span>
 		</span>
 		<span class="icon-24 icon-tablefilter" title="Фильтр таблицы" onclick="DataJs.list.toggleFilter()"> </span>
-		<span class="icon-24 icon-refresh" title="Обновить" onclick="$('#data_grid').datagrid('reload');"> </span>
+		<span class="icon-24 icon-refresh" title="Обновить" onclick="DataJs.currentGrid.datagrid('reload');"> </span>
 		<span class="icon-24" style="background-image: url(img/file_download.png);background-repeat: no-repeat" title="Скачать таблицу" onclick="DataJs.list.out('.xlsx');"> </span>
 		<span class="icon-24 icon-print" title="Печать" onclick="DataJs.list.out('.print')"> </span>
 	    </div>
