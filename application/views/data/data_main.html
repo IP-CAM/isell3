@@ -67,6 +67,9 @@ DataJs={
 		});
 	    }
 	});
+	DataJs.currentGrid.on('rowEdit',function(){
+	    DataJs.list.editClick();
+	});
 	DataJs.currentGrid.datagrid('enableFilter');
 	this.currentTable=table_name;
     },
