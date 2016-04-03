@@ -391,11 +391,11 @@ $.extend($.fn.datagrid.defaults, {
     ctrlSelect:true,
     onLoadSuccess: function (jq) {
 	var grid = $(this);
-	if( grid.data('inited') ){
+	if( grid.data('initedEvents') ){
 	    return;
 	}
-	grid.data('inited',true);
-	grid.datagrid('getPanel').find('table').attr('tabindex', 1).on('keydown', function (e) {
+	grid.data('initedEvents',true);
+	grid.datagrid('getPanel').panel('panel').attr('tabindex',0).on('keydown', function (e) {
 	    var selected = grid.datagrid('getSelected');
 	    var index = grid.datagrid('getRowIndex', selected);
 	    switch (e.keyCode) {
