@@ -13,7 +13,7 @@ class Catalog extends CI_Model {
 		$var=(float) $var;
 		break;
 	    case 'bool':
-		$var= !($var=='false' || $var=='0' || $var==0);
+		$var=(bool) $var;
 		break;
 	    case 'escape':
 		$var=$this->db->escape($var);
