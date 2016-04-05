@@ -572,7 +572,7 @@
 	    var view=Doc.view.views[i];
 	    if( view.doc_view_id ){
 		App.loadWindow('page/trade/view_settings',view).progress(function(status){
-		    if( status==='deleted' || status==='changed' ){
+		    if( status==='deleted' || status==='changed' || status==='close' ){
 			Doc.view.loadTile();
 		    }
 		});
