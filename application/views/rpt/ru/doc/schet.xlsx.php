@@ -6,7 +6,7 @@
 
     foreach($this->view->rows as $row){
         $row->product_price=format($row->product_price*1.18);
-        $row->product_sum=format($row->product_sum*1.18);
+        $row->product_sum=format($row->product_price*$row->product_quantity);
     }
     
     function format($num){
