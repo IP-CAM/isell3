@@ -37,6 +37,9 @@ class Pref extends Catalog {
 	$this->check($field,'[a-zA-Z_]+');
 	$this->check($value,'[^|]+');
 	$this->Base->set_level(3);
+	if( !$field || !$value ){
+	    return false;
+	}
 	$this->query("REPLACE pref_list SET pref_name='$field',pref_value='$value',active_company_id='$active_company_id'");
 	return $this->db->affected_rows()>0?1:0;
     }
