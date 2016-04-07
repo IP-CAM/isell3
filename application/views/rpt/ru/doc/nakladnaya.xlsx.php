@@ -3,7 +3,7 @@
     $this->view->doc_view->vat_spell=  num2str($this->view->footer->vat);
     $this->view->doc_view->loc_date=  russian_date($this->view->doc_view->date_dot);
     
-    $vat_ratio=1+$this->view->head->vat_rate;
+    $vat_ratio=1+$this->view->head->vat_rate/100;
     
     foreach($this->view->rows as $row){
         $row->product_price=format($row->product_price*$vat_ratio);
