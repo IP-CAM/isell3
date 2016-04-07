@@ -61,6 +61,7 @@ DataJs={
 	    loader:function( param, success, error ){
 		DataJs.list.currPage=param.page;
 		DataJs.list.filterRules=param.filterRules;
+		DataJs.list.rows=param.rows;
 		$.get("Data/tableData/"+table_name, param,function( xhr ){
 		    var resp=App.json(xhr);
 		    success(resp);
@@ -167,9 +168,9 @@ DataJs={
 	    };
 	    var url="Data/tableViewGet/"+DataJs.currentTable+"?"+$.param( params );
 	    if( out_type==='.print' ){
-		window.open(url+"&rows=100",'print_tab');
+		window.open(url+"&rows="+DataJs.list.rows,'print_tab');
 	    } else {
-		location.href=url+"&rows=1000";
+		location.href=url+"&rows=10000";
 	    }
 	}
     }
