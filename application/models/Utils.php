@@ -255,6 +255,7 @@ class Utils extends Catalog{
 	return $this->db->affected_rows();
     }
     private function selfPriceCheck($fdate){
+        //WTF
 	$sql="
 	    UPDATE 
 		document_entries de
@@ -263,10 +264,10 @@ class Utils extends Catalog{
 	    SET
 		self_price=invoice_price
 	    WHERE
-		cstamp<'$fdate'";
+		doc_type=2 AND cstamp<'$fdate'";
 	$this->db->query($sql);
     }
-    private function selfPriceTableMake($idate,$fdate){
+    private function selfPriceTableMake($idate,$fdate,$active_filter){
 	$this->db->query("DROP TEMPORARY TABLE IF EXISTS tmp_self_price_table;");// 
 	$sql="CREATE TEMPORARY TABLE tmp_self_price_table ( INDEX(product_code) ) ENGINE=MyISAM AS (
 	    SELECT
@@ -285,7 +286,7 @@ class Utils extends Catalog{
 	)";
 	$this->db->query($sql);	
     }
-    private function selfPriceAssign($idate,$fdate){
+    private function selfPriceAssign($idate,$fdate,$active_filter){
 	$sql="
 	    UPDATE
 		document_entries de
@@ -300,9 +301,9 @@ class Utils extends Catalog{
 	$this->db->query($sql);	
 	return $this->db->affected_rows();
     }
-    private function selfPriceOldApiRecalculate($idate,$fdate){
+    private function selfPriceOldApiRecalculate($idate,$fdate,$active_filter){
 	$Document2=$this->Base->bridgeLoad('Document');
-	$res = $this->db->query("SELECT doc_id,passive_company_id FROM document_list WHERE is_commited=1 AND doc_type=1 AND '$idate'<=cstamp AND cstamp<='$fdate' ORDER BY passive_company_id");
+	$res = $this->db->query("SELECT doc_id,passive_company_id FROM document_list WHERE is_commited=1 AND doc_type=1 AND '$idate'<=cstamp AND cstamp<='$fdate' $active_filter ORDER BY passive_company_id");
 	if( $res ){
 	    foreach ($res->result() as $row) {
 		if ($Document2->Base->pcomp('company_id') != $row->passive_company_id){
@@ -310,7 +311,7 @@ class Utils extends Catalog{
 		}
 		$doc_id = $row->doc_id;
 		$Document2->selectDoc($doc_id);
-		$Document2->updateTrans();
+		$Document2->updateTrans('profit_only');
 	    }
 	    $res->free_result();	    
 	}
@@ -320,18 +321,23 @@ class Utils extends Catalog{
 	$chunks=  explode('.', $dmy);
 	return "$chunks[2]-$chunks[1]-$chunks[0]";
     }
-    public function selfPriceInvoiceRecalculate($idatedmy,$fdatedmy){
+    public function selfPriceInvoiceRecalculate($idatedmy,$fdatedmy,$active_mode=''){
 	set_time_limit(300);
 	
 	
 	
 	$idate=$this->dmy2iso($idatedmy).' 00:00:00';
 	$fdate=$this->dmy2iso($fdatedmy).' 23:59:59';
+        if( $active_mode=='all_active' ){
+            $active_filter='';
+        } else {
+            $active_filter=" AND active_company_id='".$this->Base->acomp('active_company_id')."'";
+        }
 	
-	$this->selfPriceCheck($fdate);
-	$this->selfPriceTableMake($idate,$fdate);
-	$this->selfPriceAssign($idate,$fdate);
-	$this->selfPriceOldApiRecalculate($idate, $fdate);
+	$this->selfPriceCheck($fdate,$active_filter);
+	$this->selfPriceTableMake($idate,$fdate,$active_filter);
+	$this->selfPriceAssign($idate,$fdate,$active_filter);
+	$this->selfPriceOldApiRecalculate($idate, $fdate, $active_filter);
     }
     private function selfPriceStockAssign(){
 	$sql="
@@ -369,7 +375,7 @@ class Utils extends Catalog{
 		FROM
 		    document_entries de
 			JOIN
-		    document_list dl ON de.doc_id=dl.doc_id AND dl.is_commited=1 AND dl.doc_type=1
+		    document_list dl ON de.doc_id=dl.doc_id AND dl.is_commited=1 AND dl.notcount=0 AND dl.doc_type=1
 		WHERE 
 		    de.product_code=se.product_code
 		GROUP BY se.product_code) 
