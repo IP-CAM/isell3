@@ -39,7 +39,6 @@ class Sync extends Catalog {
     }
 
     public function send( $page=0 ) {
-        ;
         $data=$this->getProducts($page);
         $postdata = array(
             'json_data' => json_encode($data),
