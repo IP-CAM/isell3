@@ -21,7 +21,8 @@ class Sync extends Catalog {
                     product_quantity,
                     product_volume,
                     product_weight,
-                    barcode
+                    barcode,
+                    analyse_group
                 FROM
                     stock_entries se
                         JOIN
