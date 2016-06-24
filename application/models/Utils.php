@@ -315,17 +315,56 @@ class Utils extends Catalog{
 	    }
 	    $res->free_result();	    
 	}
-
     }
     private function dmy2iso( $dmy ){
 	$chunks=  explode('.', $dmy);
 	return "$chunks[2]-$chunks[1]-$chunks[0]";
     }
+    private function selfPriceCorrectEntries($active_filter){
+	$sql_vars="SET @i:=0,@pointer:=0,@current_code:='',@qty_left1:=0,@qty_left:=0,@current_self_price=0.00;";
+	$sql_tbl_drop="DROP TEMPORARY TABLE IF  EXISTS tmp_self_calc;";
+	$sql_tbl_create="CREATE TEMPORARY TABLE tmp_self_calc AS (SELECT 
+		doc_entry_id,
+		doc_type,
+		product_code,
+		product_quantity,
+		self_price,
+		IF(product_code <> @current_code,(@current_code:=product_code) + (@qty_left:=0) + (@current_self_price:=0),1)*0 x,
+		    IF(doc_type = 2 AND NOT is_reclamation,@current_self_price:=(self_price*product_quantity+COALESCE(@current_self_price,0)*@qty_left)/(product_quantity+@qty_left),0 ) xx,
+		IF(doc_type = 2, (@qty_left:=@qty_left + product_quantity), (@qty_left:=@qty_left - product_quantity) ) qty_left,
+		@current_self_price sp,
+		i
+	     FROM (
+		SELECT 
+		    *,
+		    IF(product_code <> @current_code,(@current_code:=product_code) + (@qty_left1:=0),1)*0 x,
+		    IF(doc_type = 2, (@qty_left1:=@qty_left1 + product_quantity), (@qty_left1:=@qty_left1 - product_quantity) ) qty_left,
+		    IF(@pointer,IF(doc_type=1,@pointer,@pointer-5),@i:=@i+10) i,
+		    IF(@qty_left1<0,@pointer:=@i,@pointer:=0) pointer
+		FROM
+		    (SELECT 
+			doc_entry_id,
+			doc_type,
+			is_reclamation,
+			product_code,
+			product_quantity,
+			self_price
+		    FROM
+			document_entries
+			    JOIN 
+			document_list USING (doc_id)
+		    WHERE
+			notcount = 0 AND is_commited = 1 $active_filter
+		    ORDER BY product_code ,  cstamp) t ) tt
+	    ORDER BY i);";
+	$sql_update="UPDATE document_entries de JOIN tmp_self_calc tsc USING(doc_entry_id) SET de.self_price=tsc.sp WHERE doc_type=1;";
+	$this->db->query($sql_vars);
+	$this->db->query($sql_tbl_drop);
+	$this->db->query($sql_tbl_create);
+	$this->db->query($sql_update);
+    }
     public function selfPriceInvoiceRecalculate($idatedmy,$fdatedmy,$active_mode=''){
 	set_time_limit(300);
-	
-	
-	
 	$idate=$this->dmy2iso($idatedmy).' 00:00:00';
 	$fdate=$this->dmy2iso($fdatedmy).' 23:59:59';
         if( $active_mode=='all_active' ){
@@ -333,10 +372,7 @@ class Utils extends Catalog{
         } else {
             $active_filter=" AND active_company_id='".$this->Base->acomp('active_company_id')."'";
         }
-	
-	$this->selfPriceCheck($fdate,$active_filter);
-	$this->selfPriceTableMake($idate,$fdate,$active_filter);
-	$this->selfPriceAssign($idate,$fdate,$active_filter);
+	$this->selfPriceCorrectEntries($active_filter);
 	$this->selfPriceOldApiRecalculate($idate, $fdate, $active_filter);
     }
     private function selfPriceStockAssign(){
