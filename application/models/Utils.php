@@ -377,7 +377,7 @@ class Utils extends Catalog{
         if( $active_mode=='all_active' ){
             $active_filter='';
         } else {
-            $active_filter=" AND active_company_id='".$this->Base->acomp('active_company_id')."'";
+            $active_filter=" AND active_company_id='".$this->Base->acomp('company_id')."'";
         }
 	$this->selfPriceCreateTable($active_filter);
 	$this->selfPriceCorrectEntries();
