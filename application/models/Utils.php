@@ -362,7 +362,7 @@ class Utils extends Catalog{
 			    JOIN 
 			document_list USING (doc_id)
 		    WHERE
-			notcount = 0 AND is_commited = 1 $active_filter
+			notcount = 0 AND is_commited = 1 AND (doc_type=2 OR doc_type=1) $active_filter
 		    ORDER BY product_code ,  cstamp) t ) tt
 	    ORDER BY i);";
 	$this->db->query($sql_vars);
